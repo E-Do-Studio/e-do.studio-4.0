@@ -1,0 +1,427 @@
+import { useState } from 'react';
+import type { FormEvent, InputHTMLAttributes, TextareaHTMLAttributes } from 'react';
+import { CellLabel, IconArrowRight, PageHeader, SocialIcon, cn } from './ui';
+import type { Lang, ContactFormData, Bilingual } from './types';
+import { usePageContext } from './router';
+
+interface Subject extends Bilingual {
+  k: string;
+}
+
+interface TeamMember {
+  name: string | Bilingual;
+  role: Bilingual;
+  mail: string | null;
+}
+
+interface SocialLinkEntry {
+  k: string;
+  label: string;
+  href: string;
+}
+
+const SUBJECTS: Subject[] = [
+  {k:'general', fr:'Question générale', en:'General enquiry'},
+  {k:'reserver', fr:'Réserver un plateau', en:'Book a stage'},
+  {k:'ecom', fr:'Production e-commerce', en:'E-commerce production'},
+  {k:'visite', fr:'Visite du studio', en:'Studio visit'},
+];
+
+const TEAM: TeamMember[] = [
+  {name:'Thomas Guedj', role:{fr:'Direction & administration',en:'Director & administration'}, mail:null},
+  {name:'Benoît Cougny', role:{fr:'Planification & production',en:'Planning & production'}, mail:null},
+  {name:'Phan Vo', role:{fr:'Image & post-production',en:'Image & post-production'}, mail:null},
+  {name:'Théo Daguier', role:{fr:'Support technique',en:'Technical support'}, mail:null},
+  {name:{fr:'Service général',en:'General enquiries'}, role:{fr:'Accueil & informations',en:'Reception & information'}, mail:'contact@e-do.studio'},
+];
+
+const SOCIAL_LINKS: SocialLinkEntry[] = [
+  {k:'instagram',label:'IG',href:'https://www.instagram.com/edostudio/'},
+  {k:'linkedin', label:'LI',href:'https://www.linkedin.com/company/e-do/'},
+  {k:'facebook', label:'FB',href:'https://www.facebook.com/EdoStudioAgency/'},
+  {k:'tiktok', label:'TT',href:'https://www.tiktok.com/@edostudio'},
+];
+
+const INITIAL_FORM: ContactFormData = {
+  nom: '',
+  email: '',
+  telephone: '',
+  societe: '',
+  sujet: 'general',
+  message: '',
+};
+
+interface ContactRailProps {
+  lang: Lang;
+}
+
+const ContactRail = ({ lang }: ContactRailProps) => (
+  <aside className="flex flex-col overflow-auto bg-white md:col-start-1 md:row-start-2">
+    <FindUsSection lang={lang} />
+    <HoursSection lang={lang} />
+    <PhoneSection lang={lang} />
+    <div className="flex-1" />
+    <SocialGrid />
+  </aside>
+);
+
+const FindUsSection = ({ lang }: { lang: Lang }) => (
+  <section className="border-b border-border p-4">
+    <CellLabel className="mb-2.5 block">{lang === 'fr' ? 'Nous trouver' : 'Find us'}</CellLabel>
+    <p className="m-0 text-pretty text-detail leading-copy text-foreground">
+      <span className="mb-1 block font-mono text-label uppercase tracking-ui text-muted-foreground">
+        Parc d'activités Victor&nbsp;Hugo · {lang === 'fr' ? 'Bât.' : 'Bldg.'} 6.7
+      </span>
+      69 boulevard Victor Hugo<br />
+      93400 <span className="whitespace-nowrap">Saint-Ouen</span>,<br />France
+    </p>
+    <div className="mt-2.5 flex flex-col gap-1.5 font-mono text-label leading-relaxed tracking-ui text-muted-foreground">
+      <MetroLine line="13" label="Garibaldi" className="bg-metro-13 text-black" />
+      <MetroLine line="14" label="Mairie de Saint-Ouen" className="bg-metro-14 text-white" />
+    </div>
+  </section>
+);
+
+interface MetroLineProps {
+  line: string;
+  label: string;
+  className?: string;
+}
+
+const MetroLine = ({ line, label, className }: MetroLineProps) => (
+  <div className="flex items-center gap-2 whitespace-nowrap">
+    <span className={cn('inline-flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full text-label font-bold tracking-normal', className)}>
+      {line}
+    </span>
+    {label}
+  </div>
+);
+
+const HoursSection = ({ lang }: { lang: Lang }) => (
+  <section className="border-b border-border p-4">
+    <CellLabel className="mb-2 block">{lang === 'fr' ? 'Horaires' : 'Hours'}</CellLabel>
+    <div className="flex flex-col gap-1 text-xs">
+      <HoursRow label={lang === 'fr' ? 'Lun — Ven' : 'Mon — Fri'} value="10:00 — 18:00" />
+      <HoursRow label={lang === 'fr' ? 'Sam — Dim' : 'Sat — Sun'} value={lang === 'fr' ? 'Sur demande' : 'On request'} muted />
+    </div>
+  </section>
+);
+
+interface HoursRowProps {
+  label: string;
+  value: string;
+  muted?: boolean;
+}
+
+const HoursRow = ({ label, value, muted = false }: HoursRowProps) => (
+  <div className="flex justify-between gap-3">
+    <span className="text-muted-foreground">{label}</span>
+    <span className={cn('font-mono text-caption', muted && 'text-muted-foreground')}>{value}</span>
+  </div>
+);
+
+const PhoneSection = ({ lang }: { lang: Lang }) => (
+  <section className="p-4">
+    <CellLabel className="mb-2 block">{lang === 'fr' ? 'Téléphone' : 'Phone'}</CellLabel>
+    <a href="tel:+33144041149" className="text-cell tracking-copy-tight text-foreground no-underline">
+      +33 1 44 04 11 49
+    </a>
+  </section>
+);
+
+const SocialGrid = () => (
+  <div className="grid grid-cols-2 gap-px border-t border-border bg-border">
+    {SOCIAL_LINKS.map((social) => (
+      <a
+        key={social.k}
+        href={social.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center justify-between bg-white px-4 py-3.5 text-foreground no-underline transition-colors hover:bg-muted"
+      >
+        <SocialIcon kind={social.k} size={12} />
+        <span className="font-mono text-micro tracking-meta">{social.label}</span>
+      </a>
+    ))}
+  </div>
+);
+
+interface ContactFormPanelProps {
+  lang: Lang;
+  form: ContactFormData;
+  sent: boolean;
+  setForm: (form: ContactFormData) => void;
+  setSent: (sent: boolean) => void;
+  submit: (event: FormEvent) => void;
+  goto: (screen: string) => void;
+}
+
+const ContactFormPanel = ({ lang, form, sent, setForm, setSent, submit, goto }: ContactFormPanelProps) => (
+  <main className="overflow-hidden bg-black md:col-start-2 md:row-start-2">
+    {!sent ? (
+      <ContactForm lang={lang} form={form} setForm={setForm} submit={submit} />
+    ) : (
+      <ContactSuccess lang={lang} setForm={setForm} setSent={setSent} goto={goto} />
+    )}
+  </main>
+);
+
+interface ContactFormProps {
+  lang: Lang;
+  form: ContactFormData;
+  setForm: (form: ContactFormData) => void;
+  submit: (event: FormEvent) => void;
+}
+
+const ContactForm = ({ lang, form, setForm, submit }: ContactFormProps) => (
+  <form
+    onSubmit={submit}
+    className="grid grid-cols-2 grid-rows-contact-form gap-px bg-border"
+  >
+    <div className="col-span-2 flex flex-col justify-center bg-white px-5 py-2.5">
+      <span className="edo-cell-label text-primary">{lang === 'fr' ? 'Écrivez-nous' : 'Write to us'}</span>
+      <h1 className="m-0 mt-0.5 text-2xl font-light leading-none tracking-display text-foreground">
+        {lang === 'fr' ? 'Un projet, une visite ?' : 'A project, a visit?'}
+      </h1>
+    </div>
+
+    {SUBJECTS.map((subject, index) => (
+      <SubjectButton
+        key={subject.k}
+        subject={subject}
+        index={index}
+        lang={lang}
+        active={form.sujet === subject.k}
+        onClick={() => setForm({...form, sujet: subject.k})}
+      />
+    ))}
+
+    <ContactInput required value={form.nom} onChange={(value) => setForm({...form, nom: value})} placeholder={lang === 'fr' ? 'Nom*' : 'Name*'} className="col-start-1 row-start-4" />
+    <ContactInput required type="tel" value={form.telephone} onChange={(value) => setForm({...form, telephone: value})} placeholder={lang === 'fr' ? 'Téléphone*' : 'Phone*'} className="col-start-2 row-start-4" />
+    <ContactInput required type="email" value={form.email} onChange={(value) => setForm({...form, email: value})} placeholder="Email*" className="col-span-2 row-start-5" />
+    <ContactInput required value={form.societe} onChange={(value) => setForm({...form, societe: value})} placeholder={lang === 'fr' ? 'Société · Marque*' : 'Company · Brand*'} className="col-span-2 row-start-6" />
+    <ContactTextarea required value={form.message} onChange={(value) => setForm({...form, message: value})} placeholder={lang === 'fr' ? 'Votre message*' : 'Your message*'} />
+
+    <button
+      type="submit"
+      className="col-span-2 row-start-8 flex cursor-pointer items-center justify-center gap-3.5 border-0 bg-primary font-mono text-xs uppercase tracking-label text-white transition-colors hover:bg-foreground"
+    >
+      {lang === 'fr' ? 'Envoyer' : 'Send'} <IconArrowRight width="16" height="16" stroke="#fff" />
+    </button>
+  </form>
+);
+
+interface SubjectButtonProps {
+  subject: Subject;
+  index: number;
+  lang: Lang;
+  active: boolean;
+  onClick: () => void;
+}
+
+const SubjectButton = ({ subject, index, lang, active, onClick }: SubjectButtonProps) => {
+  const placements = [
+    'col-start-1 row-start-2',
+    'col-start-2 row-start-2',
+    'col-start-1 row-start-3',
+    'col-start-2 row-start-3',
+  ];
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        placements[index],
+        'flex min-h-14 cursor-pointer items-center gap-3 border-0 px-5 py-2.5 text-left font-sans transition-colors',
+        active ? 'bg-foreground text-white' : 'bg-white text-foreground hover:bg-muted'
+      )}
+    >
+      <span className={cn('font-mono text-caption tracking-meta', active ? 'text-white/60' : 'text-muted-foreground')}>
+        {String(index + 1).padStart(2, '0')}
+      </span>
+      <span className="text-sm font-normal tracking-copy-tight">{subject[lang]}</span>
+    </button>
+  );
+};
+
+const inputClassName = 'edo-bento-input w-full border-0 bg-white px-5 font-sans text-cell font-light tracking-copy-tight text-foreground outline-none transition-colors focus:bg-muted';
+
+interface ContactInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+const ContactInput = ({ value, onChange, className, type = 'text', ...props }: ContactInputProps) => (
+  <input
+    type={type}
+    value={value}
+    onChange={(event) => onChange(event.target.value)}
+    className={cn(inputClassName, className)}
+    {...props}
+  />
+);
+
+interface ContactTextareaProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'onChange'> {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+const ContactTextarea = ({ value, onChange, ...props }: ContactTextareaProps) => (
+  <textarea
+    value={value}
+    onChange={(event) => onChange(event.target.value)}
+    className={cn(inputClassName, 'col-span-2 row-start-7 h-full resize-none py-4 leading-normal')}
+    {...props}
+  />
+);
+
+interface ContactSuccessProps {
+  lang: Lang;
+  setForm: (form: ContactFormData) => void;
+  setSent: (sent: boolean) => void;
+  goto: (screen: string) => void;
+}
+
+const ContactSuccess = ({ lang, setForm, setSent, goto }: ContactSuccessProps) => (
+  <div className="flex h-full flex-col items-start justify-center gap-4 bg-white px-7 py-8">
+    <span className="edo-cell-label text-primary">✓ {lang === 'fr' ? 'Message envoyé' : 'Message sent'}</span>
+    <h1 className="m-0 max-w-lg text-5xl font-light leading-tight tracking-display text-foreground">
+      {lang === 'fr' ? 'Merci — à très vite.' : 'Thanks — talk soon.'}
+    </h1>
+    <p className="m-0 max-w-md text-sm leading-normal text-muted-foreground">
+      {lang === 'fr'
+        ? 'Notre équipe vous répond sous 24 h ouvrées. En attendant, vous pouvez parcourir la galerie ou explorer les plateaux.'
+        : 'Our team replies within 1 business day. In the meantime, browse the gallery or explore the stages.'}
+    </p>
+    <div className="mt-3 flex flex-wrap gap-2.5">
+      <button
+        onClick={() => {
+          setSent(false);
+          setForm(INITIAL_FORM);
+        }}
+        className="h-control cursor-pointer border border-foreground bg-white px-5 font-mono text-label uppercase tracking-label text-foreground transition-colors hover:bg-muted"
+      >
+        {lang === 'fr' ? 'Nouveau message' : 'Another message'}
+      </button>
+      <button
+        onClick={() => goto('gallery')}
+        className="h-control cursor-pointer border-0 bg-foreground px-5 font-mono text-label uppercase tracking-label text-white transition-all hover:brightness-110"
+      >
+        {lang === 'fr' ? 'Voir la galerie' : 'See gallery'} →
+      </button>
+    </div>
+  </div>
+);
+
+const ContactRightColumn = ({ lang }: { lang: Lang }) => (
+  <aside className="grid grid-rows-2 gap-px overflow-hidden bg-black md:col-start-3 md:row-start-2" style={{minHeight: '400px'}}>
+    <ContactMap lang={lang} />
+    <TeamPanel lang={lang} />
+  </aside>
+);
+
+const ContactMap = ({ lang }: { lang: Lang }) => (
+  <section className="relative overflow-hidden bg-edo-warm">
+    <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" className="absolute inset-0 h-full w-full">
+      <g stroke="#c8ba9e" strokeWidth="12" fill="none">
+        <line x1="-20" y1="80" x2="420" y2="80" />
+        <line x1="-20" y1="210" x2="420" y2="210" />
+        <line x1="120" y1="-20" x2="120" y2="320" />
+        <line x1="280" y1="-20" x2="280" y2="320" />
+      </g>
+      <g stroke="#d4c8ad" strokeWidth="4" fill="none">
+        <line x1="-20" y1="140" x2="420" y2="140" />
+        <line x1="200" y1="-20" x2="200" y2="320" />
+        <line x1="60" y1="-20" x2="60" y2="320" />
+        <line x1="350" y1="-20" x2="350" y2="320" />
+      </g>
+      <g fill="#dbcfb4">
+        <rect x="130" y="90" width="60" height="40" />
+        <rect x="210" y="90" width="60" height="40" />
+        <rect x="130" y="150" width="60" height="50" />
+        <rect x="210" y="150" width="60" height="50" />
+        <rect x="70" y="150" width="40" height="50" />
+        <rect x="290" y="150" width="50" height="50" />
+      </g>
+      <g transform="translate(200,150)">
+        <circle r="22" fill="var(--edo-orange)" opacity="0.2" />
+        <circle r="9" fill="var(--edo-orange)" />
+        <circle r="3" fill="#fff" />
+      </g>
+    </svg>
+
+    <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-3 bg-white/95 px-3 py-2.5">
+      <div className="min-w-0">
+        <div className="text-detail font-medium tracking-copy-tight text-foreground">69 bd Victor Hugo · Bât. 6.7</div>
+        <div className="font-mono text-label uppercase tracking-caption text-muted-foreground">93400 SAINT-OUEN · M°13 GARIBALDI / M°14 MAIRIE ST-OUEN</div>
+      </div>
+      <a href="#" className="shrink-0 font-mono text-label uppercase tracking-meta text-primary no-underline">
+        {lang === 'fr' ? 'Itinéraire →' : 'Directions →'}
+      </a>
+    </div>
+  </section>
+);
+
+const TeamPanel = ({ lang }: { lang: Lang }) => (
+  <section className="flex flex-col gap-3.5 bg-foreground p-6 text-white">
+    <span className="edo-cell-label text-white/70">{lang === 'fr' ? "L'équipe" : 'The team'}</span>
+    <div className="flex flex-col gap-2.5">
+      {TEAM.map((member, index) => (
+        <TeamMemberRow key={index} member={member} lang={lang} />
+      ))}
+    </div>
+  </section>
+);
+
+interface TeamMemberRowProps {
+  member: TeamMember;
+  lang: Lang;
+}
+
+const TeamMemberRow = ({ member, lang }: TeamMemberRowProps) => (
+  <div className="grid grid-cols-fluid-auto gap-2 border-b border-white/10 py-2">
+    <div className="flex flex-col gap-0.5">
+      <span className="text-sm tracking-copy-tight text-white">{typeof member.name === 'string' ? member.name : member.name[lang]}</span>
+      <span className="font-mono text-micro uppercase tracking-ui text-white/55">{member.role[lang]}</span>
+    </div>
+    {member.mail && (
+      <a href={`mailto:${member.mail}`} className="self-center font-mono text-label tracking-caption text-primary no-underline">
+        {member.mail}
+      </a>
+    )}
+  </div>
+);
+
+const ContactPage = () => {
+  const { lang, setLang, openMenu, goto } = usePageContext();
+  const [form, setForm] = useState<ContactFormData>(INITIAL_FORM);
+  const [sent, setSent] = useState(false);
+
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    setSent(true);
+  };
+
+  return (
+    <div className="grid w-full gap-px overflow-y-auto bg-black md:h-full md:grid-cols-contact-shell md:grid-rows-page md:overflow-hidden">
+      <PageHeader
+        lang={lang}
+        title={lang === 'fr' ? 'Nous contacter' : 'Contact us'}
+        className="h-14 md:col-start-1 md:col-span-3 md:row-start-1 md:h-full"
+        onMenuClick={openMenu}
+        onLogoClick={() => goto('home')}
+        onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
+        actions={[
+          { id: 'plateaux', label: lang === 'fr' ? 'Plateaux' : 'Stages', onClick: () => goto('plateau-live'), className: 'hidden sm:flex' },
+          { id: 'book', label: lang === 'fr' ? 'Réserver' : 'Book', onClick: () => goto('book'), variant: 'primary' },
+        ]}
+      />
+      <ContactRail lang={lang} />
+      <ContactFormPanel lang={lang} form={form} sent={sent} setForm={setForm} setSent={setSent} submit={submit} goto={goto} />
+      <ContactRightColumn lang={lang} />
+    </div>
+  );
+};
+
+export { ContactPage };

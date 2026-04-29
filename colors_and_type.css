@@ -11,8 +11,6 @@
    so we load Google Fonts substitutes (see README). Swap the
    @font-face blocks below in if/when you ship real files.
 --------------------------------------------------------------- */
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
-
 /* When you add real ABC Favorit files:
 @font-face {
   font-family: "ABC Favorit";
@@ -125,6 +123,414 @@
   --dur-base:      300ms;
   --dur-slow:      500ms;
   --marquee-duration: 40s;
+}
+
+@theme inline {
+  /* ---------- shadcn-like semantic colors -------------------- */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--input);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* ---------- brand palette tokens --------------------------- */
+  --color-edo-white: var(--edo-white);
+  --color-edo-black: var(--edo-black);
+  --color-edo-pure-black: var(--edo-pure-black);
+  --color-edo-dark: oklch(0.13 0 0);
+  --color-edo-ink: var(--edo-black);
+  --color-edo-gray-50: var(--edo-gray-50);
+  --color-edo-gray-100: var(--edo-gray-100);
+  --color-edo-gray-200: var(--edo-gray-200);
+  --color-edo-gray-500: var(--edo-gray-500);
+  --color-edo-gray-600: var(--edo-gray-600);
+  --color-edo-orange: var(--edo-orange);
+  --color-edo-cream: oklch(0.94 0.035 82);
+  --color-edo-sand: oklch(0.86 0.045 82);
+  --color-edo-warm: oklch(0.91 0.03 82);
+  --color-edo-limited: oklch(0.91 0.055 76);
+
+  /* ---------- type families ---------------------------------- */
+  --font-sans: "ABC Favorit", "Space Grotesk", ui-sans-serif, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  /* ---------- type scale ------------------------------------- */
+  --text-nano: 0.5rem;
+  --text-nano--line-height: 1;
+  --text-micro: 0.5625rem;
+  --text-micro--line-height: 1;
+  --text-label: 0.625rem;
+  --text-label--line-height: 1;
+  --text-caption: 0.6875rem;
+  --text-caption--line-height: 1.35;
+  --text-detail: 0.8125rem;
+  --text-detail--line-height: 1.45;
+  --text-cell: 0.9375rem;
+  --text-cell--line-height: 1.15;
+  --text-display: var(--font-size-display);
+  --text-display--line-height: 0.95;
+  --text-hero: clamp(2.75rem, 5vw, 4.5rem);
+  --text-hero--line-height: 0.92;
+  --text-page-title: clamp(1.375rem, 2.4vw, 2rem);
+  --text-page-title--line-height: 1;
+  --text-tile-title: 1.375rem;
+  --text-tile-title--line-height: 1;
+  --text-tile-large: 1.625rem;
+  --text-tile-large--line-height: 1;
+
+  /* ---------- tracking --------------------------------------- */
+  --tracking-display: -0.03em;
+  --tracking-headline: -0.02em;
+  --tracking-copy-tight: -0.01em;
+  --tracking-caption: 0.05em;
+  --tracking-ui: 0.1em;
+  --tracking-code: 0.12em;
+  --tracking-meta: 0.15em;
+  --tracking-label: 0.2em;
+  --tracking-button: 0.2em;
+
+  /* ---------- leading ---------------------------------------- */
+  --leading-solid: 0.95;
+  --leading-cell: 1.15;
+  --leading-copy: 1.55;
+
+  /* ---------- spacing and layout ----------------------------- */
+  --spacing-hairline: 1px;
+  --spacing-header: 3.375rem;      /* 54px */
+  --spacing-header-sm: 3.25rem;    /* 52px */
+  --spacing-footer: 2.75rem;       /* 44px */
+  --spacing-nav: 11.875rem;        /* 190px */
+  --spacing-quote-panel: 18.75rem; /* 300px */
+  --spacing-control: 2.625rem;     /* 42px */
+  --spacing-cell: 1.125rem;        /* 18px */
+  --spacing-cell-lg: 1.375rem;     /* 22px */
+
+  /* ---------- radius / shadows ------------------------------- */
+  --radius-none: 0;
+  --radius-switch: 999px;
+  --shadow-toggle: 0 1px 3px rgb(0 0 0 / 0.2);
+  --shadow-hairline: inset 0 0 0 1px var(--edo-pure-black);
+
+  /* ---------- motion ----------------------------------------- */
+  --ease-edo-out: var(--ease-out);
+  --ease-edo-in-out: var(--ease-in-out);
+}
+
+@layer utilities {
+  .gap-hairline { gap: var(--hairline); }
+  .font-inherit { font-family: inherit; }
+  .bg-hairline { background: var(--edo-pure-black); }
+  .text-balance { text-wrap: balance; }
+  .text-pretty { text-wrap: pretty; }
+  .edo-writing-vertical { writing-mode: vertical-rl; }
+  .z-overlay { z-index: var(--z-overlay); }
+  .z-sheet { z-index: calc(var(--z-overlay) + 1); }
+  .z-local { z-index: 5; }
+}
+
+@utility grid-cols-fluid-auto {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+@utility grid-cols-fluid-two-auto {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
+@utility grid-cols-auto-fluid {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+@utility grid-cols-app {
+  grid-template-columns: 190px minmax(0, 1fr);
+}
+
+@utility grid-cols-book-shell {
+  grid-template-columns: 190px minmax(0, 1fr) 300px;
+}
+
+@utility grid-cols-contact-shell {
+  grid-template-columns: 190px minmax(0, 1fr) minmax(0, 1fr);
+}
+
+@utility grid-cols-gallery-shell {
+  grid-template-columns: 190px minmax(0, 1fr);
+}
+
+@utility grid-cols-machine-row {
+  grid-template-columns: 28px minmax(0, 1fr) 12px;
+}
+
+@utility grid-cols-brand-stack {
+  grid-template-columns: 48px minmax(0, 1fr) minmax(0, 1fr);
+}
+
+@utility grid-cols-thumb-row {
+  grid-template-columns: 46px minmax(0, 1fr);
+}
+
+@utility grid-cols-gallery-row {
+  grid-template-columns: 80px repeat(3, minmax(0, 1fr));
+}
+
+@utility grid-cols-overlay {
+  grid-template-columns: 1.1fr 1fr;
+}
+
+@utility grid-cols-postprod-workspace {
+  grid-template-columns: 1.15fr 1fr 1fr 1fr;
+}
+
+@utility grid-cols-confirmation-hero {
+  grid-template-columns: 1.6fr 1fr;
+}
+
+@utility grid-cols-legal-row {
+  grid-template-columns: 220px minmax(0, 1fr);
+}
+
+@utility grid-cols-legal-article {
+  grid-template-columns: 70px minmax(0, 1fr);
+}
+
+@utility grid-cols-cookie-table {
+  grid-template-columns: 180px 110px minmax(0, 1fr) 130px 110px;
+}
+
+@utility grid-cols-auto-tiles {
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+
+@utility grid-rows-app {
+  grid-template-rows: 54px minmax(0, 1fr);
+}
+
+@utility grid-rows-page {
+  grid-template-rows: 52px minmax(0, 1fr);
+}
+
+@utility grid-rows-discovery-shell {
+  grid-template-rows: 52px minmax(0, 1fr) 44px;
+}
+
+@utility grid-rows-home {
+  grid-template-rows: 54px 84px 1.1fr 1.25fr 84px 44px;
+}
+
+@utility grid-cols-plateau {
+  grid-template-columns: 190px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);
+}
+
+@utility grid-rows-plateau {
+  grid-template-rows: 54px 78px minmax(0,1.58fr) minmax(0,0.72fr) minmax(0,0.52fr);
+}
+
+@utility grid-rows-article-headline {
+  grid-template-rows: 1fr 86px;
+}
+
+@utility grid-rows-article-headline-lg {
+  grid-template-rows: 1fr 70px;
+}
+
+@utility grid-rows-article-auto {
+  grid-template-rows: 1fr auto;
+}
+
+@utility grid-rows-double {
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+@utility grid-rows-discovery-bento {
+  grid-template-rows: repeat(3, minmax(0, 1fr)) 84px repeat(2, minmax(0, 1fr));
+}
+
+@utility grid-rows-contact-form {
+  grid-template-rows: auto auto auto 64px 64px 64px minmax(0, 1fr) 56px;
+}
+
+@utility bg-home-media-gradient {
+  background-image: linear-gradient(180deg, rgb(0 0 0 / 0.25) 0%, rgb(0 0 0 / 0) 40%, rgb(0 0 0 / 0) 60%, rgb(0 0 0 / 0.25) 100%);
+}
+
+@utility bg-reel-gradient {
+  background-image: radial-gradient(ellipse at center, var(--edo-dark) 0%, var(--edo-pure-black) 100%);
+}
+
+@utility bg-postprod-pattern {
+  background-image: repeating-linear-gradient(135deg, transparent 0 22px, rgb(255 255 255 / 0.04) 22px 23px);
+}
+
+@utility bg-metro-13 { background-color: #98d4e2; }
+@utility bg-metro-14 { background-color: #62259d; }
+
+@utility scale-102 {
+  --tw-scale-x: 1.02;
+  --tw-scale-y: 1.02;
+  scale: var(--tw-scale-x) var(--tw-scale-y);
+}
+
+@utility scale-103 {
+  --tw-scale-x: 1.03;
+  --tw-scale-y: 1.03;
+  scale: var(--tw-scale-x) var(--tw-scale-y);
+}
+
+@utility scale-115 {
+  --tw-scale-x: 1.15;
+  --tw-scale-y: 1.15;
+  scale: var(--tw-scale-x) var(--tw-scale-y);
+}
+
+@utility opacity-55 { opacity: 0.55; }
+@utility opacity-62 { opacity: 0.62; }
+@utility opacity-65 { opacity: 0.65; }
+
+@utility border-1-5 { border-width: 1.5px; }
+@utility border-l-3 { border-left-width: 3px; }
+
+@utility aspect-calendar { aspect-ratio: 1.9; }
+@utility aspect-arrival { aspect-ratio: 1.5; }
+@utility aspect-portrait { aspect-ratio: 4 / 5; }
+@utility auto-rows-bento { grid-auto-rows: minmax(180px, auto); }
+
+@utility w-toggle-half { width: calc(50% - 4.5px); }
+@utility max-w-message { max-width: 85%; }
+@utility left-toggle-thumb { left: 3px; }
+@utility mt-home-offset { margin-top: 85px; }
+@utility h-home-offset { height: calc(100% - 85px); }
+@utility scrollbar-thin {
+  scrollbar-color: var(--input) transparent;
+  scrollbar-width: thin;
+}
+
+@utility tracking-inherit { letter-spacing: inherit; }
+@utility text-transform-inherit { text-transform: inherit; }
+
+@layer components {
+  .edo-surface {
+    background: var(--background);
+    color: var(--foreground);
+  }
+
+  .edo-surface-hover {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-duration: var(--dur-fast);
+  }
+
+  .edo-surface-hover:hover {
+    background: var(--muted);
+  }
+
+  .edo-panel-dark {
+    background: var(--foreground);
+    color: var(--primary-foreground);
+  }
+
+  .edo-bento-grid {
+    display: grid;
+    gap: var(--hairline);
+    background: var(--edo-pure-black);
+  }
+
+  .edo-bento-row {
+    display: flex;
+    gap: var(--hairline);
+    background: var(--edo-pure-black);
+    min-width: 0;
+  }
+
+  .edo-cell {
+    min-width: 0;
+    background: var(--background);
+    color: var(--foreground);
+  }
+
+  .edo-cell-action {
+    cursor: pointer;
+    border: 0;
+    background: var(--background);
+    color: var(--foreground);
+    transition-property: color, background-color, border-color, filter, transform;
+    transition-duration: var(--dur-fast);
+  }
+
+  .edo-cell-action:hover {
+    background: var(--muted);
+  }
+
+  .edo-ui-text {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    font-weight: var(--weight-regular);
+    letter-spacing: var(--tracking-label);
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  .edo-meta-text {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-micro);
+    font-weight: var(--weight-regular);
+    letter-spacing: var(--tracking-meta);
+    line-height: 1;
+  }
+
+  .edo-muted { color: var(--muted-foreground); }
+  .edo-accent { color: var(--primary); }
+
+  .edo-focus-ring {
+    outline: none;
+  }
+
+  .edo-focus-ring:focus-visible {
+    box-shadow: 0 0 0 2px var(--ring);
+  }
+
+  .edo-toggle {
+    position: relative;
+    width: 2.875rem;
+    height: 1.625rem;
+    flex-shrink: 0;
+    cursor: pointer;
+    border: 0;
+    border-radius: var(--radius-switch);
+    padding: 0;
+    background: var(--input);
+    transition: background var(--dur-fast) var(--ease-out);
+  }
+
+  .edo-toggle[data-state="checked"] {
+    background: var(--primary);
+  }
+
+  .edo-toggle-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: var(--radius-switch);
+    background: var(--background);
+    box-shadow: var(--shadow-toggle);
+    transition: left var(--dur-fast) var(--ease-out);
+  }
+
+  .edo-toggle[data-state="checked"] .edo-toggle-thumb {
+    left: 23px;
+  }
 }
 
 /* =========================================================

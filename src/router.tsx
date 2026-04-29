@@ -1,0 +1,214 @@
+import {
+  createRootRoute,
+  createRoute,
+  createRouter,
+  Outlet,
+  useRouterState,
+  useNavigate,
+  redirect,
+} from '@tanstack/react-router';
+import { createContext, useContext, useState } from 'react';
+import type { Lang } from './types';
+import { NavMenu } from './nav-menu';
+import { DirectionA } from './direction-editorial';
+import { PlateauPage } from './plateau-page';
+import { DiscoveryVariants } from './discovery-pages';
+import { PostprodPage } from './postprod-page';
+import { GalleryPageV3 } from './gallery-page';
+import { ContactPage } from './contact-page';
+import { BookPageV2 } from './book-page';
+import { LegalPage } from './legal-page';
+
+const VALID_LANGS: Lang[] = ['fr', 'en'];
+const DEFAULT_LANG: Lang = 'fr';
+
+function detectLang(): Lang {
+  try {
+    const stored = localStorage.getItem('edo-lang');
+    if (stored === 'fr' || stored === 'en') return stored;
+  } catch {}
+  return DEFAULT_LANG;
+}
+
+function persistLang(lang: Lang) {
+  try {
+    localStorage.setItem('edo-lang', lang);
+  } catch {}
+}
+
+interface PageContextValue {
+  lang: Lang;
+  setLang: (lang: Lang) => void;
+  openMenu: () => void;
+  goto: (screen: string) => void;
+}
+
+const PageContext = createContext<PageContextValue | null>(null);
+
+export function usePageContext(): PageContextValue {
+  const ctx = useContext(PageContext);
+  if (!ctx) throw new Error('usePageContext must be used inside LangLayout');
+  return ctx;
+}
+
+const SCREEN_TO_PATH: Record<string, (lang: Lang) => string> = {
+  home: (l) => `/${l}`,
+  cyclorama: (l) => `/${l}/cyclorama`,
+  'plateau-horizontal': (l) => `/${l}/plateau/horizontal`,
+  'plateau-vertical': (l) => `/${l}/plateau/vertical`,
+  'plateau-eclipse': (l) => `/${l}/plateau/eclipse`,
+  'plateau-live': (l) => `/${l}/plateau/live`,
+  discovery: (l) => `/${l}/discovery`,
+  postprod: (l) => `/${l}/post-production`,
+  gallery: (l) => `/${l}/galerie`,
+  contact: (l) => `/${l}/contact`,
+  book: (l) => `/${l}/${l === 'fr' ? 'reserver' : 'book'}`,
+  legal: (l) => `/${l}/legal`,
+};
+
+function LangLayout() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  const pathname = useRouterState({ select: (s) => s.resolvedLocation?.pathname ?? '' });
+  const langSegment = pathname.split('/')[1];
+  const lang: Lang = VALID_LANGS.includes(langSegment as Lang) ? (langSegment as Lang) : DEFAULT_LANG;
+
+  const setLang = (newLang: Lang) => {
+    persistLang(newLang);
+    const rest = pathname.replace(/^\/(fr|en)/, '');
+    navigate({ to: `/${newLang}${rest}` });
+  };
+
+  const goto = (screen: string) => {
+    setMenuOpen(false);
+    const resolver = SCREEN_TO_PATH[screen];
+    if (resolver) navigate({ to: resolver(lang) });
+  };
+
+  const pageContext: PageContextValue = {
+    lang,
+    setLang,
+    openMenu: () => setMenuOpen(true),
+    goto,
+  };
+
+  return (
+    <PageContext.Provider value={pageContext}>
+      <Outlet />
+      <NavMenu
+        lang={lang}
+        setLang={setLang}
+        isOpen={menuOpen}
+        onClose={() => setMenuOpen(false)}
+      />
+    </PageContext.Provider>
+  );
+}
+
+const rootRoute = createRootRoute({ component: LangLayout });
+
+const indexRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/',
+  beforeLoad: () => {
+    throw redirect({ to: '/$lang', params: { lang: detectLang() } });
+  },
+  component: () => null,
+});
+
+const langRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/$lang',
+  beforeLoad: ({ params }) => {
+    if (!VALID_LANGS.includes(params.lang as Lang)) {
+      throw redirect({ to: '/$lang', params: { lang: DEFAULT_LANG } });
+    }
+  },
+});
+
+const homeRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: '/',
+  component: DirectionA,
+});
+
+const cycloramaRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: '/cyclorama',
+  component: () => <PlateauPage slug="cyclorama" />,
+});
+
+const plateauRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: '/plateau/$slug',
+  component: () => {
+    const params = plateauRoute.useParams();
+    return <PlateauPage slug={params.slug} />;
+  },
+});
+
+const discoveryRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: '/discovery',
+  component: DiscoveryVariants,
+});
+
+const postprodRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: '/post-production',
+  component: PostprodPage,
+});
+
+const galleryRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: '/galerie',
+  component: GalleryPageV3,
+});
+
+const contactRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: '/contact',
+  component: ContactPage,
+});
+
+const bookFrRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: '/reserver',
+  component: BookPageV2,
+});
+
+const bookEnRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: '/book',
+  component: BookPageV2,
+});
+
+const legalRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: '/legal',
+  component: LegalPage,
+});
+
+const routeTree = rootRoute.addChildren([
+  indexRoute,
+  langRoute.addChildren([
+    homeRoute,
+    cycloramaRoute,
+    plateauRoute,
+    discoveryRoute,
+    postprodRoute,
+    galleryRoute,
+    contactRoute,
+    bookFrRoute,
+    bookEnRoute,
+    legalRoute,
+  ]),
+]);
+
+export const router = createRouter({ routeTree });
+
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: typeof router;
+  }
+}
