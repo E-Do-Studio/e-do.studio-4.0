@@ -59,7 +59,7 @@ export const NewsletterCard: React.FC<NewsletterCardProps> = ({ lang, className,
         placeholder={lang === 'fr' ? 'votre@email.com' : 'your@email.com'}
         className="min-w-0 flex-1 border-0 bg-transparent py-1 font-sans text-detail text-foreground outline-none placeholder:text-muted-foreground"
       />
-      <button type="submit" className="cursor-pointer border-0 bg-transparent p-0 font-mono text-label uppercase tracking-label text-primary">
+      <button type="submit" className="edo-focus-ring cursor-pointer border-0 bg-transparent p-0 font-mono text-label uppercase tracking-label text-primary">
         OK →
       </button>
     </form>
@@ -77,7 +77,7 @@ interface SplitArticleCardProps {
 export const SplitArticleCard: React.FC<SplitArticleCardProps> = ({ post, lang, onOpen, className, badge }) => (
   <button
     onClick={onOpen}
-    className={cn(cellBase, 'group order-6 grid min-h-104 cursor-pointer grid-cols-1 border-0 bg-white p-0 text-left transition-opacity hover:opacity-95 sm:grid-cols-2 lg:min-h-0', className)}
+    className={cn(cellBase, 'edo-focus-ring group order-6 grid min-h-104 cursor-pointer grid-cols-1 border-0 bg-white p-0 text-left transition-opacity hover:opacity-95 sm:grid-cols-2 lg:min-h-0', className)}
   >
     {badge != null && <CellBadge n={badge} />}
     <div className="relative min-h-56 overflow-hidden bg-foreground sm:min-h-0">
@@ -110,7 +110,7 @@ interface BookCtaTileProps {
 export const BookCtaTile: React.FC<BookCtaTileProps> = ({ lang, goto }) => (
   <button
     onClick={() => goto('book')}
-    className="group relative flex h-21 shrink-0 cursor-pointer items-center justify-between gap-3.5 overflow-hidden border-0 bg-primary px-cell-lg py-3.5 text-left text-white transition-colors hover:bg-foreground"
+    className="edo-focus-ring group relative flex h-21 shrink-0 cursor-pointer items-center justify-between gap-3.5 overflow-hidden border-0 bg-primary px-cell-lg py-3.5 text-left text-white transition-colors hover:bg-foreground"
   >
     <span className="flex min-w-0 origin-left flex-col items-start gap-1 transition-transform duration-200 group-hover:scale-103">
       <span className="font-mono text-label uppercase tracking-label text-white/75">

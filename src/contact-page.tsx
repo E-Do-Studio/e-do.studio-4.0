@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { FormEvent, InputHTMLAttributes, TextareaHTMLAttributes } from 'react';
-import { CellLabel, IconArrowRight, PageHeader, SocialIcon, cn } from './ui';
+import { Button, CellLabel, IconArrowRight, PageHeader, SocialIcon, cn } from './ui';
 import type { Lang, ContactFormData, Bilingual } from './types';
 import { usePageContext } from './router';
 
@@ -204,7 +204,7 @@ const ContactForm = ({ lang, form, setForm, submit }: ContactFormProps) => (
 
     <button
       type="submit"
-      className="col-span-2 row-start-8 flex cursor-pointer items-center justify-center gap-3.5 border-0 bg-primary font-mono text-xs uppercase tracking-label text-white transition-colors hover:bg-foreground"
+      className="edo-focus-ring col-span-2 row-start-8 flex cursor-pointer items-center justify-center gap-3.5 border-0 bg-primary font-mono text-xs uppercase tracking-label text-white transition-colors hover:bg-foreground"
     >
       {lang === 'fr' ? 'Envoyer' : 'Send'} <IconArrowRight width="16" height="16" stroke="#fff" />
     </button>
@@ -233,7 +233,7 @@ const SubjectButton = ({ subject, index, lang, active, onClick }: SubjectButtonP
       onClick={onClick}
       className={cn(
         placements[index],
-        'flex min-h-14 cursor-pointer items-center gap-3 border-0 px-5 py-2.5 text-left font-sans transition-colors',
+        'edo-focus-ring flex min-h-14 cursor-pointer items-center gap-3 border-0 px-5 py-2.5 text-left font-sans transition-colors',
         active ? 'bg-foreground text-white' : 'bg-white text-foreground hover:bg-muted'
       )}
     >
@@ -295,21 +295,22 @@ const ContactSuccess = ({ lang, setForm, setSent, goto }: ContactSuccessProps) =
         : 'Our team replies within 1 business day. In the meantime, browse the gallery or explore the stages.'}
     </p>
     <div className="mt-3 flex flex-wrap gap-2.5">
-      <button
+      <Button
+        variant="outline"
+        size="lg"
         onClick={() => {
           setSent(false);
           setForm(INITIAL_FORM);
         }}
-        className="h-control cursor-pointer border border-foreground bg-white px-5 font-mono text-label uppercase tracking-label text-foreground transition-colors hover:bg-muted"
       >
         {lang === 'fr' ? 'Nouveau message' : 'Another message'}
-      </button>
-      <button
+      </Button>
+      <Button
+        size="lg"
         onClick={() => goto('gallery')}
-        className="h-control cursor-pointer border-0 bg-foreground px-5 font-mono text-label uppercase tracking-label text-white transition-all hover:brightness-110"
       >
         {lang === 'fr' ? 'Voir la galerie' : 'See gallery'} →
-      </button>
+      </Button>
     </div>
   </div>
 );

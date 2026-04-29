@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { usePageContext } from "./router";
 import type { Lang } from "./types";
-import { IconArrowRight, PageHeader } from "./ui";
+import { Button, PageHeader } from "./ui";
 import { cn } from "./ui/cn";
 
 /* =================================================================
@@ -304,7 +304,7 @@ const GalleryFilters = ({
             setCat("all");
             setPlateau("all");
           }}
-          className="shrink-0 cursor-pointer border-0 border-b border-border bg-white px-3.5 py-3 text-left font-mono text-label uppercase tracking-label text-primary transition-colors hover:bg-muted"
+          className="edo-focus-ring shrink-0 cursor-pointer border-0 border-b border-border bg-white px-3.5 py-3 text-left font-mono text-label uppercase tracking-label text-primary transition-colors hover:bg-muted"
         >
           ↺ {lang === "fr" ? "Réinitialiser" : "Reset"}
         </button>
@@ -337,7 +337,7 @@ const FilterCell = ({
   <button
     onClick={onClick}
     className={cn(
-      "flex w-full shrink-0 cursor-pointer items-center justify-between gap-2 border-0 border-b border-l-2 border-b-border px-3.5 py-2 text-left text-detail tracking-copy-tight text-foreground transition-colors",
+      "edo-focus-ring flex w-full shrink-0 cursor-pointer items-center justify-between gap-2 border-0 border-b border-l-2 border-b-border px-3.5 py-2 text-left text-detail tracking-copy-tight text-foreground transition-colors",
       active
         ? "border-l-primary bg-muted font-medium"
         : "border-l-transparent bg-white font-normal hover:bg-muted",
@@ -398,12 +398,14 @@ const GalleryEmptyState = ({
     <span className="text-detail">
       {lang === "fr" ? "Essayez un autre filtre." : "Try another filter."}
     </span>
-    <button
+    <Button
+      variant="outline"
+      size="sm"
       onClick={onReset}
-      className="mt-2.5 cursor-pointer border border-foreground bg-white px-4 py-2 font-mono text-micro uppercase tracking-meta text-foreground transition-colors hover:bg-muted"
+      className="mt-2.5"
     >
       {lang === "fr" ? "Réinitialiser" : "Reset"}
-    </button>
+    </Button>
   </div>
 );
 
@@ -423,7 +425,7 @@ const ProjectRow = ({ project }: { project: Project }) => (
 );
 
 const ProjectLabel = ({ project }: { project: Project }) => (
-  <button className="relative flex cursor-pointer flex-col items-center justify-between overflow-hidden border-0 bg-white px-2.5 py-3.5 text-left font-sans">
+  <button className="edo-focus-ring relative flex cursor-pointer flex-col items-center justify-between overflow-hidden border-0 bg-white px-2.5 py-3.5 text-left font-sans">
     <span className="self-start font-mono text-micro tracking-code text-muted-foreground">
       {String(project.id).padStart(2, "0")}
     </span>

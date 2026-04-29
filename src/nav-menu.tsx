@@ -51,14 +51,14 @@ interface NavHeaderProps {
 }
 
 const NavHeader = ({ onClose }: NavHeaderProps) => (
-  <div className="grid grid-cols-fluid-auto border-b border-black">
+  <div className="grid grid-cols-fluid-auto border-b border-foreground">
     <div className="flex items-center px-4 py-3.5">
       <CellLabel>Navigation</CellLabel>
     </div>
     <button
       onClick={onClose}
       aria-label="Close"
-      className="flex h-12 w-12 cursor-pointer items-center justify-center border-0 border-l border-black bg-white transition-colors hover:bg-muted"
+      className="edo-focus-ring flex h-12 w-12 cursor-pointer items-center justify-center border-0 border-l border-foreground bg-white transition-colors hover:bg-muted"
     >
       <IconX width="20" height="20" />
     </button>
@@ -80,7 +80,7 @@ const NavItemLink = ({ item, index, onClose, navigate }: NavItemLinkProps) => (
       onClose();
       navigate({ to: item.href });
     }}
-    className="relative flex min-h-18 cursor-pointer flex-col justify-between border-b border-black p-4 no-underline transition-colors hover:bg-muted"
+    className="edo-focus-ring relative flex min-h-18 cursor-pointer flex-col justify-between border-b border-foreground p-4 no-underline transition-colors hover:bg-muted"
   >
     <CellLabel>{String(index + 1).padStart(2, "0")}</CellLabel>
     <span className="mt-6 text-base font-medium text-muted-foreground">
@@ -100,8 +100,8 @@ const SocialLink = ({ item, index }: SocialLinkProps) => (
     target="_blank"
     rel="noopener noreferrer"
     className={cn(
-      "flex cursor-pointer items-center justify-center border-b border-black px-4 py-3 font-mono text-caption uppercase tracking-label text-muted-foreground no-underline transition-colors hover:bg-muted",
-      index % 2 === 0 && "border-r border-black",
+      "edo-focus-ring flex cursor-pointer items-center justify-center border-b border-foreground px-4 py-3 font-mono text-caption uppercase tracking-label text-muted-foreground no-underline transition-colors hover:bg-muted",
+      index % 2 === 0 && "border-r border-foreground",
     )}
   >
     {item.label}
@@ -127,10 +127,10 @@ const NavFooter = ({ lang, setLang, onClose, navigate }: NavFooterProps) => {
   const bookingHref = lang === "fr" ? "/fr/reserver" : "/en/book";
 
   return (
-    <div className="grid grid-cols-auto-fluid border-t border-black">
+    <div className="grid grid-cols-auto-fluid border-t border-foreground">
       <button
         onClick={() => setLang(lang === "fr" ? "en" : "fr")}
-        className="h-12 w-12 cursor-pointer border-0 border-r border-black bg-white font-mono text-caption uppercase tracking-label transition-colors hover:bg-muted"
+        className="edo-focus-ring h-12 w-12 cursor-pointer border-0 border-r border-foreground bg-white font-mono text-caption uppercase tracking-label transition-colors hover:bg-muted"
       >
         {lang === "fr" ? "EN" : "FR"}
       </button>
@@ -141,7 +141,7 @@ const NavFooter = ({ lang, setLang, onClose, navigate }: NavFooterProps) => {
           onClose();
           navigate({ to: bookingHref });
         }}
-        className="h-12 flex cursor-pointer items-center justify-center border-0 bg-primary font-mono text-xs uppercase tracking-label text-white no-underline transition-colors hover:bg-foreground"
+        className="edo-focus-ring h-12 flex cursor-pointer items-center justify-center border-0 bg-primary font-mono text-xs uppercase tracking-label text-white no-underline transition-colors hover:bg-foreground"
       >
         {lang === "fr" ? "Réserver" : "Book now"}
       </a>
@@ -164,7 +164,7 @@ const NavMenu = ({ lang, isOpen, onClose, setLang }: NavMenuProps) => {
       <NavOverlay isOpen={isOpen} onClose={onClose} />
       <aside
         className={cn(
-          "fixed left-0 top-0 z-sheet flex h-full w-72 flex-col border-r border-black bg-white transition-transform duration-300 ease-edo-out",
+          "fixed left-0 top-0 z-sheet flex h-full w-72 flex-col border-r border-foreground bg-white transition-transform duration-300 ease-edo-out",
           isOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
