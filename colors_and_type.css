@@ -1,0 +1,263 @@
+/* ============================================================
+   E-Do Studio — Colors & Type tokens
+   ------------------------------------------------------------
+   Source of truth: app/[locale]/globals.css + tailwind theme
+   Values preserved as oklch() — Swiss grid aesthetic, near-B&W
+   palette, single orange primary accent.
+   ============================================================ */
+
+/* ---- Web fonts -----------------------------------------------
+   ABCFavorit is the brand face; we have no rights to redistribute
+   so we load Google Fonts substitutes (see README). Swap the
+   @font-face blocks below in if/when you ship real files.
+--------------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+
+/* When you add real ABC Favorit files:
+@font-face {
+  font-family: "ABC Favorit";
+  src: url("./fonts/ABCFavorit-Light.woff2") format("woff2");
+  font-weight: 300; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "ABC Favorit";
+  src: url("./fonts/ABCFavorit-Regular.woff2") format("woff2");
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "ABC Favorit";
+  src: url("./fonts/ABCFavorit-RegularItalic.woff2") format("woff2");
+  font-weight: 400; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: "ABC Favorit";
+  src: url("./fonts/ABCFavorit-Bold.woff2") format("woff2");
+  font-weight: 700; font-style: normal; font-display: swap;
+} */
+
+:root {
+  /* ---------- Palette (monochrome + single accent) ---------- */
+  --edo-white:       oklch(1    0    0);
+  --edo-black:       oklch(0.08 0    0);   /* actual brand black */
+  --edo-pure-black:  oklch(0    0    0);   /* hairline rules only */
+  --edo-gray-50:     oklch(0.985 0   0);
+  --edo-gray-100:    oklch(0.97  0   0);
+  --edo-gray-200:    oklch(0.922 0   0);
+  --edo-gray-500:    oklch(0.60  0   0);
+  --edo-gray-600:    oklch(0.35  0   0);   /* muted-foreground */
+  --edo-orange:      oklch(0.679 0.216 39); /* THE accent */
+  --edo-red:         oklch(0.58  0.22  27); /* destructive */
+
+  /* ---------- Semantic (1:1 with shadcn tokens) ------------- */
+  --background:           var(--edo-white);
+  --foreground:           var(--edo-black);
+  --card:                 var(--edo-white);
+  --card-foreground:      var(--edo-black);
+  --popover:              var(--edo-white);
+  --popover-foreground:   var(--edo-black);
+  --primary:              var(--edo-orange);
+  --primary-foreground:   var(--edo-white);
+  --secondary:            oklch(0.967 0.001 286.375);
+  --secondary-foreground: var(--edo-black);
+  --muted:                var(--edo-gray-100);
+  --muted-foreground:     var(--edo-gray-600);
+  --accent:               var(--edo-gray-100);
+  --accent-foreground:    var(--edo-black);
+  --destructive:          var(--edo-red);
+  --border:               var(--edo-pure-black);    /* ← 1px true-black hairline */
+  --input:                var(--edo-gray-200);
+  --ring:                 var(--edo-orange);
+
+  /* ---------- Geometry ------------------------------------- */
+  --radius: 0;                /* ZERO — Swiss rule */
+  --hairline: 1px;
+  --bento-gap: 1px;           /* grid gap == hairline */
+
+  /* ---------- Z-index scale -------------------------------- */
+  --z-dropdown: 50;
+  --z-sticky:   100;
+  --z-overlay:  200;
+  --z-modal:    300;
+  --z-toast:    400;
+
+  /* ---------- Type families -------------------------------- */
+  --font-sans:  "ABC Favorit", "Space Grotesk", ui-sans-serif, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --font-mono:  "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  /* ---------- Base sizing (Swiss Typography Scale) --------- */
+  --font-size-display: clamp(4rem,   12vw, 10rem);
+  --font-size-h1:      clamp(2.5rem, 8vw,  6rem);
+  --font-size-h2:      clamp(1.5rem, 4vw,  3rem);
+  --font-size-h3:      1.375rem;   /* 22 */
+  --font-size-body:    1rem;       /* 16 */
+  --font-size-small:   0.875rem;   /* 14 */
+  --font-size-xs:      0.75rem;    /* 12 */
+  --font-size-micro:   0.625rem;   /* 10 — cell labels */
+
+  /* ---------- Letter-spacing ------------------------------- */
+  --tracking-tight:    -0.02em;
+  --tracking-normal:   0;
+  --tracking-wide:     0.05em;
+  --tracking-widest:   0.2em;   /* ALL-CAPS mono labels */
+
+  /* ---------- Weights -------------------------------------- */
+  --weight-light:     300;
+  --weight-regular:   400;
+  --weight-medium:    500;
+  --weight-bold:      700;
+
+  /* ---------- Line-heights --------------------------------- */
+  --leading-tight:  1.1;
+  --leading-snug:   1.3;
+  --leading-normal: 1.5;
+  --leading-relaxed:1.85;     /* blog prose */
+
+  /* ---------- Elevation / shadow system --------------------
+     The brand has almost NO shadows. The one it does use is
+     a 1px ring in --border (bento-borders). Kept for completeness. */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+  --shadow-ring-1: 0 0 0 1px var(--border);
+
+  /* ---------- Motion --------------------------------------- */
+  --ease-out:      cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out:   cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast:      150ms;
+  --dur-base:      300ms;
+  --dur-slow:      500ms;
+  --marquee-duration: 40s;
+}
+
+/* =========================================================
+   Semantic element defaults
+   ========================================================= */
+html { color-scheme: light; }
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-body);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-normal);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+::selection { background: var(--primary); color: var(--primary-foreground); }
+
+/* ---------- Display ----------- */
+.edo-display,
+h1.edo-display {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-display);
+  font-weight: var(--weight-light);
+  line-height: 0.95;
+  letter-spacing: var(--tracking-tight);
+  color: var(--foreground);
+}
+
+/* ---------- H1 ---------------- */
+h1, .edo-h1 {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-h1);
+  font-weight: var(--weight-light);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--foreground);
+}
+
+/* ---------- H2 ---------------- */
+h2, .edo-h2 {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-h2);
+  font-weight: var(--weight-light);
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-tight);
+  color: var(--foreground);
+}
+
+/* ---------- H3 ---------------- */
+h3, .edo-h3 {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-h3);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-tight);
+  color: var(--foreground);
+}
+
+/* ---------- body / paragraph ---------- */
+p, .edo-body {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-body);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-normal);
+  color: var(--muted-foreground);
+  text-wrap: pretty;
+}
+
+.edo-body-small {
+  font-size: var(--font-size-small);
+  line-height: var(--leading-normal);
+  color: var(--muted-foreground);
+}
+
+/* ---------- "cell title" — the bold micro-headline on bento cells ---------- */
+.edo-cell-title {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-xs);       /* 12 */
+  font-weight: var(--weight-medium);
+  color: var(--foreground);
+  letter-spacing: var(--tracking-normal);
+}
+
+/* ---------- "cell label" — ALL CAPS mono eyebrow ---------- */
+.edo-cell-label,
+.edo-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-micro);
+  font-weight: var(--weight-regular);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  color: var(--muted-foreground);
+}
+
+@media (min-width: 768px) {
+  .edo-cell-label, .edo-eyebrow { font-size: var(--font-size-xs); }
+}
+
+/* ---------- Bento inputs — placeholder styled as label ---------- */
+.edo-bento-input::placeholder {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  font-weight: var(--weight-regular);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  color: var(--muted-foreground);
+  opacity: 1;
+}
+.edo-bento-input:focus {
+  background: var(--edo-gray-100);
+}
+.edo-bento-input:focus::placeholder {
+  opacity: 0;
+}
+
+/* ---------- Monospace code / spec values ---------- */
+code, .edo-mono {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  font-weight: var(--weight-regular);
+  font-feature-settings: "tnum" 1, "zero" 1;
+}
+
+/* ---------- Button text (the cva baseline) ---------- */
+.edo-button-text {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  font-weight: var(--weight-regular);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  line-height: 1;
+}

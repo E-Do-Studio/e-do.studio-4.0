@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<title>E-Do Studio — Homepage</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<link rel="icon" href="assets/favicon.svg"/>
+<link rel="stylesheet" href="colors_and_type.css"/>
+<style>
+  html,body,#root{margin:0;padding:0;height:100%;background:#fff;font-family:var(--font-sans);color:#141414;overflow:hidden}
+  .shell{position:fixed;inset:0;display:flex;flex-direction:column}
+
+  /* ========== Toolbar to switch between directions ========== */
+  .toolbar{
+    height:40px;background:#0a0a0a;color:#fff;
+    display:flex;align-items:stretch;flex-shrink:0;
+    font-family:var(--font-mono);font-size:10px;letter-spacing:0.2em;text-transform:uppercase;
+  }
+  .toolbar .brand{padding:0 14px;display:flex;align-items:center;gap:8px;border-right:1px solid #222;white-space:nowrap;flex-shrink:0}
+  .toolbar .brand b{font-family:var(--font-sans);font-weight:700;font-size:13px;letter-spacing:-0.01em;text-transform:none}
+  .toolbar .brand .tag{color:#888}
+  @media (max-width: 1280px){ .toolbar .brand .tag{display:none} }
+  .toolbar .spacer{flex:1;min-width:0}
+  .toolbar .tab{
+    background:transparent;border:0;color:#888;padding:0 16px;cursor:pointer;
+    border-left:1px solid #222;display:flex;align-items:center;gap:8px;white-space:nowrap;
+    font-family:inherit;font-size:inherit;letter-spacing:inherit;text-transform:inherit;
+    transition:background .15s, color .15s;
+  }
+  @media (max-width: 1200px){ .toolbar .tab .subt{display:none} }
+  .toolbar .tab:hover{background:#141414;color:#fff}
+  .toolbar .tab.active{background:#fff;color:#0a0a0a}
+  .toolbar .tab .n{opacity:.5}
+  .toolbar .tab.active .n{color:var(--edo-orange);opacity:1}
+  .toolbar .tab .subt{opacity:.5;font-size:9px}
+  .toolbar .screen{padding:0 14px;display:flex;align-items:center;gap:10px;border-left:1px solid #222;color:#888;white-space:nowrap;flex-shrink:0}
+  @media (max-width: 1100px){ .toolbar .screen .lbl{display:none} }
+  .toolbar .screen button{background:transparent;border:0;color:inherit;cursor:pointer;font:inherit;letter-spacing:inherit;text-transform:inherit;padding:0;transition:color .15s}
+  .toolbar .screen button:hover{color:#fff}
+  .toolbar .screen button.on{color:var(--edo-orange)}
+  .stage{flex:1;overflow:hidden;position:relative;background:#fff}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="./src/Primitives.jsx"></script>
+<script type="text/babel" src="./src/Cells.jsx"></script>
+<script type="text/babel" src="./src/NavMenu.jsx"></script>
+<script type="text/babel" src="./src/PlateauPage.jsx"></script>
+<script type="text/babel" src="./src/GalleryPageV3.jsx"></script>
+<script type="text/babel" src="./src/ContactPage.jsx"></script>
+<script type="text/babel" src="./src/BookPageV2.jsx"></script>
+<script type="text/babel" src="./src/DiscoveryPage.jsx"></script>
+<script type="text/babel" src="./src/DiscoveryPages.jsx"></script>
+<script type="text/babel" src="./src/PostprodPage.jsx"></script>
+<script type="text/babel" src="./src/LegalPage.jsx"></script>
+<script type="text/babel" src="./src/AssistantChat.jsx"></script>
+<script type="text/babel" src="./src/DirectionA_Editorial.jsx"></script>
+<script type="text/babel" src="./src/App.jsx"></script>
+</body>
+</html>
