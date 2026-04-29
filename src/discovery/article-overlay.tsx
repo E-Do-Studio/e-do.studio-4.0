@@ -16,7 +16,7 @@ export const ArticleOverlay: React.FC<ArticleOverlayProps> = ({ post, lang, onCl
   return (
     <div className="fixed inset-0 z-50 grid grid-rows-page gap-px overflow-hidden bg-black">
       <div className="row-start-1 flex gap-px bg-black">
-        <button onClick={onClose} className="flex flex-none cursor-pointer items-center gap-2.5 border-0 bg-white px-4 text-foreground transition-colors hover:bg-muted md:px-cell-lg">
+        <button onClick={onClose} className="edo-focus-ring flex flex-none cursor-pointer items-center gap-2.5 border-0 bg-white px-4 text-foreground transition-colors hover:bg-muted md:px-cell-lg">
           <span className="inline-block rotate-180"><ArrowIcon width="14" height="14" /></span>
           <span className="hidden font-mono text-caption uppercase tracking-label text-foreground sm:inline">
             {lang === 'fr' ? 'Retour journal' : 'Back to journal'}
@@ -28,7 +28,7 @@ export const ArticleOverlay: React.FC<ArticleOverlayProps> = ({ post, lang, onCl
             {post.read} · {post.author} · {post.date[lang]}
           </span>
         </div>
-        <button onClick={onClose} className="flex basis-header-sm cursor-pointer items-center justify-center border-0 bg-white transition-colors hover:bg-muted">
+        <button onClick={onClose} className="edo-focus-ring flex basis-header-sm cursor-pointer items-center justify-center border-0 bg-white transition-colors hover:bg-muted">
           <span className="text-lg font-light text-foreground">×</span>
         </button>
       </div>
@@ -54,7 +54,7 @@ export const ArticleOverlay: React.FC<ArticleOverlayProps> = ({ post, lang, onCl
             <span className="font-mono text-label uppercase tracking-code text-muted-foreground">
               {post.author} · {post.date[lang]}
             </span>
-            <button onClick={onClose} className="h-10 cursor-pointer border-0 bg-foreground px-cell-lg font-mono text-caption uppercase tracking-label text-white transition-all hover:brightness-110">
+            <button onClick={onClose} className="edo-focus-ring h-10 cursor-pointer border-0 bg-foreground px-cell-lg font-mono text-caption uppercase tracking-label text-white transition-all hover:brightness-110">
               {lang === 'fr' ? 'Fermer' : 'Close'}
             </button>
           </footer>

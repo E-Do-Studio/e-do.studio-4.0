@@ -40,7 +40,7 @@ export const MorePostsCard: React.FC<MorePostsCardProps> = ({ posts, lang, onOpe
           <button
             key={post.id}
             onClick={() => onOpen(post)}
-            className="group grid w-full cursor-pointer grid-cols-thumb-row items-center gap-3 border-0 border-b border-border bg-white px-cell pb-3.5 pt-3 text-left transition-colors hover:bg-muted"
+            className="edo-focus-ring group grid w-full cursor-pointer grid-cols-thumb-row items-center gap-3 border-0 border-b border-border bg-white px-cell pb-3.5 pt-3 text-left transition-colors hover:bg-muted"
           >
             <div className="relative aspect-square overflow-hidden">
               <DiscoveryCover tone={post.tone} seed={post.id + 4} />

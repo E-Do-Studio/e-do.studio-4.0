@@ -65,7 +65,7 @@ const AssistantHeader = ({ lang, mode, loading, onReset }: AssistantHeaderProps)
     {mode === 'chat' && (
       <button
         onClick={onReset}
-        className="cursor-pointer border-0 bg-transparent p-0 font-mono text-micro uppercase tracking-code text-muted-foreground transition-colors hover:text-foreground"
+        className="edo-focus-ring cursor-pointer border-0 bg-transparent p-0 font-mono text-micro uppercase tracking-code text-muted-foreground transition-colors hover:text-foreground"
       >
         {lang === 'fr' ? '↺ Reset' : '↺ Reset'}
       </button>
@@ -106,7 +106,7 @@ interface QuickReplyButtonProps {
 const QuickReplyButton = ({ children, onClick }: QuickReplyButtonProps) => (
   <button
     onClick={onClick}
-    className="cursor-pointer rounded-full border border-border bg-white px-2.5 py-1.5 font-mono text-micro uppercase tracking-ui text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+    className="edo-focus-ring cursor-pointer rounded-full border border-border bg-white px-2.5 py-1.5 font-mono text-micro uppercase tracking-ui text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
   >
     {children}
   </button>
@@ -195,14 +195,14 @@ const AssistantInput = ({ input, setInput, loading, lang, onSend, inputRef }: As
       onChange={(event) => setInput(event.target.value)}
       disabled={loading}
       placeholder={lang === 'fr' ? 'Écrire votre demande…' : 'Type your request…'}
-      className="min-w-0 flex-1 border-0 bg-transparent font-sans text-detail text-foreground opacity-100 outline-none placeholder:text-muted-foreground placeholder:transition-colors disabled:opacity-50 group-hover:placeholder:text-primary"
+      className="edo-focus-ring min-w-0 flex-1 border-0 bg-transparent font-sans text-detail text-foreground opacity-100 placeholder:text-muted-foreground placeholder:transition-colors disabled:opacity-50 group-hover:placeholder:text-primary"
     />
     <button
       type="submit"
       disabled={loading || !input.trim()}
-      className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 opacity-100 transition-opacity disabled:cursor-default disabled:opacity-30"
+      className="edo-focus-ring flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-primary opacity-100 transition-opacity disabled:cursor-default disabled:opacity-30"
     >
-      <IconArrowRight width="16" height="16" stroke="var(--edo-orange)" />
+      <IconArrowRight width="16" height="16" />
     </button>
   </form>
 );

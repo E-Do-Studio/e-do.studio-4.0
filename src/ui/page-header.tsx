@@ -58,7 +58,7 @@ const PageHeaderActionButton = ({
         <IconArrowRight
           width={isPrimary ? 14 : 12}
           height={isPrimary ? 14 : 12}
-          stroke={isPrimary || isDark ? '#fff' : undefined}
+          className={isPrimary || isDark ? 'text-white' : undefined}
         />
       )}
     </>

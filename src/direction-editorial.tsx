@@ -58,7 +58,7 @@ const MachineRow = ({ idx, m, lang, onClick, isLast }: MachineRowProps) => (
         {m[lang].sub}
       </div>
     </div>
-    <IconArrowRight className="transition-transform duration-150 group-hover:translate-x-1" width="16" height="16" stroke="#888" />
+    <IconArrowRight className="text-muted-foreground transition-transform duration-150 group-hover:translate-x-1" width="16" height="16" />
   </button>
 );
 
@@ -123,8 +123,7 @@ const DirectionA = () => {
               return (
                 <span
                   key={o.v}
-                  className="relative z-10 whitespace-nowrap px-3 py-2 text-center font-mono text-caption uppercase tracking-meta transition-colors duration-150"
-                  style={{ color: active ? '#fff' : '#141414' }}
+                  className={`relative z-10 whitespace-nowrap px-3 py-2 text-center font-mono text-caption uppercase tracking-meta transition-colors duration-150 ${active ? 'text-white' : 'text-foreground'}`}
                 >
                   {lang === 'fr' ? o.fr : o.en}
                 </span>
@@ -169,7 +168,7 @@ const DirectionA = () => {
                     <span className="font-mono text-micro text-muted-foreground tracking-meta">
                       {String(i + 1).padStart(2, '0')}
                     </span>
-                    <IconArrowRight width="14" height="14" stroke="#888" />
+                    <IconArrowRight className="text-muted-foreground" width="14" height="14" />
                   </div>
                   <div>
                     <div className="truncate text-cell font-medium tracking-headline leading-tight">{m[lang].t}</div>
@@ -201,9 +200,8 @@ const DirectionA = () => {
           </div>
           <div className="flex-shrink-0">
             <IconArrowRight
-              className="transition-transform duration-150 group-hover:translate-x-1 group-hover:scale-115"
-              width="16" height="16" stroke="#fff"
-            />
+              className="transition-transform duration-150 group-hover:translate-x-1 group-hover:scale-110"
+              width="16" height="16"            />
           </div>
         </div>
       </button>
@@ -221,8 +219,8 @@ const DirectionA = () => {
           />
           <div className="absolute inset-0 bg-home-media-gradient" />
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full border border-white/50 bg-black/25 backdrop-blur-sm transition-transform duration-150 group-hover:scale-115">
-              <IconPlay width="18" height="18" stroke="#fff" />
+            <div className="flex h-14 w-14 items-center justify-center rounded-full border border-white/50 bg-black/25 backdrop-blur-sm transition-transform duration-150 group-hover:scale-110">
+              <IconPlay width="18" height="18" className="text-white" />
             </div>
           </div>
         </button>
@@ -246,7 +244,7 @@ const DirectionA = () => {
           <div className="flex flex-shrink-0 items-center justify-center">
             <IconArrowRight
               className="transition-transform duration-150 group-hover:translate-x-1"
-              width="16" height="16" stroke="#141414"
+              width="16" height="16"
             />
           </div>
         </div>
@@ -266,9 +264,8 @@ const DirectionA = () => {
           </span>
         </div>
         <IconArrowRight
-          className="flex-shrink-0 transition-transform duration-150 group-hover:translate-x-1 group-hover:scale-115"
-          width="16" height="16" stroke="#fff"
-        />
+          className="flex-shrink-0 transition-transform duration-150 group-hover:translate-x-1 group-hover:scale-110"
+          width="16" height="16"        />
       </button>
 
       {/* ── Row 5 left: Discovery CTA ── */}
@@ -277,8 +274,8 @@ const DirectionA = () => {
         className="edo-focus-ring group relative col-span-2 h-20 flex cursor-pointer items-center justify-between gap-3 border-0 bg-foreground px-4 py-3 text-left text-white transition-all duration-150 hover:brightness-110 sm:col-span-1 md:col-start-1 md:col-end-4 md:row-start-5 md:h-21"
       >
         <svg viewBox="0 0 200 84" preserveAspectRatio="none" className="absolute inset-0 h-full w-full opacity-20">
-          {[...Array(7)].map((_, i) => (<line key={'h' + i} x1="0" y1={i * 14} x2="200" y2={i * 14} stroke="#fff" strokeWidth="0.3" />))}
-          {[...Array(14)].map((_, i) => (<line key={'v' + i} x1={i * 14} y1="0" x2={i * 14} y2="84" stroke="#fff" strokeWidth="0.3" />))}
+          {[...Array(7)].map((_, i) => (<line key={'h' + i} x1="0" y1={i * 14} x2="200" y2={i * 14} stroke="currentColor" strokeWidth="0.3" />))}
+          {[...Array(14)].map((_, i) => (<line key={'v' + i} x1={i * 14} y1="0" x2={i * 14} y2="84" stroke="currentColor" strokeWidth="0.3" />))}
         </svg>
         <div className="relative flex min-w-0 flex-col gap-1 transition-transform duration-150 group-hover:scale-102">
           <CellLabel className="text-white/70">Discovery</CellLabel>
@@ -288,9 +285,8 @@ const DirectionA = () => {
         </div>
         <div className="relative flex-shrink-0">
           <IconArrowRight
-            className="transition-transform duration-150 group-hover:translate-x-1 group-hover:scale-115"
-            width="16" height="16" stroke="#fff"
-          />
+            className="transition-transform duration-150 group-hover:translate-x-1 group-hover:scale-110"
+            width="16" height="16"          />
         </div>
       </button>
 

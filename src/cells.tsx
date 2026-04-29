@@ -167,7 +167,7 @@ const PostProdCell = ({ lang, onOpen }: PostProdCellProps) => (
           {lang === 'fr' ? 'Retouche · colorimétrie · détourage' : 'Retouching · color · clipping path'}
         </div>
       </div>
-      <IconArrowRight width="18" height="18" stroke="#fff" />
+      <IconArrowRight width="18" height="18" className="text-white" />
     </div>
   </button>
 );
@@ -219,7 +219,7 @@ const MachineListCell = ({ lang, onSelect }: MachineListCellProps) => (
             <div className="truncate text-caption text-muted-foreground">{m[lang].sub}</div>
           </div>
         </div>
-        <IconArrowRight className="flex-shrink-0" width="14" height="14" stroke="#888" />
+        <IconArrowRight className="flex-shrink-0 text-muted-foreground" width="14" height="14" />
       </button>
     ))}
   </div>
@@ -239,7 +239,7 @@ const ContactCell = ({ lang }: ContactCellProps) => (
         <span className="block py-1.5 text-xs text-muted-foreground">69 bd Victor Hugo · Bât. 6.7<br />93400 Saint-Ouen</span>
       </div>
     </div>
-    <div className="grid grid-cols-2 gap-px border-t border-black bg-black">
+    <div className="grid grid-cols-2 gap-px border-t border-foreground bg-black">
       {[
         { label: lang === 'fr' ? 'Nous contacter' : 'Contact us', href: '/contact' },
         { label: lang === 'fr' ? 'Légal' : 'Legal', href: '/legal' },
@@ -327,7 +327,7 @@ const ChatCell = ({ lang }: ChatCellProps) => {
           value={input}
           onChange={e => setInput(e.target.value)}
           placeholder={lang === 'fr' ? 'prix, devis, cyclorama…' : 'price, quote, cyclorama…'}
-          className="flex-1 border-b border-black bg-transparent pb-1 text-detail text-foreground outline-none"
+          className="flex-1 border-b border-foreground bg-transparent pb-1 text-detail text-foreground outline-none"
         />
         <button type="submit" aria-label="send" className="edo-focus-ring cursor-pointer border-0 bg-transparent text-muted-foreground">
           <IconArrowRight width="16" height="16" />
@@ -475,7 +475,7 @@ const BrandStackCell = ({ lang, setLang, onMenu, onLogo, onVideo }: BrandStackCe
         <div className="absolute left-2.5 top-2.5 font-mono text-label uppercase tracking-label text-edo-gray-500">Studio · Reel · 16:9</div>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white">
-            <IconPlay width="18" height="18" stroke="#fff" />
+            <IconPlay width="18" height="18" className="text-white" />
           </div>
         </div>
       </div>

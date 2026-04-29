@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { IconArrowRight, PageHeader } from './ui';
+import { Button, IconArrowRight, PageHeader } from './ui';
 import type { Lang, Bilingual } from './types';
 import { usePageContext } from './router';
 
@@ -320,7 +320,7 @@ const LegalPage = () => {
         {SECTIONS.map((s,i)=>{
           const isActive = sec===s.k;
           return (
-            <button key={s.k} onClick={()=>setSec(s.k)} className={`flex-none py-3 px-4 border-0 cursor-pointer text-left flex flex-col gap-0.5 font-inherit transition-all duration-150 ${isActive ? 'bg-muted border-b-2 border-b-primary md:border-b-0 md:border-l-2 md:border-l-primary' : 'bg-transparent border-b-2 border-b-transparent md:border-b-0 md:border-l-2 md:border-l-transparent hover:bg-muted'}`}>
+            <button key={s.k} onClick={()=>setSec(s.k)} className={`edo-focus-ring flex-none py-3 px-4 border-0 cursor-pointer text-left flex flex-col gap-0.5 font-inherit transition-all duration-150 ${isActive ? 'bg-muted border-b-2 border-b-primary md:border-b-0 md:border-l-2 md:border-l-primary' : 'bg-transparent border-b-2 border-b-transparent md:border-b-0 md:border-l-2 md:border-l-transparent hover:bg-muted'}`}>
               <span className="font-mono text-micro tracking-label text-muted-foreground">0{i+1}</span>
               <span className={`text-sm tracking-copy-tight whitespace-nowrap ${isActive ? 'font-medium text-foreground' : 'font-normal text-muted-foreground'}`}>
                 {s[lang]}
@@ -334,7 +334,7 @@ const LegalPage = () => {
           <p className="text-xs text-muted-foreground leading-normal mb-3">
             {lang==='fr'?'Écrivez-nous directement.':'Write to us directly.'}
           </p>
-          <a href="mailto:contact@e-do.studio" className="inline-flex items-center gap-2 text-xs text-foreground no-underline border-b border-foreground pb-0.5">contact@e-do.studio <IconArrowRight width="10" height="10"/></a>
+          <a href="mailto:contact@e-do.studio" className="edo-focus-ring inline-flex items-center gap-2 text-xs text-foreground no-underline border-b border-foreground pb-0.5">contact@e-do.studio <IconArrowRight width="10" height="10"/></a>
         </div>
         <div className="flex-1"/>
       </div>
@@ -409,7 +409,7 @@ const LegalPage = () => {
                       : "RCS Bobigny 891 710 857 · 69 boulevard Victor Hugo · 93400 Saint-Ouen-sur-Seine. All rights reserved."}
                   </p>
                 </div>
-                <button onClick={()=>goto('home')} className="bg-primary text-white border-0 h-header-sm px-6 font-mono text-caption tracking-label uppercase cursor-pointer inline-flex items-center gap-3">{lang==='fr'?'Retour accueil':'Back to home'} <IconArrowRight width="14" height="14" stroke="#fff"/></button>
+                <Button variant="default" size="lg" onClick={()=>goto('home')}>{lang==='fr'?'Retour accueil':'Back to home'} <IconArrowRight width="14" height="14"/></Button>
               </div>
             </div>
           )}
@@ -417,10 +417,10 @@ const LegalPage = () => {
           <div className="mt-8 flex justify-between items-center gap-5 font-mono text-label tracking-code uppercase text-muted-foreground">
             <span>{lang==='fr'?'Document consultable · Imprimable · Archivable':'Viewable · Printable · Archivable'}</span>
             <div className="flex gap-5">
-              <button onClick={()=>window.print()} className="bg-transparent border-0 cursor-pointer text-foreground font-inherit tracking-inherit text-transform-inherit">
+              <button onClick={()=>window.print()} className="edo-focus-ring bg-transparent border-0 cursor-pointer text-foreground font-inherit tracking-inherit text-transform-inherit">
                 ↓ {lang==='fr'?'Imprimer':'Print'}
               </button>
-              <a href="mailto:contact@e-do.studio" className="text-foreground no-underline">
+              <a href="mailto:contact@e-do.studio" className="edo-focus-ring text-foreground no-underline">
                 contact@e-do.studio
               </a>
             </div>
