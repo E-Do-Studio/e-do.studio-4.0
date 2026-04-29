@@ -40,7 +40,7 @@ const MachineRow = ({ idx, m, lang, onClick, isLast }: MachineRowProps) => (
   <button
     onClick={onClick}
     className={cn(
-      'flex cursor-pointer items-center border-0 bg-white text-left',
+      'edo-focus-ring flex cursor-pointer items-center border-0 bg-white text-left',
       'grid grid-cols-machine-row gap-3.5 px-4 py-2.5',
       'font-sans text-foreground transition-colors duration-150',
       'hover:bg-muted',
@@ -109,7 +109,7 @@ const DirectionA = () => {
           <button
             onClick={() => setEcomMode(ecomMode === 'type' ? 'machine' : 'type')}
             aria-label={lang === 'fr' ? 'Basculer mode' : 'Toggle mode'}
-            className="relative grid grid-cols-2 gap-1 border border-foreground bg-white p-1 font-mono flex-shrink-0"
+            className="edo-focus-ring relative grid grid-cols-2 gap-1 border border-foreground bg-white p-1 font-mono flex-shrink-0"
           >
             <span
               className="pointer-events-none absolute top-1 bottom-1 w-toggle-half bg-foreground transition-all duration-300"
@@ -146,7 +146,7 @@ const DirectionA = () => {
                 <button
                   key={c.k}
                   onClick={() => goto('gallery')}
-                  className="group flex min-w-0 cursor-pointer flex-col justify-between border-0 bg-white px-3 py-3 text-left text-foreground transition-colors duration-150 hover:bg-muted"
+                  className="edo-focus-ring group flex min-w-0 cursor-pointer flex-col justify-between border-0 bg-white px-3 py-3 text-left text-foreground transition-colors duration-150 hover:bg-muted"
                   style={{ aspectRatio: '1 / 1' }}
                 >
                   <CatIcon kind={c.k} size={20} />
@@ -162,7 +162,7 @@ const DirectionA = () => {
                 <button
                   key={m.slug}
                   onClick={() => goto('plateau-' + m.slug)}
-                  className="group flex min-w-0 cursor-pointer flex-col justify-between border-0 bg-white px-4 py-4 text-left text-foreground transition-colors duration-150 hover:bg-muted"
+                  className="edo-focus-ring group flex min-w-0 cursor-pointer flex-col justify-between border-0 bg-white px-4 py-4 text-left text-foreground transition-colors duration-150 hover:bg-muted"
                   style={{ aspectRatio: '1 / 1' }}
                 >
                   <div className="flex items-center justify-between">
@@ -185,7 +185,7 @@ const DirectionA = () => {
       {/* ── Rows 2-3 right: Gallery hero ── */}
       <button
         onClick={() => goto('gallery')}
-        className="group col-span-2 min-h-48 flex flex-col items-stretch justify-end border-0 bg-edo-dark p-6 text-white transition-all duration-150 hover:brightness-75 md:col-start-7 md:col-end-13 md:row-start-2 md:row-end-4"
+        className="edo-focus-ring group col-span-2 min-h-48 flex flex-col items-stretch justify-end border-0 bg-edo-dark p-6 text-white transition-all duration-150 hover:brightness-75 md:col-start-7 md:col-end-13 md:row-start-2 md:row-end-4"
         style={{
           backgroundImage: 'linear-gradient(180deg, rgba(0,0,0,.25) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0) 55%, rgba(0,0,0,.65) 100%), url(./assets/gallery-hero.jpg)',
           backgroundSize: 'cover',
@@ -212,7 +212,7 @@ const DirectionA = () => {
       <div className="col-span-1 min-h-36 flex overflow-hidden bg-black md:col-start-1 md:col-end-4 md:row-start-4 md:min-h-0">
         <button
           onClick={() => goto('gallery')}
-          className="group relative flex h-full w-full cursor-pointer items-center justify-center overflow-hidden border-0 bg-edo-dark p-0 text-left transition-all duration-150 hover:brightness-75"
+          className="edo-focus-ring group relative flex h-full w-full cursor-pointer items-center justify-center overflow-hidden border-0 bg-edo-dark p-0 text-left transition-all duration-150 hover:brightness-75"
         >
           <img
             src="./assets/showreel-preview.png"
@@ -231,7 +231,7 @@ const DirectionA = () => {
       {/* ── Rows 4-5 middle: Cyclorama ── */}
       <button
         onClick={() => goto('cyclorama')}
-        className="group col-span-1 min-h-36 flex cursor-pointer flex-col justify-between border-0 bg-white p-5 text-left text-foreground transition-colors duration-150 hover:bg-muted md:col-start-4 md:col-end-7 md:row-start-4 md:row-end-6 md:min-h-0"
+        className="edo-focus-ring group col-span-1 min-h-36 flex cursor-pointer flex-col justify-between border-0 bg-white p-5 text-left text-foreground transition-colors duration-150 hover:bg-muted md:col-start-4 md:col-end-7 md:row-start-4 md:row-end-6 md:min-h-0"
       >
         <CellLabel>Espace</CellLabel>
         <div className="flex items-end justify-between gap-3">
@@ -255,7 +255,7 @@ const DirectionA = () => {
       {/* ── Row 4 right: Book CTA ── */}
       <button
         onClick={() => goto('book')}
-        className="group col-span-1 h-20 flex cursor-pointer items-center justify-between gap-3 border-0 bg-primary px-5 py-3 text-left text-white transition-colors duration-150 hover:bg-foreground md:col-start-7 md:col-end-10 md:row-start-4 md:h-21"
+        className="edo-focus-ring group col-span-2 h-20 flex cursor-pointer items-center justify-between gap-3 border-0 bg-primary px-5 py-3 text-left text-white transition-colors duration-150 hover:bg-foreground sm:col-span-1 md:col-start-7 md:col-end-10 md:row-start-4 md:h-21"
       >
         <div className="flex min-w-0 flex-col gap-1 transition-transform duration-150 group-hover:scale-102">
           <span className="font-mono text-label uppercase tracking-label text-white/75">
@@ -274,7 +274,7 @@ const DirectionA = () => {
       {/* ── Row 5 left: Discovery CTA ── */}
       <button
         onClick={() => goto('discovery')}
-        className="group relative col-span-1 h-20 flex cursor-pointer items-center justify-between gap-3 border-0 bg-foreground px-4 py-3 text-left text-white transition-all duration-150 hover:brightness-110 md:col-start-1 md:col-end-4 md:row-start-5 md:h-21"
+        className="edo-focus-ring group relative col-span-2 h-20 flex cursor-pointer items-center justify-between gap-3 border-0 bg-foreground px-4 py-3 text-left text-white transition-all duration-150 hover:brightness-110 sm:col-span-1 md:col-start-1 md:col-end-4 md:row-start-5 md:h-21"
       >
         <svg viewBox="0 0 200 84" preserveAspectRatio="none" className="absolute inset-0 h-full w-full opacity-20">
           {[...Array(7)].map((_, i) => (<line key={'h' + i} x1="0" y1={i * 14} x2="200" y2={i * 14} stroke="#fff" strokeWidth="0.3" />))}
@@ -297,7 +297,7 @@ const DirectionA = () => {
       {/* ── Rows 4-5 right: Post-production ── */}
       <button
         onClick={() => goto('postprod')}
-        className="group col-span-1 h-20 flex cursor-pointer flex-col justify-between border-0 bg-white p-5 text-left text-foreground transition-colors duration-150 hover:bg-muted md:col-start-7 md:col-end-10 md:row-start-4 md:row-end-6 md:mt-home-offset md:h-home-offset"
+        className="edo-focus-ring group col-span-2 h-20 flex cursor-pointer flex-col justify-between border-0 bg-white p-5 text-left text-foreground transition-colors duration-150 hover:bg-muted sm:col-span-1 md:col-start-7 md:col-end-10 md:row-start-4 md:row-end-6 md:mt-home-offset md:h-home-offset"
       >
         <CellLabel>Service</CellLabel>
         <div className="flex items-end justify-between gap-2.5">
@@ -330,7 +330,7 @@ const DirectionA = () => {
             href={s.href}
             target="_blank"
             rel="noopener"
-            className="group flex items-center justify-between border-0 bg-white px-3 no-underline text-foreground transition-colors duration-150 hover:bg-muted"
+            className="edo-focus-ring group flex items-center justify-between border-0 bg-white px-3 no-underline text-foreground transition-colors duration-150 hover:bg-muted"
           >
             <SocialIcon kind={s.k} size={12} />
             <span className="font-mono text-micro tracking-meta">{s.k === 'instagram' ? 'IG' : s.k === 'linkedin' ? 'LI' : s.k === 'facebook' ? 'FB' : 'TT'}</span>

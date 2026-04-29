@@ -42,13 +42,13 @@ const NavigationCell = ({ lang, onMenu, onLogo, compact = false }: NavigationCel
     <button
       onClick={onMenu}
       aria-label="Menu"
-      className="group flex items-center justify-center border-0 bg-white transition-colors duration-150 hover:bg-muted"
+      className="edo-focus-ring group flex items-center justify-center border-0 bg-white transition-colors duration-150 hover:bg-muted"
     >
       <IconMenu width="20" height="20" />
     </button>
     <button
       onClick={onLogo}
-      className="group flex items-center justify-center border-0 bg-white px-4 transition-colors duration-150 hover:bg-muted"
+      className="edo-focus-ring group flex items-center justify-center border-0 bg-white px-4 transition-colors duration-150 hover:bg-muted"
     >
       <Wordmark size={32} />
     </button>
@@ -64,7 +64,7 @@ interface CycloramaCellProps {
 const CycloramaCell = ({ lang, onOpen, variant = 'full' }: CycloramaCellProps) => (
   <button
     onClick={onOpen}
-    className="group flex h-full w-full cursor-pointer flex-col justify-between border-0 bg-edo-cream p-4 text-left"
+    className="edo-focus-ring group flex h-full w-full cursor-pointer flex-col justify-between border-0 bg-edo-cream p-4 text-left"
   >
     <svg viewBox="0 0 500 300" preserveAspectRatio="xMidYMid meet" className="pointer-events-none absolute inset-0 h-full w-full">
       <defs>
@@ -105,7 +105,7 @@ interface ServiceTileProps {
 const ServiceTile = ({ label, seed, palette = 'warm', sublabel, onClick }: ServiceTileProps) => (
   <button
     onClick={onClick}
-    className="group relative flex h-full w-full cursor-pointer items-end border-0 p-3 text-left transition-transform duration-300 hover:scale-102"
+    className="edo-focus-ring group relative flex h-full w-full cursor-pointer items-end border-0 p-3 text-left transition-transform duration-300 hover:scale-102"
     style={{ background: tile(seed, palette) }}
   >
     <div className="absolute inset-0 flex flex-col justify-between p-3 text-white mix-blend-difference">
@@ -147,7 +147,7 @@ interface PostProdCellProps {
 const PostProdCell = ({ lang, onOpen }: PostProdCellProps) => (
   <button
     onClick={onOpen}
-    className="group relative flex h-full w-full cursor-pointer flex-col justify-between border-0 bg-edo-dark p-4 text-left text-white"
+    className="edo-focus-ring group relative flex h-full w-full cursor-pointer flex-col justify-between border-0 bg-edo-dark p-4 text-left text-white"
   >
     <div className="pointer-events-none absolute inset-0 opacity-35">
       <svg viewBox="0 0 400 300" preserveAspectRatio="none" className="h-full w-full">
@@ -181,7 +181,7 @@ const EtouchCell = ({ lang }: EtouchCellProps) => (
     href="https://etouch.e-do.studio"
     target="_blank"
     rel="noopener noreferrer"
-    className="group flex h-full flex-col justify-between border-0 bg-white p-4 no-underline text-inherit transition-colors duration-150 hover:bg-muted"
+    className="edo-focus-ring group flex h-full flex-col justify-between border-0 bg-white p-4 no-underline text-inherit transition-colors duration-150 hover:bg-muted"
   >
     <CellLabel>etouch</CellLabel>
     <div className="flex items-end justify-between">
@@ -210,7 +210,7 @@ const MachineListCell = ({ lang, onSelect }: MachineListCellProps) => (
       <button
         key={m.slug}
         onClick={() => onSelect?.(m)}
-        className="group flex flex-1 cursor-pointer items-center gap-3 border-0 border-b border-input bg-white px-4 py-2.5 text-left transition-colors duration-150 hover:bg-muted last:border-b-0"
+        className="edo-focus-ring group flex flex-1 cursor-pointer items-center gap-3 border-0 border-b border-input bg-white px-4 py-2.5 text-left transition-colors duration-150 hover:bg-muted last:border-b-0"
       >
         <div className="flex min-w-0 items-center gap-3">
           <span className="font-mono text-label text-edo-gray-500 tracking-label">{String(i + 1).padStart(2, '0')}</span>
@@ -329,7 +329,7 @@ const ChatCell = ({ lang }: ChatCellProps) => {
           placeholder={lang === 'fr' ? 'prix, devis, cyclorama…' : 'price, quote, cyclorama…'}
           className="flex-1 border-b border-black bg-transparent pb-1 text-detail text-foreground outline-none"
         />
-        <button type="submit" aria-label="send" className="cursor-pointer border-0 bg-transparent text-muted-foreground">
+        <button type="submit" aria-label="send" className="edo-focus-ring cursor-pointer border-0 bg-transparent text-muted-foreground">
           <IconArrowRight width="16" height="16" />
         </button>
       </form>
@@ -359,7 +359,7 @@ const GalleryCell = ({ columns = 3, rows = 1, onOpen, seeds = null, palette = 'e
         <button
           key={i}
           onClick={() => onOpen?.(i)}
-          className="group relative cursor-pointer overflow-hidden border-0 transition-transform duration-300 hover:scale-102"
+          className="edo-focus-ring group relative cursor-pointer overflow-hidden border-0 transition-transform duration-300 hover:scale-102"
           style={{ background: tile(s, palette) }}
         >
           <span className="absolute bottom-2 left-2 font-mono text-micro uppercase tracking-label text-white mix-blend-difference">
@@ -370,7 +370,7 @@ const GalleryCell = ({ columns = 3, rows = 1, onOpen, seeds = null, palette = 'e
       {showViewAll && (
         <button
           onClick={() => onOpen?.('all')}
-          className="group flex cursor-pointer items-center justify-center border-0 bg-white font-mono text-label uppercase tracking-label text-muted-foreground transition-colors duration-150 hover:bg-muted"
+          className="edo-focus-ring group flex cursor-pointer items-center justify-center border-0 bg-white font-mono text-label uppercase tracking-label text-muted-foreground transition-colors duration-150 hover:bg-muted"
         >
           {lang === 'fr' ? 'Galerie →' : 'Gallery →'}
         </button>
@@ -391,7 +391,7 @@ const CtaCell = ({ label, sub, onClick, variant = 'primary', size = 'md' }: CtaC
   <button
     onClick={onClick}
     className={[
-      'group flex h-full w-full cursor-pointer flex-col justify-between border-0 p-4 text-left transition-colors duration-150',
+      'edo-focus-ring group flex h-full w-full cursor-pointer flex-col justify-between border-0 p-4 text-left transition-colors duration-150',
       variant === 'primary' ? 'bg-primary text-white' : 'bg-white text-foreground hover:bg-muted',
     ].join(' ')}
   >
@@ -452,13 +452,13 @@ const BrandStackCell = ({ lang, setLang, onMenu, onLogo, onVideo }: BrandStackCe
       <button
         onClick={onMenu}
         aria-label="Menu"
-        className="group flex items-center justify-center border-0 bg-white transition-colors duration-150 hover:bg-muted"
+        className="edo-focus-ring group flex items-center justify-center border-0 bg-white transition-colors duration-150 hover:bg-muted"
       >
         <IconMenu width="18" height="18" />
       </button>
       <button
         onClick={onLogo}
-        className="group flex items-center justify-center border-0 bg-white p-2 transition-colors duration-150 hover:bg-muted"
+        className="edo-focus-ring group flex items-center justify-center border-0 bg-white p-2 transition-colors duration-150 hover:bg-muted"
       >
         <Wordmark size={32} />
       </button>
@@ -481,7 +481,7 @@ const BrandStackCell = ({ lang, setLang, onMenu, onLogo, onVideo }: BrandStackCe
       </div>
     </div>
     <button
-      className="group flex cursor-pointer flex-col justify-between border-0 bg-white p-4 text-left transition-colors duration-150 hover:bg-muted"
+      className="edo-focus-ring group flex cursor-pointer flex-col justify-between border-0 bg-white p-4 text-left transition-colors duration-150 hover:bg-muted"
     >
       <CellLabel>E-Do Studio</CellLabel>
       <div className="flex w-full items-center justify-between">
