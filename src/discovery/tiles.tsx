@@ -96,7 +96,7 @@ export const SplitArticleCard: React.FC<SplitArticleCardProps> = ({ post, lang, 
         </p>
       </div>
       <span className="inline-flex items-center gap-2 font-mono text-label uppercase tracking-label text-foreground">
-        {lang === 'fr' ? 'Lire l\u2019article' : 'Read article'} <span className="text-sm">→</span>
+        {lang === 'fr' ? 'Lire l\u2019article' : 'Read article'} <span className="text-detail">→</span>
       </span>
     </div>
   </button>

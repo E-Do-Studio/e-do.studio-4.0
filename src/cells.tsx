@@ -234,9 +234,9 @@ const ContactCell = ({ lang }: ContactCellProps) => (
     <div className="flex flex-1 flex-col justify-between p-4">
       <CellLabel>Contact</CellLabel>
       <div>
-        <a href="tel:+33144041149" className="block py-1.5 text-xs text-muted-foreground no-underline">+33 1 44 04 11 49</a>
-        <a href="mailto:contact@e-do.studio" className="block py-1.5 text-xs text-muted-foreground no-underline">contact@e-do.studio</a>
-        <span className="block py-1.5 text-xs text-muted-foreground">69 bd Victor Hugo · Bât. 6.7<br />93400 Saint-Ouen</span>
+        <a href="tel:+33144041149" className="block py-1.5 text-caption text-muted-foreground no-underline">+33 1 44 04 11 49</a>
+        <a href="mailto:contact@e-do.studio" className="block py-1.5 text-caption text-muted-foreground no-underline">contact@e-do.studio</a>
+        <span className="block py-1.5 text-caption text-muted-foreground">69 bd Victor Hugo · Bât. 6.7<br />93400 Saint-Ouen</span>
       </div>
     </div>
     <div className="grid grid-cols-2 gap-px border-t border-foreground bg-black">
@@ -247,7 +247,7 @@ const ContactCell = ({ lang }: ContactCellProps) => (
         <a
           key={i}
           href={link.href}
-          className="group bg-white px-3 py-3 text-left text-xs text-muted-foreground transition-colors duration-150 hover:bg-muted"
+          className="group bg-white px-3 py-3 text-left text-caption text-muted-foreground transition-colors duration-150 hover:bg-muted"
         >
           {link.label}
         </a>
@@ -430,7 +430,7 @@ interface AboutCellProps {
 const AboutCell = ({ lang, size = 'sm' }: AboutCellProps) => (
   <div className="flex h-full flex-col justify-between bg-white p-4">
     <CellLabel>{lang === 'fr' ? 'À propos' : 'About'}</CellLabel>
-    <p className={['m-0 text-wrap pretty font-normal leading-normal text-foreground', size === 'lg' ? 'text-cell' : 'text-xs'].join(' ')}>
+    <p className={['m-0 text-wrap pretty font-normal leading-normal text-foreground', size === 'lg' ? 'text-cell' : 'text-caption'].join(' ')}>
       {lang === 'fr'
         ? "E-Do Studio est un espace hybride dédié à la production d'images haut de gamme pour les marques de mode et de luxe."
         : "E-Do Studio is a hybrid space dedicated to premium image production for fashion and luxury brands."}
@@ -485,7 +485,7 @@ const BrandStackCell = ({ lang, setLang, onMenu, onLogo, onVideo }: BrandStackCe
     >
       <CellLabel>E-Do Studio</CellLabel>
       <div className="flex w-full items-center justify-between">
-        <CellTitle className="text-sm">{lang === 'fr' ? 'Découverte' : 'Discovery'}</CellTitle>
+        <CellTitle className="text-detail">{lang === 'fr' ? 'Découverte' : 'Discovery'}</CellTitle>
         <IconArrowRight width="14" height="14" />
       </div>
     </button>

@@ -36,7 +36,7 @@ const Button = ({
   <button
     className={cn(
       'edo-focus-ring inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap',
-      'border-0 font-mono text-xs font-normal uppercase tracking-button leading-none',
+      'border-0 font-mono text-caption font-normal uppercase tracking-button leading-none',
       'rounded-none transition-all duration-150 disabled:pointer-events-none disabled:opacity-40',
       sizeMap[size],
       variantMap[variant],

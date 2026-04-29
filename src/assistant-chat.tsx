@@ -80,7 +80,7 @@ interface AssistantPromptProps {
 
 const AssistantPrompt = ({ lang, onSend }: AssistantPromptProps) => (
   <>
-    <div className="text-lg font-normal leading-snug tracking-headline text-foreground">
+    <div className="text-cell font-normal leading-snug tracking-headline text-foreground">
       {lang === 'fr' ? (
         <>Un <span className="text-primary">devis</span> ? Une <span className="text-primary">visite</span> ? Une question sur la <span className="text-primary">post-production</span> ?</>
       ) : (
@@ -142,7 +142,7 @@ const ChatBubble = ({ role, content }: ChatBubbleProps) => {
     <div className={cn('flex', isUser ? 'justify-end' : 'justify-start')}>
       <div
         className={cn(
-          'max-w-message whitespace-pre-wrap break-words text-xs leading-normal tracking-copy-tight',
+          'max-w-message whitespace-pre-wrap break-words text-caption leading-normal tracking-copy-tight',
           isUser ? 'bg-foreground px-3 py-2 text-white' : 'bg-transparent py-1 text-foreground'
         )}
       >

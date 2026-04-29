@@ -29,7 +29,7 @@ export const ArticleOverlay: React.FC<ArticleOverlayProps> = ({ post, lang, onCl
           </span>
         </div>
         <button onClick={onClose} className="edo-focus-ring flex basis-header-sm cursor-pointer items-center justify-center border-0 bg-white transition-colors hover:bg-muted">
-          <span className="text-lg font-light text-foreground">×</span>
+          <span className="text-cell font-light text-foreground">×</span>
         </button>
       </div>
 
@@ -42,10 +42,10 @@ export const ArticleOverlay: React.FC<ArticleOverlayProps> = ({ post, lang, onCl
           <h1 className="m-0 text-balance text-hero font-light leading-none tracking-display text-foreground">
             {post.title[lang]}
           </h1>
-          <p className="m-0 text-pretty text-base font-normal leading-copy text-foreground">
+          <p className="m-0 text-pretty text-cell font-normal leading-copy text-foreground">
             {post.sub[lang]}
           </p>
-          <p className="m-0 text-pretty text-sm leading-relaxed text-muted-foreground">
+          <p className="m-0 text-pretty text-detail leading-relaxed text-muted-foreground">
             {lang === 'fr'
               ? 'L\u2019article complet sera publié ici. Pour l\u2019instant, on tient le résumé et la photographie de couverture. La grille du journal reste fluide : les rubriques se filtrent depuis la page d\u2019accueil du journal, et chaque article peut être ouvert en plein écran sans casser la navigation principale.'
               : 'The full article will be published here. For now, we keep the abstract and the cover image. The journal grid stays fluid: sections are filtered from the journal home, and each piece can open full-screen without breaking the main navigation.'}

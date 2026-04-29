@@ -100,7 +100,7 @@ const MetroLine = ({ line, label, className }: MetroLineProps) => (
 const HoursSection = ({ lang }: { lang: Lang }) => (
   <section className="border-b border-border p-4">
     <CellLabel className="mb-2 block">{lang === 'fr' ? 'Horaires' : 'Hours'}</CellLabel>
-    <div className="flex flex-col gap-1 text-xs">
+    <div className="flex flex-col gap-1 text-caption">
       <HoursRow label={lang === 'fr' ? 'Lun — Ven' : 'Mon — Fri'} value="10:00 — 18:00" />
       <HoursRow label={lang === 'fr' ? 'Sam — Dim' : 'Sat — Sun'} value={lang === 'fr' ? 'Sur demande' : 'On request'} muted />
     </div>
@@ -204,7 +204,7 @@ const ContactForm = ({ lang, form, setForm, submit }: ContactFormProps) => (
 
     <button
       type="submit"
-      className="edo-focus-ring col-span-2 row-start-8 flex cursor-pointer items-center justify-center gap-3.5 border-0 bg-primary font-mono text-xs uppercase tracking-label text-white transition-colors hover:bg-foreground hover:text-white"
+      className="edo-focus-ring col-span-2 row-start-8 flex cursor-pointer items-center justify-center gap-3.5 border-0 bg-primary font-mono text-caption uppercase tracking-label text-white transition-colors hover:bg-foreground hover:text-white"
     >
       {lang === 'fr' ? 'Envoyer' : 'Send'} <IconArrowRight width="16" height="16" />
     </button>
@@ -286,10 +286,10 @@ interface ContactSuccessProps {
 const ContactSuccess = ({ lang, setForm, setSent, goto }: ContactSuccessProps) => (
   <div className="flex h-full flex-col items-start justify-center gap-4 bg-white px-7 py-8">
     <span className="edo-cell-label text-primary">✓ {lang === 'fr' ? 'Message envoyé' : 'Message sent'}</span>
-    <h1 className="m-0 max-w-lg text-5xl font-light leading-tight tracking-display text-foreground">
+    <h1 className="m-0 max-w-lg text-page-title font-light leading-tight tracking-display text-foreground">
       {lang === 'fr' ? 'Merci — à très vite.' : 'Thanks — talk soon.'}
     </h1>
-    <p className="m-0 max-w-md text-sm leading-normal text-muted-foreground">
+    <p className="m-0 max-w-md text-detail leading-normal text-muted-foreground">
       {lang === 'fr'
         ? 'Notre équipe vous répond sous 24 h ouvrées. En attendant, vous pouvez parcourir la galerie ou explorer les plateaux.'
         : 'Our team replies within 1 business day. In the meantime, browse the gallery or explore the stages.'}
@@ -383,7 +383,7 @@ interface TeamMemberRowProps {
 const TeamMemberRow = ({ member, lang }: TeamMemberRowProps) => (
   <div className="grid grid-cols-fluid-auto gap-2 border-b border-white/10 py-2">
     <div className="flex flex-col gap-0.5">
-      <span className="text-sm tracking-copy-tight text-white">{typeof member.name === 'string' ? member.name : member.name[lang]}</span>
+      <span className="text-detail tracking-copy-tight text-white">{typeof member.name === 'string' ? member.name : member.name[lang]}</span>
       <span className="font-mono text-micro uppercase tracking-ui text-white/55">{member.role[lang]}</span>
     </div>
     {member.mail && (
