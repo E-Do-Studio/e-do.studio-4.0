@@ -878,7 +878,7 @@ const Step1Plateau = ({ lang, plateau, setPlateau, plateaus, togglePlateau, setC
             <span className={`font-mono text-label tracking-meta ${on ? 'text-white/60' : 'text-muted-foreground'}`}>{String(i+1).padStart(2,'0')}</span>
             {on ? <span className="text-primary text-lg leading-none">●</span> : <span data-plateau-arrow className={`text-primary text-base leading-none transition-all duration-200 origin-right ${on ? '' : 'opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 group-hover:scale-110'}`}>→</span>}
           </div>
-          <div data-plateau-label className={`text-3xl font-light tracking-headline mt-1 transition-transform duration-200 origin-left ${on ? '' : 'group-hover:scale-102'}`}>{px[lang]}</div>
+          <div data-plateau-label className={`text-page-title font-light tracking-headline mt-1 transition-transform duration-200 origin-left ${on ? '' : 'group-hover:scale-102'}`}>{px[lang]}</div>
           <div className={`text-detail ${on ? 'text-white/65' : 'text-muted-foreground'} leading-snug`}>{px.desc[lang]}</div>
           {priceRows.length>0 && (<div className={`mt-auto pt-3 flex flex-col gap-1 border-t ${on ? 'border-t-white/15' : 'border-t-border'}`}>{priceRows.map(pr=>(<div key={pr.lbl} className="flex justify-between items-baseline gap-2 whitespace-nowrap"><span className={`font-mono text-label tracking-caption ${on ? 'text-white/55' : 'text-muted-foreground'} uppercase overflow-hidden text-ellipsis`}>{pr.lbl}</span><span className="text-detail font-medium tabular-nums">{pr.val}</span></div>))}</div>)}
         </button>
@@ -926,7 +926,7 @@ const BentoSlotTile = ({ idx, on, onClick, label, sub, desc, price, hint, lang }
       <span className={`font-mono text-label tracking-meta ${on ? 'text-white/60' : 'text-muted-foreground'}`}>{String(idx).padStart(2,'0')}</span>
       {on ? <span className="text-primary text-lg leading-none">●</span> : <span data-slot-arrow className={`text-primary text-base leading-none transition-all duration-200 origin-right ${on ? '' : 'opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 group-hover:scale-110'}`}>→</span>}
     </div>
-    <div data-slot-label className={`text-3xl font-light tracking-headline mt-1 transition-transform duration-200 origin-left ${on ? '' : 'group-hover:scale-102'}`}>{label}</div>
+    <div data-slot-label className={`text-page-title font-light tracking-headline mt-1 transition-transform duration-200 origin-left ${on ? '' : 'group-hover:scale-102'}`}>{label}</div>
     {sub && <div className={`font-mono text-label tracking-code uppercase ${on ? 'text-white/55' : 'text-muted-foreground'}`}>{sub}</div>}
     {desc && <div className={`text-detail ${on ? 'text-white/65' : 'text-muted-foreground'} leading-snug`}>{desc}</div>}
     <div className={`mt-auto pt-3 flex justify-between items-baseline border-t ${on ? 'border-t-white/15' : 'border-t-border'}`}>

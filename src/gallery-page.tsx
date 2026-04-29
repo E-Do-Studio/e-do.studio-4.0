@@ -430,7 +430,7 @@ const ProjectLabel = ({ project }: { project: Project }) => (
       {String(project.id).padStart(2, "0")}
     </span>
     <div className="flex min-h-0 flex-1 items-center justify-center py-2 edo-writing-vertical rotate-180">
-      <span className="whitespace-nowrap text-2xl font-medium leading-none tracking-headline text-foreground">
+      <span className="whitespace-nowrap text-tile-large font-medium leading-none tracking-headline text-foreground">
         {project.title}
       </span>
     </div>

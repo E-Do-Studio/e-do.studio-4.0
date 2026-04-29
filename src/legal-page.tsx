@@ -265,9 +265,9 @@ interface BlockProps {
 
 const Block = ({ t, rows, p, lang }: BlockProps) => (
   <section className="py-6 border-b border-border">
-    <h3 className="mb-3.5 text-xl font-medium tracking-headline text-foreground">{t[lang]}</h3>
+    <h3 className="mb-3.5 text-tile-title font-medium tracking-headline text-foreground">{t[lang]}</h3>
     {rows && <div>{rows.map((r,i)=><Row key={i} {...r} lang={lang}/>)}</div>}
-    {p && <p className="m-0 text-sm leading-relaxed text-muted-foreground max-w-3xl">{p[lang]}</p>}
+    {p && <p className="m-0 text-detail leading-relaxed text-muted-foreground max-w-3xl">{p[lang]}</p>}
   </section>
 );
 
@@ -282,8 +282,8 @@ const Article = ({ n, t, p, lang }: ArticleProps) => (
   <article className="grid grid-cols-legal-article gap-5 py-5 border-b border-border">
     <span className="font-mono text-caption tracking-label text-primary pt-1">Art. {n}</span>
     <div>
-      <h4 className="mb-2 text-lg font-medium tracking-copy-tight text-foreground">{t[lang]}</h4>
-      <p className="m-0 text-sm leading-relaxed text-muted-foreground max-w-3xl">{p[lang]}</p>
+      <h4 className="mb-2 text-cell font-medium tracking-copy-tight text-foreground">{t[lang]}</h4>
+      <p className="m-0 text-detail leading-relaxed text-muted-foreground max-w-3xl">{p[lang]}</p>
     </div>
   </article>
 );

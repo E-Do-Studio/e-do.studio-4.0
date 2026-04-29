@@ -51,7 +51,7 @@ const MachineRow = ({ idx, m, lang, onClick, isLast }: MachineRowProps) => (
       {String(idx + 1).padStart(2, '0')}
     </span>
     <div className="min-w-0 overflow-hidden">
-      <div className="truncate text-base font-medium tracking-headline leading-cell">
+      <div className="truncate text-cell font-medium tracking-headline leading-cell">
         {m[lang].t}
       </div>
       <div className="truncate mt-1 text-label font-mono text-muted-foreground uppercase tracking-caption">
@@ -145,8 +145,7 @@ const DirectionA = () => {
                 <button
                   key={c.k}
                   onClick={() => goto('gallery')}
-                  className="edo-focus-ring group flex min-w-0 cursor-pointer flex-col justify-between border-0 bg-white px-3 py-3 text-left text-foreground transition-colors duration-150 hover:bg-muted"
-                  style={{ aspectRatio: '1 / 1' }}
+                  className="edo-focus-ring group flex aspect-square min-w-0 cursor-pointer flex-col justify-between border-0 bg-white px-3 py-3 text-left text-foreground transition-colors duration-150 hover:bg-muted"
                 >
                   <CatIcon kind={c.k} size={20} />
                   <div className="truncate text-caption font-medium tracking-copy-tight leading-snug">
@@ -161,8 +160,7 @@ const DirectionA = () => {
                 <button
                   key={m.slug}
                   onClick={() => goto('plateau-' + m.slug)}
-                  className="edo-focus-ring group flex min-w-0 cursor-pointer flex-col justify-between border-0 bg-white px-4 py-4 text-left text-foreground transition-colors duration-150 hover:bg-muted"
-                  style={{ aspectRatio: '1 / 1' }}
+                  className="edo-focus-ring group flex aspect-square min-w-0 cursor-pointer flex-col justify-between border-0 bg-white px-4 py-4 text-left text-foreground transition-colors duration-150 hover:bg-muted"
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-mono text-micro text-muted-foreground tracking-meta">
@@ -259,7 +257,7 @@ const DirectionA = () => {
           <span className="font-mono text-label uppercase tracking-label text-white/75">
             {lang === 'fr' ? 'Demander un devis ou' : 'Request a quote or'}
           </span>
-          <span className="text-xl font-normal tracking-headline leading-tight text-white">
+          <span className="text-tile-title font-normal tracking-headline leading-tight text-white">
             {lang === 'fr' ? 'Réserver' : 'Book'}
           </span>
         </div>
@@ -279,7 +277,7 @@ const DirectionA = () => {
         </svg>
         <div className="relative flex min-w-0 flex-col gap-1 transition-transform duration-150 group-hover:scale-102">
           <CellLabel className="text-white/70">Discovery</CellLabel>
-          <div className="text-xl font-normal tracking-headline leading-tight text-white">
+          <div className="text-tile-title font-normal tracking-headline leading-tight text-white">
             {lang === 'fr' ? "Dites-m'en plus" : 'Tell me more'}
           </div>
         </div>

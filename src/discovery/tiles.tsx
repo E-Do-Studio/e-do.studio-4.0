@@ -116,7 +116,7 @@ export const BookCtaTile: React.FC<BookCtaTileProps> = ({ lang, goto }) => (
       <span className="font-mono text-label uppercase tracking-label text-white/75">
         {lang === 'fr' ? 'Studio · 7j/7' : 'Studio · 7d/7'}
       </span>
-      <span className="text-xl font-normal leading-tight tracking-headline text-white">
+      <span className="text-tile-title font-normal leading-tight tracking-headline text-white">
         {lang === 'fr' ? 'Réserver' : 'Book'}
       </span>
     </span>

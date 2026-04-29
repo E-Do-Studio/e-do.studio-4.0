@@ -110,7 +110,7 @@ const ServiceTile = ({ label, seed, palette = 'warm', sublabel, onClick }: Servi
   >
     <div className="absolute inset-0 flex flex-col justify-between p-3 text-white mix-blend-difference">
       {sublabel ? <CellLabel className="text-white/90">{sublabel}</CellLabel> : <span />}
-      <span className="text-base font-medium tracking-copy-tight">{label}</span>
+      <span className="text-cell font-medium tracking-copy-tight">{label}</span>
     </div>
   </button>
 );
@@ -215,7 +215,7 @@ const MachineListCell = ({ lang, onSelect }: MachineListCellProps) => (
         <div className="flex min-w-0 items-center gap-3">
           <span className="font-mono text-label text-edo-gray-500 tracking-label">{String(i + 1).padStart(2, '0')}</span>
           <div className="min-w-0">
-            <div className="truncate text-sm font-medium tracking-copy-tight text-foreground">{m[lang].t}</div>
+            <div className="truncate text-detail font-medium tracking-copy-tight text-foreground">{m[lang].t}</div>
             <div className="truncate text-caption text-muted-foreground">{m[lang].sub}</div>
           </div>
         </div>

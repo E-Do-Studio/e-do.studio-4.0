@@ -180,7 +180,7 @@ const ContactForm = ({ lang, form, setForm, submit }: ContactFormProps) => (
   >
     <div className="col-span-2 flex flex-col justify-center bg-white px-5 py-2.5">
       <span className="edo-cell-label text-primary">{lang === 'fr' ? 'Écrivez-nous' : 'Write to us'}</span>
-      <h1 className="m-0 mt-0.5 text-2xl font-light leading-none tracking-display text-foreground">
+      <h1 className="m-0 mt-0.5 text-tile-large font-light leading-none tracking-display text-foreground">
         {lang === 'fr' ? 'Un projet, une visite ?' : 'A project, a visit?'}
       </h1>
     </div>
@@ -240,7 +240,7 @@ const SubjectButton = ({ subject, index, lang, active, onClick }: SubjectButtonP
       <span className={cn('font-mono text-caption tracking-meta', active ? 'text-white/60' : 'text-muted-foreground')}>
         {String(index + 1).padStart(2, '0')}
       </span>
-      <span className="text-sm font-normal tracking-copy-tight">{subject[lang]}</span>
+      <span className="text-detail font-normal tracking-copy-tight">{subject[lang]}</span>
     </button>
   );
 };
