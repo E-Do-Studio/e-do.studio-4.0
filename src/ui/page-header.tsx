@@ -45,7 +45,7 @@ const PageHeaderActionButton = ({
   const actionClassName = cn(
     'edo-focus-ring flex h-full flex-none cursor-pointer items-center justify-center gap-2 border-0 font-mono uppercase no-underline transition-colors',
     isPrimary
-      ? 'bg-primary px-6 text-xs tracking-caption text-white hover:bg-foreground'
+      ? 'bg-primary px-6 text-xs tracking-caption text-white hover:bg-foreground hover:text-white'
       : isDark
         ? 'bg-foreground px-5 text-xs tracking-label text-white hover:brightness-110'
         : 'bg-background px-5 text-caption tracking-ui text-foreground hover:bg-muted',

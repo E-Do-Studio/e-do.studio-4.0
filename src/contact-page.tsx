@@ -204,7 +204,7 @@ const ContactForm = ({ lang, form, setForm, submit }: ContactFormProps) => (
 
     <button
       type="submit"
-      className="edo-focus-ring col-span-2 row-start-8 flex cursor-pointer items-center justify-center gap-3.5 border-0 bg-primary font-mono text-xs uppercase tracking-label text-white transition-colors hover:bg-foreground"
+      className="edo-focus-ring col-span-2 row-start-8 flex cursor-pointer items-center justify-center gap-3.5 border-0 bg-primary font-mono text-xs uppercase tracking-label text-white transition-colors hover:bg-foreground hover:text-white"
     >
       {lang === 'fr' ? 'Envoyer' : 'Send'} <IconArrowRight width="16" height="16" />
     </button>

@@ -251,7 +251,7 @@ const DirectionA = () => {
       {/* ── Row 4 right: Book CTA ── */}
       <button
         onClick={() => goto('book')}
-        className="edo-focus-ring group col-span-2 h-20 flex cursor-pointer items-center justify-between gap-3 border-0 bg-primary px-5 py-3 text-left text-white transition-colors duration-150 hover:bg-foreground sm:col-span-1 md:col-start-7 md:col-end-10 md:row-start-4 md:h-21"
+        className="edo-focus-ring group col-span-2 h-20 flex cursor-pointer items-center justify-between gap-3 border-0 bg-primary px-5 py-3 text-left text-white transition-colors duration-150 hover:bg-foreground hover:text-white sm:col-span-1 md:col-start-7 md:col-end-10 md:row-start-4 md:h-21"
       >
         <div className="flex min-w-0 flex-col gap-1 transition-transform duration-150 group-hover:scale-102">
           <span className="font-mono text-label uppercase tracking-label text-white/75">

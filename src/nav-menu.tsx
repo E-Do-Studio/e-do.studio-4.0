@@ -141,7 +141,7 @@ const NavFooter = ({ lang, setLang, onClose, navigate }: NavFooterProps) => {
           onClose();
           navigate({ to: bookingHref });
         }}
-        className="edo-focus-ring h-12 flex cursor-pointer items-center justify-center border-0 bg-primary font-mono text-xs uppercase tracking-label text-white no-underline transition-colors hover:bg-foreground"
+        className="edo-focus-ring h-12 flex cursor-pointer items-center justify-center border-0 bg-primary font-mono text-xs uppercase tracking-label text-white no-underline transition-colors hover:bg-foreground hover:text-white"
       >
         {lang === "fr" ? "Réserver" : "Book now"}
       </a>
