@@ -19,7 +19,7 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({ post, lang, onOpen, he
     onClick={onOpen}
     className={cn(
       cellBase,
-      'group order-1 grid min-h-80 cursor-pointer border-0 bg-white p-0 text-left transition-opacity hover:opacity-90 lg:min-h-0',
+      'edo-focus-ring group order-1 grid min-h-80 cursor-pointer border-0 bg-white p-0 text-left transition-opacity hover:opacity-90 lg:min-h-0',
       headline ? 'grid-rows-article-headline lg:grid-rows-article-headline-lg' : 'grid-rows-article-auto',
       className
     )}
@@ -30,14 +30,14 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({ post, lang, onOpen, he
     </div>
 
     <div className={cn(
-      'flex min-w-0 origin-left flex-col overflow-hidden transition-transform duration-200 group-hover:scale-103',
+      'flex min-w-0 origin-left flex-col overflow-hidden transition-transform duration-200 group-hover:scale-102',
       headline ? 'gap-1 px-cell pb-3 pt-2.5' : 'gap-1 px-cell pb-4 pt-3.5'
     )}>
       <ArticleMeta post={post} lang={lang} />
       <h3 className={cn(
         'm-0 edo-line-clamp-2 text-balance text-foreground',
         headline
-          ? 'edo-line-clamp-3 text-xl font-light leading-tight tracking-headline'
+          ? 'edo-line-clamp-3 text-tile-title font-light leading-tight tracking-headline'
           : 'text-cell font-normal leading-snug tracking-copy-tight'
       )}>
         {post.title[lang]}

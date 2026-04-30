@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { IconArrowRight, PageHeader } from './ui';
+import { Button, IconArrowRight, PageHeader } from './ui';
 import type { Bilingual } from './types';
 import { usePageContext } from './router';
 
@@ -238,7 +238,7 @@ const PostprodPage = () => {
           const isLast = idx===PP_CATS.length-1;
           return (
             <button key={c.k} onClick={()=>setK(c.k)}
-              className={`flex-none border-0 ${active?'bg-muted border-b-2 border-b-primary md:border-b-0 md:border-l-2 md:border-l-primary':'bg-white border-b-2 border-b-transparent md:border-b-0 md:border-l-2 md:border-l-transparent'} ${idx>0?'md:border-t md:border-t-border':''} ${isLast?'md:border-b md:border-b-border':''} py-3 px-4 cursor-pointer text-left flex flex-col gap-1 transition-all duration-150 min-h-16 md:min-h-18`}>
+              className={`edo-focus-ring flex-none border-0 ${active?'bg-muted border-b-2 border-b-primary md:border-b-0 md:border-l-2 md:border-l-primary':'bg-white border-b-2 border-b-transparent md:border-b-0 md:border-l-2 md:border-l-transparent'} ${idx>0?'md:border-t md:border-t-border':''} ${isLast?'md:border-b md:border-b-border':''} py-3 px-4 cursor-pointer text-left flex flex-col gap-1 transition-all duration-150 min-h-16 md:min-h-18`}>
               <span className={`font-mono text-micro tracking-label ${active?'text-primary':'text-muted-foreground'}`}>{String(idx+1).padStart(2,'0')}</span>
               <span className={`text-detail ${active?'font-medium':'font-normal'} tracking-copy-tight text-foreground leading-snug whitespace-nowrap overflow-hidden text-ellipsis`}>{c[lang]}</span>
               <span className="hidden md:block font-mono text-micro text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis mt-auto">
@@ -307,12 +307,10 @@ const PostprodPage = () => {
                   )}
                 </div>
               )}
-              <button onClick={()=>goto('contact')} className="bg-primary border-0 text-white py-3.5 px-5 cursor-pointer flex items-center justify-between gap-3 transition-all duration-150 mt-2 hover:brightness-110">
-                <span className="font-mono text-xs tracking-ui uppercase text-white">
-                  {lang==='fr'?'Demander un devis':'Request a quote'}
-                </span>
-                <IconArrowRight width="16" height="16" stroke="#fff"/>
-              </button>
+              <Button onClick={()=>goto('contact')} className="w-full justify-between py-3.5 px-5 mt-2">
+                {lang==='fr'?'Demander un devis':'Request a quote'}
+                <IconArrowRight width="16" height="16"/>
+              </Button>
             </div>
           </div>
 

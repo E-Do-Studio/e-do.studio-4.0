@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import type { FormEvent } from 'react';
-import { CellLabel, CellTitle, IconArrowRight, IconPlay, IconMenu, Wordmark, LangSwitch } from './ui';
+import { CellLabel, CellTitle, IconArrowRight, IconPlay, IconMenu, Wordmark, LangSwitch, cn } from './ui';
 import { MACHINES } from './data/plateaux';
 import { BRANDS } from './data/site';
 import type { Lang } from './types';
@@ -42,13 +42,13 @@ const NavigationCell = ({ lang, onMenu, onLogo, compact = false }: NavigationCel
     <button
       onClick={onMenu}
       aria-label="Menu"
-      className="group flex items-center justify-center border-0 bg-white transition-colors duration-150 hover:bg-muted"
+      className="edo-focus-ring group flex items-center justify-center border-0 bg-white transition-colors duration-150 hover:bg-muted"
     >
       <IconMenu width="20" height="20" />
     </button>
     <button
       onClick={onLogo}
-      className="group flex items-center justify-center border-0 bg-white px-4 transition-colors duration-150 hover:bg-muted"
+      className="edo-focus-ring group flex items-center justify-center border-0 bg-white px-4 transition-colors duration-150 hover:bg-muted"
     >
       <Wordmark size={32} />
     </button>
@@ -64,7 +64,7 @@ interface CycloramaCellProps {
 const CycloramaCell = ({ lang, onOpen, variant = 'full' }: CycloramaCellProps) => (
   <button
     onClick={onOpen}
-    className="group flex h-full w-full cursor-pointer flex-col justify-between border-0 bg-edo-cream p-4 text-left"
+    className="edo-focus-ring group flex h-full w-full cursor-pointer flex-col justify-between border-0 bg-edo-cream p-4 text-left"
   >
     <svg viewBox="0 0 500 300" preserveAspectRatio="xMidYMid meet" className="pointer-events-none absolute inset-0 h-full w-full">
       <defs>
@@ -81,7 +81,10 @@ const CycloramaCell = ({ lang, onOpen, variant = 'full' }: CycloramaCellProps) =
     </div>
     <div className="relative flex items-end justify-between gap-2">
       <div>
-        <div className="text-foreground" style={{ fontSize: variant === 'full' ? 40 : 26, fontWeight: 300, letterSpacing: '-0.03em', lineHeight: 0.95 }}>
+        <div className={cn(
+          "font-light tracking-display leading-solid text-foreground",
+          variant === 'full' ? "text-[2.5rem]" : "text-tile-large"
+        )}>
           Cyclorama
         </div>
         <div className="mt-1.5 font-mono text-label uppercase tracking-label text-muted-foreground">
@@ -105,12 +108,12 @@ interface ServiceTileProps {
 const ServiceTile = ({ label, seed, palette = 'warm', sublabel, onClick }: ServiceTileProps) => (
   <button
     onClick={onClick}
-    className="group relative flex h-full w-full cursor-pointer items-end border-0 p-3 text-left transition-transform duration-300 hover:scale-102"
+    className="edo-focus-ring group relative flex h-full w-full cursor-pointer items-end border-0 p-3 text-left transition-transform duration-300 hover:scale-102"
     style={{ background: tile(seed, palette) }}
   >
     <div className="absolute inset-0 flex flex-col justify-between p-3 text-white mix-blend-difference">
       {sublabel ? <CellLabel className="text-white/90">{sublabel}</CellLabel> : <span />}
-      <span className="text-base font-medium tracking-copy-tight">{label}</span>
+      <span className="text-cell font-medium tracking-copy-tight">{label}</span>
     </div>
   </button>
 );
@@ -147,7 +150,7 @@ interface PostProdCellProps {
 const PostProdCell = ({ lang, onOpen }: PostProdCellProps) => (
   <button
     onClick={onOpen}
-    className="group relative flex h-full w-full cursor-pointer flex-col justify-between border-0 bg-edo-dark p-4 text-left text-white"
+    className="edo-focus-ring group relative flex h-full w-full cursor-pointer flex-col justify-between border-0 bg-edo-dark p-4 text-left text-white"
   >
     <div className="pointer-events-none absolute inset-0 opacity-35">
       <svg viewBox="0 0 400 300" preserveAspectRatio="none" className="h-full w-full">
@@ -167,7 +170,7 @@ const PostProdCell = ({ lang, onOpen }: PostProdCellProps) => (
           {lang === 'fr' ? 'Retouche · colorimétrie · détourage' : 'Retouching · color · clipping path'}
         </div>
       </div>
-      <IconArrowRight width="18" height="18" stroke="#fff" />
+      <IconArrowRight width="18" height="18" className="text-white" />
     </div>
   </button>
 );
@@ -181,7 +184,7 @@ const EtouchCell = ({ lang }: EtouchCellProps) => (
     href="https://etouch.e-do.studio"
     target="_blank"
     rel="noopener noreferrer"
-    className="group flex h-full flex-col justify-between border-0 bg-white p-4 no-underline text-inherit transition-colors duration-150 hover:bg-muted"
+    className="edo-focus-ring group flex h-full flex-col justify-between border-0 bg-white p-4 no-underline text-inherit transition-colors duration-150 hover:bg-muted"
   >
     <CellLabel>etouch</CellLabel>
     <div className="flex items-end justify-between">
@@ -210,16 +213,16 @@ const MachineListCell = ({ lang, onSelect }: MachineListCellProps) => (
       <button
         key={m.slug}
         onClick={() => onSelect?.(m)}
-        className="group flex flex-1 cursor-pointer items-center gap-3 border-0 border-b border-input bg-white px-4 py-2.5 text-left transition-colors duration-150 hover:bg-muted last:border-b-0"
+        className="edo-focus-ring group flex flex-1 cursor-pointer items-center gap-3 border-0 border-b border-input bg-white px-4 py-2.5 text-left transition-colors duration-150 hover:bg-muted last:border-b-0"
       >
         <div className="flex min-w-0 items-center gap-3">
           <span className="font-mono text-label text-edo-gray-500 tracking-label">{String(i + 1).padStart(2, '0')}</span>
           <div className="min-w-0">
-            <div className="truncate text-sm font-medium tracking-copy-tight text-foreground">{m[lang].t}</div>
+            <div className="truncate text-detail font-medium tracking-copy-tight text-foreground">{m[lang].t}</div>
             <div className="truncate text-caption text-muted-foreground">{m[lang].sub}</div>
           </div>
         </div>
-        <IconArrowRight className="flex-shrink-0" width="14" height="14" stroke="#888" />
+        <IconArrowRight className="flex-shrink-0 text-muted-foreground" width="14" height="14" />
       </button>
     ))}
   </div>
@@ -234,12 +237,12 @@ const ContactCell = ({ lang }: ContactCellProps) => (
     <div className="flex flex-1 flex-col justify-between p-4">
       <CellLabel>Contact</CellLabel>
       <div>
-        <a href="tel:+33144041149" className="block py-1.5 text-xs text-muted-foreground no-underline">+33 1 44 04 11 49</a>
-        <a href="mailto:contact@e-do.studio" className="block py-1.5 text-xs text-muted-foreground no-underline">contact@e-do.studio</a>
-        <span className="block py-1.5 text-xs text-muted-foreground">69 bd Victor Hugo · Bât. 6.7<br />93400 Saint-Ouen</span>
+        <a href="tel:+33144041149" className="block py-1.5 text-caption text-muted-foreground no-underline">+33 1 44 04 11 49</a>
+        <a href="mailto:contact@e-do.studio" className="block py-1.5 text-caption text-muted-foreground no-underline">contact@e-do.studio</a>
+        <span className="block py-1.5 text-caption text-muted-foreground">69 bd Victor Hugo · Bât. 6.7<br />93400 Saint-Ouen</span>
       </div>
     </div>
-    <div className="grid grid-cols-2 gap-px border-t border-black bg-black">
+    <div className="grid grid-cols-2 gap-px border-t border-foreground bg-black">
       {[
         { label: lang === 'fr' ? 'Nous contacter' : 'Contact us', href: '/contact' },
         { label: lang === 'fr' ? 'Légal' : 'Legal', href: '/legal' },
@@ -247,7 +250,7 @@ const ContactCell = ({ lang }: ContactCellProps) => (
         <a
           key={i}
           href={link.href}
-          className="group bg-white px-3 py-3 text-left text-xs text-muted-foreground transition-colors duration-150 hover:bg-muted"
+          className="group bg-white px-3 py-3 text-left text-caption text-muted-foreground transition-colors duration-150 hover:bg-muted"
         >
           {link.label}
         </a>
@@ -327,9 +330,9 @@ const ChatCell = ({ lang }: ChatCellProps) => {
           value={input}
           onChange={e => setInput(e.target.value)}
           placeholder={lang === 'fr' ? 'prix, devis, cyclorama…' : 'price, quote, cyclorama…'}
-          className="flex-1 border-b border-black bg-transparent pb-1 text-detail text-foreground outline-none"
+          className="flex-1 border-b border-foreground bg-transparent pb-1 text-detail text-foreground outline-none"
         />
-        <button type="submit" aria-label="send" className="cursor-pointer border-0 bg-transparent text-muted-foreground">
+        <button type="submit" aria-label="send" className="edo-focus-ring cursor-pointer border-0 bg-transparent text-muted-foreground">
           <IconArrowRight width="16" height="16" />
         </button>
       </form>
@@ -359,7 +362,7 @@ const GalleryCell = ({ columns = 3, rows = 1, onOpen, seeds = null, palette = 'e
         <button
           key={i}
           onClick={() => onOpen?.(i)}
-          className="group relative cursor-pointer overflow-hidden border-0 transition-transform duration-300 hover:scale-102"
+          className="edo-focus-ring group relative cursor-pointer overflow-hidden border-0 transition-transform duration-300 hover:scale-102"
           style={{ background: tile(s, palette) }}
         >
           <span className="absolute bottom-2 left-2 font-mono text-micro uppercase tracking-label text-white mix-blend-difference">
@@ -370,7 +373,7 @@ const GalleryCell = ({ columns = 3, rows = 1, onOpen, seeds = null, palette = 'e
       {showViewAll && (
         <button
           onClick={() => onOpen?.('all')}
-          className="group flex cursor-pointer items-center justify-center border-0 bg-white font-mono text-label uppercase tracking-label text-muted-foreground transition-colors duration-150 hover:bg-muted"
+          className="edo-focus-ring group flex cursor-pointer items-center justify-center border-0 bg-white font-mono text-label uppercase tracking-label text-muted-foreground transition-colors duration-150 hover:bg-muted"
         >
           {lang === 'fr' ? 'Galerie →' : 'Gallery →'}
         </button>
@@ -391,8 +394,8 @@ const CtaCell = ({ label, sub, onClick, variant = 'primary', size = 'md' }: CtaC
   <button
     onClick={onClick}
     className={[
-      'group flex h-full w-full cursor-pointer flex-col justify-between border-0 p-4 text-left transition-colors duration-150',
-      variant === 'primary' ? 'bg-primary text-white' : 'bg-white text-foreground hover:bg-muted',
+      'edo-focus-ring group flex h-full w-full cursor-pointer flex-col justify-between border-0 p-4 text-left transition-colors duration-150',
+      variant === 'primary' ? 'bg-primary text-white hover:bg-foreground hover:text-white' : 'bg-white text-foreground hover:bg-muted',
     ].join(' ')}
   >
     <span className={['edo-cell-label', variant === 'primary' ? 'text-white/70' : ''].join(' ')}>{sub}</span>
@@ -430,7 +433,7 @@ interface AboutCellProps {
 const AboutCell = ({ lang, size = 'sm' }: AboutCellProps) => (
   <div className="flex h-full flex-col justify-between bg-white p-4">
     <CellLabel>{lang === 'fr' ? 'À propos' : 'About'}</CellLabel>
-    <p className={['m-0 text-wrap pretty font-normal leading-normal text-foreground', size === 'lg' ? 'text-cell' : 'text-xs'].join(' ')}>
+    <p className={['m-0 text-wrap pretty font-normal leading-normal text-foreground', size === 'lg' ? 'text-cell' : 'text-caption'].join(' ')}>
       {lang === 'fr'
         ? "E-Do Studio est un espace hybride dédié à la production d'images haut de gamme pour les marques de mode et de luxe."
         : "E-Do Studio is a hybrid space dedicated to premium image production for fashion and luxury brands."}
@@ -452,13 +455,13 @@ const BrandStackCell = ({ lang, setLang, onMenu, onLogo, onVideo }: BrandStackCe
       <button
         onClick={onMenu}
         aria-label="Menu"
-        className="group flex items-center justify-center border-0 bg-white transition-colors duration-150 hover:bg-muted"
+        className="edo-focus-ring group flex items-center justify-center border-0 bg-white transition-colors duration-150 hover:bg-muted"
       >
         <IconMenu width="18" height="18" />
       </button>
       <button
         onClick={onLogo}
-        className="group flex items-center justify-center border-0 bg-white p-2 transition-colors duration-150 hover:bg-muted"
+        className="edo-focus-ring group flex items-center justify-center border-0 bg-white p-2 transition-colors duration-150 hover:bg-muted"
       >
         <Wordmark size={32} />
       </button>
@@ -475,17 +478,17 @@ const BrandStackCell = ({ lang, setLang, onMenu, onLogo, onVideo }: BrandStackCe
         <div className="absolute left-2.5 top-2.5 font-mono text-label uppercase tracking-label text-edo-gray-500">Studio · Reel · 16:9</div>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white">
-            <IconPlay width="18" height="18" stroke="#fff" />
+            <IconPlay width="18" height="18" className="text-white" />
           </div>
         </div>
       </div>
     </div>
     <button
-      className="group flex cursor-pointer flex-col justify-between border-0 bg-white p-4 text-left transition-colors duration-150 hover:bg-muted"
+      className="edo-focus-ring group flex cursor-pointer flex-col justify-between border-0 bg-white p-4 text-left transition-colors duration-150 hover:bg-muted"
     >
       <CellLabel>E-Do Studio</CellLabel>
       <div className="flex w-full items-center justify-between">
-        <CellTitle className="text-sm">{lang === 'fr' ? 'Découverte' : 'Discovery'}</CellTitle>
+        <CellTitle className="text-detail">{lang === 'fr' ? 'Découverte' : 'Discovery'}</CellTitle>
         <IconArrowRight width="14" height="14" />
       </div>
     </button>

@@ -33,8 +33,8 @@ interface QuoteTileProps {
 export const QuoteTile: React.FC<QuoteTileProps> = ({ lang, className }) => (
   <div className={cn(cellBase, 'order-4 flex min-h-48 items-center justify-center bg-foreground px-cell-lg py-6 text-white lg:min-h-0', className)}>
     <svg viewBox="0 0 200 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full opacity-20">
-      {Array.from({ length: 9 }).map((_, index) => <line key={`h-${index}`} x1="0" y1={index * 14} x2="200" y2={index * 14} stroke="#fff" strokeWidth="0.3" />)}
-      {Array.from({ length: 16 }).map((_, index) => <line key={`v-${index}`} x1={index * 14} y1="0" x2={index * 14} y2="100" stroke="#fff" strokeWidth="0.3" />)}
+      {Array.from({ length: 9 }).map((_, index) => <line key={`h-${index}`} x1="0" y1={index * 14} x2="200" y2={index * 14} stroke="currentColor" strokeWidth="0.3" />)}
+      {Array.from({ length: 16 }).map((_, index) => <line key={`v-${index}`} x1={index * 14} y1="0" x2={index * 14} y2="100" stroke="currentColor" strokeWidth="0.3" />)}
     </svg>
     <p className="relative m-0 text-balance text-center text-page-title font-bold italic leading-tight tracking-headline text-white">
       {lang === 'fr'
@@ -57,9 +57,9 @@ export const NewsletterCard: React.FC<NewsletterCardProps> = ({ lang, className,
     <form onSubmit={(event) => event.preventDefault()} className="flex items-center gap-2 border-b border-foreground pb-1.5">
       <input
         placeholder={lang === 'fr' ? 'votre@email.com' : 'your@email.com'}
-        className="min-w-0 flex-1 border-0 bg-transparent py-1 font-sans text-detail text-foreground outline-none placeholder:text-muted-foreground"
+        className="edo-focus-ring min-w-0 flex-1 border-0 bg-transparent py-1 font-sans text-detail text-foreground outline-none placeholder:text-muted-foreground"
       />
-      <button type="submit" className="cursor-pointer border-0 bg-transparent p-0 font-mono text-label uppercase tracking-label text-primary">
+      <button type="submit" className="edo-focus-ring cursor-pointer border-0 bg-transparent p-0 font-mono text-label uppercase tracking-label text-primary">
         OK →
       </button>
     </form>
@@ -77,7 +77,7 @@ interface SplitArticleCardProps {
 export const SplitArticleCard: React.FC<SplitArticleCardProps> = ({ post, lang, onOpen, className, badge }) => (
   <button
     onClick={onOpen}
-    className={cn(cellBase, 'group order-6 grid min-h-104 cursor-pointer grid-cols-1 border-0 bg-white p-0 text-left transition-opacity hover:opacity-95 sm:grid-cols-2 lg:min-h-0', className)}
+    className={cn(cellBase, 'edo-focus-ring group order-6 grid min-h-104 cursor-pointer grid-cols-1 border-0 bg-white p-0 text-left transition-opacity hover:opacity-95 sm:grid-cols-2 lg:min-h-0', className)}
   >
     {badge != null && <CellBadge n={badge} />}
     <div className="relative min-h-56 overflow-hidden bg-foreground sm:min-h-0">
@@ -96,7 +96,7 @@ export const SplitArticleCard: React.FC<SplitArticleCardProps> = ({ post, lang, 
         </p>
       </div>
       <span className="inline-flex items-center gap-2 font-mono text-label uppercase tracking-label text-foreground">
-        {lang === 'fr' ? 'Lire l\u2019article' : 'Read article'} <span className="text-sm">→</span>
+        {lang === 'fr' ? 'Lire l\u2019article' : 'Read article'} <span className="text-detail">→</span>
       </span>
     </div>
   </button>
@@ -110,17 +110,17 @@ interface BookCtaTileProps {
 export const BookCtaTile: React.FC<BookCtaTileProps> = ({ lang, goto }) => (
   <button
     onClick={() => goto('book')}
-    className="group relative flex h-21 shrink-0 cursor-pointer items-center justify-between gap-3.5 overflow-hidden border-0 bg-primary px-cell-lg py-3.5 text-left text-white transition-colors hover:bg-foreground"
+    className="edo-focus-ring group relative flex h-21 shrink-0 cursor-pointer items-center justify-between gap-3.5 overflow-hidden border-0 bg-primary px-cell-lg py-3.5 text-left text-white transition-colors hover:bg-foreground hover:text-white"
   >
-    <span className="flex min-w-0 origin-left flex-col items-start gap-1 transition-transform duration-200 group-hover:scale-103">
+    <span className="flex min-w-0 origin-left flex-col items-start gap-1 transition-transform duration-200 group-hover:scale-102">
       <span className="font-mono text-label uppercase tracking-label text-white/75">
         {lang === 'fr' ? 'Studio · 7j/7' : 'Studio · 7d/7'}
       </span>
-      <span className="text-xl font-normal leading-tight tracking-headline text-white">
+      <span className="text-tile-title font-normal leading-tight tracking-headline text-white">
         {lang === 'fr' ? 'Réserver' : 'Book'}
       </span>
     </span>
-    <ArrowIcon width="16" height="16" stroke="#fff" className="shrink-0 transition-transform duration-200 group-hover:translate-x-1 group-hover:scale-110" />
+    <ArrowIcon width="16" height="16" className="shrink-0 text-white transition-transform duration-200 group-hover:translate-x-1 group-hover:scale-110" />
   </button>
 );
 

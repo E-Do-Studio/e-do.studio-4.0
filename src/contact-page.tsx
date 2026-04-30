@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { FormEvent, InputHTMLAttributes, TextareaHTMLAttributes } from 'react';
-import { CellLabel, IconArrowRight, PageHeader, SocialIcon, cn } from './ui';
+import { Button, CellLabel, IconArrowRight, PageHeader, SocialIcon, cn } from './ui';
 import type { Lang, ContactFormData, Bilingual } from './types';
 import { usePageContext } from './router';
 
@@ -100,7 +100,7 @@ const MetroLine = ({ line, label, className }: MetroLineProps) => (
 const HoursSection = ({ lang }: { lang: Lang }) => (
   <section className="border-b border-border p-4">
     <CellLabel className="mb-2 block">{lang === 'fr' ? 'Horaires' : 'Hours'}</CellLabel>
-    <div className="flex flex-col gap-1 text-xs">
+    <div className="flex flex-col gap-1 text-caption">
       <HoursRow label={lang === 'fr' ? 'Lun — Ven' : 'Mon — Fri'} value="10:00 — 18:00" />
       <HoursRow label={lang === 'fr' ? 'Sam — Dim' : 'Sat — Sun'} value={lang === 'fr' ? 'Sur demande' : 'On request'} muted />
     </div>
@@ -180,7 +180,7 @@ const ContactForm = ({ lang, form, setForm, submit }: ContactFormProps) => (
   >
     <div className="col-span-2 flex flex-col justify-center bg-white px-5 py-2.5">
       <span className="edo-cell-label text-primary">{lang === 'fr' ? 'Écrivez-nous' : 'Write to us'}</span>
-      <h1 className="m-0 mt-0.5 text-2xl font-light leading-none tracking-display text-foreground">
+      <h1 className="m-0 mt-0.5 text-tile-large font-light leading-none tracking-display text-foreground">
         {lang === 'fr' ? 'Un projet, une visite ?' : 'A project, a visit?'}
       </h1>
     </div>
@@ -204,9 +204,9 @@ const ContactForm = ({ lang, form, setForm, submit }: ContactFormProps) => (
 
     <button
       type="submit"
-      className="col-span-2 row-start-8 flex cursor-pointer items-center justify-center gap-3.5 border-0 bg-primary font-mono text-xs uppercase tracking-label text-white transition-colors hover:bg-foreground"
+      className="edo-focus-ring col-span-2 row-start-8 flex cursor-pointer items-center justify-center gap-3.5 border-0 bg-primary font-mono text-caption uppercase tracking-label text-white transition-colors hover:bg-foreground hover:text-white"
     >
-      {lang === 'fr' ? 'Envoyer' : 'Send'} <IconArrowRight width="16" height="16" stroke="#fff" />
+      {lang === 'fr' ? 'Envoyer' : 'Send'} <IconArrowRight width="16" height="16" />
     </button>
   </form>
 );
@@ -233,14 +233,14 @@ const SubjectButton = ({ subject, index, lang, active, onClick }: SubjectButtonP
       onClick={onClick}
       className={cn(
         placements[index],
-        'flex min-h-14 cursor-pointer items-center gap-3 border-0 px-5 py-2.5 text-left font-sans transition-colors',
+        'edo-focus-ring flex min-h-14 cursor-pointer items-center gap-3 border-0 px-5 py-2.5 text-left font-sans transition-colors',
         active ? 'bg-foreground text-white' : 'bg-white text-foreground hover:bg-muted'
       )}
     >
       <span className={cn('font-mono text-caption tracking-meta', active ? 'text-white/60' : 'text-muted-foreground')}>
         {String(index + 1).padStart(2, '0')}
       </span>
-      <span className="text-sm font-normal tracking-copy-tight">{subject[lang]}</span>
+      <span className="text-detail font-normal tracking-copy-tight">{subject[lang]}</span>
     </button>
   );
 };
@@ -286,30 +286,31 @@ interface ContactSuccessProps {
 const ContactSuccess = ({ lang, setForm, setSent, goto }: ContactSuccessProps) => (
   <div className="flex h-full flex-col items-start justify-center gap-4 bg-white px-7 py-8">
     <span className="edo-cell-label text-primary">✓ {lang === 'fr' ? 'Message envoyé' : 'Message sent'}</span>
-    <h1 className="m-0 max-w-lg text-5xl font-light leading-tight tracking-display text-foreground">
+    <h1 className="m-0 max-w-lg text-page-title font-light leading-tight tracking-display text-foreground">
       {lang === 'fr' ? 'Merci — à très vite.' : 'Thanks — talk soon.'}
     </h1>
-    <p className="m-0 max-w-md text-sm leading-normal text-muted-foreground">
+    <p className="m-0 max-w-md text-detail leading-normal text-muted-foreground">
       {lang === 'fr'
         ? 'Notre équipe vous répond sous 24 h ouvrées. En attendant, vous pouvez parcourir la galerie ou explorer les plateaux.'
         : 'Our team replies within 1 business day. In the meantime, browse the gallery or explore the stages.'}
     </p>
     <div className="mt-3 flex flex-wrap gap-2.5">
-      <button
+      <Button
+        variant="outline"
+        size="lg"
         onClick={() => {
           setSent(false);
           setForm(INITIAL_FORM);
         }}
-        className="h-control cursor-pointer border border-foreground bg-white px-5 font-mono text-label uppercase tracking-label text-foreground transition-colors hover:bg-muted"
       >
         {lang === 'fr' ? 'Nouveau message' : 'Another message'}
-      </button>
-      <button
+      </Button>
+      <Button
+        size="lg"
         onClick={() => goto('gallery')}
-        className="h-control cursor-pointer border-0 bg-foreground px-5 font-mono text-label uppercase tracking-label text-white transition-all hover:brightness-110"
       >
         {lang === 'fr' ? 'Voir la galerie' : 'See gallery'} →
-      </button>
+      </Button>
     </div>
   </div>
 );
@@ -382,7 +383,7 @@ interface TeamMemberRowProps {
 const TeamMemberRow = ({ member, lang }: TeamMemberRowProps) => (
   <div className="grid grid-cols-fluid-auto gap-2 border-b border-white/10 py-2">
     <div className="flex flex-col gap-0.5">
-      <span className="text-sm tracking-copy-tight text-white">{typeof member.name === 'string' ? member.name : member.name[lang]}</span>
+      <span className="text-detail tracking-copy-tight text-white">{typeof member.name === 'string' ? member.name : member.name[lang]}</span>
       <span className="font-mono text-micro uppercase tracking-ui text-white/55">{member.role[lang]}</span>
     </div>
     {member.mail && (

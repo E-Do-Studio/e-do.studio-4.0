@@ -388,6 +388,12 @@
   scale: var(--tw-scale-x) var(--tw-scale-y);
 }
 
+@utility scale-110 {
+  --tw-scale-x: 1.10;
+  --tw-scale-y: 1.10;
+  scale: var(--tw-scale-x) var(--tw-scale-y);
+}
+
 @utility scale-115 {
   --tw-scale-x: 1.15;
   --tw-scale-y: 1.15;

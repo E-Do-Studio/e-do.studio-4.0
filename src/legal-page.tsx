@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { IconArrowRight, PageHeader } from './ui';
+import { Button, IconArrowRight, PageHeader } from './ui';
 import type { Lang, Bilingual } from './types';
 import { usePageContext } from './router';
 
@@ -265,9 +265,9 @@ interface BlockProps {
 
 const Block = ({ t, rows, p, lang }: BlockProps) => (
   <section className="py-6 border-b border-border">
-    <h3 className="mb-3.5 text-xl font-medium tracking-headline text-foreground">{t[lang]}</h3>
+    <h3 className="mb-3.5 text-tile-title font-medium tracking-headline text-foreground">{t[lang]}</h3>
     {rows && <div>{rows.map((r,i)=><Row key={i} {...r} lang={lang}/>)}</div>}
-    {p && <p className="m-0 text-sm leading-relaxed text-muted-foreground max-w-3xl">{p[lang]}</p>}
+    {p && <p className="m-0 text-detail leading-relaxed text-muted-foreground max-w-3xl">{p[lang]}</p>}
   </section>
 );
 
@@ -282,8 +282,8 @@ const Article = ({ n, t, p, lang }: ArticleProps) => (
   <article className="grid grid-cols-legal-article gap-5 py-5 border-b border-border">
     <span className="font-mono text-caption tracking-label text-primary pt-1">Art. {n}</span>
     <div>
-      <h4 className="mb-2 text-lg font-medium tracking-copy-tight text-foreground">{t[lang]}</h4>
-      <p className="m-0 text-sm leading-relaxed text-muted-foreground max-w-3xl">{p[lang]}</p>
+      <h4 className="mb-2 text-cell font-medium tracking-copy-tight text-foreground">{t[lang]}</h4>
+      <p className="m-0 text-detail leading-relaxed text-muted-foreground max-w-3xl">{p[lang]}</p>
     </div>
   </article>
 );
@@ -320,9 +320,9 @@ const LegalPage = () => {
         {SECTIONS.map((s,i)=>{
           const isActive = sec===s.k;
           return (
-            <button key={s.k} onClick={()=>setSec(s.k)} className={`flex-none py-3 px-4 border-0 cursor-pointer text-left flex flex-col gap-0.5 font-inherit transition-all duration-150 ${isActive ? 'bg-muted border-b-2 border-b-primary md:border-b-0 md:border-l-2 md:border-l-primary' : 'bg-transparent border-b-2 border-b-transparent md:border-b-0 md:border-l-2 md:border-l-transparent hover:bg-muted'}`}>
+            <button key={s.k} onClick={()=>setSec(s.k)} className={`edo-focus-ring flex-none py-3 px-4 border-0 cursor-pointer text-left flex flex-col gap-0.5 font-inherit transition-all duration-150 ${isActive ? 'bg-muted border-b-2 border-b-primary md:border-b-0 md:border-l-2 md:border-l-primary' : 'bg-transparent border-b-2 border-b-transparent md:border-b-0 md:border-l-2 md:border-l-transparent hover:bg-muted'}`}>
               <span className="font-mono text-micro tracking-label text-muted-foreground">0{i+1}</span>
-              <span className={`text-sm tracking-copy-tight whitespace-nowrap ${isActive ? 'font-medium text-foreground' : 'font-normal text-muted-foreground'}`}>
+              <span className={`text-detail tracking-copy-tight whitespace-nowrap ${isActive ? 'font-medium text-foreground' : 'font-normal text-muted-foreground'}`}>
                 {s[lang]}
               </span>
             </button>
@@ -331,10 +331,10 @@ const LegalPage = () => {
 
         <div className="px-4 py-cell-lg border-t border-border mt-3 hidden md:block">
           <span className="edo-cell-label mb-2.5 block">{lang==='fr'?'Une question ?':'Got a question?'}</span>
-          <p className="text-xs text-muted-foreground leading-normal mb-3">
+          <p className="text-caption text-muted-foreground leading-normal mb-3">
             {lang==='fr'?'Écrivez-nous directement.':'Write to us directly.'}
           </p>
-          <a href="mailto:contact@e-do.studio" className="inline-flex items-center gap-2 text-xs text-foreground no-underline border-b border-foreground pb-0.5">contact@e-do.studio <IconArrowRight width="10" height="10"/></a>
+          <a href="mailto:contact@e-do.studio" className="edo-focus-ring inline-flex items-center gap-2 text-caption text-foreground no-underline border-b border-foreground pb-0.5">contact@e-do.studio <IconArrowRight width="10" height="10"/></a>
         </div>
         <div className="flex-1"/>
       </div>
@@ -347,16 +347,16 @@ const LegalPage = () => {
             <span className="edo-cell-label text-primary">
               {String(SECTIONS.findIndex(s=>s.k===sec)+1).padStart(2,'0')} · {lang==='fr'?'Légal':'Legal'}
             </span>
-            <h1 className="mt-2.5 mb-3 text-5xl font-light tracking-display leading-none text-foreground">
+            <h1 className="mt-2.5 mb-3 text-page-title font-light tracking-display leading-none text-foreground">
               {active[lang]}<span className="text-primary">.</span>
             </h1>
-            <p className="m-0 text-sm text-muted-foreground leading-relaxed max-w-2xl">{C.intro[lang]}</p>
+            <p className="m-0 text-detail text-muted-foreground leading-relaxed max-w-2xl">{C.intro[lang]}</p>
           </div>
           <div className="text-right flex flex-col gap-1">
             <span className="font-mono text-label tracking-meta uppercase text-muted-foreground">
               {lang==='fr'?'Dernière mise à jour':'Last updated'}
             </span>
-            <span className="font-mono text-sm tracking-caption text-foreground">{active.updated}</span>
+            <span className="font-mono text-detail tracking-caption text-foreground">{active.updated}</span>
           </div>
         </div>
 
@@ -403,13 +403,13 @@ const LegalPage = () => {
               <div className="mt-9 bg-foreground text-white py-7 px-8 grid grid-cols-fluid-auto gap-6 items-center">
                 <div>
                   <span className="font-mono text-label tracking-label uppercase text-primary">© GRW · E-Do Studio</span>
-                  <p className="mt-1.5 text-sm leading-copy opacity-75 max-w-xl">
+                  <p className="mt-1.5 text-detail leading-copy opacity-75 max-w-xl">
                     {lang==='fr'
                       ? "RCS Bobigny 891 710 857 · 69 boulevard Victor Hugo · 93400 Saint-Ouen-sur-Seine. Tous droits réservés."
                       : "RCS Bobigny 891 710 857 · 69 boulevard Victor Hugo · 93400 Saint-Ouen-sur-Seine. All rights reserved."}
                   </p>
                 </div>
-                <button onClick={()=>goto('home')} className="bg-primary text-white border-0 h-header-sm px-6 font-mono text-caption tracking-label uppercase cursor-pointer inline-flex items-center gap-3">{lang==='fr'?'Retour accueil':'Back to home'} <IconArrowRight width="14" height="14" stroke="#fff"/></button>
+                <Button variant="default" size="lg" onClick={()=>goto('home')}>{lang==='fr'?'Retour accueil':'Back to home'} <IconArrowRight width="14" height="14"/></Button>
               </div>
             </div>
           )}
@@ -417,10 +417,10 @@ const LegalPage = () => {
           <div className="mt-8 flex justify-between items-center gap-5 font-mono text-label tracking-code uppercase text-muted-foreground">
             <span>{lang==='fr'?'Document consultable · Imprimable · Archivable':'Viewable · Printable · Archivable'}</span>
             <div className="flex gap-5">
-              <button onClick={()=>window.print()} className="bg-transparent border-0 cursor-pointer text-foreground font-inherit tracking-inherit text-transform-inherit">
+              <button onClick={()=>window.print()} className="edo-focus-ring bg-transparent border-0 cursor-pointer text-foreground font-inherit tracking-inherit text-transform-inherit">
                 ↓ {lang==='fr'?'Imprimer':'Print'}
               </button>
-              <a href="mailto:contact@e-do.studio" className="text-foreground no-underline">
+              <a href="mailto:contact@e-do.studio" className="edo-focus-ring text-foreground no-underline">
                 contact@e-do.studio
               </a>
             </div>

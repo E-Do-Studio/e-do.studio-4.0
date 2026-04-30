@@ -18,7 +18,7 @@ const sizeMap: Record<ButtonSize, string> = {
 };
 
 const variantMap: Record<ButtonVariant, string> = {
-  default: 'bg-primary text-primary-foreground hover:bg-foreground',
+  default: 'bg-primary text-primary-foreground hover:bg-foreground hover:text-white',
   outline: 'border border-foreground bg-background text-foreground hover:bg-muted',
   secondary: 'bg-secondary text-secondary-foreground hover:bg-muted',
   ghost: 'bg-transparent text-foreground hover:bg-muted',
@@ -36,7 +36,7 @@ const Button = ({
   <button
     className={cn(
       'edo-focus-ring inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap',
-      'border-0 font-mono text-xs font-normal uppercase tracking-button leading-none',
+      'border-0 font-mono text-caption font-normal uppercase tracking-button leading-none',
       'rounded-none transition-all duration-150 disabled:pointer-events-none disabled:opacity-40',
       sizeMap[size],
       variantMap[variant],

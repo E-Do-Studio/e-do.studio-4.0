@@ -234,7 +234,7 @@ const PlateauPage = ({ slug }: { slug: string }) => {
           const active = m === slug;
           return (
             <button key={m} onClick={()=>goto(m==='cyclorama'?'cyclorama':'plateau-'+m)}
-              className={`flex-none py-3.5 px-4 border-0 cursor-pointer text-left flex flex-col gap-1 transition-colors duration-150
+              className={`edo-focus-ring flex-none py-3.5 px-4 border-0 cursor-pointer text-left flex flex-col gap-1 transition-colors duration-150
                 md:border-b md:border-border
                 ${active ? 'bg-muted border-b-2 border-b-primary md:border-b-border md:border-l-2 md:border-l-primary' : 'bg-white border-b-2 border-b-transparent md:border-b-border md:border-l-2 md:border-l-transparent hover:bg-muted'}`}>
               <span className={`font-mono text-label tracking-label ${active?'text-primary':'text-muted-foreground'}`}>{String(i+1).padStart(2,'0')}</span>
@@ -253,7 +253,7 @@ const PlateauPage = ({ slug }: { slug: string }) => {
       {/* Name + tagline */}
       <div className="bg-white py-3.5 px-4 flex flex-col justify-between gap-1 md:col-start-4 md:row-start-2">
         <CellLabel>{p.tagline[lang]}</CellLabel>
-        <h1 className="text-3xl font-light m-0 tracking-display leading-none">{p.name}</h1>
+        <h1 className="text-tile-large font-light m-0 tracking-display leading-none">{p.name}</h1>
       </div>
 
       {/* Specifications */}
@@ -274,9 +274,9 @@ const PlateauPage = ({ slug }: { slug: string }) => {
         <CellLabel>{lang==='fr'?'Tarifs HT':'Rates excl. VAT'}</CellLabel>
         <div className="flex flex-col flex-1 min-h-0">
           {p.rates.map((r, i) => (
-            <div key={r.k.fr} className={`flex justify-between items-baseline text-xs py-1 ${i < p.rates.length - 1 ? 'border-b border-border' : ''}`}>
+            <div key={r.k.fr} className={`flex justify-between items-baseline text-caption py-1 ${i < p.rates.length - 1 ? 'border-b border-border' : ''}`}>
               <span className="text-muted-foreground">{r.k[lang]}</span>
-              <span className="text-foreground font-mono tracking-caption text-xs">{typeof r.v === 'string' ? r.v : r.v[lang]}</span>
+              <span className="text-foreground font-mono tracking-caption text-caption">{typeof r.v === 'string' ? r.v : r.v[lang]}</span>
             </div>
           ))}
         </div>
@@ -291,7 +291,7 @@ const PlateauPage = ({ slug }: { slug: string }) => {
       <div className="bg-white p-4 flex justify-between items-start gap-6 md:col-start-2 md:col-span-2 md:row-start-5">
         <div className="flex-1 flex flex-col gap-1.5 min-w-0">
           <CellLabel>{lang==='fr'?'Description':'Description'}</CellLabel>
-          <p className="m-0 text-xs text-foreground leading-normal max-w-2xl">{p.desc[lang]}</p>
+          <p className="m-0 text-caption text-foreground leading-normal max-w-2xl">{p.desc[lang]}</p>
         </div>
         <div className="flex-none w-40 flex flex-col gap-1.5">
           <CellLabel>{lang==='fr'?'Usages':'Uses'}</CellLabel>
@@ -303,11 +303,11 @@ const PlateauPage = ({ slug }: { slug: string }) => {
 
       {/* Book CTA */}
       <button onClick={()=>{ try{localStorage.setItem('edo-book-plateau', slug);}catch(e){} goto('book'); }}
-        className="bg-primary p-4 border-0 cursor-pointer flex flex-col justify-between text-left font-inherit min-h-20 md:col-start-4 md:row-start-5">
+        className="edo-focus-ring bg-primary p-4 border-0 cursor-pointer flex flex-col justify-between text-left text-white font-inherit min-h-20 transition-colors hover:bg-foreground hover:text-white md:col-start-4 md:row-start-5">
         <CellLabel className="text-white/80">06 · {lang==='fr'?'Réserver':'Book now'}</CellLabel>
         <div className="flex justify-between items-end text-white w-full">
-          <span className="text-2xl font-medium tracking-headline">{lang==='fr'?'Réserver ce plateau':'Book this stage'}</span>
-          <IconArrowRight width="20" height="20" stroke="#fff"/>
+          <span className="text-tile-large font-medium tracking-headline">{lang==='fr'?'Réserver ce plateau':'Book this stage'}</span>
+          <IconArrowRight width="20" height="20"/>
         </div>
       </button>
     </div>

@@ -45,9 +45,9 @@ const PageHeaderActionButton = ({
   const actionClassName = cn(
     'edo-focus-ring flex h-full flex-none cursor-pointer items-center justify-center gap-2 border-0 font-mono uppercase no-underline transition-colors',
     isPrimary
-      ? 'bg-primary px-6 text-xs tracking-caption text-white hover:bg-foreground'
+      ? 'bg-primary px-6 text-caption tracking-caption text-white hover:bg-foreground hover:text-white'
       : isDark
-        ? 'bg-foreground px-5 text-xs tracking-label text-white hover:brightness-110'
+        ? 'bg-foreground px-5 text-caption tracking-label text-white hover:brightness-110'
         : 'bg-background px-5 text-caption tracking-ui text-foreground hover:bg-muted',
     className,
   );
@@ -58,7 +58,7 @@ const PageHeaderActionButton = ({
         <IconArrowRight
           width={isPrimary ? 14 : 12}
           height={isPrimary ? 14 : 12}
-          stroke={isPrimary || isDark ? '#fff' : undefined}
+          className={isPrimary || isDark ? 'text-white' : undefined}
         />
       )}
     </>
@@ -130,7 +130,7 @@ const PageHeader = ({
       onClick={onLangToggle}
       className="edo-focus-ring flex h-full basis-header flex-none cursor-pointer items-center justify-center border-0 bg-background p-0 transition-colors hover:bg-muted"
     >
-      <span className="font-mono text-xs tracking-meta text-foreground">
+      <span className="font-mono text-caption tracking-meta text-foreground">
         {lang === 'fr' ? 'EN' : 'FR'}
       </span>
     </button>
