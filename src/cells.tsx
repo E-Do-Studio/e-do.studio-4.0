@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import type { FormEvent } from 'react';
-import { CellLabel, CellTitle, IconArrowRight, IconPlay, IconMenu, Wordmark, LangSwitch } from './ui';
+import { CellLabel, CellTitle, IconArrowRight, IconPlay, IconMenu, Wordmark, LangSwitch, cn } from './ui';
 import { MACHINES } from './data/plateaux';
 import { BRANDS } from './data/site';
 import type { Lang } from './types';
@@ -81,7 +81,10 @@ const CycloramaCell = ({ lang, onOpen, variant = 'full' }: CycloramaCellProps) =
     </div>
     <div className="relative flex items-end justify-between gap-2">
       <div>
-        <div className="text-foreground" style={{ fontSize: variant === 'full' ? 40 : 26, fontWeight: 300, letterSpacing: '-0.03em', lineHeight: 0.95 }}>
+        <div className={cn(
+          "font-light tracking-display leading-solid text-foreground",
+          variant === 'full' ? "text-[2.5rem]" : "text-tile-large"
+        )}>
           Cyclorama
         </div>
         <div className="mt-1.5 font-mono text-label uppercase tracking-label text-muted-foreground">

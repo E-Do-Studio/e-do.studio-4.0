@@ -83,7 +83,7 @@ const NavItemLink = ({ item, index, onClose, navigate }: NavItemLinkProps) => (
     className="edo-focus-ring relative flex min-h-18 cursor-pointer flex-col justify-between border-b border-foreground p-4 no-underline transition-colors hover:bg-muted"
   >
     <CellLabel>{String(index + 1).padStart(2, "0")}</CellLabel>
-    <span className="mt-6 text-cell font-medium text-muted-foreground">
+    <span className="mt-auto text-tile-title font-light text-foreground">
       {item.label}
     </span>
   </a>

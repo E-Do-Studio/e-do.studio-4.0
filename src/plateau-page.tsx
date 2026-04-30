@@ -253,7 +253,7 @@ const PlateauPage = ({ slug }: { slug: string }) => {
       {/* Name + tagline */}
       <div className="bg-white py-3.5 px-4 flex flex-col justify-between gap-1 md:col-start-4 md:row-start-2">
         <CellLabel>{p.tagline[lang]}</CellLabel>
-        <h1 className="text-page-title font-light m-0 tracking-display leading-none">{p.name}</h1>
+        <h1 className="text-tile-large font-light m-0 tracking-display leading-none">{p.name}</h1>
       </div>
 
       {/* Specifications */}
