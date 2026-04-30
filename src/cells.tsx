@@ -395,7 +395,7 @@ const CtaCell = ({ label, sub, onClick, variant = 'primary', size = 'md' }: CtaC
     onClick={onClick}
     className={[
       'edo-focus-ring group flex h-full w-full cursor-pointer flex-col justify-between border-0 p-4 text-left transition-colors duration-150',
-      variant === 'primary' ? 'bg-primary text-white' : 'bg-white text-foreground hover:bg-muted',
+      variant === 'primary' ? 'bg-primary text-white hover:bg-foreground hover:text-white' : 'bg-white text-foreground hover:bg-muted',
     ].join(' ')}
   >
     <span className={['edo-cell-label', variant === 'primary' ? 'text-white/70' : ''].join(' ')}>{sub}</span>
