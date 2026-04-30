@@ -9,7 +9,15 @@ const CACHE_TTL = 5 * 60 * 1000;
 
 async function fetchStrapi<T>(path: string, params?: Record<string, string>): Promise<T> {
   const url = new URL(`/api/${path}`, STRAPI_URL);
-  if (params) Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+  if (params) {
+    Object.entries(params).forEach(([k, v]) => {
+      if (k === 'populate' && v.includes(',')) {
+        v.split(',').forEach((field, i) => url.searchParams.append(`populate[${i}]`, field.trim()));
+      } else {
+        url.searchParams.set(k, v);
+      }
+    });
+  }
 
   const key = url.toString();
   const cached = cache.get(key);
@@ -384,4 +392,3 @@ export async function fetchStudioHours(): Promise<Bilingual> {
   return { fr: res.data.hours_fr, en: res.data.hours_en };
 }
 
-export const DISCOVERY_FIXED_POST_IDS = [3, 1, 6, 9];

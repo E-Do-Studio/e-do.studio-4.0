@@ -19,5 +19,8 @@ jobs:
       - name: Build Project
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
+      - name: Remove git metadata to avoid Vercel GitHub integration conflict
+        run: rm -rf .git
+
       - name: Deploy to Vercel (Production)
         run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
