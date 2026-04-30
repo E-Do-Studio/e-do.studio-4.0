@@ -142,12 +142,12 @@ const DirectionA = () => {
 
         <div className="flex flex-1 min-h-0 overflow-hidden bg-white">
           {ecomMode === 'type' ? (
-            <div className="grid flex-1 grid-cols-3 content-end gap-px bg-black md:grid-cols-6">
+            <div className="grid flex-1 grid-cols-3 content-end gap-px bg-white md:grid-cols-6">
               {categories.map((c, i) => (
                 <button
                   key={c.k}
                   onClick={() => goto('gallery')}
-                  className="edo-focus-ring group flex aspect-square min-w-0 cursor-pointer flex-col justify-between border-0 bg-white px-3 py-3 text-left text-foreground transition-colors duration-150 hover:bg-muted"
+                  className="edo-focus-ring group flex aspect-square min-w-0 cursor-pointer flex-col justify-between border-0 border-t border-l border-border bg-white px-3 py-3 text-left text-foreground transition-colors duration-150 hover:bg-muted"
                 >
                   <CatIcon kind={c.k} size={20} />
                   <div className="truncate text-caption font-medium tracking-copy-tight leading-snug">
@@ -157,12 +157,12 @@ const DirectionA = () => {
               ))}
             </div>
           ) : (
-            <div className="grid flex-1 grid-cols-2 content-end gap-px bg-black md:grid-cols-4">
+            <div className="grid flex-1 grid-cols-2 content-end gap-px bg-white md:grid-cols-4">
               {ecomMachines.map((m, i) => (
                 <button
                   key={m.slug}
                   onClick={() => goto('plateau-' + m.slug)}
-                  className="edo-focus-ring group flex aspect-square min-w-0 cursor-pointer flex-col justify-between border-0 bg-white px-4 py-4 text-left text-foreground transition-colors duration-150 hover:bg-muted"
+                  className="edo-focus-ring group flex aspect-square min-w-0 cursor-pointer flex-col justify-between border-0 border-t border-l border-border bg-white px-4 py-4 text-left text-foreground transition-colors duration-150 hover:bg-muted"
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-mono text-micro text-muted-foreground tracking-meta">
