@@ -21,8 +21,8 @@ export const FilterChips: React.FC<FilterChipsProps> = ({ cats = DISCOVERY_CATEG
         onClick={() => onChange(cat.k)}
         className={
           compact
-            ? 'min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap px-1 py-1 text-nano tracking-caption'
-            : 'px-2.5 py-1.5 text-label tracking-caption'
+            ? 'min-h-11 min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap px-1 py-2.5 text-nano tracking-caption'
+            : 'min-h-11 px-2.5 py-2.5 text-label tracking-caption'
         }
       >
         {cat[lang]}
