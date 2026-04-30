@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CellLabel, IconArrowRight, IconPlay, PageHeader, SocialIcon, cn } from './ui';
+import { CellLabel, IconArrowRight, IconPlay, PageHeader, SocialIcon, VideoLoop, cn } from './ui';
 import { MarqueeCell } from './cells';
 import { AssistantChat } from './assistant-chat';
 import { SOCIAL_LINKS } from './data/site';
@@ -212,17 +212,12 @@ const DirectionA = () => {
           onClick={() => goto('gallery')}
           className="edo-focus-ring group relative flex h-full w-full cursor-pointer items-center justify-center overflow-hidden border-0 bg-edo-dark p-0 text-left transition-all duration-150 hover:brightness-75"
         >
-          <img
-            src={showreelPreview}
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover object-center"
+          <VideoLoop
+            src="/videos/showreel.mp4"
+            poster={showreelPreview}
+            className="absolute inset-0 h-full w-full"
           />
           <div className="absolute inset-0 bg-home-media-gradient" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full border border-white/50 bg-black/25 backdrop-blur-sm transition-transform duration-150 group-hover:scale-110">
-              <IconPlay width="18" height="18" className="text-white" />
-            </div>
-          </div>
         </button>
       </div>
 
