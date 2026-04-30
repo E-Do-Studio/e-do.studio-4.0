@@ -1,11 +1,13 @@
 import React from 'react';
 import { MarqueeCell } from '../cells';
-import { DISCOVERY_SOCIAL_LINKS } from './data';
+import { useSocialLinks } from '../lib/use-strapi';
 import { SocialIcon } from './social-icon';
 
-export const DiscoveryFooter: React.FC = () => (
+export const DiscoveryFooter: React.FC = () => {
+  const { data: socialLinks } = useSocialLinks();
+  return (
   <footer className="row-start-3 grid min-h-0 grid-cols-4 gap-px overflow-hidden bg-black md:grid-cols-12">
-    {DISCOVERY_SOCIAL_LINKS.map((social) => (
+    {(socialLinks ?? []).map((social) => (
       <a
         key={social.k}
         href={social.href}
@@ -21,4 +23,5 @@ export const DiscoveryFooter: React.FC = () => (
       <MarqueeCell size={20} />
     </div>
   </footer>
-);
+  );
+};

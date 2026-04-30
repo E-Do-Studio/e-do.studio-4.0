@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { CellLabel, IconArrowRight, IconPlay, PageHeader, SocialIcon, VideoLoop, cn } from './ui';
 import { MarqueeCell } from './cells';
 import { AssistantChat } from './assistant-chat';
-import { SOCIAL_LINKS } from './data/site';
+import { useSocialLinks } from './lib/use-strapi';
 import type { Lang } from './types';
 import { usePageContext } from './router';
 import galleryHero from '../assets/gallery-hero.jpg';
@@ -66,6 +66,7 @@ const MachineRow = ({ idx, m, lang, onClick, isLast }: MachineRowProps) => (
 
 const DirectionA = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
+  const { data: socialLinks } = useSocialLinks();
   const [ecomMode, setEcomMode] = useState<'type' | 'machine'>('type');
   const categories = [
     { k: 'pap', fr: 'Prêt-à-porter', en: 'Ready-to-wear' },
@@ -315,7 +316,7 @@ const DirectionA = () => {
 
       {/* ── Row 6: Social links (wrapped to 4-col grid) ── */}
       <div className="col-span-2 grid grid-cols-4 h-11 gap-px md:col-start-1 md:col-end-5 md:row-start-6">
-        {SOCIAL_LINKS.map((s) => (
+        {(socialLinks ?? []).map((s) => (
           <a
             key={s.k}
             href={s.href}
