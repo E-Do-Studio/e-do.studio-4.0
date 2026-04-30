@@ -83,7 +83,7 @@ export const SplitArticleCard: React.FC<SplitArticleCardProps> = ({ post, lang, 
     <div className="relative min-h-56 overflow-hidden bg-foreground sm:min-h-0">
       <DiscoveryCover tone={post.tone} seed={post.id + 10} />
     </div>
-    <div className="flex min-h-0 min-w-0 origin-left flex-col justify-between gap-3.5 overflow-hidden px-7 py-6 transition-transform duration-200 group-hover:scale-102">
+    <div className="flex min-h-0 min-w-0 origin-left flex-col justify-between gap-3.5 overflow-hidden px-7 py-6 transition-transform duration-200 ease-edo-out group-hover:scale-102">
       <span className={cn(labelBase, 'text-primary')}>
         {post.tag[lang]} · {post.read}
       </span>
@@ -112,7 +112,7 @@ export const BookCtaTile: React.FC<BookCtaTileProps> = ({ lang, goto }) => (
     onClick={() => goto('book')}
     className="edo-focus-ring group relative flex h-21 shrink-0 cursor-pointer items-center justify-between gap-3.5 overflow-hidden border-0 bg-primary px-cell-lg py-3.5 text-left text-white transition-colors hover:bg-foreground hover:text-white"
   >
-    <span className="flex min-w-0 origin-left flex-col items-start gap-1 transition-transform duration-200 group-hover:scale-102">
+    <span className="flex min-w-0 origin-left flex-col items-start gap-1 transition-transform duration-200 ease-edo-out group-hover:scale-102">
       <span className="font-mono text-label uppercase tracking-label text-white/75">
         {lang === 'fr' ? 'Studio · 7j/7' : 'Studio · 7d/7'}
       </span>
@@ -120,7 +120,7 @@ export const BookCtaTile: React.FC<BookCtaTileProps> = ({ lang, goto }) => (
         {lang === 'fr' ? 'Réserver' : 'Book'}
       </span>
     </span>
-    <ArrowIcon width="16" height="16" className="shrink-0 text-white transition-transform duration-200 group-hover:translate-x-1 group-hover:scale-110" />
+    <ArrowIcon width="16" height="16" className="shrink-0 text-white transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5 group-hover:scale-110" />
   </button>
 );
 
