@@ -415,7 +415,7 @@ interface MarqueeCellProps {
 }
 
 const MarqueeCell = ({ items = BRANDS, speed = 40, size = 18 }: MarqueeCellProps) => (
-  <div className="relative flex h-full overflow-hidden bg-white">
+  <div className="relative flex h-full items-center overflow-hidden bg-white">
     <div className="inline-flex gap-10 whitespace-nowrap pl-5" style={{ animation: `mq ${speed}s linear infinite` }}>
       {[...items, ...items, ...items].map((x, i) => (
         <span key={i} className="font-sans text-foreground" style={{ fontSize: size, fontWeight: 700, letterSpacing: '-0.01em' }}>{x}</span>
