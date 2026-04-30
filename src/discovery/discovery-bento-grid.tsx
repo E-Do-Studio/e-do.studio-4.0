@@ -5,7 +5,6 @@ import { AssistantChat } from '../assistant-chat';
 import { ArticleCard } from './article-card';
 import { ArticleOverlay } from './article-overlay';
 import { useDiscoveryPosts } from '../lib/use-strapi';
-import { DISCOVERY_FIXED_POST_IDS } from '../lib/strapi';
 import { MorePostsCard } from './more-posts-card';
 import { BookBackstageStack, NewsletterCard, QuoteTile, SplitArticleCard, VisualTile } from './tiles';
 
@@ -20,14 +19,12 @@ export const DiscoveryBentoGrid: React.FC<DiscoveryBentoGridProps> = ({ lang, go
   const { data: posts } = useDiscoveryPosts();
   const allPosts = posts ?? [];
 
-  const fixedPosts = useMemo(
-    () => DISCOVERY_FIXED_POST_IDS.map((id) => allPosts.find((post) => post.id === id)).filter(Boolean) as DiscoveryPost[],
-    [allPosts]
-  );
-  const [featuredPost, , , splitPost] = fixedPosts;
+  const featuredPost = allPosts[0] ?? null;
+  const splitPost = allPosts[3] ?? null;
+  const fixedIndices = new Set([0, 3]);
   const morePosts = useMemo(
-    () => allPosts.filter((post) => !fixedPosts.some((fixedPost) => fixedPost.id === post.id)),
-    [allPosts, fixedPosts]
+    () => allPosts.filter((_, i) => !fixedIndices.has(i)),
+    [allPosts]
   );
 
   return (
