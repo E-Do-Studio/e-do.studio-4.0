@@ -541,135 +541,146 @@
 
 /* =========================================================
    Semantic element defaults
+   ---------------------------------------------------------
+   All element-level rules MUST live in @layer base so that
+   Tailwind @layer utilities can override them.  Unlayered
+   styles beat layered ones in the CSS cascade — the exact
+   bug that made h1.text-tile-large render at 6 rem instead
+   of 1.625 rem on the plateaux page.
    ========================================================= */
-html { color-scheme: light; }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans);
-  font-size: var(--font-size-body);
-  font-weight: var(--weight-regular);
-  line-height: var(--leading-normal);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
+@layer base {
+  html { color-scheme: light; }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: var(--font-size-body);
+    font-weight: var(--weight-regular);
+    line-height: var(--leading-normal);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection { background: var(--primary); color: var(--primary-foreground); }
+
+  /* ---------- Display ----------- */
+  .edo-display,
+  h1.edo-display {
+    font-family: var(--font-sans);
+    font-size: var(--font-size-display);
+    font-weight: var(--weight-light);
+    line-height: 0.95;
+    letter-spacing: var(--tracking-tight);
+    color: var(--foreground);
+  }
+
+  /* ---------- H1 ---------------- */
+  h1, .edo-h1 {
+    font-family: var(--font-sans);
+    font-size: var(--font-size-h1);
+    font-weight: var(--weight-light);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+    color: var(--foreground);
+  }
+
+  /* ---------- H2 ---------------- */
+  h2, .edo-h2 {
+    font-family: var(--font-sans);
+    font-size: var(--font-size-h2);
+    font-weight: var(--weight-light);
+    line-height: var(--leading-snug);
+    letter-spacing: var(--tracking-tight);
+    color: var(--foreground);
+  }
+
+  /* ---------- H3 ---------------- */
+  h3, .edo-h3 {
+    font-family: var(--font-sans);
+    font-size: var(--font-size-h3);
+    font-weight: var(--weight-medium);
+    line-height: var(--leading-snug);
+    letter-spacing: var(--tracking-tight);
+    color: var(--foreground);
+  }
+
+  /* ---------- body / paragraph ---------- */
+  p, .edo-body {
+    font-family: var(--font-sans);
+    font-size: var(--font-size-body);
+    font-weight: var(--weight-regular);
+    line-height: var(--leading-normal);
+    color: var(--muted-foreground);
+    text-wrap: pretty;
+  }
+
+  .edo-body-small {
+    font-size: var(--font-size-small);
+    line-height: var(--leading-normal);
+    color: var(--muted-foreground);
+  }
 }
 
-::selection { background: var(--primary); color: var(--primary-foreground); }
+@layer base {
+  /* ---------- "cell title" — the bold micro-headline on bento cells ---------- */
+  .edo-cell-title {
+    font-family: var(--font-sans);
+    font-size: var(--font-size-xs);       /* 12 */
+    font-weight: var(--weight-medium);
+    color: var(--foreground);
+    letter-spacing: var(--tracking-normal);
+  }
 
-/* ---------- Display ----------- */
-.edo-display,
-h1.edo-display {
-  font-family: var(--font-sans);
-  font-size: var(--font-size-display);
-  font-weight: var(--weight-light);
-  line-height: 0.95;
-  letter-spacing: var(--tracking-tight);
-  color: var(--foreground);
-}
+  /* ---------- "cell label" — ALL CAPS mono eyebrow ---------- */
+  .edo-cell-label,
+  .edo-eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-micro);
+    font-weight: var(--weight-regular);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-widest);
+    color: var(--muted-foreground);
+  }
 
-/* ---------- H1 ---------------- */
-h1, .edo-h1 {
-  font-family: var(--font-sans);
-  font-size: var(--font-size-h1);
-  font-weight: var(--weight-light);
-  line-height: var(--leading-tight);
-  letter-spacing: var(--tracking-tight);
-  color: var(--foreground);
-}
+  @media (min-width: 768px) {
+    .edo-cell-label, .edo-eyebrow { font-size: var(--font-size-xs); }
+  }
 
-/* ---------- H2 ---------------- */
-h2, .edo-h2 {
-  font-family: var(--font-sans);
-  font-size: var(--font-size-h2);
-  font-weight: var(--weight-light);
-  line-height: var(--leading-snug);
-  letter-spacing: var(--tracking-tight);
-  color: var(--foreground);
-}
+  /* ---------- Bento inputs — placeholder styled as label ---------- */
+  .edo-bento-input::placeholder {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    font-weight: var(--weight-regular);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-widest);
+    color: var(--muted-foreground);
+    opacity: 1;
+  }
+  .edo-bento-input:focus {
+    background: var(--edo-gray-100);
+  }
+  .edo-bento-input:focus::placeholder {
+    opacity: 0;
+  }
 
-/* ---------- H3 ---------------- */
-h3, .edo-h3 {
-  font-family: var(--font-sans);
-  font-size: var(--font-size-h3);
-  font-weight: var(--weight-medium);
-  line-height: var(--leading-snug);
-  letter-spacing: var(--tracking-tight);
-  color: var(--foreground);
-}
+  /* ---------- Monospace code / spec values ---------- */
+  code, .edo-mono {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    font-weight: var(--weight-regular);
+    font-feature-settings: "tnum" 1, "zero" 1;
+  }
 
-/* ---------- body / paragraph ---------- */
-p, .edo-body {
-  font-family: var(--font-sans);
-  font-size: var(--font-size-body);
-  font-weight: var(--weight-regular);
-  line-height: var(--leading-normal);
-  color: var(--muted-foreground);
-  text-wrap: pretty;
-}
-
-.edo-body-small {
-  font-size: var(--font-size-small);
-  line-height: var(--leading-normal);
-  color: var(--muted-foreground);
-}
-
-/* ---------- "cell title" — the bold micro-headline on bento cells ---------- */
-.edo-cell-title {
-  font-family: var(--font-sans);
-  font-size: var(--font-size-xs);       /* 12 */
-  font-weight: var(--weight-medium);
-  color: var(--foreground);
-  letter-spacing: var(--tracking-normal);
-}
-
-/* ---------- "cell label" — ALL CAPS mono eyebrow ---------- */
-.edo-cell-label,
-.edo-eyebrow {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-micro);
-  font-weight: var(--weight-regular);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-widest);
-  color: var(--muted-foreground);
-}
-
-@media (min-width: 768px) {
-  .edo-cell-label, .edo-eyebrow { font-size: var(--font-size-xs); }
-}
-
-/* ---------- Bento inputs — placeholder styled as label ---------- */
-.edo-bento-input::placeholder {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-xs);
-  font-weight: var(--weight-regular);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-widest);
-  color: var(--muted-foreground);
-  opacity: 1;
-}
-.edo-bento-input:focus {
-  background: var(--edo-gray-100);
-}
-.edo-bento-input:focus::placeholder {
-  opacity: 0;
-}
-
-/* ---------- Monospace code / spec values ---------- */
-code, .edo-mono {
-  font-family: var(--font-mono);
-  font-size: 0.9em;
-  font-weight: var(--weight-regular);
-  font-feature-settings: "tnum" 1, "zero" 1;
-}
-
-/* ---------- Button text (the cva baseline) ---------- */
-.edo-button-text {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-xs);
-  font-weight: var(--weight-regular);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-widest);
-  line-height: 1;
+  /* ---------- Button text (the cva baseline) ---------- */
+  .edo-button-text {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    font-weight: var(--weight-regular);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-widest);
+    line-height: 1;
+  }
 }

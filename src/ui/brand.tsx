@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { Lang } from '../types';
 import { IconGlobe } from './icons';
+import logoFull from '../../brand/logo-full.png';
+import logoMark from '../../brand/logo-mark.png';
 
 interface WordmarkProps {
   size?: 32 | 40;
@@ -14,7 +16,7 @@ const sizeMap: Record<number, string> = {
 
 const Wordmark = ({ size = 40, variant = 'full' }: WordmarkProps) => (
   <img
-    src={variant === 'mark' ? 'brand/logo-mark.png' : 'brand/logo-full.png'}
+    src={variant === 'mark' ? logoMark : logoFull}
     alt="E-Do Studio"
     className={`${sizeMap[size] ?? 'h-10'} block w-auto`}
   />
