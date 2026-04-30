@@ -114,7 +114,14 @@
   .edo-page-enter {
     animation: none;
   }
+  .edo-typing-dot {
+    animation: none;
+  }
   .edo-list-row {
+    transition: none;
+  }
+  /* Disable transform-based hover/interaction transitions; keep color/opacity for comprehension */
+  .transition-transform {
     transition: none;
   }
 }
