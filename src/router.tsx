@@ -143,7 +143,7 @@ const plateauRoute = createRoute({
   path: '/plateau/$slug',
   component: () => {
     const params = plateauRoute.useParams();
-    return <PlateauPage slug={params.slug} />;
+    return <PlateauPage key={params.slug} slug={params.slug} />;
   },
 });
 

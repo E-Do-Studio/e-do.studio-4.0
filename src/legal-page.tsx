@@ -295,7 +295,7 @@ const LegalPage = () => {
   const C = CONTENT[sec];
 
   return (
-    <div className="grid w-full gap-px bg-hairline overflow-y-auto md:grid-cols-app md:grid-rows-app md:h-full md:overflow-hidden">
+    <div className="edo-page-enter grid w-full gap-px bg-hairline overflow-y-auto md:grid-cols-app md:grid-rows-app md:h-full md:overflow-hidden">
 
       <PageHeader
         lang={lang}
