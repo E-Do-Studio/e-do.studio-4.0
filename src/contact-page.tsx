@@ -157,7 +157,7 @@ interface ContactFormPanelProps {
 }
 
 const ContactFormPanel = ({ lang, form, sent, setForm, setSent, submit, goto }: ContactFormPanelProps) => (
-  <main className="overflow-hidden bg-black md:col-start-2 md:row-start-2">
+  <main className="overflow-hidden bg-white md:col-start-2 md:row-start-2">
     {!sent ? (
       <ContactForm lang={lang} form={form} setForm={setForm} submit={submit} />
     ) : (
@@ -271,7 +271,7 @@ const ContactTextarea = ({ value, onChange, ...props }: ContactTextareaProps) =>
   <textarea
     value={value}
     onChange={(event) => onChange(event.target.value)}
-    className={cn(inputClassName, 'col-span-2 row-start-7 h-full resize-none py-4 leading-normal')}
+    className={cn(inputClassName, 'col-span-2 row-start-7 h-full min-h-36 resize-none py-4 leading-normal')}
     {...props}
   />
 );
@@ -316,7 +316,7 @@ const ContactSuccess = ({ lang, setForm, setSent, goto }: ContactSuccessProps) =
 );
 
 const ContactRightColumn = ({ lang }: { lang: Lang }) => (
-  <aside className="grid grid-rows-2 gap-px overflow-hidden bg-black md:col-start-3 md:row-start-2" style={{minHeight: '400px'}}>
+  <aside className="grid grid-rows-2 gap-px overflow-hidden bg-hairline md:col-start-3 md:row-start-2 min-h-72 md:min-h-0">
     <ContactMap lang={lang} />
     <TeamPanel lang={lang} />
   </aside>
@@ -405,7 +405,7 @@ const ContactPage = () => {
   };
 
   return (
-    <div className="grid w-full gap-px overflow-y-auto bg-black md:h-full md:grid-cols-contact-shell md:grid-rows-page md:overflow-hidden">
+    <div className="grid w-full gap-px overflow-y-auto bg-hairline md:h-full md:grid-cols-contact-shell md:grid-rows-page md:overflow-hidden">
       <PageHeader
         lang={lang}
         title={lang === 'fr' ? 'Nous contacter' : 'Contact us'}

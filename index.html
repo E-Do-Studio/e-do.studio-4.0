@@ -7,37 +7,6 @@
 <link rel="icon" href="assets/favicon.svg"/>
 <style>
   html,body,#root{margin:0;padding:0;height:100%;background:#fff;font-family:var(--font-sans);color:#141414;overflow:hidden}
-  .shell{position:fixed;inset:0;display:flex;flex-direction:column}
-
-  /* ========== Toolbar to switch between directions ========== */
-  .toolbar{
-    height:40px;background:#0a0a0a;color:#fff;
-    display:flex;align-items:stretch;flex-shrink:0;
-    font-family:var(--font-mono);font-size:10px;letter-spacing:0.2em;text-transform:uppercase;
-  }
-  .toolbar .brand{padding:0 14px;display:flex;align-items:center;gap:8px;border-right:1px solid #222;white-space:nowrap;flex-shrink:0}
-  .toolbar .brand b{font-family:var(--font-sans);font-weight:700;font-size:13px;letter-spacing:-0.01em;text-transform:none}
-  .toolbar .brand .tag{color:#888}
-  @media (max-width: 1280px){ .toolbar .brand .tag{display:none} }
-  .toolbar .spacer{flex:1;min-width:0}
-  .toolbar .tab{
-    background:transparent;border:0;color:#888;padding:0 16px;cursor:pointer;
-    border-left:1px solid #222;display:flex;align-items:center;gap:8px;white-space:nowrap;
-    font-family:inherit;font-size:inherit;letter-spacing:inherit;text-transform:inherit;
-    transition:background .15s, color .15s;
-  }
-  @media (max-width: 1200px){ .toolbar .tab .subt{display:none} }
-  .toolbar .tab:hover{background:#141414;color:#fff}
-  .toolbar .tab.active{background:#fff;color:#0a0a0a}
-  .toolbar .tab .n{opacity:.5}
-  .toolbar .tab.active .n{color:var(--edo-orange);opacity:1}
-  .toolbar .tab .subt{opacity:.5;font-size:9px}
-  .toolbar .screen{padding:0 14px;display:flex;align-items:center;gap:10px;border-left:1px solid #222;color:#888;white-space:nowrap;flex-shrink:0}
-  @media (max-width: 1100px){ .toolbar .screen .lbl{display:none} }
-  .toolbar .screen button{background:transparent;border:0;color:inherit;cursor:pointer;font:inherit;letter-spacing:inherit;text-transform:inherit;padding:0;transition:color .15s}
-  .toolbar .screen button:hover{color:#fff}
-  .toolbar .screen button.on{color:var(--edo-orange)}
-  .stage{flex:1;overflow:hidden;position:relative;background:#fff}
 </style>
 </head>
 <body>

@@ -295,7 +295,7 @@ const LegalPage = () => {
   const C = CONTENT[sec];
 
   return (
-    <div className="grid w-full gap-px bg-black overflow-y-auto md:grid-cols-app md:grid-rows-app md:h-full md:overflow-hidden">
+    <div className="grid w-full gap-px bg-hairline overflow-y-auto md:grid-cols-app md:grid-rows-app md:h-full md:overflow-hidden">
 
       <PageHeader
         lang={lang}
@@ -311,10 +311,7 @@ const LegalPage = () => {
 
       {/* Sidebar: horizontal tabs on mobile, vertical list on desktop */}
       <div className="bg-white overflow-auto flex flex-row md:col-start-1 md:row-start-2 md:flex-col">
-        <div className="px-4 pt-4 pb-2.5">
-          <span className="edo-cell-label">{lang==='fr'?'Sommaire':'Contents'}</span>
-        </div>
-        <div className="px-4 pt-4 pb-2.5 shrink-0 hidden md:block">
+        <div className="px-4 pt-4 pb-2.5 shrink-0">
           <span className="edo-cell-label">{lang==='fr'?'Sommaire':'Contents'}</span>
         </div>
         {SECTIONS.map((s,i)=>{
