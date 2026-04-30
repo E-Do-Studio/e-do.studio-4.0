@@ -45,7 +45,7 @@ export const MorePostsCard: React.FC<MorePostsCardProps> = ({ posts, lang, onOpe
             <div className="relative aspect-square overflow-hidden">
               <DiscoveryCover tone={post.tone} seed={post.id + 4} />
             </div>
-            <div className="flex min-w-0 origin-left flex-col gap-1 transition-transform duration-200 group-hover:scale-102">
+            <div className="flex min-w-0 origin-left flex-col gap-1 transition-transform duration-200 ease-edo-out group-hover:scale-102">
               <ArticleMeta post={post} lang={lang} muted />
               <span className="edo-line-clamp-2 text-detail font-normal leading-snug tracking-copy-tight text-foreground">
                 {post.title[lang]}

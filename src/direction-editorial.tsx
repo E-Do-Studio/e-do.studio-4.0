@@ -60,7 +60,7 @@ const MachineRow = ({ idx, m, lang, onClick, isLast }: MachineRowProps) => (
         {m[lang].sub}
       </div>
     </div>
-    <IconArrowRight className="text-muted-foreground transition-transform duration-150 group-hover:translate-x-1" width="16" height="16" />
+    <IconArrowRight className="text-muted-foreground transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5" width="16" height="16" />
   </button>
 );
 
@@ -84,7 +84,7 @@ const DirectionA = () => {
 
   return (
     /* Mobile: 2-col grid, vertical scroll. Desktop (md+): 12-col bento, fixed viewport */
-    <div className="grid w-full grid-cols-2 gap-px bg-black overflow-y-auto md:h-full md:grid-cols-12 md:grid-rows-home md:overflow-hidden">
+    <div className="edo-page-enter grid w-full grid-cols-2 gap-px bg-black overflow-y-auto md:h-full md:grid-cols-12 md:grid-rows-home md:overflow-hidden">
 
       {/* ── Row 1: Header ── */}
       <PageHeader
@@ -200,7 +200,7 @@ const DirectionA = () => {
           </div>
           <div className="flex-shrink-0">
             <IconArrowRight
-              className="transition-transform duration-150 group-hover:translate-x-1 group-hover:scale-110"
+              className="transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5 group-hover:scale-110"
               width="16" height="16"            />
           </div>
         </div>
@@ -238,7 +238,7 @@ const DirectionA = () => {
           </div>
           <div className="flex flex-shrink-0 items-center justify-center">
             <IconArrowRight
-              className="transition-transform duration-150 group-hover:translate-x-1"
+              className="transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5"
               width="16" height="16"
             />
           </div>
@@ -259,7 +259,7 @@ const DirectionA = () => {
           </span>
         </div>
         <IconArrowRight
-          className="flex-shrink-0 transition-transform duration-150 group-hover:translate-x-1 group-hover:scale-110"
+          className="flex-shrink-0 transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5 group-hover:scale-110"
           width="16" height="16"        />
       </button>
 
@@ -280,7 +280,7 @@ const DirectionA = () => {
         </div>
         <div className="relative flex-shrink-0">
           <IconArrowRight
-            className="transition-transform duration-150 group-hover:translate-x-1 group-hover:scale-110"
+            className="transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5 group-hover:scale-110"
             width="16" height="16"          />
         </div>
       </button>
@@ -301,7 +301,7 @@ const DirectionA = () => {
             </div>
           </div>
           <IconArrowRight
-            className="flex-shrink-0 transition-transform duration-150 group-hover:translate-x-1"
+            className="flex-shrink-0 transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5"
             width="16" height="16"
           />
         </div>

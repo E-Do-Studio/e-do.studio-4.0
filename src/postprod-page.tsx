@@ -216,7 +216,7 @@ const PostprodPage = () => {
 
   return (
     /* Mobile: single-column scrollable. Desktop (md+): sidebar + workspace */
-    <div className="grid w-full gap-px bg-black overflow-y-auto md:h-full md:grid-cols-app md:grid-rows-app md:overflow-hidden">
+    <div className="edo-page-enter grid w-full gap-px bg-black overflow-y-auto md:h-full md:grid-cols-app md:grid-rows-app md:overflow-hidden">
 
       <PageHeader
         lang={lang}

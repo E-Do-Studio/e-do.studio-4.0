@@ -108,7 +108,7 @@ interface ServiceTileProps {
 const ServiceTile = ({ label, seed, palette = 'warm', sublabel, onClick }: ServiceTileProps) => (
   <button
     onClick={onClick}
-    className="edo-focus-ring group relative flex h-full w-full cursor-pointer items-end border-0 p-3 text-left transition-transform duration-300 hover:scale-102"
+    className="edo-focus-ring group relative flex h-full w-full cursor-pointer items-end border-0 p-3 text-left transition-transform duration-200 ease-edo-out hover:scale-102"
     style={{ background: tile(seed, palette) }}
   >
     <div className="absolute inset-0 flex flex-col justify-between p-3 text-white mix-blend-difference">
@@ -362,7 +362,7 @@ const GalleryCell = ({ columns = 3, rows = 1, onOpen, seeds = null, palette = 'e
         <button
           key={i}
           onClick={() => onOpen?.(i)}
-          className="edo-focus-ring group relative cursor-pointer overflow-hidden border-0 transition-transform duration-300 hover:scale-102"
+          className="edo-focus-ring group relative cursor-pointer overflow-hidden border-0 transition-transform duration-200 ease-edo-out hover:scale-102"
           style={{ background: tile(s, palette) }}
         >
           <span className="absolute bottom-2 left-2 font-mono text-micro uppercase tracking-label text-white mix-blend-difference">
@@ -403,7 +403,7 @@ const CtaCell = ({ label, sub, onClick, variant = 'primary', size = 'md' }: CtaC
       <span style={{ fontSize: size === 'lg' ? 26 : 18, fontWeight: variant === 'primary' ? 500 : 400, letterSpacing: '-0.02em', lineHeight: 1 }}>
         {label}
       </span>
-      <IconArrowRight className="transition-transform duration-150 group-hover:translate-x-1" width="20" height="20" />
+      <IconArrowRight className="transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5" width="20" height="20" />
     </div>
   </button>
 );

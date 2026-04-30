@@ -551,7 +551,7 @@ const BookPageV2 = () => {
   }
 
   return (
-    <div className="grid w-full gap-px bg-black overflow-y-auto md:h-full md:overflow-hidden md:grid-cols-book-shell md:grid-rows-app">
+    <div className="edo-page-enter grid w-full gap-px bg-black overflow-y-auto md:h-full md:overflow-hidden md:grid-cols-book-shell md:grid-rows-app">
 
       <PageHeader
         lang={lang}
