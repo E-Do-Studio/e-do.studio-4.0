@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import type { CSSProperties } from "react";
 import { usePageContext } from "./router";
 import type { Lang } from "./types";
 import { Button, PageHeader } from "./ui";
@@ -376,8 +377,12 @@ const GalleryContent = ({
       {filtered.length === 0 ? (
         <GalleryEmptyState lang={lang} onReset={resetFilters} />
       ) : (
-        filtered.map((project) => (
-          <ProjectRow key={project.id} project={project} />
+        filtered.map((project, idx) => (
+          <ProjectRow
+            key={project.id}
+            project={project}
+            style={{ transitionDelay: `${Math.min(idx * 40, 200)}ms` }}
+          />
         ))
       )}
     </div>
@@ -411,8 +416,8 @@ const GalleryEmptyState = ({
 
 type Project = (typeof PROJECTS)[number];
 
-const ProjectRow = ({ project }: { project: Project }) => (
-  <div className="grid gap-px bg-black grid-cols-2 md:grid-cols-gallery-row">
+const ProjectRow = ({ project, style }: { project: Project; style?: CSSProperties }) => (
+  <div className="edo-list-row grid gap-px bg-black grid-cols-2 md:grid-cols-gallery-row" style={style}>
     <ProjectLabel project={project} />
     {[0, 1, 2].map((imageIndex) => (
       <ProjectImage
@@ -520,7 +525,7 @@ const GalleryPageV3 = () => {
   };
 
   return (
-    <div className="grid w-full gap-px bg-black overflow-y-auto md:h-full md:grid-rows-page md:overflow-hidden">
+    <div className="edo-page-enter grid w-full gap-px bg-black overflow-y-auto md:h-full md:grid-rows-page md:overflow-hidden">
       <PageHeader
         lang={lang}
         title={lang === "fr" ? "Galerie" : "Gallery"}

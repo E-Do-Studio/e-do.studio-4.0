@@ -405,7 +405,7 @@ const ContactPage = () => {
   };
 
   return (
-    <div className="grid w-full gap-px overflow-y-auto bg-hairline md:h-full md:grid-cols-contact-shell md:grid-rows-page md:overflow-hidden">
+    <div className="edo-page-enter grid w-full gap-px overflow-y-auto bg-hairline md:h-full md:grid-cols-contact-shell md:grid-rows-page md:overflow-hidden">
       <PageHeader
         lang={lang}
         title={lang === 'fr' ? 'Nous contacter' : 'Contact us'}

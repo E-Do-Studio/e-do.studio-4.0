@@ -30,7 +30,7 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({ post, lang, onOpen, he
     </div>
 
     <div className={cn(
-      'flex min-w-0 origin-left flex-col overflow-hidden transition-transform duration-200 group-hover:scale-102',
+      'flex min-w-0 origin-left flex-col overflow-hidden transition-transform duration-200 ease-edo-out group-hover:scale-102',
       headline ? 'gap-1 px-cell pb-3 pt-2.5' : 'gap-1 px-cell pb-4 pt-3.5'
     )}>
       <ArticleMeta post={post} lang={lang} />
