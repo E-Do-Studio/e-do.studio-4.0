@@ -5,6 +5,8 @@ import { AssistantChat } from './assistant-chat';
 import { SOCIAL_LINKS } from './data/site';
 import type { Lang } from './types';
 import { usePageContext } from './router';
+import galleryHero from '../assets/gallery-hero.jpg';
+import showreelPreview from '../assets/showreel-preview.png';
 
 interface CatIconProps {
   kind: string;
@@ -184,7 +186,7 @@ const DirectionA = () => {
         onClick={() => goto('gallery')}
         className="edo-focus-ring group col-span-2 min-h-48 flex flex-col items-stretch justify-end border-0 bg-edo-dark p-6 text-white transition-all duration-150 hover:brightness-75 md:col-start-7 md:col-end-13 md:row-start-2 md:row-end-4"
         style={{
-          backgroundImage: 'linear-gradient(180deg, rgba(0,0,0,.25) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0) 55%, rgba(0,0,0,.65) 100%), url(./assets/gallery-hero.jpg)',
+          backgroundImage: `linear-gradient(180deg, rgba(0,0,0,.25) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0) 55%, rgba(0,0,0,.65) 100%), url(${galleryHero})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
@@ -211,7 +213,7 @@ const DirectionA = () => {
           className="edo-focus-ring group relative flex h-full w-full cursor-pointer items-center justify-center overflow-hidden border-0 bg-edo-dark p-0 text-left transition-all duration-150 hover:brightness-75"
         >
           <img
-            src="./assets/showreel-preview.png"
+            src={showreelPreview}
             alt=""
             className="absolute inset-0 h-full w-full object-cover object-center"
           />
