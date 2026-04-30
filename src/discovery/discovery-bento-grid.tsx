@@ -29,7 +29,7 @@ export const DiscoveryBentoGrid: React.FC<DiscoveryBentoGridProps> = ({ lang, go
 
   return (
     <>
-      <main className="row-start-2 grid min-h-0 grid-cols-1 gap-px overflow-y-auto bg-black md:grid-cols-4 lg:grid-cols-8 lg:grid-rows-discovery-bento lg:overflow-hidden">
+      <main className="row-start-2 grid grid-cols-1 gap-px bg-edo-pure-black md:min-h-0 md:grid-cols-4 md:overflow-y-auto lg:grid-cols-8 lg:grid-rows-discovery-bento lg:overflow-hidden">
         <VisualTile
           tone="dark"
           seed={5}

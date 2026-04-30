@@ -5,7 +5,7 @@ interface DiscoveryShellProps {
 }
 
 export const DiscoveryShell: React.FC<DiscoveryShellProps> = ({ children }) => (
-  <div className="relative grid h-full w-full grid-rows-discovery-shell gap-px overflow-hidden bg-black">
+  <div className="relative grid w-full gap-px overflow-y-auto bg-edo-pure-black md:h-full md:grid-rows-discovery-shell md:overflow-hidden">
     {children}
   </div>
 );
