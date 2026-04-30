@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import type { FormEvent } from 'react';
 import { CellLabel, CellTitle, IconArrowRight, IconPlay, IconMenu, Wordmark, LangSwitch, cn } from './ui';
-import { MACHINES } from './data/plateaux';
-import { BRANDS } from './data/site';
-import type { Lang } from './types';
+import { useMachines, useBrands } from './lib/use-strapi';
+import type { Lang, MachineInfo } from './types';
 
 const KEYWORDS = {
   fr: [
@@ -201,15 +200,18 @@ const EtouchCell = ({ lang }: EtouchCellProps) => (
 
 interface MachineListCellProps {
   lang: Lang;
-  onSelect?: (machine: typeof MACHINES[number]) => void;
+  onSelect?: (machine: MachineInfo) => void;
 }
 
-const MachineListCell = ({ lang, onSelect }: MachineListCellProps) => (
+const MachineListCell = ({ lang, onSelect }: MachineListCellProps) => {
+  const { data: machines } = useMachines();
+  const list = machines ?? [];
+  return (
   <div className="flex h-full flex-col bg-white">
     <div className="border-b border-input px-4 py-3">
-      <CellLabel>Machines · 05</CellLabel>
+      <CellLabel>Machines · {String(list.length).padStart(2, '0')}</CellLabel>
     </div>
-    {MACHINES.map((m, i) => (
+    {list.map((m, i) => (
       <button
         key={m.slug}
         onClick={() => onSelect?.(m)}
@@ -226,7 +228,8 @@ const MachineListCell = ({ lang, onSelect }: MachineListCellProps) => (
       </button>
     ))}
   </div>
-);
+  );
+};
 
 interface ContactCellProps {
   lang: Lang;
@@ -351,6 +354,8 @@ interface GalleryCellProps {
 }
 
 const GalleryCell = ({ columns = 3, rows = 1, onOpen, seeds = null, palette = 'editorial', showViewAll = false, lang = 'fr' }: GalleryCellProps) => {
+  const { data: brands } = useBrands();
+  const brandList = brands ?? [];
   const total = columns * rows - (showViewAll ? 1 : 0);
   const actualSeeds = seeds || Array.from({ length: total }, (_, i) => i + 1);
   return (
@@ -366,7 +371,7 @@ const GalleryCell = ({ columns = 3, rows = 1, onOpen, seeds = null, palette = 'e
           style={{ background: tile(s, palette) }}
         >
           <span className="absolute bottom-2 left-2 font-mono text-micro uppercase tracking-label text-white mix-blend-difference">
-            {String(i + 1).padStart(2, '0')} · {BRANDS[i % BRANDS.length].split(' ')[0]}
+            {String(i + 1).padStart(2, '0')}{brandList.length > 0 ? ` · ${brandList[i % brandList.length].split(' ')[0]}` : ''}
           </span>
         </button>
       ))}
@@ -414,16 +419,21 @@ interface MarqueeCellProps {
   size?: number;
 }
 
-const MarqueeCell = ({ items = BRANDS, speed = 40, size = 18 }: MarqueeCellProps) => (
+const MarqueeCell = ({ items, speed = 40, size = 18 }: MarqueeCellProps) => {
+  const { data: brands } = useBrands();
+  const list = items ?? brands ?? [];
+  if (list.length === 0) return <div className="flex h-full items-center bg-white" />;
+  return (
   <div className="relative flex h-full items-center overflow-hidden bg-white">
     <div className="inline-flex gap-10 whitespace-nowrap pl-5" style={{ animation: `mq ${speed}s linear infinite` }}>
-      {[...items, ...items, ...items].map((x, i) => (
+      {[...list, ...list, ...list].map((x, i) => (
         <span key={i} className="font-sans text-foreground" style={{ fontSize: size, fontWeight: 700, letterSpacing: '-0.01em' }}>{x}</span>
       ))}
     </div>
     <style>{`@keyframes mq { to { transform: translateX(-50%) } }`}</style>
   </div>
-);
+  );
+};
 
 interface AboutCellProps {
   lang: string;

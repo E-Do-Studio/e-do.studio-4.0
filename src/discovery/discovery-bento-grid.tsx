@@ -4,7 +4,8 @@ import type { DiscoveryPost } from '../types';
 import { AssistantChat } from '../assistant-chat';
 import { ArticleCard } from './article-card';
 import { ArticleOverlay } from './article-overlay';
-import { DISCOVERY_FIXED_POST_IDS, DISCOVERY_POSTS } from './data';
+import { useDiscoveryPosts } from '../lib/use-strapi';
+import { DISCOVERY_FIXED_POST_IDS } from '../lib/strapi';
 import { MorePostsCard } from './more-posts-card';
 import { BookBackstageStack, NewsletterCard, QuoteTile, SplitArticleCard, VisualTile } from './tiles';
 
@@ -16,15 +17,17 @@ interface DiscoveryBentoGridProps {
 export const DiscoveryBentoGrid: React.FC<DiscoveryBentoGridProps> = ({ lang, goto }) => {
   const [cat, setCat] = useState('all');
   const [openPost, setOpenPost] = useState<DiscoveryPost | null>(null);
+  const { data: posts } = useDiscoveryPosts();
+  const allPosts = posts ?? [];
 
   const fixedPosts = useMemo(
-    () => DISCOVERY_FIXED_POST_IDS.map((id) => DISCOVERY_POSTS.find((post) => post.id === id)).filter(Boolean) as DiscoveryPost[],
-    []
+    () => DISCOVERY_FIXED_POST_IDS.map((id) => allPosts.find((post) => post.id === id)).filter(Boolean) as DiscoveryPost[],
+    [allPosts]
   );
   const [featuredPost, , , splitPost] = fixedPosts;
   const morePosts = useMemo(
-    () => DISCOVERY_POSTS.filter((post) => !fixedPosts.some((fixedPost) => fixedPost.id === post.id)),
-    [fixedPosts]
+    () => allPosts.filter((post) => !fixedPosts.some((fixedPost) => fixedPost.id === post.id)),
+    [allPosts, fixedPosts]
   );
 
   return (

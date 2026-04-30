@@ -1,7 +1,7 @@
 import { useNavigate } from '@tanstack/react-router';
 import { CellLabel, IconX, cn } from './ui';
-import { SOCIAL_LINKS } from './data/site';
-import type { Lang } from './types';
+import { useSocialLinks } from './lib/use-strapi';
+import type { Lang, SocialLink } from './types';
 
 interface NavItemDef {
   label: string;
@@ -90,7 +90,7 @@ const NavItemLink = ({ item, index, onClose, navigate }: NavItemLinkProps) => (
 );
 
 interface SocialLinkProps {
-  item: typeof SOCIAL_LINKS[number];
+  item: SocialLink;
   index: number;
 }
 
@@ -108,9 +108,9 @@ const SocialLink = ({ item, index }: SocialLinkProps) => (
   </a>
 );
 
-const SocialGrid = () => (
+const SocialGrid = ({ links }: { links: SocialLink[] }) => (
   <div className="grid grid-cols-2">
-    {SOCIAL_LINKS.map((item, index) => (
+    {links.map((item, index) => (
       <SocialLink key={item.k} item={item} index={index} />
     ))}
   </div>
@@ -158,6 +158,7 @@ interface NavMenuProps {
 
 const NavMenu = ({ lang, isOpen, onClose, setLang }: NavMenuProps) => {
   const navigate = useNavigate();
+  const { data: socialLinks } = useSocialLinks();
 
   return (
     <>
@@ -174,7 +175,7 @@ const NavMenu = ({ lang, isOpen, onClose, setLang }: NavMenuProps) => {
           {NAV_ITEMS[lang].map((item, index) => (
             <NavItemLink key={item.href} item={item} index={index} onClose={onClose} navigate={navigate} />
           ))}
-          <SocialGrid />
+          <SocialGrid links={socialLinks ?? []} />
         </nav>
 
         <NavFooter lang={lang} setLang={setLang} onClose={onClose} navigate={navigate} />
