@@ -3,6 +3,7 @@ import { Button, CellLabel, IconArrowRight, IconMenu, PageHeader, Wordmark } fro
 import { useDocumentMeta } from './lib/use-document-meta';
 import type { Bilingual } from './types';
 import { usePageContext } from './router';
+import { useDocumentMeta } from './lib/use-document-meta';
 
 interface PPPrice {
   amount?: string;

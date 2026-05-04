@@ -4,6 +4,7 @@ import { Button, CellLabel, IconArrowRight, IconMenu, PageHeader, SocialIcon, Wo
 import { useDocumentMeta } from './lib/use-document-meta';
 import type { Lang, ContactFormData, Bilingual } from './types';
 import { usePageContext } from './router';
+import { useDocumentMeta } from './lib/use-document-meta';
 
 interface Subject extends Bilingual {
   k: string;

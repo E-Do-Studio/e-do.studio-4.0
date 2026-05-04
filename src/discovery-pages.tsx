@@ -4,6 +4,7 @@ import { DiscoveryHeader } from './discovery/discovery-header';
 import { DiscoveryShell } from './discovery/discovery-shell';
 import { useDocumentMeta } from './lib/use-document-meta';
 import { usePageContext } from './router';
+import { useDocumentMeta } from './lib/use-document-meta';
 
 const DiscoveryV2 = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
