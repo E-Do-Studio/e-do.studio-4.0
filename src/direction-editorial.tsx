@@ -3,6 +3,7 @@ import { CellLabel, IconArrowRight, IconPlay, PageHeader, SocialIcon, VideoLoop,
 import { MarqueeCell } from './cells';
 import { AssistantChat } from './assistant-chat';
 import { useSocialLinks } from './lib/use-strapi';
+import { useDocumentMeta } from './lib/use-document-meta';
 import type { Lang } from './types';
 import { usePageContext } from './router';
 import galleryHero from '../assets/gallery-hero.jpg';
@@ -66,6 +67,7 @@ const MachineRow = ({ idx, m, lang, onClick, isLast }: MachineRowProps) => (
 
 const DirectionA = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
+  useDocumentMeta('home', lang);
   const { data: socialLinks } = useSocialLinks();
   const [ecomMode, setEcomMode] = useState<'type' | 'machine'>('type');
   const categories = [

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent, InputHTMLAttributes, TextareaHTMLAttributes } from 'react';
 import { Button, CellLabel, IconArrowRight, IconMenu, PageHeader, SocialIcon, Wordmark, cn } from './ui';
+import { useDocumentMeta } from './lib/use-document-meta';
 import type { Lang, ContactFormData, Bilingual } from './types';
 import { usePageContext } from './router';
 
@@ -396,6 +397,7 @@ const TeamMemberRow = ({ member, lang }: TeamMemberRowProps) => (
 
 const ContactPage = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
+  useDocumentMeta('contact', lang);
   const [form, setForm] = useState<ContactFormData>(INITIAL_FORM);
   const [sent, setSent] = useState(false);
 
