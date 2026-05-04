@@ -139,7 +139,20 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     throw new Error(quoteError.message);
   }
 
+  syncToCalendar(booking.id).catch(() => {});
+
   return { booking, reference };
+}
+
+async function syncToCalendar(bookingId: string): Promise<void> {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  if (!supabaseUrl) return;
+
+  await fetch(`${supabaseUrl}/functions/v1/calendar-sync`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ bookingId, action: 'create' }),
+  });
 }
 
 export async function getBookingByRef(ref: string): Promise<BookingRow | null> {
