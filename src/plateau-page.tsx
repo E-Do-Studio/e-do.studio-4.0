@@ -1,4 +1,4 @@
-import { IconArrowRight, CellLabel, PageHeader } from './ui';
+import { IconArrowRight, IconMenu, CellLabel, PageHeader, Wordmark } from './ui';
 import { usePageContext } from './router';
 import { usePlateaux } from './lib/use-strapi';
 
@@ -73,19 +73,52 @@ const PlateauPage = ({ slug }: { slug: string }) => {
     /* Mobile: single-column stacked, scrollable. Desktop (md+): 4-column bento */
     <div className="edo-page-enter grid w-full gap-px bg-black overflow-y-auto md:h-full md:grid-cols-plateau md:grid-rows-plateau md:overflow-hidden">
 
+      {/* Mobile header (single row, hidden on desktop) */}
       <PageHeader
         lang={lang}
         title={lang==='fr'?'Plateaux':'Stages'}
-        className="col-span-full h-14 md:col-start-1 md:col-span-4 md:row-start-1 md:h-full"
+        className="col-span-full h-14 md:hidden"
         onMenuClick={openMenu}
         onLogoClick={()=>goto('home')}
         onLangToggle={()=>setLang(lang==='fr'?'en':'fr')}
         actions={[
-          { id: 'postprod', label: 'Post-prod', onClick: () => goto('postprod'), className: 'hidden md:flex', expand: true },
-          { id: 'gallery', label: lang==='fr'?'Galerie':'Gallery', onClick: () => goto('gallery'), className: 'hidden md:flex', expand: true },
-          { id: 'contact', label: lang==='fr'?'Nous contacter':'Contact us', onClick: () => goto('contact'), className: 'md:hidden' },
+          { id: 'contact', label: lang==='fr'?'Nous contacter':'Contact us', onClick: () => goto('contact') },
         ]}
       />
+
+      {/* Desktop header: 4 cells each in their exact grid column (hidden on mobile) */}
+
+      {/* Col 1 – logo */}
+      <div className="hidden md:flex h-full gap-px bg-foreground md:col-start-1 md:row-start-1">
+        <button onClick={openMenu} aria-label="Open menu" className="edo-focus-ring flex h-full basis-header flex-none cursor-pointer items-center justify-center border-0 bg-background text-foreground transition-colors hover:bg-muted">
+          <IconMenu width="18" height="18" />
+        </button>
+        <button onClick={()=>goto('home')} aria-label="E-Do Studio home" className="edo-focus-ring flex h-full min-w-0 flex-1 cursor-pointer items-center justify-center border-0 bg-background p-2 transition-colors hover:bg-muted">
+          <Wordmark size={32} />
+        </button>
+      </div>
+
+      {/* Col 2 – page title */}
+      <div className="hidden md:flex min-w-0 items-center bg-background px-6 md:col-start-2 md:row-start-1">
+        <CellLabel className="shrink-0 text-primary">{lang==='fr'?'Plateaux':'Stages'}</CellLabel>
+      </div>
+
+      {/* Col 3 – post-prod action */}
+      <button onClick={()=>goto('postprod')} className="edo-focus-ring hidden md:flex h-full cursor-pointer items-center justify-center gap-2 border-0 bg-background px-5 font-mono text-label tracking-ui uppercase text-foreground no-underline transition-colors hover:bg-muted md:col-start-3 md:row-start-1">
+        <span className="whitespace-nowrap">Post-prod</span>
+        <IconArrowRight width={12} height={12} />
+      </button>
+
+      {/* Col 4 – gallery + lang toggle */}
+      <div className="hidden md:flex h-full gap-px bg-foreground md:col-start-4 md:row-start-1">
+        <button onClick={()=>goto('gallery')} className="edo-focus-ring flex h-full flex-1 cursor-pointer items-center justify-center gap-2 border-0 bg-background px-5 font-mono text-label tracking-ui uppercase text-foreground no-underline transition-colors hover:bg-muted">
+          <span className="whitespace-nowrap">{lang==='fr'?'Galerie':'Gallery'}</span>
+          <IconArrowRight width={12} height={12} />
+        </button>
+        <button onClick={()=>setLang(lang==='fr'?'en':'fr')} className="edo-focus-ring flex h-full basis-header flex-none cursor-pointer items-center justify-center border-0 bg-background p-0 transition-colors hover:bg-muted">
+          <span className="font-mono text-label tracking-meta text-foreground">{lang==='fr'?'EN':'FR'}</span>
+        </button>
+      </div>
 
       {/* Sidebar: horizontal scroll on mobile, vertical list on desktop */}
       <div className="bg-white flex flex-row overflow-x-auto md:col-start-1 md:row-start-2 md:row-span-4 md:flex-col md:overflow-x-hidden md:overflow-y-auto">
