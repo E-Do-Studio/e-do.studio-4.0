@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Button, CellLabel, IconArrowRight, IconMenu, PageHeader, Wordmark } from './ui';
+import { useDocumentMeta } from './lib/use-document-meta';
 import type { Lang, Bilingual } from './types';
 import { usePageContext } from './router';
 import { useDocumentMeta } from './lib/use-document-meta';

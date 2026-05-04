@@ -1,6 +1,7 @@
 import React, { useState as useStateBook, useMemo as useMemoBook } from 'react';
 import { usePageContext } from './router';
 import { CellLabel, IconArrowRight, IconMenu, PageHeader, Wordmark } from './ui';
+import { useDocumentMeta } from './lib/use-document-meta';
 import { MarqueeCell } from './cells';
 import type { Lang } from './types';
 

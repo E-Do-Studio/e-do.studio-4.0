@@ -1,4 +1,5 @@
 import { IconArrowRight, IconMenu, CellLabel, PageHeader, Wordmark } from './ui';
+import { useDocumentMeta } from './lib/use-document-meta';
 import { usePageContext } from './router';
 import { usePlateaux } from './lib/use-strapi';
 import { useDocumentMeta } from './lib/use-document-meta';

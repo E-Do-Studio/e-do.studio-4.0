@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent, InputHTMLAttributes, TextareaHTMLAttributes } from 'react';
 import { Button, CellLabel, IconArrowRight, IconMenu, PageHeader, SocialIcon, Wordmark, cn } from './ui';
+import { useDocumentMeta } from './lib/use-document-meta';
 import type { Lang, ContactFormData, Bilingual } from './types';
 import { usePageContext } from './router';
 import { useDocumentMeta } from './lib/use-document-meta';
