@@ -247,7 +247,7 @@ const PostprodPage = () => {
             </button>
           );
         })}
-        <div className="hidden md:block mt-auto py-3.5 px-4 border-t border-t-border flex-col gap-1.5 shrink-0 bg-muted">
+        <div className="hidden md:flex mt-auto py-3.5 px-4 border-t border-t-border flex-col gap-1.5 shrink-0 bg-muted">
           <span className="font-mono text-micro tracking-label uppercase text-primary">
             {lang==='fr'?'À noter':'Note'}
           </span>
