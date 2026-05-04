@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, IconArrowRight, PageHeader } from './ui';
+import { Button, CellLabel, IconArrowRight, IconMenu, PageHeader, Wordmark } from './ui';
 import type { Bilingual } from './types';
 import { usePageContext } from './router';
 
@@ -218,18 +218,46 @@ const PostprodPage = () => {
     /* Mobile: single-column scrollable. Desktop (md+): sidebar + workspace */
     <div className="edo-page-enter grid w-full gap-px bg-black overflow-y-auto md:h-full md:grid-cols-app md:grid-rows-app md:overflow-hidden">
 
+      {/* Mobile header */}
       <PageHeader
         lang={lang}
         title="Post-production"
-        className="col-span-full h-14 md:col-start-1 md:col-span-2 md:row-start-1 md:h-full"
+        className="col-span-full h-14 md:hidden"
         onMenuClick={openMenu}
         onLogoClick={()=>goto('home')}
         onLangToggle={()=>setLang(lang==='fr'?'en':'fr')}
         actions={[
-          { id: 'gallery', label: lang==='fr'?'Galerie':'Gallery', onClick: () => goto('gallery'), className: 'hidden md:flex' },
           { id: 'book', label: lang==='fr'?'Réserver':'Book', onClick: () => goto('book'), variant: 'primary' },
         ]}
       />
+
+      {/* Desktop col 1 – logo */}
+      <div className="hidden md:flex h-full gap-px bg-foreground md:col-start-1 md:row-start-1">
+        <button onClick={openMenu} aria-label="Open menu" className="edo-focus-ring flex h-full basis-header flex-none cursor-pointer items-center justify-center border-0 bg-background text-foreground transition-colors hover:bg-muted">
+          <IconMenu width="18" height="18" />
+        </button>
+        <button onClick={()=>goto('home')} aria-label="E-Do Studio home" className="edo-focus-ring flex h-full min-w-0 flex-1 cursor-pointer items-center justify-center border-0 bg-background p-2 transition-colors hover:bg-muted">
+          <Wordmark size={32} />
+        </button>
+      </div>
+
+      {/* Desktop col 2 – title + gallery + book + lang toggle */}
+      <div className="hidden md:flex h-full min-w-0 items-center gap-px bg-foreground md:col-start-2 md:row-start-1">
+        <div className="flex h-full flex-1 min-w-0 items-center bg-background px-6">
+          <CellLabel className="shrink-0 text-primary">Post-production</CellLabel>
+        </div>
+        <button onClick={()=>goto('gallery')} className="edo-focus-ring flex h-full cursor-pointer items-center justify-center gap-2 border-0 bg-background px-5 font-mono text-label tracking-ui uppercase text-foreground no-underline transition-colors hover:bg-muted">
+          <span className="whitespace-nowrap">{lang==='fr'?'Galerie':'Gallery'}</span>
+          <IconArrowRight width={12} height={12} />
+        </button>
+        <button onClick={()=>goto('book')} className="edo-focus-ring flex h-full cursor-pointer items-center justify-center gap-2 border-0 bg-primary px-5 font-mono text-label tracking-ui uppercase text-white no-underline transition-colors hover:bg-foreground">
+          <span className="whitespace-nowrap">{lang==='fr'?'Réserver':'Book'}</span>
+          <IconArrowRight width={12} height={12} />
+        </button>
+        <button onClick={()=>setLang(lang==='fr'?'en':'fr')} className="edo-focus-ring flex h-full basis-header flex-none cursor-pointer items-center justify-center border-0 bg-background p-0 transition-colors hover:bg-muted">
+          <span className="font-mono text-label tracking-meta text-foreground">{lang==='fr'?'EN':'FR'}</span>
+        </button>
+      </div>
 
       {/* Sidebar: horizontal tab scroll on mobile, vertical list on desktop */}
       <aside className="bg-white flex flex-row overflow-x-auto scrollbar-thin md:col-start-1 md:row-start-2 md:flex-col md:overflow-x-hidden md:overflow-y-auto">
