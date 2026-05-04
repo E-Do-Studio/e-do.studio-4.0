@@ -269,6 +269,10 @@
   grid-template-columns: 190px minmax(0, 1fr);
 }
 
+@utility grid-cols-gallery-full {
+  grid-template-columns: 190px 80px repeat(3, minmax(0, 1fr));
+}
+
 @utility grid-cols-machine-row {
   grid-template-columns: 28px minmax(0, 1fr) 12px;
 }
