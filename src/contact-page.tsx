@@ -67,16 +67,16 @@ const ContactRail = ({ lang }: ContactRailProps) => (
 );
 
 const FindUsSection = ({ lang }: { lang: Lang }) => (
-  <section className="border-b border-border p-4">
-    <CellLabel className="mb-2.5 block">{lang === 'fr' ? 'Nous trouver' : 'Find us'}</CellLabel>
+  <section className="border-b border-border p-6">
+    <CellLabel className="mb-5 block">{lang === 'fr' ? 'Nous trouver' : 'Find us'}</CellLabel>
     <p className="m-0 text-pretty text-detail leading-copy font-normal">
-      <span className="mb-1 block font-mono text-label uppercase tracking-ui text-muted-foreground">
+      <span className="mb-2 block font-mono text-label uppercase tracking-ui text-muted-foreground">
         Parc d'activités Victor&nbsp;Hugo · {lang === 'fr' ? 'Bât.' : 'Bldg.'} 6.7
       </span>
       69 boulevard Victor Hugo<br />
       93400 <span className="whitespace-nowrap">Saint-Ouen</span>,<br />France
     </p>
-    <div className="mt-2.5 flex flex-col gap-1.5 font-mono text-label leading-relaxed tracking-ui text-muted-foreground">
+    <div className="mt-5 flex flex-col gap-2.5 font-mono text-label leading-relaxed tracking-ui text-muted-foreground">
       <MetroLine line="13" label="Garibaldi" className="bg-metro-13 text-black" />
       <MetroLine line="14" label="Mairie de Saint-Ouen" className="bg-metro-14 text-white" />
     </div>
@@ -99,9 +99,9 @@ const MetroLine = ({ line, label, className }: MetroLineProps) => (
 );
 
 const HoursSection = ({ lang }: { lang: Lang }) => (
-  <section className="border-b border-border p-4">
-    <CellLabel className="mb-2 block">{lang === 'fr' ? 'Horaires' : 'Hours'}</CellLabel>
-    <div className="flex flex-col gap-1 text-caption">
+  <section className="border-b border-border p-6">
+    <CellLabel className="mb-5 block">{lang === 'fr' ? 'Horaires' : 'Hours'}</CellLabel>
+    <div className="flex flex-col gap-3 text-caption">
       <HoursRow label={lang === 'fr' ? 'Lun — Ven' : 'Mon — Fri'} value="10:00 — 18:00" />
       <HoursRow label={lang === 'fr' ? 'Sam — Dim' : 'Sat — Sun'} value={lang === 'fr' ? 'Sur demande' : 'On request'} muted />
     </div>
@@ -122,8 +122,8 @@ const HoursRow = ({ label, value, muted = false }: HoursRowProps) => (
 );
 
 const PhoneSection = ({ lang }: { lang: Lang }) => (
-  <section className="p-4">
-    <CellLabel className="mb-2 block">{lang === 'fr' ? 'Téléphone' : 'Phone'}</CellLabel>
+  <section className="p-6">
+    <CellLabel className="mb-5 block">{lang === 'fr' ? 'Téléphone' : 'Phone'}</CellLabel>
     <a href="tel:+33144041149" className="text-detail font-mono tracking-code text-foreground no-underline">
       +33 1 44 04 11 49
     </a>
@@ -138,7 +138,7 @@ const SocialGrid = () => (
         href={social.href}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center justify-between bg-white px-4 py-3.5 text-foreground no-underline transition-colors hover:bg-muted"
+        className="flex items-center justify-between bg-white px-6 py-4 text-foreground no-underline transition-colors hover:bg-muted"
       >
         <SocialIcon kind={social.k} size={12} />
         <span className="font-mono text-micro tracking-meta">{social.label}</span>
