@@ -4,7 +4,6 @@ import { Button, CellLabel, IconArrowRight, IconMenu, PageHeader, SocialIcon, Wo
 import { useDocumentMeta } from './lib/use-document-meta';
 import type { Lang, ContactFormData, Bilingual } from './types';
 import { usePageContext } from './router';
-import { useDocumentMeta } from './lib/use-document-meta';
 
 interface Subject extends Bilingual {
   k: string;
@@ -70,7 +69,7 @@ const ContactRail = ({ lang }: ContactRailProps) => (
 const FindUsSection = ({ lang }: { lang: Lang }) => (
   <section className="border-b border-border p-4">
     <CellLabel className="mb-2.5 block">{lang === 'fr' ? 'Nous trouver' : 'Find us'}</CellLabel>
-    <p className="m-0 text-pretty text-detail leading-copy text-foreground">
+    <p className="m-0 text-pretty text-detail leading-copy font-normal">
       <span className="mb-1 block font-mono text-label uppercase tracking-ui text-muted-foreground">
         Parc d'activités Victor&nbsp;Hugo · {lang === 'fr' ? 'Bât.' : 'Bldg.'} 6.7
       </span>
@@ -125,7 +124,7 @@ const HoursRow = ({ label, value, muted = false }: HoursRowProps) => (
 const PhoneSection = ({ lang }: { lang: Lang }) => (
   <section className="p-4">
     <CellLabel className="mb-2 block">{lang === 'fr' ? 'Téléphone' : 'Phone'}</CellLabel>
-    <a href="tel:+33144041149" className="text-cell tracking-copy-tight text-foreground no-underline">
+    <a href="tel:+33144041149" className="text-detail font-mono tracking-code text-foreground no-underline">
       +33 1 44 04 11 49
     </a>
   </section>
