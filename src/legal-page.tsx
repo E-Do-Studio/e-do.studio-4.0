@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button, CellLabel, IconArrowRight, IconMenu, PageHeader, Wordmark } from './ui';
 import type { Lang, Bilingual } from './types';
 import { usePageContext } from './router';
+import { useDocumentMeta } from './lib/use-document-meta';
 
 interface Section {
   k: string;
@@ -290,6 +291,7 @@ const Article = ({ n, t, p, lang }: ArticleProps) => (
 
 const LegalPage = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
+  useDocumentMeta('legal', lang);
   const [sec, setSec] = useState('mentions');
   const active = SECTIONS.find(s=>s.k===sec) || SECTIONS[0];
   const C = CONTENT[sec];

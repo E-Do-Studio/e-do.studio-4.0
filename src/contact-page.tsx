@@ -3,6 +3,7 @@ import type { FormEvent, InputHTMLAttributes, TextareaHTMLAttributes } from 'rea
 import { Button, CellLabel, IconArrowRight, IconMenu, PageHeader, SocialIcon, Wordmark, cn } from './ui';
 import type { Lang, ContactFormData, Bilingual } from './types';
 import { usePageContext } from './router';
+import { useDocumentMeta } from './lib/use-document-meta';
 
 interface Subject extends Bilingual {
   k: string;
@@ -396,6 +397,7 @@ const TeamMemberRow = ({ member, lang }: TeamMemberRowProps) => (
 
 const ContactPage = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
+  useDocumentMeta('contact', lang);
   const [form, setForm] = useState<ContactFormData>(INITIAL_FORM);
   const [sent, setSent] = useState(false);
 

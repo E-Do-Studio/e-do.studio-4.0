@@ -352,6 +352,7 @@ const isSessionValid = (s: BookingSession) => {
 
 const BookPageV2 = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
+  useDocumentMeta('book', lang);
   const today = new Date();
   const [step, setStep] = useStateBook<number>(() => { try { if (localStorage.getItem('edo-book-plateau')) return 1; } catch(e){} return 0; });
   const [configGlobal, setConfigGlobal] = useStateBook<ConfigGlobal>({ projectType: 'ecom', urgency: 'flex', postprod: false });

@@ -3,6 +3,7 @@ import { CellLabel, IconArrowRight, IconPlay, PageHeader, SocialIcon, VideoLoop,
 import { MarqueeCell } from './cells';
 import { AssistantChat } from './assistant-chat';
 import { useSocialLinks } from './lib/use-strapi';
+import { useDocumentMeta } from './lib/use-document-meta';
 import type { Lang } from './types';
 import { usePageContext } from './router';
 import galleryHero from '../assets/gallery-hero.jpg';
@@ -66,6 +67,7 @@ const MachineRow = ({ idx, m, lang, onClick, isLast }: MachineRowProps) => (
 
 const DirectionA = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
+  useDocumentMeta('home', lang);
   const { data: socialLinks } = useSocialLinks();
   const [ecomMode, setEcomMode] = useState<'type' | 'machine'>('type');
   const categories = [
@@ -86,6 +88,7 @@ const DirectionA = () => {
   return (
     /* Mobile: 2-col grid, vertical scroll. Desktop (md+): 12-col bento, fixed viewport */
     <div className="edo-page-enter grid w-full grid-cols-2 gap-px bg-black overflow-y-auto md:h-full md:grid-cols-12 md:grid-rows-home md:overflow-hidden">
+      <h1 className="sr-only">E-Do Studio — {lang === 'fr' ? 'Studio photo et vidéo professionnel à Paris' : 'Professional photo and video studio in Paris'}</h1>
 
       {/* ── Row 1: Header ── */}
       <PageHeader
@@ -106,9 +109,9 @@ const DirectionA = () => {
       {/* ── Rows 2-3 left: E-commerce section ── */}
       <div className="col-span-2 min-h-72 flex flex-col overflow-hidden bg-white md:col-start-1 md:col-end-7 md:row-start-2 md:row-end-4 md:min-h-0">
         <div className="flex flex-wrap items-center justify-between gap-2 px-4 pt-6">
-          <div className="min-w-0 flex-1 truncate whitespace-nowrap text-page-title font-light tracking-display leading-none text-foreground">
+          <h2 className="m-0 min-w-0 flex-1 truncate whitespace-nowrap text-page-title font-light tracking-display leading-none text-foreground">
             {lang === 'fr' ? 'Shooting e-commerce' : 'E-commerce shooting'}
-          </div>
+          </h2>
           <button
             onClick={() => setEcomMode(ecomMode === 'type' ? 'machine' : 'type')}
             aria-label={lang === 'fr' ? 'Basculer mode' : 'Toggle mode'}

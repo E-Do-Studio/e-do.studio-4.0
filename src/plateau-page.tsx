@@ -1,11 +1,12 @@
 import { IconArrowRight, IconMenu, CellLabel, PageHeader, Wordmark } from './ui';
 import { usePageContext } from './router';
 import { usePlateaux } from './lib/use-strapi';
+import { useDocumentMeta } from './lib/use-document-meta';
 
 const PlateauVisual = ({ kind }: { kind: string }) => {
   const svgClass = "h-4/5 w-4/5";
   if (kind === 'cyc') return (
-    <svg viewBox="0 0 500 400" className={svgClass}>
+    <svg viewBox="0 0 500 400" className={svgClass} role="img" aria-label="Cyclorama — 4.7m × 6m infinity backdrop">
       <defs><linearGradient id="cycloG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#fff"/><stop offset="1" stopColor="#e2d6c0"/></linearGradient></defs>
       <path d="M60 360 Q60 80 250 80 Q440 80 440 360 Z" fill="url(#cycloG)" stroke="#000" strokeWidth="0.75"/>
       <ellipse cx="250" cy="360" rx="160" ry="14" fill="rgba(0,0,0,0.08)"/>
@@ -15,7 +16,7 @@ const PlateauVisual = ({ kind }: { kind: string }) => {
     </svg>
   );
   if (kind === 'horizontal') return (
-    <svg viewBox="0 0 500 400" className={svgClass}>
+    <svg viewBox="0 0 500 400" className={svgClass} role="img" aria-label="Horizontal stage — 4×4m top-shot platform">
       <rect x="80" y="60" width="340" height="280" fill="#f5f5f5" stroke="#000" strokeWidth="0.75"/>
       {[...Array(7)].map((_,i)=><line key={'h'+i} x1="80" y1={60+i*45} x2="420" y2={60+i*45} stroke="#888" strokeWidth="0.3" strokeDasharray="2 3"/>)}
       {[...Array(8)].map((_,i)=><line key={'v'+i} x1={80+i*48.5} y1="60" x2={80+i*48.5} y2="340" stroke="#888" strokeWidth="0.3" strokeDasharray="2 3"/>)}
@@ -25,7 +26,7 @@ const PlateauVisual = ({ kind }: { kind: string }) => {
     </svg>
   );
   if (kind === 'vertical') return (
-    <svg viewBox="0 0 500 400" className={svgClass}>
+    <svg viewBox="0 0 500 400" className={svgClass} role="img" aria-label="Vertical stage — 4.2m ghost mannequin platform">
       <rect x="160" y="40" width="180" height="330" fill="#fafafa" stroke="#000" strokeWidth="0.75"/>
       <g fill="none" stroke="#141414" strokeWidth="1">
         <circle cx="250" cy="95" r="22"/>
@@ -39,7 +40,7 @@ const PlateauVisual = ({ kind }: { kind: string }) => {
     </svg>
   );
   if (kind === 'eclipse') return (
-    <svg viewBox="0 0 500 400" className={svgClass}>
+    <svg viewBox="0 0 500 400" className={svgClass} role="img" aria-label="Eclipse stage — 360° rotating platform">
       <circle cx="250" cy="200" r="150" fill="none" stroke="#000" strokeWidth="0.75" strokeDasharray="2 4"/>
       <circle cx="250" cy="200" r="100" fill="none" stroke="#000" strokeWidth="0.5"/>
       <circle cx="250" cy="200" r="55" fill="#141414"/>
@@ -49,7 +50,7 @@ const PlateauVisual = ({ kind }: { kind: string }) => {
     </svg>
   );
   if (kind === 'live') return (
-    <svg viewBox="0 0 500 400" className={svgClass}>
+    <svg viewBox="0 0 500 400" className={svgClass} role="img" aria-label="Live stage — 3 camera NDI streaming setup">
       <rect x="60" y="60" width="380" height="230" fill="#141414"/>
       {[...Array(12)].map((_,i)=><line key={i} x1="60" y1={60+i*20} x2="440" y2={60+i*20} stroke="#fff" strokeOpacity="0.1" strokeWidth="0.4"/>)}
       <circle cx="80" cy="80" r="5" fill="#e5583a"/>
@@ -64,6 +65,8 @@ const PlateauVisual = ({ kind }: { kind: string }) => {
 
 const PlateauPage = ({ slug }: { slug: string }) => {
   const { lang, setLang, openMenu, goto } = usePageContext();
+  const metaKey = slug === 'cyclorama' ? 'cyclorama' : `plateau-${slug}`;
+  useDocumentMeta(metaKey, lang);
   const { data: plateaux, loading } = usePlateaux();
   if (loading || !plateaux) return <div className="flex items-center justify-center h-full bg-white"><span className="text-muted-foreground text-caption animate-pulse">{lang === 'fr' ? 'Chargement…' : 'Loading…'}</span></div>;
   const p = plateaux[slug] || plateaux.cyclorama;
