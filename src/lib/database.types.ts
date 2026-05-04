@@ -122,7 +122,34 @@ export interface Database {
         Relationships: [];
       };
     };
-    Views: Record<string, never>;
+    Views: {
+      bookings_admin_summary: {
+        Row: {
+          id: string;
+          reference: string;
+          status: BookingStatus;
+          client_name: string;
+          client_email: string;
+          client_company: string | null;
+          client_phone: string | null;
+          project_type: string | null;
+          urgency: string | null;
+          total_estimate: number | null;
+          preferred_date: string | null;
+          arrival_hour: number | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+          session_count: number;
+          plateau_keys: string[] | null;
+          total_hours: number;
+          quote_reference: string | null;
+          quote_total: number | null;
+          has_ical: boolean;
+        };
+        Relationships: [];
+      };
+    };
     Functions: Record<string, never>;
     Enums: {
       booking_status: BookingStatus;
