@@ -81,9 +81,9 @@ const PlateauPage = ({ slug }: { slug: string }) => {
         onLogoClick={()=>goto('home')}
         onLangToggle={()=>setLang(lang==='fr'?'en':'fr')}
         actions={[
-          { id: 'postprod', label: 'Post-prod', onClick: () => goto('postprod'), className: 'hidden md:flex' },
-          { id: 'gallery', label: lang==='fr'?'Galerie':'Gallery', onClick: () => goto('gallery'), className: 'hidden md:flex' },
-          { id: 'contact', label: lang==='fr'?'Nous contacter':'Contact us', onClick: () => goto('contact') },
+          { id: 'postprod', label: 'Post-prod', onClick: () => goto('postprod'), className: 'hidden md:flex', expand: true },
+          { id: 'gallery', label: lang==='fr'?'Galerie':'Gallery', onClick: () => goto('gallery'), className: 'hidden md:flex', expand: true },
+          { id: 'contact', label: lang==='fr'?'Nous contacter':'Contact us', onClick: () => goto('contact'), className: 'md:hidden' },
         ]}
       />
 
