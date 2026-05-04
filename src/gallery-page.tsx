@@ -378,11 +378,10 @@ const GalleryContent = ({
       {filtered.length === 0 ? (
         <GalleryEmptyState lang={lang} onReset={resetFilters} />
       ) : (
-        filtered.map((project, idx) => (
+        filtered.map((project) => (
           <ProjectRow
             key={project.id}
             project={project}
-            style={{ transitionDelay: `${Math.min(idx * 40, 200)}ms` }}
           />
         ))
       )}
