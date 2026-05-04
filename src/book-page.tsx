@@ -1,9 +1,11 @@
-import React, { useState as useStateBook, useMemo as useMemoBook } from 'react';
+import React, { useState as useStateBook, useMemo as useMemoBook, useCallback as useCallbackBook } from 'react';
 import { usePageContext } from './router';
 import { CellLabel, IconArrowRight, IconMenu, PageHeader, Wordmark } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
 import { MarqueeCell } from './cells';
+import { createBooking } from './lib/bookings';
 import type { Lang } from './types';
+import type { BookingSessionData } from './lib/bookings';
 
 type BilingualText = Record<Lang, string>;
 type BookMode = 'config' | 'manual';
@@ -389,6 +391,9 @@ const BookPageV2 = () => {
   const [pp, setPp] = useStateBook<Record<string, unknown>>({});
   const [contact, setContact] = useStateBook<ContactState>({ marque:'', societe:'', siren:'', adresseFacturation:'', nom:'', prenom:'', email:'', tel:'', typesArticles:[], quantiteArticles:'', vuesParArticle:'', autresInfos:'', cgvAccepted:false });
   const [sent, setSent] = useStateBook<SentMode>(false);
+  const [saving, setSaving] = useStateBook<boolean>(false);
+  const [saveError, setSaveError] = useStateBook<string | null>(null);
+  const [savedRef, setSavedRef] = useStateBook<string | null>(null);
   const months = lang==='fr' ? MONTHS_FR : MONTHS_EN;
   const days = lang==='fr' ? DAYS_FR : DAYS_EN;
   const p = BOOK_PLATEAUX.find(x=>x.k===plateau) || {k:'', fr:'—', en:'—', desc:{fr:'',en:''}, rates:{hour:0,half:0,full:0}, hdUnit:'half', fdUnit:'full'};
@@ -544,12 +549,86 @@ const BookPageV2 = () => {
   React.useEffect(() => { if (contentScrollRef.current) contentScrollRef.current.scrollTop = 0; if (innerScrollRef.current) innerScrollRef.current.scrollTop = 0; }, [step, dateIdx]);
   React.useEffect(() => { if (step === 6) setDateIdx(0); }, [step]);
 
+  const buildSessionsData = useCallbackBook((): BookingSessionData[] => {
+    const keys = plateaus && plateaus.length > 0 ? plateaus : (plateau ? [plateau] : []);
+    if (configApplied && configSessions.length > 0) {
+      return configSessions.filter(s => s.projectType === 'cyclorama' || (s.projectType === 'ecom' && s.product && Number(s.quantity) > 0)).map(s => {
+        const rec = recommendSession(s, configGlobal);
+        return {
+          plateauKey: rec.plateau,
+          slotType: rec.slotType,
+          hours: rec.hours || 1,
+          cycloMode: rec.cycloMode,
+          productType: s.projectType,
+          method: s.method,
+          submethod: s.submethod,
+          media: s.media || [],
+          views: s.views || [],
+          viewsCount: Number(s.viewsCount) || 0,
+          quantity: Number(s.quantity) || 0,
+          postprodEnabled: !!s.postprod,
+          postprodVideo: !!s.postprodVideo,
+        };
+      });
+    }
+    return keys.map(k => {
+      const st = perPlateau[k] || {};
+      return {
+        plateauKey: k,
+        slotType: st.slotType ?? 'hour',
+        hours: st.hours || 1,
+        cycloMode: st.cycloMode ?? null,
+        productType: configGlobal.projectType || null,
+        method: null,
+        submethod: null,
+        media: [],
+        views: [],
+        viewsCount: 0,
+        quantity: Number(contact.quantiteArticles) || 0,
+        postprodEnabled: !!(st.postprod as PostprodState)?.enabled,
+        postprodVideo: !!(st.postprod as PostprodState)?.video,
+      };
+    });
+  }, [plateaus, plateau, perPlateau, configApplied, configSessions, configGlobal, contact.quantiteArticles]);
+
+  const handleSubmit = useCallbackBook(async (submitMode: 'quote' | 'booking' | 'request') => {
+    setSaving(true);
+    setSaveError(null);
+    try {
+      const sessionsData = buildSessionsData();
+      const firstDate = selected || (() => {
+        const keys = plateaus && plateaus.length > 0 ? plateaus : [];
+        for (const k of keys) {
+          const st = perPlateau[k];
+          if (st?.date) return st.date;
+        }
+        return null;
+      })();
+      const result = await createBooking({
+        mode: submitMode,
+        contact,
+        projectType: configGlobal.projectType || null,
+        urgency: configGlobal.urgency || null,
+        sessions: sessionsData,
+        quote: { rows: priceBreakdown.rows, total: priceBreakdown.total },
+        preferredDate: firstDate,
+        arrivalHour: arrivalHour ?? null,
+      });
+      setSavedRef(result.reference);
+      setSent(submitMode);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : lang === 'fr' ? 'Erreur lors de la sauvegarde' : 'Failed to save booking');
+    } finally {
+      setSaving(false);
+    }
+  }, [buildSessionsData, selected, plateaus, perPlateau, contact, configGlobal, priceBreakdown, arrivalHour, lang]);
+
   if (sent) {
     return <Confirmation lang={lang} openMenu={openMenu} goto={goto} setLang={setLang}
              plateau={p} selected={selected} arrivalHour={arrivalHour} rentalHours={rentalHours}
              plateaus={plateaus} perPlateau={perPlateau}
              total={priceBreakdown.total} rows={priceBreakdown.rows}
-             contact={contact} months={months} mode={sent}/>;
+             contact={contact} months={months} mode={sent} savedRef={savedRef}/>;
   }
 
   return (
@@ -656,6 +735,12 @@ const BookPageV2 = () => {
           })()}
         </div>
 
+        {saveError && (
+          <div className="bg-red-50 border-t border-red-200 px-12 py-3 flex items-center justify-between shrink-0">
+            <span className="text-red-700 text-caption">{saveError}</span>
+            <button onClick={()=>setSaveError(null)} className="text-red-500 text-caption font-mono cursor-pointer border-0 bg-transparent hover:text-red-700">✕</button>
+          </div>
+        )}
         {step>0 && (
         <div className="h-18 border-t border-border flex items-center justify-between px-12 shrink-0 bg-white">
           {(() => {
@@ -685,14 +770,14 @@ const BookPageV2 = () => {
                 {lang==='fr'?'Valider · plateau suivant':'Validate · next stage'} <IconArrowRight width="14" height="14"/>
               </button>
             ) : (
-              <button onClick={()=>canNext()&&setSent('request')} disabled={!canNext()} className={navBtnPrimaryCls.replace('bg-foreground','bg-primary') + (canNext() ? '' : ' opacity-30 cursor-not-allowed')}>
-                {lang==='fr'?'Envoyer la demande':'Submit request'} <IconArrowRight width="14" height="14"/>
+              <button onClick={()=>canNext()&&!saving&&handleSubmit('request')} disabled={!canNext()||saving} className={navBtnPrimaryCls.replace('bg-foreground','bg-primary') + (canNext()&&!saving ? '' : ' opacity-30 cursor-not-allowed')}>
+                {saving ? (lang==='fr'?'Envoi…':'Sending…') : (lang==='fr'?'Envoyer la demande':'Submit request')} <IconArrowRight width="14" height="14"/>
               </button>
             )
           ) : (
             <div className="flex gap-2.5">
-              <button onClick={()=>canQuote()&&setSent('quote')} disabled={!canQuote()} title={lang==='fr'?'Sans bloquer de date':'No date held'} className={navBtnCls + (canQuote() ? '' : ' opacity-30 cursor-not-allowed')}>
-                {lang==='fr'?'Recevoir mon devis':'Receive my quote'} <IconArrowRight width="14" height="14"/>
+              <button onClick={()=>canQuote()&&!saving&&handleSubmit('quote')} disabled={!canQuote()||saving} title={lang==='fr'?'Sans bloquer de date':'No date held'} className={navBtnCls + (canQuote()&&!saving ? '' : ' opacity-30 cursor-not-allowed')}>
+                {saving ? (lang==='fr'?'Envoi…':'Sending…') : (lang==='fr'?'Recevoir mon devis':'Receive my quote')} <IconArrowRight width="14" height="14"/>
               </button>
               {step===5 ? (
                 <button onClick={()=>canNext()&&nextN!==null&&setStep(nextN)} disabled={!canNext()} className={navBtnPrimaryCls + (canNext() ? '' : ' opacity-30 cursor-not-allowed')}>
@@ -703,8 +788,8 @@ const BookPageV2 = () => {
                   {lang==='fr'?'Valider · plateau suivant':'Validate · next stage'} <IconArrowRight width="14" height="14"/>
                 </button>
               ) : (
-                <button onClick={()=>canNext()&&setSent('booking')} disabled={!canNext()} className={navBtnPrimaryCls.replace('bg-foreground','bg-primary') + (canNext() ? '' : ' opacity-30 cursor-not-allowed')}>
-                  {lang==='fr'?'Réserver':'Book now'} <IconArrowRight width="14" height="14"/>
+                <button onClick={()=>canNext()&&!saving&&handleSubmit('booking')} disabled={!canNext()||saving} className={navBtnPrimaryCls.replace('bg-foreground','bg-primary') + (canNext()&&!saving ? '' : ' opacity-30 cursor-not-allowed')}>
+                  {saving ? (lang==='fr'?'Réservation…':'Booking…') : (lang==='fr'?'Réserver':'Book now')} <IconArrowRight width="14" height="14"/>
                 </button>
               )}
             </div>
@@ -1076,10 +1161,10 @@ const Toggle = ({ on, onClick }: AnyProps) => (
   </button>
 );
 
-const Confirmation = ({ lang, openMenu, goto, setLang, plateau, selected, arrivalHour, rentalHours, plateaus, perPlateau, total, rows, contact, months, mode }: AnyProps) => {
+const Confirmation = ({ lang, openMenu, goto, setLang, plateau, selected, arrivalHour, rentalHours, plateaus, perPlateau, total, rows, contact, months, mode, savedRef }: AnyProps) => {
   const isMultiPlateau = (plateaus || []).filter(Boolean).length > 1;
   const fmtTime = (h) => `${String(h).padStart(2,'0')}:00`;
-  const ref = React.useMemo(()=>{ const prefix = mode==='quote' ? 'EDO-Q-' : mode==='booking' ? 'EDO-R-' : 'EDO-'; return prefix + Math.random().toString(36).substr(2,6).toUpperCase(); },[mode]);
+  const ref = savedRef || React.useMemo(()=>{ const prefix = mode==='quote' ? 'EDO-Q-' : mode==='booking' ? 'EDO-R-' : 'EDO-'; return prefix + Math.random().toString(36).substr(2,6).toUpperCase(); },[mode]);
   const copy = (() => {
     if (mode==='quote') return { tag: lang==='fr'?'Devis envoyé':'Quote sent', status: lang==='fr'?'Devis':'Quote', title: lang==='fr'?'Votre devis arrive.':'Your quote is on its way.', body: lang==='fr' ? `Nous vous envoyons votre devis détaillé pour le plateau ${plateau[lang]} par e-mail sous 24h (jours ouvrés). Aucune date n'est pas bloquée à ce stade — vous restez libre de réserver ensuite.` : `We're sending your detailed quote for the ${plateau[lang]} stage by email within 24h (working days). No date is held yet — you stay free to book later.` };
     if (mode==='booking') return { tag: lang==='fr'?'Réservation confirmée':'Booking confirmed', status: lang==='fr'?'Réservée':'Booked', title: lang==='fr'?'C’est réservé.':'You’re booked.', body: lang==='fr' ? `Nous avons bien enregistré votre réservation pour le plateau ${plateau[lang]}. Un membre de l'équipe vous recontacte sous 24h (jours ouvrés) pour confirmer les modalités de paiement.` : `We've locked in your booking for the ${plateau[lang]} stage. A team member will contact you within 24h (working days) to confirm payment terms.` };
