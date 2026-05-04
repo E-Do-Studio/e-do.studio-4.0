@@ -1007,26 +1007,32 @@ const Step1Plateau = ({ lang, plateau, setPlateau, plateaus, togglePlateau, setC
   </div>
 );
 
-const LegendChip = ({ bg, br, lbl }: AnyProps) => (<span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5" style={{background:bg,border:`1px solid ${br}`}}/> {lbl}</span>);
+const LegendChip = ({ bg, br, lbl, ring }: AnyProps) => (<span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5" style={{background:bg,border:`1px solid ${br}`, boxShadow: ring ? `inset 0 0 0 1.5px ${ring}` : undefined}}/> {lbl}</span>);
 
 const Step2Date = ({ lang, p, viewY, viewM, months, days, calCells, selected, setSelected, arrivalHour, setArrivalHour, rentalHours, isPast, nextMonth, prevMonth }: AnyProps) => {
   const isSelected = (d) => selected && selected.y===viewY && selected.m===viewM && selected.d===d;
+  const now = new Date();
+  const todayY = now.getFullYear(); const todayM = now.getMonth(); const todayD = now.getDate();
+  const isToday = (d: number) => viewY===todayY && viewM===todayM && d===todayD;
   const maxStart = 19 - rentalHours;
   React.useEffect(()=>{ if (arrivalHour > maxStart) setArrivalHour(Math.max(9, Math.min(10, maxStart))); }, [maxStart]);
   return (<div>
     <div className="px-6 border-b border-foreground flex items-center h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local"><span className="edo-cell-label text-primary whitespace-nowrap">06 · {lang==='fr'?'Choisir une date':'Pick a date'}</span></div>
-    <div className="grid gap-px bg-black border-b border-foreground w-full grid-cols-fluid-two-auto"><div className="bg-white px-12 py-2 flex items-center gap-5 min-w-0 flex-wrap"><h2 className="m-0 text-tile-title font-light tracking-headline">{months[viewM]} <span className="text-muted-foreground">{viewY}</span></h2><div className="flex gap-3 font-mono text-micro tracking-ui uppercase text-muted-foreground flex-wrap"><LegendChip bg="#fff" br="#141414" lbl={lang==='fr'?'Libre':'Free'}/><LegendChip bg="#f6e4c4" br="#d9b47d" lbl={lang==='fr'?'Partiel':'Limited'}/><LegendChip bg="var(--edo-gray-100)" br="var(--edo-gray-200)" lbl={lang==='fr'?'Indisponible':'Booked'}/><LegendChip bg="var(--edo-orange)" br="var(--edo-orange)" lbl={lang==='fr'?'Sélectionné':'Selected'}/></div></div><button onClick={prevMonth} className="bg-white border-0 cursor-pointer px-cell font-mono text-detail text-foreground">←</button><button onClick={nextMonth} className="bg-white border-0 cursor-pointer px-cell font-mono text-detail text-foreground">→</button></div>
-    <div className="grid grid-cols-7 gap-px bg-black border-b border-foreground w-full">{days.map((d,i)=>(<div key={i} className="bg-muted py-1.5 text-center font-mono text-micro tracking-meta uppercase text-muted-foreground">{d}</div>))}</div>
+    <div className="grid gap-px bg-black border-b border-foreground w-full grid-cols-fluid-two-auto"><div className="bg-white px-12 py-2 flex items-center gap-5 min-w-0 flex-wrap"><h2 className="m-0 text-tile-title font-light tracking-headline">{months[viewM]} <span className="text-muted-foreground">{viewY}</span></h2><div className="flex gap-3 font-mono text-micro tracking-ui uppercase text-muted-foreground flex-wrap"><LegendChip bg="#fff" br="#141414" ring="var(--edo-orange)" lbl={lang==='fr'?'Aujourd\'hui':'Today'}/><LegendChip bg="#fff" br="#141414" lbl={lang==='fr'?'Libre':'Free'}/><LegendChip bg="#f6e4c4" br="#d9b47d" lbl={lang==='fr'?'Partiel':'Limited'}/><LegendChip bg="var(--edo-gray-100)" br="var(--edo-gray-200)" lbl={lang==='fr'?'Indisponible':'Booked'}/><LegendChip bg="var(--edo-orange)" br="var(--edo-orange)" lbl={lang==='fr'?'Sélectionné':'Selected'}/></div></div><button onClick={prevMonth} className="bg-white border-0 cursor-pointer px-cell font-mono text-detail text-foreground">←</button><button onClick={nextMonth} className="bg-white border-0 cursor-pointer px-cell font-mono text-detail text-foreground">→</button></div>
+    <div className="grid grid-cols-7 gap-px bg-black border-b border-foreground w-full">{days.map((d,i)=>(<div key={i} className="bg-muted py-2 text-center font-mono text-micro tracking-meta uppercase text-foreground/60 font-medium">{d}</div>))}</div>
     <div className="grid grid-cols-7 gap-px bg-black border-b border-foreground w-full">{calCells.map((d,i)=>{
       if (d===null) return <div key={i} className="bg-muted aspect-calendar"/>;
       const dow = new Date(viewY, viewM, d).getDay(); const weekend = dow===0 || dow===6; const isFullDay = rentalHours>=8; const weekendBlocked = weekend && !isFullDay;
       const av = weekendBlocked ? 'unavailable' : availFor(p.k, viewY, viewM, d); const past = isPast(d); const sel = isSelected(d);
       const clickable = !past && av!=='unavailable';
-      return (<button key={i} disabled={!clickable} onClick={()=>setSelected({y:viewY,m:viewM,d})} title={weekendBlocked ? (lang==='fr'?'Week-end : réservation journée complète uniquement':'Weekend: full-day booking only') : ''}
-        className={`${sel ? 'bg-primary text-white' : past ? 'bg-muted text-muted-foreground' : av==='unavailable' ? 'bg-muted text-foreground' : av==='limited' ? 'bg-edo-limited text-foreground' : 'bg-white text-foreground'} border-0 ${clickable ? 'cursor-pointer' : 'cursor-not-allowed'} flex flex-col justify-between text-left font-inherit min-w-0 px-2.5 py-1.5 aspect-calendar`}>
-        <span className={`text-cell ${sel ? 'font-medium' : 'font-normal'} tracking-copy-tight`}>{d}</span>
-        {!past && av!=='unavailable' && (<span className="font-mono text-nano tracking-caption uppercase opacity-70">{av==='free'?(lang==='fr'?'libre':'free'):(lang==='fr'?'partiel':'part.')}</span>)}
-        {weekendBlocked && !past && (<span className="font-mono text-nano tracking-caption uppercase text-muted-foreground">{lang==='fr'?'journée':'full only'}</span>)}
+      const tdy = isToday(d);
+      const bgClass = sel ? 'bg-primary text-white' : past ? 'bg-muted/60 text-muted-foreground/40' : av==='unavailable' ? 'bg-muted text-muted-foreground/50' : av==='limited' ? 'bg-edo-limited text-foreground' : 'bg-white text-foreground';
+      return (<button key={i} disabled={!clickable} onClick={()=>setSelected({y:viewY,m:viewM,d})} title={weekendBlocked ? (lang==='fr'?'Week-end : réservation journée complète uniquement':'Weekend: full-day booking only') : tdy ? (lang==='fr'?'Aujourd\'hui':'Today') : ''}
+        className={`${bgClass} ${tdy && !sel ? 'ring-2 ring-inset ring-primary' : ''} border-0 ${clickable ? 'cursor-pointer hover:ring-2 hover:ring-inset hover:ring-foreground/30' : 'cursor-not-allowed'} flex flex-col justify-between text-left font-inherit min-w-0 px-2.5 py-1.5 aspect-calendar transition-shadow duration-100`}>
+        <span className={`text-cell ${sel ? 'font-medium' : tdy ? 'font-semibold' : 'font-normal'} tracking-copy-tight ${past && !sel ? 'line-through decoration-1' : ''}`}>{d}</span>
+        {tdy && !sel && (<span className="font-mono text-nano tracking-caption uppercase text-primary font-medium">{lang==='fr'?'auj.':'today'}</span>)}
+        {!tdy && !past && av!=='unavailable' && (<span className="font-mono text-nano tracking-caption uppercase opacity-70">{av==='free'?(lang==='fr'?'libre':'free'):(lang==='fr'?'partiel':'part.')}</span>)}
+        {weekendBlocked && !past && !tdy && (<span className="font-mono text-nano tracking-caption uppercase text-muted-foreground">{lang==='fr'?'journée':'full only'}</span>)}
       </button>);
     })}</div>
     <div className="grid grid-cols-1 gap-px bg-black border-b border-foreground w-full"><div className="bg-white px-12 py-2.5 flex items-center gap-5 flex-wrap"><span className="edo-cell-label">{lang==='fr'?'Heure d’arrivée':'Arrival time'}</span><span className="font-mono text-label tracking-ui text-muted-foreground">{String(arrivalHour).padStart(2,'0')}:00 → {String(arrivalHour+rentalHours).padStart(2,'0')}:00 · {rentalHours}h</span></div></div>
