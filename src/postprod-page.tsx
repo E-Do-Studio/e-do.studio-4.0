@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button, IconArrowRight, PageHeader } from './ui';
 import type { Bilingual } from './types';
 import { usePageContext } from './router';
+import { useDocumentMeta } from './lib/use-document-meta';
 
 interface PPPrice {
   amount?: string;
@@ -206,6 +207,7 @@ const SampleImage = ({ seed, label, medium }: SampleImageProps) => {
 
 const PostprodPage = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
+  useDocumentMeta('postprod', lang);
   const [k, setK] = useState(PP_CATS[0].k);
   const cat = PP_CATS.find(c=>c.k===k) || PP_CATS[0];
   const dark = !!cat.featured;

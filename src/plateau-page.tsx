@@ -1,6 +1,7 @@
 import { IconArrowRight, IconMenu, CellLabel, PageHeader, Wordmark } from './ui';
 import { usePageContext } from './router';
 import { usePlateaux } from './lib/use-strapi';
+import { useDocumentMeta } from './lib/use-document-meta';
 
 const PlateauVisual = ({ kind }: { kind: string }) => {
   const svgClass = "h-4/5 w-4/5";
@@ -64,6 +65,8 @@ const PlateauVisual = ({ kind }: { kind: string }) => {
 
 const PlateauPage = ({ slug }: { slug: string }) => {
   const { lang, setLang, openMenu, goto } = usePageContext();
+  const metaKey = slug === 'cyclorama' ? 'cyclorama' : `plateau-${slug}`;
+  useDocumentMeta(metaKey, lang);
   const { data: plateaux, loading } = usePlateaux();
   if (loading || !plateaux) return <div className="flex items-center justify-center h-full bg-white"><span className="text-muted-foreground text-caption animate-pulse">{lang === 'fr' ? 'Chargement…' : 'Loading…'}</span></div>;
   const p = plateaux[slug] || plateaux.cyclorama;

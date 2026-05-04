@@ -1,6 +1,7 @@
 import React, { useState as useStateBook, useMemo as useMemoBook } from 'react';
 import { usePageContext } from './router';
-import { IconArrowRight, PageHeader, Toggle } from './ui';
+import { useDocumentMeta } from './lib/use-document-meta';
+import { IconArrowRight, PageHeader } from './ui';
 import { MarqueeCell } from './cells';
 import type { Lang } from './types';
 
@@ -352,6 +353,7 @@ const isSessionValid = (s: BookingSession) => {
 
 const BookPageV2 = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
+  useDocumentMeta('book', lang);
   const today = new Date();
   const [step, setStep] = useStateBook<number>(() => { try { if (localStorage.getItem('edo-book-plateau')) return 1; } catch(e){} return 0; });
   const [configGlobal, setConfigGlobal] = useStateBook<ConfigGlobal>({ projectType: 'ecom', urgency: 'flex', postprod: false });

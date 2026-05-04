@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <url>
+    <loc>https://e-do.studio/fr</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://e-do.studio/fr"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://e-do.studio/en"/>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <url>
+    <loc>https://e-do.studio/en</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://e-do.studio/fr"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://e-do.studio/en"/>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <url>
+    <loc>https://e-do.studio/fr/cyclorama</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://e-do.studio/fr/cyclorama"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://e-do.studio/en/cyclorama"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://e-do.studio/en/cyclorama</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://e-do.studio/fr/cyclorama"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://e-do.studio/en/cyclorama"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://e-do.studio/fr/plateau/horizontal</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://e-do.studio/fr/plateau/horizontal"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://e-do.studio/en/plateau/horizontal"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://e-do.studio/en/plateau/horizontal</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://e-do.studio/fr/plateau/horizontal"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://e-do.studio/en/plateau/horizontal"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://e-do.studio/fr/plateau/vertical</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://e-do.studio/fr/plateau/vertical"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://e-do.studio/en/plateau/vertical"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://e-do.studio/en/plateau/vertical</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://e-do.studio/fr/plateau/vertical"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://e-do.studio/en/plateau/vertical"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://e-do.studio/fr/plateau/eclipse</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://e-do.studio/fr/plateau/eclipse"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://e-do.studio/en/plateau/eclipse"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://e-do.studio/en/plateau/eclipse</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://e-do.studio/fr/plateau/eclipse"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://e-do.studio/en/plateau/eclipse"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://e-do.studio/fr/plateau/live</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://e-do.studio/fr/plateau/live"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://e-do.studio/en/plateau/live"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://e-do.studio/en/plateau/live</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://e-do.studio/fr/plateau/live"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://e-do.studio/en/plateau/live"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://e-do.studio/fr/discovery</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://e-do.studio/fr/discovery"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://e-do.studio/en/discovery"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://e-do.studio/en/discovery</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://e-do.studio/fr/discovery"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://e-do.studio/en/discovery"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://e-do.studio/fr/post-production</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://e-do.studio/fr/post-production"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://e-do.studio/en/post-production"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://e-do.studio/en/post-production</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://e-do.studio/fr/post-production"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://e-do.studio/en/post-production"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://e-do.studio/fr/galerie</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://e-do.studio/fr/galerie"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://e-do.studio/en/galerie"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://e-do.studio/en/galerie</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://e-do.studio/fr/galerie"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://e-do.studio/en/galerie"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://e-do.studio/fr/contact</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://e-do.studio/fr/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://e-do.studio/en/contact"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://e-do.studio/en/contact</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://e-do.studio/fr/contact"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://e-do.studio/en/contact"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://e-do.studio/fr/reserver</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://e-do.studio/fr/reserver"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://e-do.studio/en/book"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://e-do.studio/en/book</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://e-do.studio/fr/reserver"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://e-do.studio/en/book"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+</urlset>
