@@ -15,6 +15,7 @@ interface PageHeaderAction {
   variant?: 'default' | 'primary' | 'dark';
   showArrow?: boolean;
   className?: string;
+  expand?: boolean;
 }
 
 interface PageHeaderProps {
@@ -39,11 +40,13 @@ const PageHeaderActionButton = ({
   variant = 'default',
   showArrow = true,
   className,
+  expand,
 }: PageHeaderAction) => {
   const isPrimary = variant === 'primary';
   const isDark = variant === 'dark';
   const actionClassName = cn(
-    'edo-focus-ring flex h-full flex-none cursor-pointer items-center justify-center gap-2 border-0 font-mono uppercase no-underline transition-colors',
+    'edo-focus-ring flex h-full cursor-pointer items-center justify-center gap-2 border-0 font-mono uppercase no-underline transition-colors',
+    expand ? 'flex-1' : 'flex-none',
     isPrimary
       ? 'bg-primary px-6 text-label tracking-caption text-white hover:bg-foreground hover:text-white'
       : isDark
