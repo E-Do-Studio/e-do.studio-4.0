@@ -261,6 +261,10 @@
   grid-template-columns: 190px minmax(0, 1fr) 300px;
 }
 
+@utility grid-cols-book {
+  grid-template-columns: 190px minmax(0, 1fr) minmax(0, 1fr) 300px;
+}
+
 @utility grid-cols-contact-shell {
   grid-template-columns: 190px minmax(0, 1fr) minmax(0, 1fr);
 }
