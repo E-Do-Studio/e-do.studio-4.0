@@ -295,7 +295,7 @@ const LegalPage = () => {
   const C = CONTENT[sec];
 
   return (
-    <div className="edo-page-enter grid w-full gap-px bg-hairline overflow-y-auto md:grid-cols-app md:grid-rows-app md:h-full md:overflow-hidden">
+    <div className="edo-page-enter grid w-full gap-px bg-hairline overflow-y-auto md:grid-cols-contact-shell md:grid-rows-app md:h-full md:overflow-hidden">
 
       {/* Mobile header */}
       <PageHeader
@@ -320,12 +320,14 @@ const LegalPage = () => {
         </button>
       </div>
 
-      {/* Desktop col 2 – title + contact + lang toggle */}
-      <div className="hidden md:flex h-full min-w-0 items-center gap-px bg-foreground md:col-start-2 md:row-start-1">
-        <div className="flex h-full flex-1 min-w-0 items-center bg-background px-6">
-          <CellLabel className="shrink-0 text-primary">{lang==='fr'?'Légal':'Legal'}</CellLabel>
-        </div>
-        <button onClick={()=>goto('contact')} className="edo-focus-ring flex h-full cursor-pointer items-center justify-center gap-2 border-0 bg-background px-5 font-mono text-label tracking-ui uppercase text-foreground no-underline transition-colors hover:bg-muted">
+      {/* Desktop col 2 – title */}
+      <div className="hidden md:flex h-full min-w-0 items-center bg-background px-6 md:col-start-2 md:row-start-1">
+        <CellLabel className="shrink-0 text-primary">{lang==='fr'?'Légal':'Legal'}</CellLabel>
+      </div>
+
+      {/* Desktop col 3 – contact + lang toggle */}
+      <div className="hidden md:flex h-full gap-px bg-foreground md:col-start-3 md:row-start-1">
+        <button onClick={()=>goto('contact')} className="edo-focus-ring flex h-full flex-1 cursor-pointer items-center justify-center gap-2 border-0 bg-background px-5 font-mono text-label tracking-ui uppercase text-foreground no-underline transition-colors hover:bg-muted">
           <span className="whitespace-nowrap">{lang==='fr'?'Nous contacter':'Contact us'}</span>
           <IconArrowRight width={12} height={12} />
         </button>
@@ -362,7 +364,7 @@ const LegalPage = () => {
       </div>
 
       {/* Main content */}
-      <div className="bg-muted overflow-auto md:col-start-2 md:row-start-2">
+      <div className="bg-muted overflow-auto md:col-start-2 md:col-span-2 md:row-start-2">
 
         <div className="bg-white pt-9 px-5 pb-7 border-b border-border grid grid-cols-fluid-auto gap-6 items-end md:px-10">
           <div>

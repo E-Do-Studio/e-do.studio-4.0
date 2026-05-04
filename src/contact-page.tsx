@@ -157,7 +157,7 @@ interface ContactFormPanelProps {
 }
 
 const ContactFormPanel = ({ lang, form, sent, setForm, setSent, submit, goto }: ContactFormPanelProps) => (
-  <main className="overflow-hidden bg-white md:col-start-2 md:row-start-2">
+  <main className="overflow-hidden bg-white md:col-start-2 md:col-span-2 md:row-start-2">
     {!sent ? (
       <ContactForm lang={lang} form={form} setForm={setForm} submit={submit} />
     ) : (
@@ -316,7 +316,7 @@ const ContactSuccess = ({ lang, setForm, setSent, goto }: ContactSuccessProps) =
 );
 
 const ContactRightColumn = ({ lang }: { lang: Lang }) => (
-  <aside className="grid grid-rows-2 gap-px overflow-hidden bg-hairline md:col-start-3 md:row-start-2 min-h-72 md:min-h-0">
+  <aside className="grid grid-rows-2 gap-px overflow-hidden bg-hairline md:col-start-4 md:row-start-2 min-h-72 md:min-h-0">
     <ContactMap lang={lang} />
     <TeamPanel lang={lang} />
   </aside>
@@ -405,7 +405,7 @@ const ContactPage = () => {
   };
 
   return (
-    <div className="edo-page-enter grid w-full gap-px overflow-y-auto bg-hairline md:h-full md:grid-cols-contact-shell md:grid-rows-page md:overflow-hidden">
+    <div className="edo-page-enter grid w-full gap-px overflow-y-auto bg-hairline md:h-full md:grid-cols-plateau md:grid-rows-page md:overflow-hidden">
       {/* Mobile header */}
       <PageHeader
         lang={lang}
@@ -429,19 +429,19 @@ const ContactPage = () => {
         </button>
       </div>
 
-      {/* Desktop col 2 – title + stages */}
-      <div className="hidden md:flex h-full min-w-0 items-center gap-px bg-foreground md:col-start-2 md:row-start-1">
-        <div className="flex h-full flex-1 min-w-0 items-center bg-background px-6">
-          <CellLabel className="shrink-0 text-primary">{lang === 'fr' ? 'Nous contacter' : 'Contact us'}</CellLabel>
-        </div>
-        <button onClick={() => goto('plateau-live')} className="edo-focus-ring flex h-full cursor-pointer items-center justify-center gap-2 border-0 bg-background px-5 font-mono text-label tracking-ui uppercase text-foreground no-underline transition-colors hover:bg-muted">
-          <span className="whitespace-nowrap">{lang === 'fr' ? 'Plateaux' : 'Stages'}</span>
-          <IconArrowRight width={12} height={12} />
-        </button>
+      {/* Desktop col 2 – title */}
+      <div className="hidden md:flex h-full min-w-0 items-center bg-background px-6 md:col-start-2 md:row-start-1">
+        <CellLabel className="shrink-0 text-primary">{lang === 'fr' ? 'Nous contacter' : 'Contact us'}</CellLabel>
       </div>
 
-      {/* Desktop col 3 – book + lang toggle */}
-      <div className="hidden md:flex h-full items-center gap-px bg-foreground md:col-start-3 md:row-start-1">
+      {/* Desktop col 3 – stages */}
+      <button onClick={() => goto('plateau-live')} className="edo-focus-ring hidden md:flex h-full cursor-pointer items-center justify-center gap-2 border-0 bg-background px-5 font-mono text-label tracking-ui uppercase text-foreground no-underline transition-colors hover:bg-muted md:col-start-3 md:row-start-1">
+        <span className="whitespace-nowrap">{lang === 'fr' ? 'Plateaux' : 'Stages'}</span>
+        <IconArrowRight width={12} height={12} />
+      </button>
+
+      {/* Desktop col 4 – book + lang toggle */}
+      <div className="hidden md:flex h-full items-center gap-px bg-foreground md:col-start-4 md:row-start-1">
         <button onClick={() => goto('book')} className="edo-focus-ring flex h-full flex-1 cursor-pointer items-center justify-center gap-2 border-0 bg-primary px-5 font-mono text-label tracking-ui uppercase text-white no-underline transition-colors hover:bg-foreground">
           <span className="whitespace-nowrap">{lang === 'fr' ? 'Réserver' : 'Book'}</span>
           <IconArrowRight width={12} height={12} />

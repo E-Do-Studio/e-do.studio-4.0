@@ -216,7 +216,7 @@ const PostprodPage = () => {
 
   return (
     /* Mobile: single-column scrollable. Desktop (md+): sidebar + workspace */
-    <div className="edo-page-enter grid w-full gap-px bg-black overflow-y-auto md:h-full md:grid-cols-app md:grid-rows-app md:overflow-hidden">
+    <div className="edo-page-enter grid w-full gap-px bg-black overflow-y-auto md:h-full md:grid-cols-plateau md:grid-rows-app md:overflow-hidden">
 
       {/* Mobile header */}
       <PageHeader
@@ -241,16 +241,20 @@ const PostprodPage = () => {
         </button>
       </div>
 
-      {/* Desktop col 2 – title + gallery + book + lang toggle */}
-      <div className="hidden md:flex h-full min-w-0 items-center gap-px bg-foreground md:col-start-2 md:row-start-1">
-        <div className="flex h-full flex-1 min-w-0 items-center bg-background px-6">
-          <CellLabel className="shrink-0 text-primary">Post-production</CellLabel>
-        </div>
-        <button onClick={()=>goto('gallery')} className="edo-focus-ring flex h-full cursor-pointer items-center justify-center gap-2 border-0 bg-background px-5 font-mono text-label tracking-ui uppercase text-foreground no-underline transition-colors hover:bg-muted">
-          <span className="whitespace-nowrap">{lang==='fr'?'Galerie':'Gallery'}</span>
-          <IconArrowRight width={12} height={12} />
-        </button>
-        <button onClick={()=>goto('book')} className="edo-focus-ring flex h-full cursor-pointer items-center justify-center gap-2 border-0 bg-primary px-5 font-mono text-label tracking-ui uppercase text-white no-underline transition-colors hover:bg-foreground">
+      {/* Desktop col 2 – title */}
+      <div className="hidden md:flex h-full min-w-0 items-center bg-background px-6 md:col-start-2 md:row-start-1">
+        <CellLabel className="shrink-0 text-primary">Post-production</CellLabel>
+      </div>
+
+      {/* Desktop col 3 – gallery */}
+      <button onClick={()=>goto('gallery')} className="edo-focus-ring hidden md:flex h-full cursor-pointer items-center justify-center gap-2 border-0 bg-background px-5 font-mono text-label tracking-ui uppercase text-foreground no-underline transition-colors hover:bg-muted md:col-start-3 md:row-start-1">
+        <span className="whitespace-nowrap">{lang==='fr'?'Galerie':'Gallery'}</span>
+        <IconArrowRight width={12} height={12} />
+      </button>
+
+      {/* Desktop col 4 – book + lang toggle */}
+      <div className="hidden md:flex h-full gap-px bg-foreground md:col-start-4 md:row-start-1">
+        <button onClick={()=>goto('book')} className="edo-focus-ring flex h-full flex-1 cursor-pointer items-center justify-center gap-2 border-0 bg-primary px-5 font-mono text-label tracking-ui uppercase text-white no-underline transition-colors hover:bg-foreground">
           <span className="whitespace-nowrap">{lang==='fr'?'Réserver':'Book'}</span>
           <IconArrowRight width={12} height={12} />
         </button>
@@ -286,7 +290,7 @@ const PostprodPage = () => {
       </aside>
 
       {/* Main workspace */}
-      <main className="bg-black md:col-start-2 md:row-start-2">
+      <main className="bg-black md:col-start-2 md:col-span-3 md:row-start-2">
         {/* Mobile: stacked layout; Desktop: 4-col × 2-row workspace */}
         <div className="grid gap-px bg-black grid-cols-1 md:grid-cols-postprod-workspace md:grid-rows-double md:h-full">
 

@@ -551,7 +551,7 @@ const BookPageV2 = () => {
   }
 
   return (
-    <div className="edo-page-enter grid w-full gap-px bg-black overflow-y-auto md:h-full md:overflow-hidden md:grid-cols-book-shell md:grid-rows-app">
+    <div className="edo-page-enter grid w-full gap-px bg-black overflow-y-auto md:h-full md:overflow-hidden md:grid-cols-book md:grid-rows-app">
 
       {/* Mobile header */}
       <PageHeader
@@ -576,12 +576,14 @@ const BookPageV2 = () => {
         </button>
       </div>
 
-      {/* Desktop col 2 – title + help + lang toggle */}
-      <div className="hidden md:flex h-full min-w-0 items-center gap-px bg-foreground md:col-start-2 md:row-start-1">
-        <div className="flex h-full flex-1 min-w-0 items-center bg-background px-6">
-          <CellLabel className="shrink-0 text-primary">{lang==='fr'?'Réservation':'Booking'}</CellLabel>
-        </div>
-        <button onClick={()=>goto('contact')} className="edo-focus-ring flex h-full cursor-pointer items-center justify-center gap-2 border-0 bg-background px-5 font-mono text-label tracking-ui uppercase text-foreground no-underline transition-colors hover:bg-muted">
+      {/* Desktop col 2 – title */}
+      <div className="hidden md:flex h-full min-w-0 items-center bg-background px-6 md:col-start-2 md:row-start-1">
+        <CellLabel className="shrink-0 text-primary">{lang==='fr'?'Réservation':'Booking'}</CellLabel>
+      </div>
+
+      {/* Desktop col 3 – help + lang toggle */}
+      <div className="hidden md:flex h-full gap-px bg-foreground md:col-start-3 md:row-start-1">
+        <button onClick={()=>goto('contact')} className="edo-focus-ring flex h-full flex-1 cursor-pointer items-center justify-center gap-2 border-0 bg-background px-5 font-mono text-label tracking-ui uppercase text-foreground no-underline transition-colors hover:bg-muted">
           <span className="whitespace-nowrap">{lang==='fr'?'Besoin d’aide':'Need help'}</span>
           <IconArrowRight width={12} height={12} />
         </button>
@@ -590,8 +592,8 @@ const BookPageV2 = () => {
         </button>
       </div>
 
-      {/* Desktop col 3 – dark label matching quote panel below */}
-      <div className="hidden md:flex h-full items-center bg-foreground px-6 md:col-start-3 md:row-start-1">
+      {/* Desktop col 4 – dark label matching quote panel below */}
+      <div className="hidden md:flex h-full items-center bg-foreground px-6 md:col-start-4 md:row-start-1">
         <CellLabel className="text-white/55">{lang==='fr'?'Votre devis':'Your quote'}</CellLabel>
       </div>
 
@@ -613,7 +615,7 @@ const BookPageV2 = () => {
         })}
       </div>
 
-      <div ref={contentScrollRef} className="bg-white overflow-auto flex flex-col md:col-start-2 md:row-start-2 md:min-h-0">
+      <div ref={contentScrollRef} className="bg-white overflow-auto flex flex-col md:col-start-2 md:col-span-2 md:row-start-2 md:min-h-0">
         {mode === 'manual' && (
           <div className="px-5 flex items-center justify-between gap-3 bg-muted min-h-control box-border shrink-0 border-b border-foreground">
             <span className="font-mono text-micro tracking-code uppercase text-muted-foreground min-w-0">
@@ -1063,7 +1065,7 @@ const Step7Contact = ({ lang, contact, setContact, p, configMode }: AnyProps) =>
 const SidePanel = ({ lang, p, selected, months, slotType, hours, cycloMode, rows, total, isPreview, step, plateaus, perPlateau }: AnyProps) => {
   const slotLbl = isPreview ? (lang==='fr'?'estimation live':'live estimate') : p.isCyclo ? (cycloMode==='halfH'?'5h':(cycloMode==='fullH'?'10h':(lang==='fr'?'10h éditorial':'10h editorial'))) : p.isVisite ? (lang==='fr'?'visite':'visit') : (slotType==='hour'? `${hours}h`:(slotType==='half'?(()=>{const hh=Math.max(4,Math.min(7,hours||4));return hh===4?(lang==='fr'?'½ j':'½ d'):`${hh}h`;})():(()=>{ const totalH = hours || 8; const fullDays = Math.floor(totalH / 8); const extraH = totalH - fullDays * 8; const dUnit = lang==='fr'?'j':'d'; let s = `${fullDays} ${dUnit}`; if (extraH === 4) s += lang==='fr'?' + ½ j':' + ½ d'; else if (extraH > 0) s += ` + ${extraH}h`; return s; })()));
   const title = isPreview ? (lang==='fr'?'Estimation':'Estimate') : p[lang];
-  return (<div className="bg-foreground md:col-start-3 md:row-start-2 text-white p-6 overflow-auto flex flex-col gap-3.5 min-h-0"><div><span className="edo-cell-label text-white/55">{lang==='fr'?'Votre devis':'Your quote'}</span><h2 className="m-0 mt-2 text-tile-large font-light tracking-headline text-white/85">{title}</h2><div className="font-mono text-label text-white/55 mt-1 tracking-caption">{slotLbl}</div></div>{(() => { const list = (plateaus || []).filter(Boolean); const isMulti = list.length > 1; if (isMulti) { const datedList = list.map(k => ({k, px: BOOK_PLATEAUX.find(x => x.k === k), d: (perPlateau||{})[k]?.date})).filter(x => x.d); if (datedList.length === 0) return null; return (<div className="pt-3.5 border-t border-white/10"><span className="edo-cell-label text-white/55 mb-1.5 block">{lang==='fr'?'Dates':'Dates'}</span><div className="flex flex-col gap-1.5">{datedList.map(({k, px, d}) => (<div key={k} className="flex justify-between items-baseline gap-2 text-detail"><span className="text-white/55 font-mono text-label tracking-caption uppercase">{px ? px[lang] : k}</span><span className="tracking-copy-tight">{d.d} {months[d.m]} {d.y}</span></div>))}</div></div>); } if (!selected) return null; return (<div className="pt-3.5 border-t border-white/10"><span className="edo-cell-label text-white/55 mb-1.5 block">{lang==='fr'?'Date':'Date'}</span><div className="text-cell tracking-copy-tight">{selected.d} {months[selected.m]} {selected.y}</div></div>); })()}<div className="pt-3.5 border-t border-white/10 flex-1 min-h-0 flex flex-col"><span className="edo-cell-label text-white/55 mb-2.5 block">{lang==='fr'?'Détail':'Breakdown'}</span><div className="flex flex-col gap-1.5 overflow-auto pr-1">{rows.length===0 && <span className="text-caption text-white/40">—</span>}{rows.map((r,i)=>(<div key={i} className="flex flex-col gap-0.5"><div className="flex justify-between items-baseline gap-2 text-caption"><span className="tracking-copy-tight">{(() => { const idx = r.lbl.indexOf(' · '); if (idx === -1) return <span className="text-white/75">{r.lbl}</span>; return (<><span className="text-white/40">{r.lbl.slice(0, idx)}</span><span className="text-white/75">{r.lbl.slice(idx)}</span></>); })()}</span><span className="font-mono tabular-nums text-white whitespace-nowrap">{r.onReq ? (lang==='fr'?'sur demande':'on request') : `${fmtEUR(r.amt)} €`}</span></div>{r.breakdown && r.breakdown.length > 0 && (<div className="pl-0.5 flex flex-col gap-px">{r.breakdown.map((b, bi) => { const viewLbl = b.labels ? b.labels[lang] : null; const formula = b.imagesPerSku && b.imagesPerSku > 1 ? `${b.qty} × ${b.imagesPerSku} × ${fmtEUR(b.unit)} €` : `${b.qty} × ${fmtEUR(b.unit)} €`; const line = viewLbl ? `${viewLbl} · ${formula}` : formula; return (<div key={bi} className="flex justify-between gap-2 font-mono text-micro text-white/40 tracking-caption"><span>→ {line}</span><span className="tabular-nums">{fmtEUR(b.subtotal)} €</span></div>); })}</div>)}</div>))}</div></div><div className="pt-3.5 border-t border-white/25"><div className="flex justify-between items-baseline"><span className="font-mono text-caption tracking-ui uppercase text-white/65">Total HT</span><span className="text-page-title font-light tracking-headline tabular-nums">{fmtEUR(total)} €</span></div><div className="font-mono text-micro text-white/45 mt-1 tracking-ui">TVA 20% · {fmtEUR(total*1.2)} € TTC</div>{rows.some(r=>r.estimate) && (<div className="font-mono text-micro text-white/45 mt-1.5 tracking-caption leading-normal">{lang==='fr' ? '⚠ Prix post-production estimatif — ajusté après brief selon volume et complexité.' : '⚠ Post-production price is an estimate — adjusted after brief based on volume and complexity.'}</div>)}</div></div>);
+  return (<div className="bg-foreground md:col-start-4 md:row-start-2 text-white p-6 overflow-auto flex flex-col gap-3.5 min-h-0"><div><span className="edo-cell-label text-white/55">{lang==='fr'?'Votre devis':'Your quote'}</span><h2 className="m-0 mt-2 text-tile-large font-light tracking-headline text-white/85">{title}</h2><div className="font-mono text-label text-white/55 mt-1 tracking-caption">{slotLbl}</div></div>{(() => { const list = (plateaus || []).filter(Boolean); const isMulti = list.length > 1; if (isMulti) { const datedList = list.map(k => ({k, px: BOOK_PLATEAUX.find(x => x.k === k), d: (perPlateau||{})[k]?.date})).filter(x => x.d); if (datedList.length === 0) return null; return (<div className="pt-3.5 border-t border-white/10"><span className="edo-cell-label text-white/55 mb-1.5 block">{lang==='fr'?'Dates':'Dates'}</span><div className="flex flex-col gap-1.5">{datedList.map(({k, px, d}) => (<div key={k} className="flex justify-between items-baseline gap-2 text-detail"><span className="text-white/55 font-mono text-label tracking-caption uppercase">{px ? px[lang] : k}</span><span className="tracking-copy-tight">{d.d} {months[d.m]} {d.y}</span></div>))}</div></div>); } if (!selected) return null; return (<div className="pt-3.5 border-t border-white/10"><span className="edo-cell-label text-white/55 mb-1.5 block">{lang==='fr'?'Date':'Date'}</span><div className="text-cell tracking-copy-tight">{selected.d} {months[selected.m]} {selected.y}</div></div>); })()}<div className="pt-3.5 border-t border-white/10 flex-1 min-h-0 flex flex-col"><span className="edo-cell-label text-white/55 mb-2.5 block">{lang==='fr'?'Détail':'Breakdown'}</span><div className="flex flex-col gap-1.5 overflow-auto pr-1">{rows.length===0 && <span className="text-caption text-white/40">—</span>}{rows.map((r,i)=>(<div key={i} className="flex flex-col gap-0.5"><div className="flex justify-between items-baseline gap-2 text-caption"><span className="tracking-copy-tight">{(() => { const idx = r.lbl.indexOf(' · '); if (idx === -1) return <span className="text-white/75">{r.lbl}</span>; return (<><span className="text-white/40">{r.lbl.slice(0, idx)}</span><span className="text-white/75">{r.lbl.slice(idx)}</span></>); })()}</span><span className="font-mono tabular-nums text-white whitespace-nowrap">{r.onReq ? (lang==='fr'?'sur demande':'on request') : `${fmtEUR(r.amt)} €`}</span></div>{r.breakdown && r.breakdown.length > 0 && (<div className="pl-0.5 flex flex-col gap-px">{r.breakdown.map((b, bi) => { const viewLbl = b.labels ? b.labels[lang] : null; const formula = b.imagesPerSku && b.imagesPerSku > 1 ? `${b.qty} × ${b.imagesPerSku} × ${fmtEUR(b.unit)} €` : `${b.qty} × ${fmtEUR(b.unit)} €`; const line = viewLbl ? `${viewLbl} · ${formula}` : formula; return (<div key={bi} className="flex justify-between gap-2 font-mono text-micro text-white/40 tracking-caption"><span>→ {line}</span><span className="tabular-nums">{fmtEUR(b.subtotal)} €</span></div>); })}</div>)}</div>))}</div></div><div className="pt-3.5 border-t border-white/25"><div className="flex justify-between items-baseline"><span className="font-mono text-caption tracking-ui uppercase text-white/65">Total HT</span><span className="text-page-title font-light tracking-headline tabular-nums">{fmtEUR(total)} €</span></div><div className="font-mono text-micro text-white/45 mt-1 tracking-ui">TVA 20% · {fmtEUR(total*1.2)} € TTC</div>{rows.some(r=>r.estimate) && (<div className="font-mono text-micro text-white/45 mt-1.5 tracking-caption leading-normal">{lang==='fr' ? '⚠ Prix post-production estimatif — ajusté après brief selon volume et complexité.' : '⚠ Post-production price is an estimate — adjusted after brief based on volume and complexity.'}</div>)}</div></div>);
 };
 
 const Toggle = ({ on, onClick }: AnyProps) => (
