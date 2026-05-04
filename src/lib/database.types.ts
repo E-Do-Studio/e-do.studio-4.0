@@ -41,6 +41,7 @@ export interface Database {
           updated_at?: string;
         };
         Update: Partial<Database['public']['Tables']['bookings']['Insert']>;
+        Relationships: [];
       };
       booking_sessions: {
         Row: {
@@ -80,6 +81,7 @@ export interface Database {
           created_at?: string;
         };
         Update: Partial<Database['public']['Tables']['booking_sessions']['Insert']>;
+        Relationships: [];
       };
       booking_quotes: {
         Row: {
@@ -99,6 +101,7 @@ export interface Database {
           generated_at?: string;
         };
         Update: Partial<Database['public']['Tables']['booking_quotes']['Insert']>;
+        Relationships: [];
       };
       ical_feeds: {
         Row: {
@@ -116,6 +119,7 @@ export interface Database {
           synced_at?: string | null;
         };
         Update: Partial<Database['public']['Tables']['ical_feeds']['Insert']>;
+        Relationships: [];
       };
     };
     Views: Record<string, never>;
