@@ -69,13 +69,13 @@ const ContactRail = ({ lang }: ContactRailProps) => (
 const FindUsSection = ({ lang }: { lang: Lang }) => (
   <section className="border-b border-border p-6">
     <CellLabel className="mb-5 block">{lang === 'fr' ? 'Nous trouver' : 'Find us'}</CellLabel>
-    <p className="m-0 text-pretty text-detail leading-copy font-normal">
-      <span className="mb-2 block font-mono text-label uppercase tracking-ui text-muted-foreground">
+    <div className="text-detail leading-copy font-normal text-muted-foreground">
+      <span className="mb-2 block font-mono text-label uppercase tracking-ui">
         Parc d'activités Victor&nbsp;Hugo · {lang === 'fr' ? 'Bât.' : 'Bldg.'} 6.7
       </span>
       69 boulevard Victor Hugo<br />
       93400 <span className="whitespace-nowrap">Saint-Ouen</span>,<br />France
-    </p>
+    </div>
     <div className="mt-5 flex flex-col gap-2.5 font-mono text-label leading-relaxed tracking-ui text-muted-foreground">
       <MetroLine line="13" label="Garibaldi" className="bg-metro-13 text-black" />
       <MetroLine line="14" label="Mairie de Saint-Ouen" className="bg-metro-14 text-white" />
@@ -115,16 +115,16 @@ interface HoursRowProps {
 }
 
 const HoursRow = ({ label, value, muted = false }: HoursRowProps) => (
-  <div className="flex justify-between gap-3">
-    <span className="text-muted-foreground">{label}</span>
-    <span className={cn('font-mono text-caption', muted && 'text-muted-foreground')}>{value}</span>
+  <div className="flex flex-col gap-0.5">
+    <span className={cn('text-muted-foreground', muted && 'opacity-55')}>{label}</span>
+    <span className={cn('font-mono tracking-ui', muted && 'text-muted-foreground')}>{value}</span>
   </div>
 );
 
 const PhoneSection = ({ lang }: { lang: Lang }) => (
   <section className="p-6">
     <CellLabel className="mb-5 block">{lang === 'fr' ? 'Téléphone' : 'Phone'}</CellLabel>
-    <a href="tel:+33144041149" className="text-detail font-mono tracking-code text-foreground no-underline">
+    <a href="tel:+33144041149" className="text-caption font-mono tracking-ui text-foreground no-underline">
       +33 1 44 04 11 49
     </a>
   </section>
