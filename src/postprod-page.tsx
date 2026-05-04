@@ -3,7 +3,6 @@ import { Button, CellLabel, IconArrowRight, IconMenu, PageHeader, Wordmark } fro
 import { useDocumentMeta } from './lib/use-document-meta';
 import type { Bilingual } from './types';
 import { usePageContext } from './router';
-import { useDocumentMeta } from './lib/use-document-meta';
 
 interface PPPrice {
   amount?: string;
@@ -292,90 +291,79 @@ const PostprodPage = () => {
         </div>
       </aside>
 
-      {/* Main workspace */}
-      <main className="bg-black md:col-start-2 md:col-span-3 md:row-start-2">
-        {/* Mobile: stacked layout; Desktop: 4-col × 2-row workspace */}
-        <div className="grid gap-px bg-black grid-cols-1 md:grid-cols-postprod-workspace md:grid-rows-double md:h-full">
-
-          {/* Description + pricing panel */}
-          <div className={`${bgCls} ${fgCls} py-8 px-6 md:px-9 flex flex-col justify-between gap-6 md:col-start-1 md:row-start-1 md:row-span-2`}>
-            <div className="flex flex-col gap-5">
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <span className="font-mono text-label tracking-label text-primary">
-                  {String(PP_CATS.findIndex(x=>x.k===k)+1).padStart(2,'0')} · {lang==='fr'?'CATÉGORIE':'CATEGORY'}
-                </span>
-                {cat.featured && (
-                  <span className="font-mono text-nano tracking-label uppercase bg-primary text-white px-2 py-0.5">
-                    {lang==='fr'?'Standard':'Standard'}
-                  </span>
-                )}
-              </div>
-              <h1 className={`m-0 text-hero font-light tracking-display leading-none ${fgCls}`}>
-                {cat[lang]}
-              </h1>
-              <span className={`font-mono text-caption tracking-code uppercase ${mutedCls}`}>
-                {cat.tagline[lang]}
+      {/* Description + pricing panel */}
+      <div className={`${bgCls} ${fgCls} py-8 px-6 md:px-9 flex flex-col justify-between gap-6 md:col-start-2 md:row-start-2 md:overflow-y-auto md:min-h-0`}>
+        <div className="flex flex-col gap-5">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <span className="font-mono text-label tracking-label text-primary">
+              {String(PP_CATS.findIndex(x=>x.k===k)+1).padStart(2,'0')} · {lang==='fr'?'CATÉGORIE':'CATEGORY'}
+            </span>
+            {cat.featured && (
+              <span className="font-mono text-nano tracking-label uppercase bg-primary text-white px-2 py-0.5">
+                {lang==='fr'?'Standard':'Standard'}
               </span>
-              <ul className="mt-2 p-0 list-none flex flex-col gap-1.5">
-                {cat.features[lang].map(f=>(
-                  <li key={f} className={`text-detail flex gap-2 items-start leading-snug ${fgCls}`}>
-                    <span className="text-primary font-mono shrink-0">+</span>
-                    <span className="min-w-0">{f}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className={`flex flex-col gap-3 pt-4 border-t ${lineCls}`}>
-              {cat.price && (
-                <div className="flex items-baseline gap-2.5 flex-wrap">
-                  {cat.price.kind==='quote' ? (
-                    <span className={`text-page-title font-light tracking-headline leading-none ${fgCls}`}>
-                      {lang==='fr'?'Sur demande':'On request'}
-                    </span>
-                  ) : (
-                    <>
-                      {cat.price.from && <span className={`font-mono text-label tracking-label uppercase ${mutedCls}`}>{lang==='fr'?'À partir de':'From'}</span>}
-                      <span className={`text-hero font-light tracking-headline leading-none ${fgCls}`}>{cat.price.amount}</span>
-                      <span className={`text-detail opacity-65 ${fgCls}`}>{cat.price.unit?.[lang] ?? ''}</span>
-                    </>
-                  )}
-                </div>
-              )}
-              <Button onClick={()=>goto('contact')} className="w-full justify-between py-3.5 px-5 mt-2">
-                {lang==='fr'?'Demander un devis':'Request a quote'}
-                <IconArrowRight width="16" height="16"/>
-              </Button>
-            </div>
+            )}
           </div>
-
-          {/* Sample images — 3-col on mobile, individual cells on desktop */}
-          <div className="grid grid-cols-3 gap-px bg-black md:contents">
-            <div className={`${bgCls} relative overflow-hidden aspect-portrait md:col-start-2 md:row-start-1`}>
-              <SampleImage seed={cat.samples[0]} label={cat.brands?.[0] || `${cat.k.toUpperCase()} · 01`} medium={cat.medium}/>
-            </div>
-            <div className={`${bgCls} relative overflow-hidden aspect-portrait md:col-start-3 md:row-start-1`}>
-              <SampleImage seed={cat.samples[1]} label={cat.brands?.[1] || `${cat.k.toUpperCase()} · 02`} medium={cat.medium}/>
-            </div>
-            <div className={`${bgCls} relative overflow-hidden aspect-portrait md:col-start-4 md:row-start-1`}>
-              <SampleImage seed={cat.samples[2]} label={cat.brands?.[2] || `${cat.k.toUpperCase()} · 03`} medium={cat.medium}/>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-px bg-black md:contents">
-            <div className={`${bgCls} relative overflow-hidden aspect-portrait md:col-start-2 md:row-start-2`}>
-              <SampleImage seed={cat.samples[3] || cat.samples[0]} label={cat.brands?.[3] || `${cat.k.toUpperCase()} · 04`} medium={cat.medium}/>
-            </div>
-            <div className={`${bgCls} relative overflow-hidden aspect-portrait md:col-start-3 md:row-start-2`}>
-              <SampleImage seed={cat.samples[4] || cat.samples[1]} label={cat.brands?.[4] || `${cat.k.toUpperCase()} · 05`} medium={cat.medium}/>
-            </div>
-            <div className={`${bgCls} relative overflow-hidden aspect-portrait md:col-start-4 md:row-start-2`}>
-              <SampleImage seed={cat.samples[5] || cat.samples[2]} label={cat.brands?.[5] || `${cat.k.toUpperCase()} · 06`} medium={cat.medium}/>
-            </div>
-          </div>
-
+          <h1 className={`m-0 text-hero font-light tracking-display leading-none ${fgCls}`}>
+            {cat[lang]}
+          </h1>
+          <span className={`font-mono text-caption tracking-code uppercase ${mutedCls}`}>
+            {cat.tagline[lang]}
+          </span>
+          <ul className="mt-2 p-0 list-none flex flex-col gap-1.5">
+            {cat.features[lang].map(f=>(
+              <li key={f} className={`text-detail flex gap-2 items-start leading-snug ${fgCls}`}>
+                <span className="text-primary font-mono shrink-0">+</span>
+                <span className="min-w-0">{f}</span>
+              </li>
+            ))}
+          </ul>
         </div>
-      </main>
+
+        <div className={`flex flex-col gap-3 pt-4 border-t ${lineCls}`}>
+          {cat.price && (
+            <div className="flex items-baseline gap-2.5 flex-wrap">
+              {cat.price.kind==='quote' ? (
+                <span className={`text-page-title font-light tracking-headline leading-none ${fgCls}`}>
+                  {lang==='fr'?'Sur demande':'On request'}
+                </span>
+              ) : (
+                <>
+                  {cat.price.from && <span className={`font-mono text-label tracking-label uppercase ${mutedCls}`}>{lang==='fr'?'À partir de':'From'}</span>}
+                  <span className={`text-hero font-light tracking-headline leading-none ${fgCls}`}>{cat.price.amount}</span>
+                  <span className={`text-detail opacity-65 ${fgCls}`}>{cat.price.unit?.[lang] ?? ''}</span>
+                </>
+              )}
+            </div>
+          )}
+          <Button onClick={()=>goto('contact')} className="w-full justify-between py-3.5 px-5 mt-2">
+            {lang==='fr'?'Demander un devis':'Request a quote'}
+            <IconArrowRight width="16" height="16"/>
+          </Button>
+        </div>
+      </div>
+
+      {/* Sample images grid */}
+      <div className="grid grid-cols-3 gap-px bg-black md:col-start-3 md:col-span-2 md:row-start-2 md:grid-rows-double md:min-h-0">
+        <div className={`${bgCls} relative overflow-hidden aspect-portrait`}>
+          <SampleImage seed={cat.samples[0]} label={cat.brands?.[0] || `${cat.k.toUpperCase()} · 01`} medium={cat.medium}/>
+        </div>
+        <div className={`${bgCls} relative overflow-hidden aspect-portrait`}>
+          <SampleImage seed={cat.samples[1]} label={cat.brands?.[1] || `${cat.k.toUpperCase()} · 02`} medium={cat.medium}/>
+        </div>
+        <div className={`${bgCls} relative overflow-hidden aspect-portrait`}>
+          <SampleImage seed={cat.samples[2]} label={cat.brands?.[2] || `${cat.k.toUpperCase()} · 03`} medium={cat.medium}/>
+        </div>
+        <div className={`${bgCls} relative overflow-hidden aspect-portrait`}>
+          <SampleImage seed={cat.samples[3] || cat.samples[0]} label={cat.brands?.[3] || `${cat.k.toUpperCase()} · 04`} medium={cat.medium}/>
+        </div>
+        <div className={`${bgCls} relative overflow-hidden aspect-portrait`}>
+          <SampleImage seed={cat.samples[4] || cat.samples[1]} label={cat.brands?.[4] || `${cat.k.toUpperCase()} · 05`} medium={cat.medium}/>
+        </div>
+        <div className={`${bgCls} relative overflow-hidden aspect-portrait`}>
+          <SampleImage seed={cat.samples[5] || cat.samples[2]} label={cat.brands?.[5] || `${cat.k.toUpperCase()} · 06`} medium={cat.medium}/>
+        </div>
+      </div>
     </div>
   );
 };
