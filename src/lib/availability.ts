@@ -8,7 +8,6 @@ interface BookingWithSessions {
   booking_sessions: { hours: number | null }[];
 }
 
-const MAX_HOURS_PER_DAY = 10;
 const LIMITED_THRESHOLD = 8;
 
 const cache = new Map<string, Record<number, AvailabilityState>>();
