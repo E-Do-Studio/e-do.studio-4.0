@@ -140,6 +140,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
   }
 
   syncToCalendar(booking.id).catch(() => {});
+  sendBookingEmails(booking.id).catch(() => {});
 
   return { booking, reference };
 }
@@ -152,6 +153,17 @@ async function syncToCalendar(bookingId: string): Promise<void> {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ bookingId, action: 'create' }),
+  });
+}
+
+async function sendBookingEmails(bookingId: string): Promise<void> {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  if (!supabaseUrl) return;
+
+  await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: 'booking', bookingId }),
   });
 }
 

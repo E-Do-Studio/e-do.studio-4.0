@@ -4,6 +4,7 @@ import { Button, CellLabel, IconArrowRight, IconMenu, PageHeader, SocialIcon, Wo
 import { useDocumentMeta } from './lib/use-document-meta';
 import type { Lang, ContactFormData, Bilingual } from './types';
 import { usePageContext } from './router';
+import { submitContactForm } from './lib/contact';
 
 interface Subject extends Bilingual {
   k: string;
@@ -151,16 +152,18 @@ interface ContactFormPanelProps {
   lang: Lang;
   form: ContactFormData;
   sent: boolean;
+  sending: boolean;
+  sendError: string | null;
   setForm: (form: ContactFormData) => void;
   setSent: (sent: boolean) => void;
   submit: (event: FormEvent) => void;
   goto: (screen: string) => void;
 }
 
-const ContactFormPanel = ({ lang, form, sent, setForm, setSent, submit, goto }: ContactFormPanelProps) => (
+const ContactFormPanel = ({ lang, form, sent, sending, sendError, setForm, setSent, submit, goto }: ContactFormPanelProps) => (
   <main className="overflow-hidden bg-white md:col-start-2 md:col-span-2 md:row-start-2">
     {!sent ? (
-      <ContactForm lang={lang} form={form} setForm={setForm} submit={submit} />
+      <ContactForm lang={lang} form={form} setForm={setForm} submit={submit} sending={sending} sendError={sendError} />
     ) : (
       <ContactSuccess lang={lang} setForm={setForm} setSent={setSent} goto={goto} />
     )}
@@ -172,9 +175,11 @@ interface ContactFormProps {
   form: ContactFormData;
   setForm: (form: ContactFormData) => void;
   submit: (event: FormEvent) => void;
+  sending: boolean;
+  sendError: string | null;
 }
 
-const ContactForm = ({ lang, form, setForm, submit }: ContactFormProps) => (
+const ContactForm = ({ lang, form, setForm, submit, sending, sendError }: ContactFormProps) => (
   <form
     onSubmit={submit}
     className="grid grid-cols-2 grid-rows-contact-form gap-px bg-border"
@@ -203,11 +208,21 @@ const ContactForm = ({ lang, form, setForm, submit }: ContactFormProps) => (
     <ContactInput required value={form.societe} onChange={(value) => setForm({...form, societe: value})} placeholder={lang === 'fr' ? 'Société · Marque*' : 'Company · Brand*'} className="col-span-2 row-start-6" />
     <ContactTextarea required value={form.message} onChange={(value) => setForm({...form, message: value})} placeholder={lang === 'fr' ? 'Votre message*' : 'Your message*'} />
 
+    {sendError && (
+      <div className="col-span-2 flex items-center bg-red-50 px-5 py-2 text-sm text-red-600">
+        {sendError}
+      </div>
+    )}
+
     <button
       type="submit"
-      className="edo-focus-ring col-span-2 row-start-8 flex cursor-pointer items-center justify-center gap-3.5 border-0 bg-primary font-mono text-caption uppercase tracking-label text-white transition-colors hover:bg-foreground hover:text-white"
+      disabled={sending}
+      className="edo-focus-ring col-span-2 row-start-8 flex cursor-pointer items-center justify-center gap-3.5 border-0 bg-primary font-mono text-caption uppercase tracking-label text-white transition-colors hover:bg-foreground hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
     >
-      {lang === 'fr' ? 'Envoyer' : 'Send'} <IconArrowRight width="16" height="16" />
+      {sending
+        ? (lang === 'fr' ? 'Envoi en cours…' : 'Sending…')
+        : <>{lang === 'fr' ? 'Envoyer' : 'Send'} <IconArrowRight width="16" height="16" /></>
+      }
     </button>
   </form>
 );
@@ -400,10 +415,21 @@ const ContactPage = () => {
   useDocumentMeta('contact', lang);
   const [form, setForm] = useState<ContactFormData>(INITIAL_FORM);
   const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
 
-  const submit = (event: FormEvent) => {
+  const submit = async (event: FormEvent) => {
     event.preventDefault();
-    setSent(true);
+    setSending(true);
+    setSendError(null);
+    try {
+      await submitContactForm(form);
+      setSent(true);
+    } catch (err) {
+      setSendError(err instanceof Error ? err.message : lang === 'fr' ? 'Erreur lors de l\'envoi' : 'Failed to send message');
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -453,7 +479,7 @@ const ContactPage = () => {
         </button>
       </div>
       <ContactRail lang={lang} />
-      <ContactFormPanel lang={lang} form={form} sent={sent} setForm={setForm} setSent={setSent} submit={submit} goto={goto} />
+      <ContactFormPanel lang={lang} form={form} sent={sent} sending={sending} sendError={sendError} setForm={setForm} setSent={setSent} submit={submit} goto={goto} />
       <ContactRightColumn lang={lang} />
     </div>
   );
