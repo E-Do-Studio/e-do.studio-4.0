@@ -9,8 +9,12 @@ import {
   fetchBrands,
   fetchContact,
   fetchStudioHours,
+  fetchGalleryProjects,
+  fetchGalleryCategories,
   type PlateauSpec,
   type PPCat,
+  type GalleryProject,
+  type GalleryCategory,
 } from './strapi';
 import type { MachineInfo, DiscoveryPost, DiscoveryCategory, SocialLink, Bilingual } from '../types';
 
@@ -69,4 +73,12 @@ export function useContact() {
 
 export function useStudioHours() {
   return useAsync<Bilingual>(fetchStudioHours);
+}
+
+export function useGalleryProjects() {
+  return useAsync<GalleryProject[]>(fetchGalleryProjects);
+}
+
+export function useGalleryCategories() {
+  return useAsync<GalleryCategory[]>(fetchGalleryCategories);
 }

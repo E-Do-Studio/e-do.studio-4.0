@@ -2,213 +2,19 @@ import { useMemo, useState } from "react";
 import type { CSSProperties } from "react";
 import { usePageContext } from "./router";
 import { useDocumentMeta } from "./lib/use-document-meta";
+import { useGalleryProjects, useGalleryCategories } from "./lib/use-strapi";
+import type { GalleryProject } from "./lib/strapi";
 import type { Lang } from "./types";
 import { Button, PageHeader, IconArrowRight, IconMenu, CellLabel, Wordmark } from "./ui";
 import { cn } from "./ui/cn";
 
-/* =================================================================
-   GALLERY V3 — same editorial grid, modern React + Tailwind.
-   ================================================================= */
-
-const CATEGORIES_GAL = [
-  { k: "pap", fr: "Prêt-à-porter", en: "Ready-to-wear" },
-  { k: "accessoires", fr: "Accessoires", en: "Accessories" },
-  { k: "eyewear", fr: "Eyewear", en: "Eyewear" },
-  { k: "bijoux", fr: "Bijoux", en: "Jewelry" },
-  { k: "cosmetique", fr: "Cosmétique", en: "Cosmetics" },
-  { k: "food", fr: "Food & Spiritueux", en: "Food & Spirits" },
-];
-
-const PROJECTS = [
-  {
-    id: 1,
-    title: "Maison Ortho",
-    cat: "pap",
-    plateau: "cyclorama",
-    year: 2026,
-    refs: 48,
-    tone: "mono",
-  },
-  {
-    id: 2,
-    title: "Le Monde Béryl",
-    cat: "accessoires",
-    plateau: "horizontal",
-    year: 2026,
-    refs: 32,
-    tone: "mono",
-  },
-  {
-    id: 3,
-    title: "Atelier Soie",
-    cat: "pap",
-    plateau: "vertical",
-    year: 2026,
-    refs: 24,
-    tone: "warm",
-  },
-  {
-    id: 4,
-    title: "Kôji — Chapter 3",
-    cat: "eyewear",
-    plateau: "eclipse",
-    year: 2025,
-    refs: 18,
-    tone: "mono",
-  },
-  {
-    id: 5,
-    title: "Rue Saint-Honoré",
-    cat: "cosmetique",
-    plateau: "horizontal",
-    year: 2025,
-    refs: 40,
-    tone: "warm",
-  },
-  {
-    id: 6,
-    title: "Ganymède",
-    cat: "bijoux",
-    plateau: "eclipse",
-    year: 2025,
-    refs: 22,
-    tone: "dark",
-  },
-  {
-    id: 7,
-    title: "Moa Studio FW26",
-    cat: "pap",
-    plateau: "live",
-    year: 2026,
-    refs: 56,
-    tone: "dark",
-  },
-  {
-    id: 8,
-    title: "Maison Margin",
-    cat: "pap",
-    plateau: "vertical",
-    year: 2025,
-    refs: 30,
-    tone: "mono",
-  },
-  {
-    id: 9,
-    title: "Toby Ombré",
-    cat: "food",
-    plateau: "horizontal",
-    year: 2026,
-    refs: 14,
-    tone: "warm",
-  },
-  {
-    id: 10,
-    title: "Noir Étoilé",
-    cat: "cosmetique",
-    plateau: "cyclorama",
-    year: 2025,
-    refs: 28,
-    tone: "dark",
-  },
-  {
-    id: 11,
-    title: "Orbite",
-    cat: "eyewear",
-    plateau: "eclipse",
-    year: 2025,
-    refs: 16,
-    tone: "mono",
-  },
-  {
-    id: 12,
-    title: "Studio 11",
-    cat: "accessoires",
-    plateau: "horizontal",
-    year: 2026,
-    refs: 36,
-    tone: "warm",
-  },
-  {
-    id: 13,
-    title: "Parure",
-    cat: "bijoux",
-    plateau: "eclipse",
-    year: 2026,
-    refs: 20,
-    tone: "mono",
-  },
-  {
-    id: 14,
-    title: "Rue Cadet",
-    cat: "pap",
-    plateau: "cyclorama",
-    year: 2025,
-    refs: 44,
-    tone: "dark",
-  },
-  {
-    id: 15,
-    title: "Atelier Bois",
-    cat: "food",
-    plateau: "horizontal",
-    year: 2025,
-    refs: 12,
-    tone: "warm",
-  },
-  {
-    id: 16,
-    title: "Maison Ardent",
-    cat: "pap",
-    plateau: "vertical",
-    year: 2026,
-    refs: 26,
-    tone: "mono",
-  },
-  {
-    id: 17,
-    title: "Saar Paris",
-    cat: "accessoires",
-    plateau: "eclipse",
-    year: 2026,
-    refs: 34,
-    tone: "dark",
-  },
-  {
-    id: 18,
-    title: "Solène",
-    cat: "bijoux",
-    plateau: "cyclorama",
-    year: 2025,
-    refs: 18,
-    tone: "warm",
-  },
-];
-
-const PLATEAU_OPTIONS = [
-  { k: "cyclorama", fr: "Cyclorama", en: "Cyclorama" },
-  { k: "horizontal", fr: "Horizontal", en: "Horizontal" },
-  { k: "vertical", fr: "Vertical", en: "Vertical" },
-  { k: "eclipse", fr: "Eclipse", en: "Eclipse" },
-  { k: "live", fr: "Live", en: "Live" },
-];
-
-const CAT_PLATEAU_MAP = {
-  pap: ["cyclorama", "horizontal", "vertical", "live"],
-  accessoires: ["cyclorama", "eclipse"],
-  eyewear: ["cyclorama", "eclipse"],
-  bijoux: ["cyclorama", "eclipse"],
-  cosmetique: ["cyclorama", "eclipse"],
-  food: ["cyclorama", "eclipse"],
+const PLATEAU_LABELS: Record<string, { fr: string; en: string }> = {
+  cyclorama: { fr: "Cyclorama", en: "Cyclorama" },
+  horizontal: { fr: "Horizontal", en: "Horizontal" },
+  vertical: { fr: "Vertical", en: "Vertical" },
+  eclipse: { fr: "Eclipse", en: "Eclipse" },
+  live: { fr: "Live", en: "Live" },
 };
-
-const PLATEAU_CAT_MAP: Record<string, string[]> = PLATEAU_OPTIONS.reduce<
-  Record<string, string[]>
->((acc, plateau) => {
-  acc[plateau.k] = Object.entries(CAT_PLATEAU_MAP)
-    .filter(([, plateaus]) => plateaus.includes(plateau.k))
-    .map(([category]) => category);
-  return acc;
-}, {});
 
 const PROJECT_PALETTES: Record<
   string,
@@ -219,12 +25,39 @@ const PROJECT_PALETTES: Record<
   warm: { bgClass: "bg-edo-warm", accent: "#141414", soft: "#b8ad94" },
 };
 
+function buildCrossFilterMaps(projects: GalleryProject[]) {
+  const catToPlateaux: Record<string, Set<string>> = {};
+  const plateauToCats: Record<string, Set<string>> = {};
+
+  for (const p of projects) {
+    if (!catToPlateaux[p.cat]) catToPlateaux[p.cat] = new Set();
+    catToPlateaux[p.cat].add(p.plateau);
+
+    if (!plateauToCats[p.plateau]) plateauToCats[p.plateau] = new Set();
+    plateauToCats[p.plateau].add(p.cat);
+  }
+
+  return {
+    catToPlateaux: Object.fromEntries(
+      Object.entries(catToPlateaux).map(([k, v]) => [k, [...v]]),
+    ),
+    plateauToCats: Object.fromEntries(
+      Object.entries(plateauToCats).map(([k, v]) => [k, [...v]]),
+    ),
+  };
+}
+
 interface GalleryFiltersProps {
   lang: Lang;
   cat: string;
   plateau: string;
   setCat: (c: string) => void;
   setPlateau: (p: string) => void;
+  categories: { k: string; fr: string; en: string }[];
+  plateauOptions: { k: string; fr: string; en: string }[];
+  projects: GalleryProject[];
+  catToPlateaux: Record<string, string[]>;
+  plateauToCats: Record<string, string[]>;
 }
 
 const GalleryFilters = ({
@@ -233,15 +66,20 @@ const GalleryFilters = ({
   plateau,
   setCat,
   setPlateau,
+  categories,
+  plateauOptions,
+  projects,
+  catToPlateaux,
+  plateauToCats,
 }: GalleryFiltersProps) => {
   const countCat = (key: string) =>
     key === "all"
-      ? PROJECTS.length
-      : PROJECTS.filter((project) => project.cat === key).length;
+      ? projects.length
+      : projects.filter((p) => p.cat === key).length;
   const countPlateau = (key: string) =>
     key === "all"
-      ? PROJECTS.length
-      : PROJECTS.filter((project) => project.plateau === key).length;
+      ? projects.length
+      : projects.filter((p) => p.plateau === key).length;
   const hasFilters = cat !== "all" || plateau !== "all";
 
   return (
@@ -253,10 +91,10 @@ const GalleryFilters = ({
         count={countCat("all")}
         onClick={() => setCat("all")}
       />
-      {CATEGORIES_GAL.map((category) => {
+      {categories.map((category) => {
         const dimmed =
           plateau !== "all" &&
-          !(PLATEAU_CAT_MAP[plateau] || []).includes(category.k);
+          !(plateauToCats[plateau] ?? []).includes(category.k);
         return (
           <FilterCell
             key={category.k}
@@ -279,12 +117,10 @@ const GalleryFilters = ({
         count={countPlateau("all")}
         onClick={() => setPlateau("all")}
       />
-      {PLATEAU_OPTIONS.map((option) => {
+      {plateauOptions.map((option) => {
         const dimmed =
           cat !== "all" &&
-          !(
-            CAT_PLATEAU_MAP[cat as keyof typeof CAT_PLATEAU_MAP] || []
-          ).includes(option.k);
+          !(catToPlateaux[cat] ?? []).includes(option.k);
         return (
           <FilterCell
             key={option.k}
@@ -364,18 +200,22 @@ const FilterCell = ({
 
 interface GalleryContentProps {
   lang: Lang;
-  filtered: typeof PROJECTS;
+  filtered: GalleryProject[];
   resetFilters: () => void;
+  loading?: boolean;
 }
 
 const GalleryContent = ({
   lang,
   filtered,
   resetFilters,
+  loading,
 }: GalleryContentProps) => (
   <div className="min-h-0 overflow-y-auto bg-black">
     <div className="flex flex-col gap-px bg-black">
-      {filtered.length === 0 ? (
+      {loading ? (
+        <GalleryLoadingState />
+      ) : filtered.length === 0 ? (
         <GalleryEmptyState lang={lang} onReset={resetFilters} />
       ) : (
         filtered.map((project) => (
@@ -386,6 +226,19 @@ const GalleryContent = ({
         ))
       )}
     </div>
+  </div>
+);
+
+const GalleryLoadingState = () => (
+  <div className="flex flex-col gap-px">
+    {[0, 1, 2].map((i) => (
+      <div key={i} className="grid gap-px bg-black grid-cols-2 md:grid-cols-gallery-row">
+        <div className="bg-white animate-pulse h-80" />
+        <div className="bg-muted animate-pulse h-80" />
+        <div className="bg-muted animate-pulse h-80" />
+        <div className="bg-muted animate-pulse h-80 hidden md:block" />
+      </div>
+    ))}
   </div>
 );
 
@@ -414,22 +267,21 @@ const GalleryEmptyState = ({
   </div>
 );
 
-type Project = (typeof PROJECTS)[number];
-
-const ProjectRow = ({ project, style }: { project: Project; style?: CSSProperties }) => (
+const ProjectRow = ({ project, style }: { project: GalleryProject; style?: CSSProperties }) => (
   <div className="edo-list-row grid gap-px bg-black grid-cols-2 md:grid-cols-gallery-row" style={style}>
     <ProjectLabel project={project} />
     {[0, 1, 2].map((imageIndex) => (
       <ProjectImage
         key={imageIndex}
-        project={{ ...project, id: project.id * 3 + imageIndex }}
+        project={project}
+        imageIndex={imageIndex}
         hidden={imageIndex === 2}
       />
     ))}
   </div>
 );
 
-const ProjectLabel = ({ project }: { project: Project }) => (
+const ProjectLabel = ({ project }: { project: GalleryProject }) => (
   <button className="edo-focus-ring relative flex cursor-pointer flex-col items-center justify-between overflow-hidden border-0 bg-white px-2.5 py-3.5 text-left font-sans">
     <span className="self-start font-mono text-micro tracking-code text-muted-foreground">
       {String(project.id).padStart(2, "0")}
@@ -445,15 +297,36 @@ const ProjectLabel = ({ project }: { project: Project }) => (
   </button>
 );
 
-const ProjectImage = ({ project, hidden }: { project: Project; hidden?: boolean }) => (
-  <div className={`relative aspect-portrait overflow-hidden bg-white ${hidden ? 'hidden md:block' : ''}`}>
-    <ProjectCover project={project} />
-  </div>
-);
+const ProjectImage = ({
+  project,
+  imageIndex,
+  hidden,
+}: {
+  project: GalleryProject;
+  imageIndex: number;
+  hidden?: boolean;
+}) => {
+  const imageUrl = project.imageUrls[imageIndex];
 
-const ProjectCover = ({ project }: { project: Project }) => {
+  return (
+    <div className={`relative aspect-portrait overflow-hidden bg-white ${hidden ? 'hidden md:block' : ''}`}>
+      {imageUrl ? (
+        <img
+          src={imageUrl}
+          alt={`${project.title} — ${imageIndex + 1}`}
+          className="absolute inset-0 h-full w-full object-cover"
+          loading="lazy"
+        />
+      ) : (
+        <ProjectCoverFallback project={project} seed={project.id * 3 + imageIndex} />
+      )}
+    </div>
+  );
+};
+
+const ProjectCoverFallback = ({ project, seed }: { project: GalleryProject; seed: number }) => {
   const palette = PROJECT_PALETTES[project.tone] || PROJECT_PALETTES.mono;
-  const layout = project.id % 4;
+  const layout = seed % 4;
 
   return (
     <div
@@ -473,25 +346,13 @@ const ProjectCover = ({ project }: { project: Project }) => {
         {layout === 1 && (
           <>
             <rect x="0" y="220" width="300" height="160" fill={palette.soft} />
-            <rect
-              x="100"
-              y="110"
-              width="100"
-              height="210"
-              fill={palette.accent}
-            />
+            <rect x="100" y="110" width="100" height="210" fill={palette.accent} />
           </>
         )}
         {layout === 2 && (
           <>
             <circle cx="150" cy="220" r="120" fill={palette.soft} />
-            <rect
-              x="130"
-              y="60"
-              width="40"
-              height="200"
-              fill={palette.accent}
-            />
+            <rect x="130" y="60" width="40" height="200" fill={palette.accent} />
           </>
         )}
         {layout === 3 && (
@@ -511,15 +372,40 @@ const GalleryPageV3 = () => {
   const [cat, setCat] = useState("all");
   const [plateau, setPlateau] = useState("all");
 
+  const { data: strapiProjects, loading: projectsLoading } = useGalleryProjects();
+  const { data: strapiCategories } = useGalleryCategories();
+
+  const projects = strapiProjects ?? [];
+  const categories = strapiCategories ?? [];
+
+  const plateauOptions = useMemo(() => {
+    const slugs = new Set(projects.map((p) => p.plateau));
+    return [...slugs]
+      .map((slug) => ({
+        k: slug,
+        ...(PLATEAU_LABELS[slug] ?? { fr: slug, en: slug }),
+      }))
+      .sort((a, b) => {
+        const order = Object.keys(PLATEAU_LABELS);
+        return order.indexOf(a.k) - order.indexOf(b.k);
+      });
+  }, [projects]);
+
+  const { catToPlateaux, plateauToCats } = useMemo(
+    () => buildCrossFilterMaps(projects),
+    [projects],
+  );
+
   const filtered = useMemo(
     () =>
-      PROJECTS.filter(
+      projects.filter(
         (project) =>
           (cat === "all" || project.cat === cat) &&
           (plateau === "all" || project.plateau === plateau),
       ),
-    [cat, plateau],
+    [projects, cat, plateau],
   );
+
   const resetFilters = () => {
     setCat("all");
     setPlateau("all");
@@ -528,7 +414,6 @@ const GalleryPageV3 = () => {
   return (
     <div className="edo-page-enter grid w-full gap-px bg-black overflow-y-auto md:h-full md:grid-cols-gallery-full md:grid-rows-page md:overflow-hidden">
 
-      {/* Mobile header (hidden on desktop) */}
       <PageHeader
         lang={lang}
         title={lang === "fr" ? "Galerie" : "Gallery"}
@@ -541,7 +426,6 @@ const GalleryPageV3 = () => {
         ]}
       />
 
-      {/* Desktop header col 1 (190px) – logo */}
       <div className="hidden md:flex h-full gap-px bg-foreground md:col-start-1 md:row-start-1">
         <button onClick={openMenu} aria-label="Open menu" className="edo-focus-ring flex h-full basis-header flex-none cursor-pointer items-center justify-center border-0 bg-background text-foreground transition-colors hover:bg-muted">
           <IconMenu width="18" height="18" />
@@ -551,24 +435,20 @@ const GalleryPageV3 = () => {
         </button>
       </div>
 
-      {/* Desktop header col 2 (80px) – page title, aligns with project label column */}
       <div className="hidden md:flex h-full min-w-0 items-center bg-background px-2 md:col-start-2 md:row-start-1">
         <CellLabel className="shrink-0 text-primary truncate">{lang === "fr" ? "Galerie" : "Gallery"}</CellLabel>
       </div>
 
-      {/* Desktop header col 3 (1fr) – post-prod nav */}
       <button onClick={() => goto("postprod")} className="edo-focus-ring hidden md:flex h-full cursor-pointer items-center justify-center gap-2 border-0 bg-background px-5 font-mono text-label tracking-ui uppercase text-foreground no-underline transition-colors hover:bg-muted md:col-start-3 md:row-start-1">
         <span className="whitespace-nowrap">Post-prod</span>
         <IconArrowRight width={12} height={12} />
       </button>
 
-      {/* Desktop header col 4 (1fr) – plateaux nav */}
       <button onClick={() => goto("plateau-live")} className="edo-focus-ring hidden md:flex h-full cursor-pointer items-center justify-center gap-2 border-0 bg-background px-5 font-mono text-label tracking-ui uppercase text-foreground no-underline transition-colors hover:bg-muted md:col-start-4 md:row-start-1">
         <span className="whitespace-nowrap">{lang === "fr" ? "Plateaux" : "Stages"}</span>
         <IconArrowRight width={12} height={12} />
       </button>
 
-      {/* Desktop header col 5 (1fr) – book CTA + lang toggle */}
       <div className="hidden md:flex h-full gap-px bg-foreground md:col-start-5 md:row-start-1">
         <button onClick={() => goto("book")} className="edo-focus-ring flex h-full flex-1 cursor-pointer items-center justify-center gap-2 border-0 bg-primary px-5 font-mono text-label tracking-ui uppercase text-white no-underline transition-colors hover:bg-foreground">
           <span className="whitespace-nowrap">{lang === "fr" ? "Réserver" : "Book"}</span>
@@ -580,7 +460,6 @@ const GalleryPageV3 = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-px bg-black md:col-span-full md:row-start-2 md:min-h-0 md:overflow-hidden md:grid-cols-gallery-shell">
-        {/* Filters: horizontal scroll on mobile, vertical sidebar on desktop */}
         <div className="bg-white overflow-x-auto md:overflow-x-hidden md:overflow-y-auto">
           <div className="flex flex-row md:flex-col min-w-max md:min-w-0">
             <GalleryFilters
@@ -589,6 +468,11 @@ const GalleryPageV3 = () => {
               plateau={plateau}
               setCat={setCat}
               setPlateau={setPlateau}
+              categories={categories}
+              plateauOptions={plateauOptions}
+              projects={projects}
+              catToPlateaux={catToPlateaux}
+              plateauToCats={plateauToCats}
             />
           </div>
         </div>
@@ -596,6 +480,7 @@ const GalleryPageV3 = () => {
           lang={lang}
           filtered={filtered}
           resetFilters={resetFilters}
+          loading={projectsLoading}
         />
       </div>
     </div>
