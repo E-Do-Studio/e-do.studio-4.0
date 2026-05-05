@@ -338,42 +338,30 @@ const ContactRightColumn = ({ lang }: { lang: Lang }) => (
   </aside>
 );
 
+const MAPS_EMBED_URL = 'https://www.google.com/maps?q=69+Boulevard+Victor+Hugo,+93400+Saint-Ouen,+France&z=15&output=embed';
+const MAPS_DIRECTIONS_URL = 'https://www.google.com/maps/dir/?api=1&destination=69+Boulevard+Victor+Hugo,+93400+Saint-Ouen,+France';
+
 const ContactMap = ({ lang }: { lang: Lang }) => (
   <section className="relative overflow-hidden bg-edo-warm">
-    <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" className="absolute inset-0 h-full w-full">
-      <g stroke="#c8ba9e" strokeWidth="12" fill="none">
-        <line x1="-20" y1="80" x2="420" y2="80" />
-        <line x1="-20" y1="210" x2="420" y2="210" />
-        <line x1="120" y1="-20" x2="120" y2="320" />
-        <line x1="280" y1="-20" x2="280" y2="320" />
-      </g>
-      <g stroke="#d4c8ad" strokeWidth="4" fill="none">
-        <line x1="-20" y1="140" x2="420" y2="140" />
-        <line x1="200" y1="-20" x2="200" y2="320" />
-        <line x1="60" y1="-20" x2="60" y2="320" />
-        <line x1="350" y1="-20" x2="350" y2="320" />
-      </g>
-      <g fill="#dbcfb4">
-        <rect x="130" y="90" width="60" height="40" />
-        <rect x="210" y="90" width="60" height="40" />
-        <rect x="130" y="150" width="60" height="50" />
-        <rect x="210" y="150" width="60" height="50" />
-        <rect x="70" y="150" width="40" height="50" />
-        <rect x="290" y="150" width="50" height="50" />
-      </g>
-      <g transform="translate(200,150)">
-        <circle r="22" fill="var(--edo-orange)" opacity="0.2" />
-        <circle r="9" fill="var(--edo-orange)" />
-        <circle r="3" fill="#fff" />
-      </g>
-    </svg>
+    <iframe
+      src={MAPS_EMBED_URL}
+      className="absolute inset-0 h-full w-full border-0"
+      loading="lazy"
+      referrerPolicy="no-referrer-when-downgrade"
+      title={lang === 'fr' ? 'Carte du studio E-Do' : 'E-Do studio map'}
+    />
 
     <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-3 bg-white/95 px-3 py-2.5">
       <div className="min-w-0">
         <div className="text-detail font-medium tracking-copy-tight text-foreground">69 bd Victor Hugo · Bât. 6.7</div>
         <div className="font-mono text-label uppercase tracking-caption text-muted-foreground">93400 SAINT-OUEN · M°13 GARIBALDI / M°14 MAIRIE ST-OUEN</div>
       </div>
-      <a href="#" className="shrink-0 font-mono text-label uppercase tracking-meta text-primary no-underline">
+      <a
+        href={MAPS_DIRECTIONS_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="shrink-0 font-mono text-label uppercase tracking-meta text-primary no-underline"
+      >
         {lang === 'fr' ? 'Itinéraire →' : 'Directions →'}
       </a>
     </div>
