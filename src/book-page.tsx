@@ -6,6 +6,7 @@ import { MarqueeCell } from './cells';
 import { createBooking } from './lib/bookings';
 import { validateContact, type ContactFormErrors } from './lib/booking-schema';
 import { loadDraft, clearDraft, useBookingDraftSaver } from './lib/use-booking-draft';
+import { useAvailability } from './lib/availability';
 import type { Lang } from './types';
 import type { BookingSessionData } from './lib/bookings';
 
