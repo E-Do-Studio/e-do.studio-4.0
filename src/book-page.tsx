@@ -1054,13 +1054,12 @@ const Step2Date = ({ lang, p, viewY, viewM, months, days, calCells, selected, se
         title={weekendBlocked ? (fr ? `Week-end : journée complète uniquement` : 'Weekend: full-day booking only') : tdy ? (fr ? "Aujourd'hui" : 'Today') : ''}
         className={[
           'aspect-cal-cell border-r border-b border-input flex flex-col items-start justify-start text-left font-inherit min-w-0 p-1.5 sm:p-2 relative transition-colors duration-100',
-          sel ? 'bg-primary text-white' :
-          past ? 'bg-edo-gray-50 text-muted-foreground/30' :
-          av==='unavailable' ? 'bg-edo-gray-50 text-muted-foreground/40' :
-          av==='limited' ? 'bg-edo-limited/50 text-foreground' :
-          tdy ? 'bg-primary/8 text-foreground' :
-          'bg-white text-foreground',
-          clickable ? 'cursor-pointer hover:bg-edo-gray-100' : 'cursor-not-allowed',
+          sel ? 'bg-primary text-white cursor-pointer hover:bg-primary/85' :
+          past ? 'bg-edo-gray-50 text-muted-foreground/30 cursor-not-allowed' :
+          av==='unavailable' ? 'bg-edo-gray-50 text-muted-foreground/40 cursor-not-allowed' :
+          av==='limited' ? 'bg-edo-limited/50 text-foreground cursor-pointer hover:bg-edo-limited/70' :
+          tdy ? 'bg-primary/8 text-foreground cursor-pointer hover:bg-primary/15' :
+          'bg-white text-foreground cursor-pointer hover:bg-edo-gray-100',
         ].join(' ')}>
         <span className={[
           'text-detail sm:text-cell tabular-nums leading-none',
