@@ -416,6 +416,7 @@
 @utility border-l-3 { border-left-width: 3px; }
 
 @utility aspect-calendar { aspect-ratio: 1.9; }
+@utility aspect-cal-cell { aspect-ratio: 1.6; }
 @utility aspect-arrival { aspect-ratio: 1.5; }
 @utility aspect-portrait { aspect-ratio: 4 / 5; }
 @utility auto-rows-bento { grid-auto-rows: minmax(180px, auto); }

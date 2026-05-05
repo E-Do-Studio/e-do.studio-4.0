@@ -392,7 +392,6 @@ const BookPageV2 = () => {
   const [pp, setPp] = useStateBook<Record<string, unknown>>({});
   const [contact, setContact] = useStateBook<ContactState>({ marque:'', societe:'', siren:'', adresseFacturation:'', nom:'', prenom:'', email:'', tel:'', typesArticles:[], quantiteArticles:'', vuesParArticle:'', autresInfos:'', cgvAccepted:false });
   const [contactErrors, setContactErrors] = useStateBook<ContactFormErrors>({});
-  const [contactTouched, setContactTouched] = useStateBook<boolean>(false);
   const [sent, setSent] = useStateBook<SentMode>(false);
   const [saving, setSaving] = useStateBook<boolean>(false);
   const [saveError, setSaveError] = useStateBook<string | null>(null);
@@ -478,7 +477,6 @@ const BookPageV2 = () => {
     return result.success;
   };
   const runContactValidation = () => {
-    setContactTouched(true);
     const requireProductFields = !p.isCyclo && !p.isVisite && !configApplied;
     const result = validateContact(contact, lang as 'fr' | 'en', { requireProductFields });
     if (!result.success) { setContactErrors(result.errors); return false; }
@@ -736,7 +734,7 @@ const BookPageV2 = () => {
           {step===2 && <MultiPlateauStep lang={lang} plateaus={plateaus.length?plateaus:(plateau?[plateau]:[])} perPlateau={perPlateau} setPerPlateau={setPerPlateau} fallback={{slotType,hours,cycloMode,setSlotType,setHours,setCycloMode}} topBanner={(() => { const list = plateaus.length?plateaus:(plateau?[plateau]:[]); const allVisite = list.length>0 && list.every(k => BOOK_PLATEAUX.find(x=>x.k===k)?.isVisite); if (allVisite) return null; return (<div className="px-6 border-b border-foreground flex items-center h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local"><span className="edo-cell-label text-primary whitespace-nowrap">02 · {lang==='fr'?'Durée de location':'Rental duration'}</span><span className="font-mono text-label tracking-caption text-muted-foreground">{list.length > 1 ? (lang==='fr'?'Choisissez une durée pour chaque plateau (pré rempli selon estimation).':'Choose a duration for each stage (pre-filled based on estimate).') : (lang==='fr'?'Choisissez la durée pour votre plateau (pré rempli selon estimation).':'Choose a duration for your stage (pre-filled based on estimate).')}</span></div>); })()} renderOne={(px: AnyProps, st: AnyProps, setSt: (patch: AnyProps) => void) => (<Step3Slot lang={lang} p={px} slotType={st.slotType||'hour'} setSlotType={(v: string)=>setSt({slotType:v})} hours={st.hours||1} setHours={(v: number)=>setSt({hours:v})} cycloMode={st.cycloMode||'halfH'} setCycloMode={(v: string)=>setSt({cycloMode:v})}/>)}/>}
           {step===3 && <MultiPlateauStep lang={lang} plateaus={plateaus.length?plateaus:(plateau?[plateau]:[])} perPlateau={perPlateau} setPerPlateau={setPerPlateau} fallback={{team,setTeam}} topBanner={<div className="px-6 border-b border-foreground flex items-center h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local"><span className="edo-cell-label text-primary whitespace-nowrap">03 · {lang==='fr'?'Équipe E-DO (optionnel)':'E-DO team (optional)'}</span></div>} renderOne={(px: AnyProps, st: AnyProps, setSt: (patch: AnyProps) => void) => (<Step5Team lang={lang} p={px} team={st.team || {}} configSessions={configSessions} setTeam={(updater: any) => { const next = typeof updater === 'function' ? updater(st.team || {}) : updater; setSt({team: next}); }}/>)}/>}
           {step===4 && <MultiPlateauStep lang={lang} plateaus={plateaus.length?plateaus:(plateau?[plateau]:[])} perPlateau={perPlateau} setPerPlateau={setPerPlateau} fallback={{postprod:{},setPostprod:()=>{}}} topBanner={<div className="px-6 border-b border-foreground flex items-center h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local"><span className="edo-cell-label text-primary whitespace-nowrap">04 · {lang==='fr'?'Post-production (optionnel)':'Post-production (optional)'}</span></div>} renderOne={(px: AnyProps, st: AnyProps, setSt: (patch: AnyProps) => void) => (<Step6Postprod lang={lang} plateauKey={px && px.k} postprod={st.postprod || {}} setPostprod={(v: AnyProps) => setSt({postprod: v})}/>)}/>}
-          {step===5 && <Step7Contact lang={lang} contact={contact} setContact={(c) => { setContact(c); if (contactTouched) { const requireProductFields = !p.isCyclo && !p.isVisite && !configApplied; const res = validateContact(c, lang as 'fr' | 'en', { requireProductFields }); setContactErrors(res.success ? {} : res.errors); } }} p={p} configMode={configApplied} errors={contactErrors}/>}
+          {step===5 && <Step7Contact lang={lang} contact={contact} setContact={setContact} p={p} configMode={configApplied} errors={contactErrors}/>}
           {step===6 && (() => {
             const list = plateaus && plateaus.length > 0 ? plateaus : (plateau ? [plateau] : []);
             if (list.length <= 1) { return <Step2Date lang={lang} p={p} viewY={viewY} viewM={viewM} months={months} days={days} calCells={calCells} selected={selected} setSelected={setSelected} arrivalHour={arrivalHour} setArrivalHour={setArrivalHour} rentalHours={rentalHours} isPast={isPast} nextMonth={nextMonth} prevMonth={prevMonth}/>; }
@@ -1022,36 +1020,79 @@ const Step1Plateau = ({ lang, plateau, setPlateau, plateaus, togglePlateau, setC
   </div>
 );
 
-const LegendChip = ({ bg, br, lbl, ring }: AnyProps) => (<span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5" style={{background:bg,border:`1px solid ${br}`, boxShadow: ring ? `inset 0 0 0 1.5px ${ring}` : undefined}}/> {lbl}</span>);
-
 const Step2Date = ({ lang, p, viewY, viewM, months, days, calCells, selected, setSelected, arrivalHour, setArrivalHour, rentalHours, isPast, nextMonth, prevMonth }: AnyProps) => {
-  const isSelected = (d) => selected && selected.y===viewY && selected.m===viewM && selected.d===d;
+  const isSelected = (d: number) => selected && selected.y===viewY && selected.m===viewM && selected.d===d;
   const now = new Date();
   const todayY = now.getFullYear(); const todayM = now.getMonth(); const todayD = now.getDate();
   const isToday = (d: number) => viewY===todayY && viewM===todayM && d===todayD;
   const maxStart = 19 - rentalHours;
+  const fr = lang==='fr';
   React.useEffect(()=>{ if (arrivalHour > maxStart) setArrivalHour(Math.max(9, Math.min(10, maxStart))); }, [maxStart]);
   return (<div>
-    <div className="px-6 border-b border-foreground flex items-center h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local"><span className="edo-cell-label text-primary whitespace-nowrap">06 · {lang==='fr'?'Choisir une date':'Pick a date'}</span></div>
-    <div className="grid gap-px bg-black border-b border-foreground w-full grid-cols-fluid-two-auto"><div className="bg-white px-12 py-2 flex items-center gap-5 min-w-0 flex-wrap"><h2 className="m-0 text-tile-title font-light tracking-headline">{months[viewM]} <span className="text-muted-foreground">{viewY}</span></h2><div className="flex gap-3 font-mono text-micro tracking-ui uppercase text-muted-foreground flex-wrap"><LegendChip bg="#fff" br="#141414" ring="var(--edo-orange)" lbl={lang==='fr'?'Aujourd\'hui':'Today'}/><LegendChip bg="#fff" br="#141414" lbl={lang==='fr'?'Libre':'Free'}/><LegendChip bg="#f6e4c4" br="#d9b47d" lbl={lang==='fr'?'Partiel':'Limited'}/><LegendChip bg="var(--edo-gray-100)" br="var(--edo-gray-200)" lbl={lang==='fr'?'Indisponible':'Booked'}/><LegendChip bg="var(--edo-orange)" br="var(--edo-orange)" lbl={lang==='fr'?'Sélectionné':'Selected'}/></div></div><button onClick={prevMonth} className="bg-white border-0 cursor-pointer px-cell font-mono text-detail text-foreground">←</button><button onClick={nextMonth} className="bg-white border-0 cursor-pointer px-cell font-mono text-detail text-foreground">→</button></div>
-    <div className="grid grid-cols-7 gap-px bg-black border-b border-foreground w-full">{days.map((d,i)=>(<div key={i} className="bg-muted py-2 text-center font-mono text-micro tracking-meta uppercase text-foreground/60 font-medium">{d}</div>))}</div>
-    <div className="grid grid-cols-7 gap-px bg-black border-b border-foreground w-full">{calCells.map((d,i)=>{
-      if (d===null) return <div key={i} className="bg-muted aspect-calendar"/>;
+    <div className="px-6 border-b border-foreground flex items-center h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local"><span className="edo-cell-label text-primary whitespace-nowrap">{`06 · ${fr ? 'Choisir une date' : 'Pick a date'}`}</span></div>
+
+    <div className="border-b border-foreground bg-white px-6 py-3 flex items-center justify-between gap-4 flex-wrap">
+      <div className="flex items-center gap-3">
+        <button onClick={prevMonth} className="w-8 h-8 flex items-center justify-center border border-input bg-white cursor-pointer font-mono text-detail text-foreground hover:bg-muted transition-colors duration-100">{"←"}</button>
+        <h2 className="m-0 text-page-title font-light tracking-headline min-w-36 text-center">{months[viewM]} <span className="text-muted-foreground">{viewY}</span></h2>
+        <button onClick={nextMonth} className="w-8 h-8 flex items-center justify-center border border-input bg-white cursor-pointer font-mono text-detail text-foreground hover:bg-muted transition-colors duration-100">{"→"}</button>
+      </div>
+      <div className="flex gap-4 font-mono text-label tracking-ui uppercase text-muted-foreground flex-wrap items-center">
+        <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-white border border-foreground"/>{fr ? ' Libre' : ' Free'}</span>
+        <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-edo-limited border border-edo-limited"/>{fr ? ' Partiel' : ' Limited'}</span>
+        <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-muted border border-input"/>{fr ? ' Complet' : ' Booked'}</span>
+      </div>
+    </div>
+
+    <div className="grid grid-cols-7 border-b border-foreground w-full">
+      {days.map((d,i)=><div key={i} className="bg-edo-gray-50 py-2.5 text-center font-mono text-caption tracking-meta uppercase text-muted-foreground border-r border-input last:border-r-0">{d}</div>)}
+    </div>
+
+    <div className="grid grid-cols-7 border-b border-foreground w-full">{calCells.map((d,i)=>{
+      if (d===null) return <div key={i} className="bg-edo-gray-50 aspect-cal-cell border-r border-b border-input"/>;
       const dow = new Date(viewY, viewM, d).getDay(); const weekend = dow===0 || dow===6; const isFullDay = rentalHours>=8; const weekendBlocked = weekend && !isFullDay;
       const av = weekendBlocked ? 'unavailable' : availFor(p.k, viewY, viewM, d); const past = isPast(d); const sel = isSelected(d);
       const clickable = !past && av!=='unavailable';
       const tdy = isToday(d);
-      const bgClass = sel ? 'bg-primary text-white' : past ? 'bg-muted/60 text-muted-foreground/40' : av==='unavailable' ? 'bg-muted text-muted-foreground/50' : av==='limited' ? 'bg-edo-limited text-foreground' : 'bg-white text-foreground';
-      return (<button key={i} disabled={!clickable} onClick={()=>setSelected({y:viewY,m:viewM,d})} title={weekendBlocked ? (lang==='fr'?'Week-end : réservation journée complète uniquement':'Weekend: full-day booking only') : tdy ? (lang==='fr'?'Aujourd\'hui':'Today') : ''}
-        className={`${bgClass} ${tdy && !sel ? 'ring-2 ring-inset ring-primary' : ''} border-0 ${clickable ? 'cursor-pointer hover:ring-2 hover:ring-inset hover:ring-foreground/30' : 'cursor-not-allowed'} flex flex-col justify-between text-left font-inherit min-w-0 px-2.5 py-1.5 aspect-calendar transition-shadow duration-100`}>
-        <span className={`text-cell ${sel ? 'font-medium' : tdy ? 'font-semibold' : 'font-normal'} tracking-copy-tight ${past && !sel ? 'line-through decoration-1' : ''}`}>{d}</span>
-        {tdy && !sel && (<span className="font-mono text-nano tracking-caption uppercase text-primary font-medium">{lang==='fr'?'auj.':'today'}</span>)}
-        {!tdy && !past && av!=='unavailable' && (<span className="font-mono text-nano tracking-caption uppercase opacity-70">{av==='free'?(lang==='fr'?'libre':'free'):(lang==='fr'?'partiel':'part.')}</span>)}
-        {weekendBlocked && !past && !tdy && (<span className="font-mono text-nano tracking-caption uppercase text-muted-foreground">{lang==='fr'?'journée':'full only'}</span>)}
+      return (<button key={i} disabled={!clickable} onClick={()=>setSelected({y:viewY,m:viewM,d})}
+        title={weekendBlocked ? (fr ? `Week-end : journée complète uniquement` : 'Weekend: full-day booking only') : tdy ? (fr ? "Aujourd'hui" : 'Today') : ''}
+        className={[
+          'aspect-cal-cell border-r border-b border-input flex flex-col items-start justify-start text-left font-inherit min-w-0 p-1.5 sm:p-2 relative transition-colors duration-100',
+          sel ? 'bg-primary text-white cursor-pointer hover:bg-primary/85' :
+          past ? 'bg-edo-gray-50 text-muted-foreground/30 cursor-not-allowed' :
+          av==='unavailable' ? 'bg-edo-gray-50 text-muted-foreground/40 cursor-not-allowed' :
+          av==='limited' ? 'bg-edo-limited/50 text-foreground cursor-pointer hover:bg-edo-limited/70' :
+          tdy ? 'bg-primary/8 text-foreground cursor-pointer hover:bg-primary/15' :
+          'bg-white text-foreground cursor-pointer hover:bg-edo-gray-100',
+        ].join(' ')}>
+        <span className={[
+          'text-detail sm:text-cell tabular-nums leading-none',
+          sel ? 'font-semibold text-white' : tdy ? 'font-bold text-primary' : past ? 'font-normal' : 'font-medium',
+        ].join(' ')}>{d}</span>
+        {tdy && !sel && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"/>}
+        {!past && !sel && av!=='unavailable' && !weekendBlocked && (
+          <span className={`font-mono text-nano sm:text-micro tracking-caption uppercase mt-auto ${tdy ? 'text-primary/70' : av==='limited' ? 'text-foreground/50' : 'text-muted-foreground'}`}>
+            {av==='free' ? (fr ? 'libre' : 'free') : (fr ? 'partiel' : 'limited')}
+          </span>
+        )}
+        {weekendBlocked && !past && (
+          <span className="font-mono text-nano sm:text-micro tracking-caption uppercase mt-auto text-muted-foreground/50">{fr ? `journée` : 'full day'}</span>
+        )}
       </button>);
     })}</div>
-    <div className="grid grid-cols-1 gap-px bg-black border-b border-foreground w-full"><div className="bg-white px-12 py-2.5 flex items-center gap-5 flex-wrap"><span className="edo-cell-label">{lang==='fr'?'Heure d’arrivée':'Arrival time'}</span><span className="font-mono text-label tracking-ui text-muted-foreground">{String(arrivalHour).padStart(2,'0')}:00 → {String(arrivalHour+rentalHours).padStart(2,'0')}:00 · {rentalHours}h</span></div></div>
-    <div className="grid grid-cols-10 gap-px bg-black border-b border-foreground w-full">{Array.from({length:10},(_,i)=>i+9).map(h=>{ const on = arrivalHour===h; const endsTooLate = h + rentalHours > 19; const disabled = endsTooLate; return (<button key={h} disabled={disabled} onClick={()=>!disabled && setArrivalHour(h)} title={disabled ? (lang==='fr'?`Termine à ${h+rentalHours}h, après la fermeture`:`Ends at ${h+rentalHours}h, past closing`) : ''} className={`${on ? 'bg-foreground text-white' : disabled ? 'bg-muted text-muted-foreground' : 'bg-white text-foreground'} border-0 ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'} flex items-center justify-center font-mono text-caption tracking-caption min-w-0 aspect-arrival`}>{String(h).padStart(2,'0')}:00</button>); })}</div>
+
+    <div className="border-b border-foreground bg-white px-6 py-2.5 flex items-center gap-5 flex-wrap">
+      <span className="edo-cell-label">{fr ? "Heure d'arrivée" : 'Arrival time'}</span>
+      <span className="font-mono text-label tracking-ui text-muted-foreground">{String(arrivalHour).padStart(2,'0')}:00 {"→"} {String(arrivalHour+rentalHours).padStart(2,'0')}:00 {"·"} {rentalHours}h</span>
+    </div>
+    <div className="grid grid-cols-10 gap-px bg-black border-b border-foreground w-full">{Array.from({length:10},(_,i)=>i+9).map(h=>{
+      const on = arrivalHour===h; const endsTooLate = h + rentalHours > 19; const disabled = endsTooLate;
+      return (<button key={h} disabled={disabled} onClick={()=>!disabled && setArrivalHour(h)}
+        title={disabled ? (fr ? `Termine à ${h+rentalHours}h, après la fermeture` : `Ends at ${h+rentalHours}h, past closing`) : ''}
+        className={`${on ? 'bg-foreground text-white' : disabled ? 'bg-muted text-muted-foreground' : 'bg-white text-foreground hover:bg-edo-gray-100'} border-0 ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'} flex items-center justify-center font-mono text-caption tracking-caption min-w-0 aspect-arrival transition-colors duration-100`}>
+        {String(h).padStart(2,'0')}:00
+      </button>);
+    })}</div>
   </div>);
 };
 
@@ -1147,26 +1188,26 @@ const BentoInput = ({ value, onChange, placeholder, type='text' }: AnyProps) => 
   <input value={value||''} onChange={e=>onChange(e.target.value)} placeholder={placeholder} type={type} className="bg-transparent border-0 outline-none p-0 font-inherit text-detail tracking-copy-tight w-full text-foreground"/>
 );
 
-const Step7Contact = ({ lang, contact, setContact, p, configMode }: AnyProps) => {
+const Step7Contact = ({ lang, contact, setContact, p, configMode, errors = {} }: AnyProps) => {
   const isCyclo = p && p.isCyclo;
   const hideProductFields = !!configMode;
   const toggleType = (k) => { const cur = contact.typesArticles || []; const next = cur.includes(k) ? cur.filter(x=>x!==k) : [...cur, k]; setContact({...contact, typesArticles: next}); };
   return (<div>
     <div className="px-6 border-b border-foreground flex items-center h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local"><span className="edo-cell-label text-primary whitespace-nowrap">05 · {lang==='fr'?'Vos coordonnées':'Your details'}</span></div>
     <div className="grid grid-cols-2 gap-px bg-black border-b border-foreground">
-      <div className="col-span-2 grid grid-cols-3 gap-px bg-black"><BentoField label={lang==='fr'?'Marque':'Brand'}><BentoInput value={contact.marque} onChange={v=>setContact({...contact,marque:v})} placeholder="—"/></BentoField><BentoField label={lang==='fr'?'Société *':'Company *'}><BentoInput value={contact.societe} onChange={v=>setContact({...contact,societe:v})} placeholder="—"/></BentoField><BentoField label="SIREN *"><BentoInput value={contact.siren} onChange={v=>setContact({...contact,siren:v})} placeholder="—"/></BentoField></div>
-      <BentoField label={lang==='fr'?'Adresse de facturation *':'Billing address *'} span="1 / 3"><BentoInput value={contact.adresseFacturation} onChange={v=>setContact({...contact,adresseFacturation:v})} placeholder="—"/></BentoField>
-      <BentoField label={lang==='fr'?'Nom *':'Last name *'}><BentoInput value={contact.nom} onChange={v=>setContact({...contact,nom:v})} placeholder="—"/></BentoField>
-      <BentoField label={lang==='fr'?'Prénom *':'First name *'}><BentoInput value={contact.prenom} onChange={v=>setContact({...contact,prenom:v})} placeholder="—"/></BentoField>
-      <BentoField label="Email *"><BentoInput value={contact.email} type="email" onChange={v=>setContact({...contact,email:v})} placeholder="—"/></BentoField>
-      <BentoField label={lang==='fr'?'Téléphone *':'Phone *'}><BentoInput value={contact.tel} type="tel" onChange={v=>setContact({...contact,tel:v})} placeholder="—"/></BentoField>
+      <div className="col-span-2 grid grid-cols-3 gap-px bg-black"><BentoField label={lang==='fr'?'Marque':'Brand'}><BentoInput value={contact.marque} onChange={v=>setContact({...contact,marque:v})} placeholder="—"/></BentoField><BentoField label={lang==='fr'?'Société *':'Company *'} error={errors.societe}><BentoInput value={contact.societe} onChange={v=>setContact({...contact,societe:v})} placeholder="—"/></BentoField><BentoField label="SIREN *" error={errors.siren}><BentoInput value={contact.siren} onChange={v=>setContact({...contact,siren:v})} placeholder="—"/></BentoField></div>
+      <BentoField label={lang==='fr'?'Adresse de facturation *':'Billing address *'} span="1 / 3" error={errors.adresseFacturation}><BentoInput value={contact.adresseFacturation} onChange={v=>setContact({...contact,adresseFacturation:v})} placeholder="—"/></BentoField>
+      <BentoField label={lang==='fr'?'Nom *':'Last name *'} error={errors.nom}><BentoInput value={contact.nom} onChange={v=>setContact({...contact,nom:v})} placeholder="—"/></BentoField>
+      <BentoField label={lang==='fr'?'Prénom *':'First name *'} error={errors.prenom}><BentoInput value={contact.prenom} onChange={v=>setContact({...contact,prenom:v})} placeholder="—"/></BentoField>
+      <BentoField label="Email *" error={errors.email}><BentoInput value={contact.email} type="email" onChange={v=>setContact({...contact,email:v})} placeholder="—"/></BentoField>
+      <BentoField label={lang==='fr'?'Téléphone *':'Phone *'} error={errors.tel}><BentoInput value={contact.tel} type="tel" onChange={v=>setContact({...contact,tel:v})} placeholder="—"/></BentoField>
       {!isCyclo && !hideProductFields && (<>
-        <div className="bg-white px-3 py-1.5 col-span-2 flex flex-col gap-1 min-h-control"><span className="edo-cell-label text-muted-foreground text-micro tracking-meta">{lang==='fr'?"Type d'articles *":'Item types *'}</span><div className="grid grid-cols-5 gap-1">{ARTICLE_TYPES.map(t=>{ const on = (contact.typesArticles||[]).includes(t.k); return (<button key={t.k} onClick={()=>toggleType(t.k)} className={`${on ? 'bg-foreground text-white border-foreground' : 'bg-transparent text-foreground border-border'} border px-2 py-1 font-inherit text-caption cursor-pointer tracking-copy-tight inline-flex items-center justify-start gap-1 whitespace-nowrap min-w-0`}><span className={`w-2 h-2 border ${on ? 'border-white bg-primary' : 'border-muted-foreground bg-transparent'} inline-flex items-center justify-center shrink-0`}>{on && <span className="w-0.5 h-0.5 bg-white"/>}</span><span className="overflow-hidden text-ellipsis">{t[lang]}</span></button>); })}</div>{(contact.typesArticles||[]).includes('autre') && (<input value={contact.autreType||''} onChange={e=>setContact({...contact,autreType:e.target.value})} placeholder={lang==='fr'?"Précisez (autre type d'articles)…":'Specify (other item type)…'} className="mt-0.5 bg-transparent border-0 border-b border-b-border outline-none py-1 px-0 font-inherit text-caption tracking-copy-tight w-full text-foreground"/>)}</div>
-        <BentoField label={lang==='fr'?'Qté articles (SKUs) *':'Qty items (SKUs) *'}><BentoInput value={contact.quantiteArticles} type="number" onChange={v=>setContact({...contact,quantiteArticles:v})} placeholder="—"/></BentoField>
-        <BentoField label={lang==='fr'?'Vues / article *':'Views / item *'}><BentoInput value={contact.vuesParArticle} type="number" onChange={v=>setContact({...contact,vuesParArticle:v})} placeholder="—"/></BentoField>
+        <div className={`bg-white px-3 py-1.5 col-span-2 flex flex-col gap-1 min-h-control ${errors.typesArticles ? 'ring-1 ring-inset ring-red-400' : ''}`}><span className="edo-cell-label text-muted-foreground text-micro tracking-meta">{lang==='fr'?"Type d'articles *":'Item types *'}</span><div className="grid grid-cols-5 gap-1">{ARTICLE_TYPES.map(t=>{ const on = (contact.typesArticles||[]).includes(t.k); return (<button key={t.k} onClick={()=>toggleType(t.k)} className={`${on ? 'bg-foreground text-white border-foreground' : 'bg-transparent text-foreground border-border'} border px-2 py-1 font-inherit text-caption cursor-pointer tracking-copy-tight inline-flex items-center justify-start gap-1 whitespace-nowrap min-w-0`}><span className={`w-2 h-2 border ${on ? 'border-white bg-primary' : 'border-muted-foreground bg-transparent'} inline-flex items-center justify-center shrink-0`}>{on && <span className="w-0.5 h-0.5 bg-white"/>}</span><span className="overflow-hidden text-ellipsis">{t[lang]}</span></button>); })}</div>{(contact.typesArticles||[]).includes('autre') && (<input value={contact.autreType||''} onChange={e=>setContact({...contact,autreType:e.target.value})} placeholder={lang==='fr'?"Précisez (autre type d'articles)…":'Specify (other item type)…'} className="mt-0.5 bg-transparent border-0 border-b border-b-border outline-none py-1 px-0 font-inherit text-caption tracking-copy-tight w-full text-foreground"/>)}{errors.typesArticles && <span className="text-red-500 text-micro leading-tight">{errors.typesArticles}</span>}</div>
+        <BentoField label={lang==='fr'?'Qté articles (SKUs) *':'Qty items (SKUs) *'} error={errors.quantiteArticles}><BentoInput value={contact.quantiteArticles} type="number" onChange={v=>setContact({...contact,quantiteArticles:v})} placeholder="—"/></BentoField>
+        <BentoField label={lang==='fr'?'Vues / article *':'Views / item *'} error={errors.vuesParArticle}><BentoInput value={contact.vuesParArticle} type="number" onChange={v=>setContact({...contact,vuesParArticle:v})} placeholder="—"/></BentoField>
       </>)}
       <div className="bg-white px-3 py-1.5 col-span-2 flex flex-col gap-0.5 min-h-control"><span className="edo-cell-label text-muted-foreground text-micro tracking-meta">{lang==='fr'?'Autres informations':'Other information'}</span><textarea value={contact.autresInfos||''} onChange={e=>setContact({...contact,autresInfos:e.target.value})} placeholder={lang==='fr'?'Contraintes, inspirations, références… (facultatif)':'Constraints, inspirations, references… (optional)'} className="w-full box-border bg-transparent border-0 outline-none p-0 font-inherit text-caption min-h-7 resize-y text-foreground"/></div>
-      <label className="col-span-2 bg-white px-3 py-1.5 flex flex-col gap-0.5 cursor-pointer min-h-control"><span className="edo-cell-label text-muted-foreground text-micro tracking-meta">CGV *</span><div className="flex items-center gap-2"><input type="checkbox" checked={!!contact.cgvAccepted} onChange={e=>setContact({...contact,cgvAccepted:e.target.checked})} className="w-3.5 h-3.5 accent-primary cursor-pointer shrink-0"/><span className="text-caption leading-snug text-foreground">{lang==='fr' ? <>J'accepte les <a href="#" onClick={e=>e.preventDefault()} className="text-primary underline">conditions générales de vente</a> et les modalités de paiement.</> : <>I accept the <a href="#" onClick={e=>e.preventDefault()} className="text-primary underline">terms and conditions of sale</a> and payment terms.</>}</span></div></label>
+      <label className={`col-span-2 bg-white px-3 py-1.5 flex flex-col gap-0.5 cursor-pointer min-h-control ${errors.cgvAccepted ? 'ring-1 ring-inset ring-red-400' : ''}`}><span className="edo-cell-label text-muted-foreground text-micro tracking-meta">CGV *</span><div className="flex items-center gap-2"><input type="checkbox" checked={!!contact.cgvAccepted} onChange={e=>setContact({...contact,cgvAccepted:e.target.checked})} className="w-3.5 h-3.5 accent-primary cursor-pointer shrink-0"/><span className="text-caption leading-snug text-foreground">{lang==='fr' ? <>J'accepte les <a href="#" onClick={e=>e.preventDefault()} className="text-primary underline">conditions générales de vente</a> et les modalités de paiement.</> : <>I accept the <a href="#" onClick={e=>e.preventDefault()} className="text-primary underline">terms and conditions of sale</a> and payment terms.</>}</span></div>{errors.cgvAccepted && <span className="text-red-500 text-micro leading-tight">{errors.cgvAccepted}</span>}</label>
     </div>
   </div>);
 };
