@@ -182,7 +182,7 @@ interface ContactFormProps {
 const ContactForm = ({ lang, form, setForm, submit, sending, sendError }: ContactFormProps) => (
   <form
     onSubmit={submit}
-    className="grid grid-cols-2 grid-rows-contact-form gap-px bg-border"
+    className="grid h-full grid-cols-2 grid-rows-contact-form gap-px bg-border"
   >
     <div className="col-span-2 flex flex-col justify-center bg-white px-5 py-2.5">
       <span className="edo-cell-label text-primary">{lang === 'fr' ? 'Écrivez-nous' : 'Write to us'}</span>
