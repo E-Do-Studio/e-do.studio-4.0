@@ -133,6 +133,25 @@ interface StrapiGalleryBrand {
   orderRank: number;
 }
 
+interface StrapiGalleryCategory {
+  id: number;
+  title_fr: string;
+  title_en: string;
+  slug: string;
+  orderRank: number;
+}
+
+interface StrapiGalleryProject {
+  id: number;
+  title: string;
+  slug: string;
+  stage: string;
+  year: number;
+  orderRank: number;
+  category?: StrapiGalleryCategory;
+  images?: StrapiMedia[];
+}
+
 // ─── PlateauSpec type (local, matches what the frontend expects) ────────────
 
 export interface PlateauSpec {
@@ -423,5 +442,50 @@ export async function fetchContact() {
 export async function fetchStudioHours(): Promise<Bilingual> {
   const res = await fetchStrapi<{ data: StrapiSiteSettings }>('site-setting');
   return { fr: res.data.hours_fr, en: res.data.hours_en };
+}
+
+// ─── Gallery types & fetchers ──────────────────────────────────────────────
+
+export interface GalleryProject {
+  id: number;
+  title: string;
+  slug: string;
+  cat: string;
+  plateau: string;
+  year: number;
+  tone: 'mono' | 'dark' | 'warm';
+  imageUrls: string[];
+}
+
+export interface GalleryCategory {
+  k: string;
+  fr: string;
+  en: string;
+}
+
+export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
+  const res = await fetchStrapi<{ data: StrapiGalleryProject[] }>('gallery-projects', {
+    'populate': 'category,images',
+    'sort': 'orderRank:asc',
+    'pagination[pageSize]': '100',
+  });
+
+  return res.data.map((p, i) => ({
+    id: p.id,
+    title: p.title,
+    slug: p.slug,
+    cat: p.category?.slug ?? 'other',
+    plateau: p.stage,
+    year: p.year,
+    tone: TONES[i % 3],
+    imageUrls: (p.images ?? []).map(img => resolveStrapiMediaUrl(img)).filter((u): u is string => !!u),
+  }));
+}
+
+export async function fetchGalleryCategories(): Promise<GalleryCategory[]> {
+  const res = await fetchStrapi<{ data: StrapiGalleryCategory[] }>('gallery-categories', {
+    'sort': 'orderRank:asc',
+  });
+  return res.data.map(c => ({ k: c.slug, fr: c.title_fr, en: c.title_en }));
 }
 
