@@ -5,6 +5,7 @@ import { useDocumentMeta } from './lib/use-document-meta';
 import { MarqueeCell } from './cells';
 import { createBooking } from './lib/bookings';
 import { validateContact, type ContactFormErrors } from './lib/booking-schema';
+import { useAvailability } from './lib/availability';
 import type { Lang } from './types';
 import type { BookingSessionData } from './lib/bookings';
 
@@ -245,15 +246,6 @@ const MONTHS_FR = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','A
 const MONTHS_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAYS_FR = ['L','M','M','J','V','S','D'];
 const DAYS_EN = ['M','T','W','T','F','S','S'];
-
-const availFor = (plateauKey: string, y: number, m: number, d: number) => {
-  const key = plateauKey.charCodeAt(0) + y + m*31 + d*7;
-  const r = (key * 2654435761) >>> 0;
-  const bucket = r % 10;
-  if (bucket < 2) return 'unavailable';
-  if (bucket < 4) return 'limited';
-  return 'free';
-};
 
 const CFG_MATRIX: Record<string, CfgEntry> = {
   'pap.packshot.pique': { plateau: 'vertical', imageRate: 50, views: ['face', 'dos', 'detail'] },
@@ -1021,6 +1013,7 @@ const Step1Plateau = ({ lang, plateau, setPlateau, plateaus, togglePlateau, setC
 );
 
 const Step2Date = ({ lang, p, viewY, viewM, months, days, calCells, selected, setSelected, arrivalHour, setArrivalHour, rentalHours, isPast, nextMonth, prevMonth }: AnyProps) => {
+  const { availMap, loading: availLoading } = useAvailability(p?.k, viewY, viewM);
   const isSelected = (d: number) => selected && selected.y===viewY && selected.m===viewM && selected.d===d;
   const now = new Date();
   const todayY = now.getFullYear(); const todayM = now.getMonth(); const todayD = now.getDate();
@@ -1038,6 +1031,7 @@ const Step2Date = ({ lang, p, viewY, viewM, months, days, calCells, selected, se
         <button onClick={nextMonth} className="w-8 h-8 flex items-center justify-center border border-input bg-white cursor-pointer font-mono text-detail text-foreground hover:bg-muted transition-colors duration-100">{"→"}</button>
       </div>
       <div className="flex gap-4 font-mono text-label tracking-ui uppercase text-muted-foreground flex-wrap items-center">
+        {availLoading && <span className="text-primary animate-pulse">{fr ? 'Chargement…' : 'Loading…'}</span>}
         <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-white border border-foreground"/>{fr ? ' Libre' : ' Free'}</span>
         <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-edo-limited border border-edo-limited"/>{fr ? ' Partiel' : ' Limited'}</span>
         <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-muted border border-input"/>{fr ? ' Complet' : ' Booked'}</span>
@@ -1048,10 +1042,10 @@ const Step2Date = ({ lang, p, viewY, viewM, months, days, calCells, selected, se
       {days.map((d,i)=><div key={i} className="bg-edo-gray-50 py-2.5 text-center font-mono text-caption tracking-meta uppercase text-muted-foreground border-r border-input last:border-r-0">{d}</div>)}
     </div>
 
-    <div className="grid grid-cols-7 border-b border-foreground w-full">{calCells.map((d,i)=>{
+    <div className={`grid grid-cols-7 border-b border-foreground w-full transition-opacity duration-200 ${availLoading ? 'opacity-60' : ''}`}>{calCells.map((d,i)=>{
       if (d===null) return <div key={i} className="bg-edo-gray-50 aspect-cal-cell border-r border-b border-input"/>;
       const dow = new Date(viewY, viewM, d).getDay(); const weekend = dow===0 || dow===6; const isFullDay = rentalHours>=8; const weekendBlocked = weekend && !isFullDay;
-      const av = weekendBlocked ? 'unavailable' : availFor(p.k, viewY, viewM, d); const past = isPast(d); const sel = isSelected(d);
+      const av = weekendBlocked ? 'unavailable' : (availMap[d] || 'free'); const past = isPast(d); const sel = isSelected(d);
       const clickable = !past && av!=='unavailable';
       const tdy = isToday(d);
       return (<button key={i} disabled={!clickable} onClick={()=>setSelected({y:viewY,m:viewM,d})}
