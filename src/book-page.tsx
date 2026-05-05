@@ -4,6 +4,7 @@ import { CellLabel, IconArrowRight, IconMenu, PageHeader, Wordmark } from './ui'
 import { useDocumentMeta } from './lib/use-document-meta';
 import { MarqueeCell } from './cells';
 import { createBooking } from './lib/bookings';
+import { validateContact, type ContactFormErrors } from './lib/booking-schema';
 import type { Lang } from './types';
 import type { BookingSessionData } from './lib/bookings';
 
@@ -390,6 +391,7 @@ const BookPageV2 = () => {
   const [team, setTeam] = useStateBook<TeamState>({});
   const [pp, setPp] = useStateBook<Record<string, unknown>>({});
   const [contact, setContact] = useStateBook<ContactState>({ marque:'', societe:'', siren:'', adresseFacturation:'', nom:'', prenom:'', email:'', tel:'', typesArticles:[], quantiteArticles:'', vuesParArticle:'', autresInfos:'', cgvAccepted:false });
+  const [contactErrors, setContactErrors] = useStateBook<ContactFormErrors>({});
   const [sent, setSent] = useStateBook<SentMode>(false);
   const [saving, setSaving] = useStateBook<boolean>(false);
   const [saveError, setSaveError] = useStateBook<string | null>(null);
@@ -470,9 +472,15 @@ const BookPageV2 = () => {
   const isPast = (d: number | null) => { if (!d) return true; const dt = new Date(viewY, viewM, d); const t = new Date(today.getFullYear(), today.getMonth(), today.getDate()); return dt < t; };
   const isSelected = (d: number | null) => selected && selected.y===viewY && selected.m===viewM && selected.d===d;
   const contactValid = () => {
-    const base = contact.societe && contact.siren && contact.adresseFacturation && contact.nom && contact.prenom && contact.email && contact.tel && contact.cgvAccepted;
-    if (!base) return false;
-    if (!p.isCyclo && !p.isVisite && !configApplied) { return contact.typesArticles.length>0 && contact.quantiteArticles && contact.vuesParArticle; }
+    const requireProductFields = !p.isCyclo && !p.isVisite && !configApplied;
+    const result = validateContact(contact, lang as 'fr' | 'en', { requireProductFields });
+    return result.success;
+  };
+  const runContactValidation = () => {
+    const requireProductFields = !p.isCyclo && !p.isVisite && !configApplied;
+    const result = validateContact(contact, lang as 'fr' | 'en', { requireProductFields });
+    if (!result.success) { setContactErrors(result.errors); return false; }
+    setContactErrors({});
     return true;
   };
   const canNext = () => {
@@ -592,6 +600,7 @@ const BookPageV2 = () => {
   }, [plateaus, plateau, perPlateau, configApplied, configSessions, configGlobal, contact.quantiteArticles]);
 
   const handleSubmit = useCallbackBook(async (submitMode: 'quote' | 'booking' | 'request') => {
+    if (!runContactValidation()) return;
     setSaving(true);
     setSaveError(null);
     try {
@@ -721,7 +730,7 @@ const BookPageV2 = () => {
           {step===2 && <MultiPlateauStep lang={lang} plateaus={plateaus.length?plateaus:(plateau?[plateau]:[])} perPlateau={perPlateau} setPerPlateau={setPerPlateau} fallback={{slotType,hours,cycloMode,setSlotType,setHours,setCycloMode}} topBanner={(() => { const list = plateaus.length?plateaus:(plateau?[plateau]:[]); const allVisite = list.length>0 && list.every(k => BOOK_PLATEAUX.find(x=>x.k===k)?.isVisite); if (allVisite) return null; return (<div className="px-6 border-b border-foreground flex items-center h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local"><span className="edo-cell-label text-primary whitespace-nowrap">02 · {lang==='fr'?'Durée de location':'Rental duration'}</span><span className="font-mono text-label tracking-caption text-muted-foreground">{list.length > 1 ? (lang==='fr'?'Choisissez une durée pour chaque plateau (pré rempli selon estimation).':'Choose a duration for each stage (pre-filled based on estimate).') : (lang==='fr'?'Choisissez la durée pour votre plateau (pré rempli selon estimation).':'Choose a duration for your stage (pre-filled based on estimate).')}</span></div>); })()} renderOne={(px: AnyProps, st: AnyProps, setSt: (patch: AnyProps) => void) => (<Step3Slot lang={lang} p={px} slotType={st.slotType||'hour'} setSlotType={(v: string)=>setSt({slotType:v})} hours={st.hours||1} setHours={(v: number)=>setSt({hours:v})} cycloMode={st.cycloMode||'halfH'} setCycloMode={(v: string)=>setSt({cycloMode:v})}/>)}/>}
           {step===3 && <MultiPlateauStep lang={lang} plateaus={plateaus.length?plateaus:(plateau?[plateau]:[])} perPlateau={perPlateau} setPerPlateau={setPerPlateau} fallback={{team,setTeam}} topBanner={<div className="px-6 border-b border-foreground flex items-center h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local"><span className="edo-cell-label text-primary whitespace-nowrap">03 · {lang==='fr'?'Équipe E-DO (optionnel)':'E-DO team (optional)'}</span></div>} renderOne={(px: AnyProps, st: AnyProps, setSt: (patch: AnyProps) => void) => (<Step5Team lang={lang} p={px} team={st.team || {}} configSessions={configSessions} setTeam={(updater: any) => { const next = typeof updater === 'function' ? updater(st.team || {}) : updater; setSt({team: next}); }}/>)}/>}
           {step===4 && <MultiPlateauStep lang={lang} plateaus={plateaus.length?plateaus:(plateau?[plateau]:[])} perPlateau={perPlateau} setPerPlateau={setPerPlateau} fallback={{postprod:{},setPostprod:()=>{}}} topBanner={<div className="px-6 border-b border-foreground flex items-center h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local"><span className="edo-cell-label text-primary whitespace-nowrap">04 · {lang==='fr'?'Post-production (optionnel)':'Post-production (optional)'}</span></div>} renderOne={(px: AnyProps, st: AnyProps, setSt: (patch: AnyProps) => void) => (<Step6Postprod lang={lang} plateauKey={px && px.k} postprod={st.postprod || {}} setPostprod={(v: AnyProps) => setSt({postprod: v})}/>)}/>}
-          {step===5 && <Step7Contact lang={lang} contact={contact} setContact={setContact} p={p} configMode={configApplied}/>}
+          {step===5 && <Step7Contact lang={lang} contact={contact} setContact={setContact} p={p} configMode={configApplied} errors={contactErrors}/>}
           {step===6 && (() => {
             const list = plateaus && plateaus.length > 0 ? plateaus : (plateau ? [plateau] : []);
             if (list.length <= 1) { return <Step2Date lang={lang} p={p} viewY={viewY} viewM={viewM} months={months} days={days} calCells={calCells} selected={selected} setSelected={setSelected} arrivalHour={arrivalHour} setArrivalHour={setArrivalHour} rentalHours={rentalHours} isPast={isPast} nextMonth={nextMonth} prevMonth={prevMonth}/>; }
@@ -1164,10 +1173,11 @@ const ARTICLE_TYPES: AnyProps[] = [
   {k:'autre', fr:'Autre', en:'Other'},
 ];
 
-const BentoField = ({ label, children, span }: AnyProps) => (
-  <div className={`bg-white px-3 py-1.5 flex flex-col gap-px min-h-control ${span ? '' : ''}`} {...(span ? {style:{gridColumn:span}} : {})}>
+const BentoField = ({ label, children, span, error }: AnyProps) => (
+  <div className={`bg-white px-3 py-1.5 flex flex-col gap-px min-h-control ${error ? 'ring-1 ring-inset ring-red-400' : ''}`} {...(span ? {style:{gridColumn:span}} : {})}>
     <span className="edo-cell-label text-muted-foreground text-micro tracking-meta">{label}</span>
     {children}
+    {error && <span className="text-red-500 text-micro leading-tight">{error}</span>}
   </div>
 );
 
