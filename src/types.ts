@@ -26,9 +26,11 @@ export interface DiscoveryPost {
   tag: Bilingual;
   title: Bilingual;
   sub: Bilingual;
+  body: Bilingual;
   date: Bilingual;
   read: string;
   author: string;
+  coverUrl?: string;
   featured?: boolean;
   kind?: string;
 }
