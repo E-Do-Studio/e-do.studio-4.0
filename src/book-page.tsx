@@ -5,7 +5,7 @@ import { useDocumentMeta } from './lib/use-document-meta';
 import { MarqueeCell } from './cells';
 import { createBooking } from './lib/bookings';
 import { validateContact, type ContactFormErrors } from './lib/booking-schema';
-import { useAvailability } from './lib/availability';
+import { loadDraft, clearDraft, useBookingDraftSaver } from './lib/use-booking-draft';
 import type { Lang } from './types';
 import type { BookingSessionData } from './lib/bookings';
 
@@ -350,14 +350,16 @@ const BookPageV2 = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
   useDocumentMeta('book', lang);
   const today = new Date();
-  const [step, setStep] = useStateBook<number>(() => { try { if (localStorage.getItem('edo-book-plateau')) return 1; } catch(e){} return 0; });
-  const [configGlobal, setConfigGlobal] = useStateBook<ConfigGlobal>({ projectType: 'ecom', urgency: 'flex', postprod: false });
-  const [configSessions, setConfigSessions] = useStateBook<BookingSession[]>([makeBlankSession()]);
-  const [activeSessionIdx, setActiveSessionIdx] = useStateBook<number>(0);
-  const [configApplied, setConfigApplied] = useStateBook<boolean>(false);
-  const [plateau, setPlateau] = useStateBook<string | null>(()=>{ try { const pre = localStorage.getItem('edo-book-plateau'); if (pre) { localStorage.removeItem('edo-book-plateau'); return pre; } } catch(e){} return null; });
-  const [plateaus, setPlateaus] = useStateBook<string[]>(() => plateau ? [plateau] : []);
+  const [draft] = useStateBook(() => loadDraft());
+  const [step, setStep] = useStateBook<number>(() => { if (draft) return draft.step; try { if (localStorage.getItem('edo-book-plateau')) return 1; } catch(e){} return 0; });
+  const [configGlobal, setConfigGlobal] = useStateBook<ConfigGlobal>(() => draft ? draft.configGlobal as ConfigGlobal : { projectType: 'ecom', urgency: 'flex', postprod: false });
+  const [configSessions, setConfigSessions] = useStateBook<BookingSession[]>(() => draft ? draft.configSessions as BookingSession[] : [makeBlankSession()]);
+  const [activeSessionIdx, setActiveSessionIdx] = useStateBook<number>(() => draft ? draft.activeSessionIdx : 0);
+  const [configApplied, setConfigApplied] = useStateBook<boolean>(() => draft ? draft.configApplied : false);
+  const [plateau, setPlateau] = useStateBook<string | null>(() => { if (draft) return draft.plateau; try { const pre = localStorage.getItem('edo-book-plateau'); if (pre) { localStorage.removeItem('edo-book-plateau'); return pre; } } catch(e){} return null; });
+  const [plateaus, setPlateaus] = useStateBook<string[]>(() => draft ? draft.plateaus : (plateau ? [plateau] : []));
   const [perPlateau, setPerPlateau] = useStateBook<Record<string, PerPlateauState>>(() => {
+    if (draft) return draft.perPlateau as Record<string, PerPlateauState>;
     if (!plateau) return {};
     const px = BOOK_PLATEAUX.find(x => x.k === plateau);
     return { [plateau]: { slotType: (px && px.isCyclo) ? null : 'hour', hours: 1, cycloMode: 'halfH', paint: false, kwh: 0 } };
@@ -370,24 +372,30 @@ const BookPageV2 = () => {
       return next;
     });
   };
-  const [viewY, setViewY] = useStateBook<number>(today.getFullYear());
-  const [viewM, setViewM] = useStateBook<number>(today.getMonth());
-  const [selected, setSelected] = useStateBook<DateSelection | null>(null);
-  const [arrivalHour, setArrivalHour] = useStateBook<number>(10);
-  const [dateIdx, setDateIdx] = useStateBook<number>(0);
-  const [slotType, setSlotType] = useStateBook<string>('hour');
-  const [hours, setHours] = useStateBook<number>(1);
-  const [cycloMode, setCycloMode] = useStateBook<string>('halfH');
-  const [paint, setPaint] = useStateBook<boolean>(false);
-  const [kwh, setKwh] = useStateBook<number>(0);
-  const [team, setTeam] = useStateBook<TeamState>({});
-  const [pp, setPp] = useStateBook<Record<string, unknown>>({});
-  const [contact, setContact] = useStateBook<ContactState>({ marque:'', societe:'', siren:'', adresseFacturation:'', nom:'', prenom:'', email:'', tel:'', typesArticles:[], quantiteArticles:'', vuesParArticle:'', autresInfos:'', cgvAccepted:false });
+  const [viewY, setViewY] = useStateBook<number>(() => draft ? draft.viewY : today.getFullYear());
+  const [viewM, setViewM] = useStateBook<number>(() => draft ? draft.viewM : today.getMonth());
+  const [selected, setSelected] = useStateBook<DateSelection | null>(() => draft ? draft.selected : null);
+  const [arrivalHour, setArrivalHour] = useStateBook<number>(() => draft ? draft.arrivalHour : 10);
+  const [dateIdx, setDateIdx] = useStateBook<number>(() => draft ? draft.dateIdx : 0);
+  const [slotType, setSlotType] = useStateBook<string>(() => draft ? draft.slotType : 'hour');
+  const [hours, setHours] = useStateBook<number>(() => draft ? draft.hours : 1);
+  const [cycloMode, setCycloMode] = useStateBook<string>(() => draft ? draft.cycloMode : 'halfH');
+  const [paint, setPaint] = useStateBook<boolean>(() => draft ? draft.paint : false);
+  const [kwh, setKwh] = useStateBook<number>(() => draft ? draft.kwh : 0);
+  const [team, setTeam] = useStateBook<TeamState>(() => draft ? draft.team as TeamState : {});
+  const [pp, setPp] = useStateBook<Record<string, unknown>>(() => draft ? draft.pp : {});
+  const [contact, setContact] = useStateBook<ContactState>(() => draft ? { ...(draft.contact as unknown as ContactState), cgvAccepted: false } : { marque:'', societe:'', siren:'', adresseFacturation:'', nom:'', prenom:'', email:'', tel:'', typesArticles:[], quantiteArticles:'', vuesParArticle:'', autresInfos:'', cgvAccepted:false });
   const [contactErrors, setContactErrors] = useStateBook<ContactFormErrors>({});
   const [sent, setSent] = useStateBook<SentMode>(false);
   const [saving, setSaving] = useStateBook<boolean>(false);
   const [saveError, setSaveError] = useStateBook<string | null>(null);
   const [savedRef, setSavedRef] = useStateBook<string | null>(null);
+  const saveDraft = useBookingDraftSaver(() => ({
+    step, configGlobal, configSessions, activeSessionIdx, configApplied,
+    plateau, plateaus, perPlateau, slotType, hours, cycloMode, paint, kwh,
+    team, pp, contact: contact as unknown as Record<string, unknown>, selected, arrivalHour, dateIdx, viewY, viewM,
+  }));
+  React.useEffect(saveDraft, [step, configGlobal, configSessions, activeSessionIdx, configApplied, plateau, plateaus, perPlateau, slotType, hours, cycloMode, paint, kwh, team, pp, contact, selected, arrivalHour, dateIdx, viewY, viewM, saveDraft]);
   const months = lang==='fr' ? MONTHS_FR : MONTHS_EN;
   const days = lang==='fr' ? DAYS_FR : DAYS_EN;
   const p = BOOK_PLATEAUX.find(x=>x.k===plateau) || {k:'', fr:'—', en:'—', desc:{fr:'',en:''}, rates:{hour:0,half:0,full:0}, hdUnit:'half', fdUnit:'full'};
@@ -620,6 +628,7 @@ const BookPageV2 = () => {
         arrivalHour: arrivalHour ?? null,
       });
       setSavedRef(result.reference);
+      clearDraft();
       setSent(submitMode);
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : lang === 'fr' ? 'Erreur lors de la sauvegarde' : 'Failed to save booking');
