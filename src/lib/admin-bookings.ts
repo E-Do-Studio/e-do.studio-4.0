@@ -169,13 +169,22 @@ export async function getBookingDetailByRef(
   return getBookingDetail(booking.id);
 }
 
+export type StatusChangeReason = 'report' | 'rejet' | 'autre';
+
+export interface StatusChangeOptions {
+  reason?: StatusChangeReason;
+  newDate?: string;
+  message?: string;
+}
+
 export async function updateBookingStatus(
   bookingId: string,
   status: BookingStatus,
+  options?: StatusChangeOptions,
 ): Promise<BookingRow> {
   const { data, error } = await supabase
     .from('bookings')
-    .update({ status })
+    .update(options?.newDate ? { status, preferred_date: options.newDate } : { status })
     .eq('id', bookingId)
     .select()
     .single();
@@ -183,7 +192,34 @@ export async function updateBookingStatus(
   if (error || !data) {
     throw new Error(error?.message ?? 'Failed to update booking status');
   }
+
+  if (options?.reason) {
+    sendStatusChangeEmail(bookingId, options.reason, options.newDate, options.message).catch(() => {});
+  }
+
   return data;
+}
+
+async function sendStatusChangeEmail(
+  bookingId: string,
+  reason: StatusChangeReason,
+  newDate?: string,
+  message?: string,
+): Promise<void> {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  if (!supabaseUrl) return;
+
+  await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      type: 'booking_status_change',
+      bookingId,
+      reason,
+      ...(newDate && { newDate }),
+      ...(message && { message }),
+    }),
+  });
 }
 
 function escapeCsvField(value: string): string {

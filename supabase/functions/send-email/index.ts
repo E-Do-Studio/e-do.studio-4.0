@@ -23,7 +23,17 @@ interface ContactEmailPayload {
   message: string;
 }
 
-type EmailPayload = BookingEmailPayload | ContactEmailPayload;
+type StatusChangeReason = "report" | "rejet" | "autre";
+
+interface BookingStatusChangePayload {
+  type: "booking_status_change";
+  bookingId: string;
+  reason: StatusChangeReason;
+  newDate?: string;
+  message?: string;
+}
+
+type EmailPayload = BookingEmailPayload | ContactEmailPayload | BookingStatusChangePayload;
 
 async function sendResendEmail(
   apiKey: string,
@@ -144,6 +154,71 @@ function contactAdminHtml(
 </div>`;
 }
 
+const STATUS_CHANGE_LABELS: Record<StatusChangeReason, { title: string; intro: string }> = {
+  report: {
+    title: "Réservation reportée",
+    intro: "Votre réservation a été reportée à une nouvelle date.",
+  },
+  rejet: {
+    title: "Réservation non retenue",
+    intro: "Nous avons le regret de vous informer que votre réservation n'a pas pu être retenue.",
+  },
+  autre: {
+    title: "Mise à jour de votre réservation",
+    intro: "Votre réservation a fait l'objet d'une modification.",
+  },
+};
+
+function statusChangeClientHtml(
+  ref: string,
+  clientName: string,
+  reason: StatusChangeReason,
+  newDate: string | null,
+  adminMessage: string | null,
+): string {
+  const labels = STATUS_CHANGE_LABELS[reason];
+
+  return `
+<div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a;">
+  <h2 style="margin-bottom: 4px;">E-Do Studio</h2>
+  <p style="color: #666; margin-top: 0;">${labels.title}</p>
+  <hr style="border: none; border-top: 1px solid #e5e5e5;">
+  <p>Bonjour <strong>${clientName}</strong>,</p>
+  <p>${labels.intro}</p>
+  <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+    <tr><td style="padding: 6px 0; color: #666;">Référence</td><td style="padding: 6px 0; font-weight: 600;">${ref}</td></tr>
+    ${newDate ? `<tr><td style="padding: 6px 0; color: #666;">Nouvelle date</td><td style="padding: 6px 0; font-weight: 600;">${new Date(newDate).toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</td></tr>` : ""}
+  </table>
+  ${adminMessage ? `<div style="background: #f5f5f5; padding: 16px; border-radius: 4px; margin: 16px 0;"><strong>Message :</strong><br>${adminMessage}</div>` : ""}
+  <p>Pour toute question, n'hésitez pas à nous contacter par retour de mail.</p>
+  <p style="color: #666; font-size: 14px;">À bientôt,<br>L'équipe E-Do Studio</p>
+</div>`;
+}
+
+function statusChangeAdminHtml(
+  ref: string,
+  clientName: string,
+  clientEmail: string,
+  reason: StatusChangeReason,
+  newDate: string | null,
+  adminMessage: string | null,
+): string {
+  const labels = STATUS_CHANGE_LABELS[reason];
+
+  return `
+<div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a;">
+  <h2 style="margin-bottom: 4px;">${labels.title}</h2>
+  <p style="color: #666; margin-top: 0;">${ref}</p>
+  <hr style="border: none; border-top: 1px solid #e5e5e5;">
+  <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+    <tr><td style="padding: 6px 0; color: #666; width: 140px;">Client</td><td style="padding: 6px 0;"><strong>${clientName}</strong> (<a href="mailto:${clientEmail}">${clientEmail}</a>)</td></tr>
+    <tr><td style="padding: 6px 0; color: #666;">Motif</td><td style="padding: 6px 0;">${labels.title}</td></tr>
+    ${newDate ? `<tr><td style="padding: 6px 0; color: #666;">Nouvelle date</td><td style="padding: 6px 0;">${new Date(newDate).toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</td></tr>` : ""}
+    ${adminMessage ? `<tr><td style="padding: 6px 0; color: #666;">Message</td><td style="padding: 6px 0;">${adminMessage}</td></tr>` : ""}
+  </table>
+</div>`;
+}
+
 function escapeHtml(text: string): string {
   return text
     .replace(/&/g, "&amp;")
@@ -181,6 +256,8 @@ Deno.serve(async (req: Request) => {
       await handleBookingEmail(resendKey, fromEmail, payload.bookingId);
     } else if (payload.type === "contact") {
       await handleContactEmail(resendKey, fromEmail, payload);
+    } else if (payload.type === "booking_status_change") {
+      await handleBookingStatusChangeEmail(resendKey, fromEmail, payload);
     } else {
       return new Response(JSON.stringify({ error: "Unknown email type" }), {
         status: 400,
@@ -286,6 +363,63 @@ async function handleContactEmail(
       `Contact : ${payload.sujet} — ${payload.nom}`,
       contactAdminHtml(nom, email, telephone, societe, sujet, message),
       payload.email,
+    ),
+  ]);
+}
+
+async function handleBookingStatusChangeEmail(
+  resendKey: string,
+  fromEmail: string,
+  payload: BookingStatusChangePayload,
+): Promise<void> {
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  );
+
+  const { data: booking, error } = await supabase
+    .from("bookings")
+    .select("*")
+    .eq("id", payload.bookingId)
+    .single();
+
+  if (error || !booking) {
+    throw new Error(`Booking not found: ${payload.bookingId}`);
+  }
+
+  const clientName = escapeHtml(booking.client_name);
+  const ref = escapeHtml(booking.reference);
+  const newDate = payload.newDate ?? null;
+  const adminMessage = payload.message ? escapeHtml(payload.message) : null;
+
+  const subjectByReason: Record<StatusChangeReason, string> = {
+    report: `Réservation ${booking.reference} reportée — E-Do Studio`,
+    rejet: `Réservation ${booking.reference} non retenue — E-Do Studio`,
+    autre: `Mise à jour réservation ${booking.reference} — E-Do Studio`,
+  };
+
+  await Promise.all([
+    sendResendEmail(
+      resendKey,
+      fromEmail,
+      booking.client_email,
+      subjectByReason[payload.reason],
+      statusChangeClientHtml(ref, clientName, payload.reason, newDate, adminMessage),
+    ),
+    sendResendEmail(
+      resendKey,
+      fromEmail,
+      STUDIO_EMAIL,
+      `${STATUS_CHANGE_LABELS[payload.reason].title} — ${booking.reference}`,
+      statusChangeAdminHtml(
+        ref,
+        clientName,
+        escapeHtml(booking.client_email),
+        payload.reason,
+        newDate,
+        adminMessage,
+      ),
+      booking.client_email,
     ),
   ]);
 }
