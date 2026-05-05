@@ -1070,8 +1070,8 @@ const Step2Date = ({ lang, p, viewY, viewM, months, days, calCells, selected, se
           sel ? 'font-semibold text-white' : tdy ? 'font-bold text-primary' : past ? 'font-normal' : 'font-medium',
         ].join(' ')}>{d}</span>
         {tdy && !sel && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"/>}
-        {!past && !sel && av!=='unavailable' && !weekendBlocked && (
-          <span className={`font-mono text-nano sm:text-micro tracking-caption uppercase mt-auto ${tdy ? 'text-primary/70' : av==='limited' ? 'text-foreground/50' : 'text-muted-foreground'}`}>
+        {!past && av!=='unavailable' && !weekendBlocked && (
+          <span className={`font-mono text-nano sm:text-micro tracking-caption uppercase mt-auto ${sel ? 'text-white/70' : tdy ? 'text-primary/70' : av==='limited' ? 'text-foreground/50' : 'text-muted-foreground'}`}>
             {av==='free' ? (fr ? 'libre' : 'free') : (fr ? 'partiel' : 'limited')}
           </span>
         )}
