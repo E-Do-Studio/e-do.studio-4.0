@@ -63,6 +63,36 @@ export interface CreateBookingResult {
   reference: string;
 }
 
+async function checkTimeConflict(
+  preferredDate: string,
+  arrivalHour: number,
+  totalHours: number,
+  plateauKeys: string[]
+): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('arrival_hour, booking_sessions!inner(hours, plateau_key)')
+    .in('status', ['pending', 'confirmed'])
+    .eq('preferred_date', preferredDate)
+    .in('booking_sessions.plateau_key', plateauKeys);
+
+  if (error || !data) return false;
+
+  const requestedStart = arrivalHour;
+  const requestedEnd = arrivalHour + totalHours;
+
+  for (const booking of data as any[]) {
+    if (booking.arrival_hour == null) continue;
+    const existingHours = (booking.booking_sessions as any[]).reduce(
+      (sum: number, s: any) => sum + (s.hours || 0), 0
+    );
+    const existingStart = booking.arrival_hour;
+    const existingEnd = existingStart + existingHours;
+    if (requestedStart < existingEnd && requestedEnd > existingStart) return true;
+  }
+  return false;
+}
+
 export async function createBooking(input: CreateBookingInput): Promise<CreateBookingResult> {
   const reference = generateReference(input.mode);
   const quoteRef = input.mode === 'booking' ? generateReference('quote') : reference;
@@ -70,6 +100,15 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
   const preferredDate = input.preferredDate
     ? `${input.preferredDate.y}-${String(input.preferredDate.m + 1).padStart(2, '0')}-${String(input.preferredDate.d).padStart(2, '0')}`
     : null;
+
+  if (preferredDate && input.arrivalHour != null && input.sessions.length > 0) {
+    const totalHours = input.sessions.reduce((sum, s) => sum + s.hours, 0);
+    const plateauKeys = [...new Set(input.sessions.map(s => s.plateauKey))];
+    const conflict = await checkTimeConflict(preferredDate, input.arrivalHour, totalHours, plateauKeys);
+    if (conflict) {
+      throw new Error('Ce créneau est déjà réservé. Veuillez choisir un autre horaire.');
+    }
+  }
 
   const bookingData: BookingInsert = {
     reference,
