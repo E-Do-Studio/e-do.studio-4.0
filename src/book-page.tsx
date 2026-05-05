@@ -1054,7 +1054,7 @@ const Step2Date = ({ lang, p, viewY, viewM, months, days, calCells, selected, se
         title={weekendBlocked ? (fr ? `Week-end : journée complète uniquement` : 'Weekend: full-day booking only') : tdy ? (fr ? "Aujourd'hui" : 'Today') : ''}
         className={[
           'aspect-cal-cell border-r border-b border-input flex flex-col items-start justify-start text-left font-inherit min-w-0 p-1.5 sm:p-2 relative transition-colors duration-100',
-          sel ? 'bg-foreground text-white' :
+          sel ? 'bg-primary text-white' :
           past ? 'bg-edo-gray-50 text-muted-foreground/30' :
           av==='unavailable' ? 'bg-edo-gray-50 text-muted-foreground/40' :
           av==='limited' ? 'bg-edo-limited/50 text-foreground' :
@@ -1064,7 +1064,7 @@ const Step2Date = ({ lang, p, viewY, viewM, months, days, calCells, selected, se
         ].join(' ')}>
         <span className={[
           'text-detail sm:text-cell tabular-nums leading-none',
-          sel ? 'font-semibold' : tdy ? 'font-bold text-primary' : past ? 'font-normal' : 'font-medium',
+          sel ? 'font-semibold text-white' : tdy ? 'font-bold text-primary' : past ? 'font-normal' : 'font-medium',
         ].join(' ')}>{d}</span>
         {tdy && !sel && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"/>}
         {!past && !sel && av!=='unavailable' && !weekendBlocked && (
