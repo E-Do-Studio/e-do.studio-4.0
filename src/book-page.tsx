@@ -6,7 +6,7 @@ import { MarqueeCell } from './cells';
 import { createBooking } from './lib/bookings';
 import { validateContact, type ContactFormErrors } from './lib/booking-schema';
 import { loadDraft, clearDraft, useBookingDraftSaver } from './lib/use-booking-draft';
-import { useAvailability } from './lib/availability';
+import { useAvailability, isHourBlocked } from './lib/availability';
 import type { Lang } from './types';
 import type { BookingSessionData } from './lib/bookings';
 
@@ -1023,14 +1023,22 @@ const Step1Plateau = ({ lang, plateau, setPlateau, plateaus, togglePlateau, setC
 );
 
 const Step2Date = ({ lang, p, viewY, viewM, months, days, calCells, selected, setSelected, arrivalHour, setArrivalHour, rentalHours, isPast, nextMonth, prevMonth }: AnyProps) => {
-  const { availMap, loading: availLoading } = useAvailability(p?.k, viewY, viewM);
+  const { availMap, bookedHoursMap, loading: availLoading } = useAvailability(p?.k, viewY, viewM, rentalHours);
   const isSelected = (d: number) => selected && selected.y===viewY && selected.m===viewM && selected.d===d;
   const now = new Date();
   const todayY = now.getFullYear(); const todayM = now.getMonth(); const todayD = now.getDate();
   const isToday = (d: number) => viewY===todayY && viewM===todayM && d===todayD;
   const maxStart = 19 - rentalHours;
   const fr = lang==='fr';
+  const selectedDayBooked = selected ? bookedHoursMap[selected.d] : undefined;
   React.useEffect(()=>{ if (arrivalHour > maxStart) setArrivalHour(Math.max(9, Math.min(10, maxStart))); }, [maxStart]);
+  React.useEffect(()=>{
+    if (selected && isHourBlocked(selectedDayBooked, arrivalHour, rentalHours)) {
+      for (let h = 9; h <= maxStart; h++) {
+        if (!isHourBlocked(selectedDayBooked, h, rentalHours) && h + rentalHours <= 19) { setArrivalHour(h); return; }
+      }
+    }
+  }, [selected, selectedDayBooked]);
   return (<div>
     <div className="px-6 border-b border-foreground flex items-center h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local"><span className="edo-cell-label text-primary whitespace-nowrap">{`06 · ${fr ? 'Choisir une date' : 'Pick a date'}`}</span></div>
 
@@ -1043,7 +1051,6 @@ const Step2Date = ({ lang, p, viewY, viewM, months, days, calCells, selected, se
       <div className="flex gap-4 font-mono text-label tracking-ui uppercase text-muted-foreground flex-wrap items-center">
         {availLoading && <span className="text-primary animate-pulse">{fr ? 'Chargement…' : 'Loading…'}</span>}
         <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-white border border-foreground"/>{fr ? ' Libre' : ' Free'}</span>
-        <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-edo-limited border border-edo-limited"/>{fr ? ' Partiel' : ' Limited'}</span>
         <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-muted border border-input"/>{fr ? ' Complet' : ' Booked'}</span>
       </div>
     </div>
@@ -1065,7 +1072,6 @@ const Step2Date = ({ lang, p, viewY, viewM, months, days, calCells, selected, se
           sel ? 'bg-primary text-white cursor-pointer hover:bg-primary/85' :
           past ? 'bg-edo-gray-50 text-muted-foreground/30 cursor-not-allowed' :
           av==='unavailable' ? 'bg-edo-gray-50 text-muted-foreground/40 cursor-not-allowed' :
-          av==='limited' ? 'bg-edo-limited/50 text-foreground cursor-pointer hover:bg-edo-limited/70' :
           tdy ? 'bg-primary/8 text-foreground cursor-pointer hover:bg-primary/15' :
           'bg-white text-foreground cursor-pointer hover:bg-edo-gray-100',
         ].join(' ')}>
@@ -1075,8 +1081,8 @@ const Step2Date = ({ lang, p, viewY, viewM, months, days, calCells, selected, se
         ].join(' ')}>{d}</span>
         {tdy && !sel && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"/>}
         {!past && av!=='unavailable' && !weekendBlocked && (
-          <span className={`font-mono text-nano sm:text-micro tracking-caption uppercase mt-auto ${sel ? 'text-white/70' : tdy ? 'text-primary/70' : av==='limited' ? 'text-foreground/50' : 'text-muted-foreground'}`}>
-            {av==='free' ? (fr ? 'libre' : 'free') : (fr ? 'partiel' : 'limited')}
+          <span className={`font-mono text-nano sm:text-micro tracking-caption uppercase mt-auto ${sel ? 'text-white/70' : tdy ? 'text-primary/70' : 'text-muted-foreground'}`}>
+            {fr ? 'libre' : 'free'}
           </span>
         )}
         {weekendBlocked && !past && (
@@ -1090,9 +1096,11 @@ const Step2Date = ({ lang, p, viewY, viewM, months, days, calCells, selected, se
       <span className="font-mono text-label tracking-ui text-muted-foreground">{String(arrivalHour).padStart(2,'0')}:00 {"→"} {String(arrivalHour+rentalHours).padStart(2,'0')}:00 {"·"} {rentalHours}h</span>
     </div>
     <div className="grid grid-cols-10 gap-px bg-black border-b border-foreground w-full">{Array.from({length:10},(_,i)=>i+9).map(h=>{
-      const on = arrivalHour===h; const endsTooLate = h + rentalHours > 19; const disabled = endsTooLate;
+      const on = arrivalHour===h; const endsTooLate = h + rentalHours > 19;
+      const booked = isHourBlocked(selectedDayBooked, h, rentalHours);
+      const disabled = endsTooLate || booked;
       return (<button key={h} disabled={disabled} onClick={()=>!disabled && setArrivalHour(h)}
-        title={disabled ? (fr ? `Termine à ${h+rentalHours}h, après la fermeture` : `Ends at ${h+rentalHours}h, past closing`) : ''}
+        title={booked ? (fr ? 'Créneau déjà réservé' : 'Time slot already booked') : disabled ? (fr ? `Termine à ${h+rentalHours}h, après la fermeture` : `Ends at ${h+rentalHours}h, past closing`) : ''}
         className={`${on ? 'bg-foreground text-white' : disabled ? 'bg-muted text-muted-foreground' : 'bg-white text-foreground hover:bg-edo-gray-100'} border-0 ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'} flex items-center justify-center font-mono text-caption tracking-caption min-w-0 aspect-arrival transition-colors duration-100`}>
         {String(h).padStart(2,'0')}:00
       </button>);
