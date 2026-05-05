@@ -101,7 +101,7 @@ const PageHeader = ({
       <button
         onClick={onMenuClick}
         aria-label="Open menu"
-        className="edo-focus-ring flex h-full basis-header flex-none cursor-pointer items-center justify-center border-0 bg-background text-foreground transition-colors hover:bg-muted"
+        className="edo-focus-ring flex h-full basis-header flex-none cursor-pointer items-center justify-center border-0 bg-background text-foreground transition-colors hover:bg-muted md:hidden"
       >
         <IconMenu width="18" height="18" />
       </button>

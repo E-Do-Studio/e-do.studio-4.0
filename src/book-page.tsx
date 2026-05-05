@@ -1,6 +1,6 @@
 import React, { useState as useStateBook, useMemo as useMemoBook, useCallback as useCallbackBook } from 'react';
 import { usePageContext } from './router';
-import { CellLabel, IconArrowRight, IconMenu, PageHeader, Wordmark } from './ui';
+import { CellLabel, IconArrowRight, PageHeader, Wordmark } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
 import { MarqueeCell } from './cells';
 import { createBooking } from './lib/bookings';
@@ -664,9 +664,6 @@ const BookPageV2 = () => {
 
       {/* Desktop col 1 – logo */}
       <div className="hidden md:flex h-full gap-px bg-foreground md:col-start-1 md:row-start-1">
-        <button onClick={openMenu} aria-label="Open menu" className="edo-focus-ring flex h-full basis-header flex-none cursor-pointer items-center justify-center border-0 bg-background text-foreground transition-colors hover:bg-muted">
-          <IconMenu width="18" height="18" />
-        </button>
         <button onClick={()=>goto('home')} aria-label="E-Do Studio home" className="edo-focus-ring flex h-full min-w-0 flex-1 cursor-pointer items-center justify-center border-0 bg-background p-2 transition-colors hover:bg-muted">
           <Wordmark size={32} />
         </button>

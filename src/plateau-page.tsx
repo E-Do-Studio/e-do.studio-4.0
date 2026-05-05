@@ -1,8 +1,7 @@
-import { IconArrowRight, IconMenu, CellLabel, PageHeader, Wordmark } from './ui';
+import { IconArrowRight, CellLabel, PageHeader, Wordmark } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
 import { usePageContext } from './router';
 import { usePlateaux } from './lib/use-strapi';
-import { useDocumentMeta } from './lib/use-document-meta';
 
 const PlateauVisual = ({ kind }: { kind: string }) => {
   const svgClass = "h-4/5 w-4/5";
@@ -94,9 +93,6 @@ const PlateauPage = ({ slug }: { slug: string }) => {
 
       {/* Col 1 – logo */}
       <div className="hidden md:flex h-full gap-px bg-foreground md:col-start-1 md:row-start-1">
-        <button onClick={openMenu} aria-label="Open menu" className="edo-focus-ring flex h-full basis-header flex-none cursor-pointer items-center justify-center border-0 bg-background text-foreground transition-colors hover:bg-muted">
-          <IconMenu width="18" height="18" />
-        </button>
         <button onClick={()=>goto('home')} aria-label="E-Do Studio home" className="edo-focus-ring flex h-full min-w-0 flex-1 cursor-pointer items-center justify-center border-0 bg-background p-2 transition-colors hover:bg-muted">
           <Wordmark size={32} />
         </button>
