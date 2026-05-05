@@ -483,6 +483,10 @@ const BookPageV2 = () => {
     setContactErrors({});
     return true;
   };
+  const handleContactNext = (nextN: number | null) => {
+    if (!runContactValidation()) return;
+    if (nextN !== null) setStep(nextN);
+  };
   const canNext = () => {
     if (step===0) return (configSessions || []).length > 0 && configSessions.every(isSessionValid);
     if (step===1) return (plateaus && plateaus.length > 0) || !!plateau;
@@ -771,7 +775,7 @@ const BookPageV2 = () => {
             </button>
           ) : p.isCyclo ? (
             step===5 ? (
-              <button onClick={()=>canNext()&&nextN!==null&&setStep(nextN)} disabled={!canNext()} className={navBtnPrimaryCls + (canNext() ? '' : ' opacity-30 cursor-not-allowed')}>
+              <button onClick={()=>handleContactNext(nextN)} className={navBtnPrimaryCls}>
                 {lang==='fr'?'Continuer':'Continue'} <IconArrowRight width="14" height="14"/>
               </button>
             ) : isMultiDate && !onLastDateSub ? (
@@ -785,11 +789,11 @@ const BookPageV2 = () => {
             )
           ) : (
             <div className="flex gap-2.5">
-              <button onClick={()=>canQuote()&&!saving&&handleSubmit('quote')} disabled={!canQuote()||saving} title={lang==='fr'?'Sans bloquer de date':'No date held'} className={navBtnCls + (canQuote()&&!saving ? '' : ' opacity-30 cursor-not-allowed')}>
+              <button onClick={()=>!saving&&handleSubmit('quote')} disabled={saving} title={lang==='fr'?'Sans bloquer de date':'No date held'} className={navBtnCls + (canQuote()&&!saving ? '' : ' opacity-30 cursor-not-allowed')}>
                 {saving ? (lang==='fr'?'Envoi…':'Sending…') : (lang==='fr'?'Recevoir mon devis':'Receive my quote')} <IconArrowRight width="14" height="14"/>
               </button>
               {step===5 ? (
-                <button onClick={()=>canNext()&&nextN!==null&&setStep(nextN)} disabled={!canNext()} className={navBtnPrimaryCls + (canNext() ? '' : ' opacity-30 cursor-not-allowed')}>
+                <button onClick={()=>handleContactNext(nextN)} className={navBtnPrimaryCls}>
                   {lang==='fr'?'Choisir une date':'Pick a date'} <IconArrowRight width="14" height="14"/>
                 </button>
               ) : isMultiDate && !onLastDateSub ? (
