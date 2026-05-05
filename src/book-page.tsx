@@ -1027,18 +1027,23 @@ const Step2Date = ({ lang, p, viewY, viewM, months, days, calCells, selected, se
   const isSelected = (d: number) => selected && selected.y===viewY && selected.m===viewM && selected.d===d;
   const now = new Date();
   const todayY = now.getFullYear(); const todayM = now.getMonth(); const todayD = now.getDate();
+  const currentHour = now.getHours();
   const isToday = (d: number) => viewY===todayY && viewM===todayM && d===todayD;
+  const isSelectedToday = selected && selected.y===todayY && selected.m===todayM && selected.d===todayD;
   const maxStart = 19 - rentalHours;
   const fr = lang==='fr';
   const selectedDayBooked = selected ? bookedHoursMap[selected.d] : undefined;
   React.useEffect(()=>{ if (arrivalHour > maxStart) setArrivalHour(Math.max(9, Math.min(10, maxStart))); }, [maxStart]);
   React.useEffect(()=>{
-    if (selected && isHourBlocked(selectedDayBooked, arrivalHour, rentalHours)) {
+    if (!selected) return;
+    const isPastH = (h: number) => isSelectedToday && h <= currentHour;
+    const isBlocked = (h: number) => isPastH(h) || isHourBlocked(selectedDayBooked, h, rentalHours);
+    if (isBlocked(arrivalHour)) {
       for (let h = 9; h <= maxStart; h++) {
-        if (!isHourBlocked(selectedDayBooked, h, rentalHours) && h + rentalHours <= 19) { setArrivalHour(h); return; }
+        if (!isBlocked(h) && h + rentalHours <= 19) { setArrivalHour(h); return; }
       }
     }
-  }, [selected, selectedDayBooked]);
+  }, [selected, selectedDayBooked, isSelectedToday]);
   return (<div>
     <div className="px-6 border-b border-foreground flex items-center h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local"><span className="edo-cell-label text-primary whitespace-nowrap">{`06 · ${fr ? 'Choisir une date' : 'Pick a date'}`}</span></div>
 
@@ -1097,11 +1102,12 @@ const Step2Date = ({ lang, p, viewY, viewM, months, days, calCells, selected, se
     </div>
     <div className="grid grid-cols-10 gap-px bg-black border-b border-foreground w-full">{Array.from({length:10},(_,i)=>i+9).map(h=>{
       const on = arrivalHour===h; const endsTooLate = h + rentalHours > 19;
+      const pastHour = isSelectedToday && h <= currentHour;
       const booked = isHourBlocked(selectedDayBooked, h, rentalHours);
-      const disabled = endsTooLate || booked;
+      const disabled = endsTooLate || pastHour || booked;
       return (<button key={h} disabled={disabled} onClick={()=>!disabled && setArrivalHour(h)}
-        title={booked ? (fr ? 'Créneau déjà réservé' : 'Time slot already booked') : disabled ? (fr ? `Termine à ${h+rentalHours}h, après la fermeture` : `Ends at ${h+rentalHours}h, past closing`) : ''}
-        className={`${on ? 'bg-foreground text-white' : disabled ? 'bg-muted text-muted-foreground' : 'bg-white text-foreground hover:bg-edo-gray-100'} border-0 ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'} flex items-center justify-center font-mono text-caption tracking-caption min-w-0 aspect-arrival transition-colors duration-100`}>
+        title={booked ? (fr ? 'Créneau déjà réservé' : 'Time slot already booked') : pastHour ? (fr ? 'Créneau passé' : 'Past time slot') : endsTooLate ? (fr ? `Termine à ${h+rentalHours}h, après la fermeture` : `Ends at ${h+rentalHours}h, past closing`) : ''}
+        className={`${on ? 'bg-foreground text-white' : disabled ? 'bg-muted text-muted-foreground' : 'bg-white text-foreground hover:bg-edo-gray-100'} border-0 ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'} flex items-center justify-center font-mono text-caption tracking-caption min-w-0 aspect-arrival transition-colors duration-100${booked ? ' line-through' : ''}`}>
         {String(h).padStart(2,'0')}:00
       </button>);
     })}</div>
