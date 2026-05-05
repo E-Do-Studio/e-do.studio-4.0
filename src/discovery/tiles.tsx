@@ -81,7 +81,11 @@ export const SplitArticleCard: React.FC<SplitArticleCardProps> = ({ post, lang, 
   >
     {badge != null && <CellBadge n={badge} />}
     <div className="relative min-h-56 overflow-hidden bg-foreground sm:min-h-0">
-      <DiscoveryCover tone={post.tone} seed={post.id + 10} />
+      {post.coverUrl ? (
+        <img src={post.coverUrl} alt={post.title[lang]} className="absolute inset-0 h-full w-full object-cover" />
+      ) : (
+        <DiscoveryCover tone={post.tone} seed={post.id + 10} />
+      )}
     </div>
     <div className="flex min-h-0 min-w-0 origin-left flex-col justify-between gap-3.5 overflow-hidden px-7 py-6 transition-transform duration-200 ease-edo-out group-hover:scale-102">
       <span className={cn(labelBase, 'text-primary')}>

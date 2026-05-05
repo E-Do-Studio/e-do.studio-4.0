@@ -19,12 +19,17 @@ export const DiscoveryBentoGrid: React.FC<DiscoveryBentoGridProps> = ({ lang, go
   const { data: posts } = useDiscoveryPosts();
   const allPosts = posts ?? [];
 
-  const featuredPost = allPosts[0] ?? null;
-  const splitPost = allPosts[3] ?? null;
-  const fixedIndices = new Set([0, 3]);
-  const morePosts = useMemo(
-    () => allPosts.filter((_, i) => !fixedIndices.has(i)),
+  const featuredPost = useMemo(
+    () => allPosts.find(p => p.featured) ?? allPosts[0] ?? null,
     [allPosts]
+  );
+  const splitPost = useMemo(
+    () => allPosts.find(p => p !== featuredPost && !p.featured) ?? allPosts[3] ?? null,
+    [allPosts, featuredPost]
+  );
+  const morePosts = useMemo(
+    () => allPosts.filter(p => p !== featuredPost && p !== splitPost),
+    [allPosts, featuredPost, splitPost]
   );
 
   return (

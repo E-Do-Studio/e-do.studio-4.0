@@ -80,6 +80,15 @@ interface StrapiPostProdType {
   includes?: StrapiLocalizedItem[];
 }
 
+interface StrapiMedia {
+  url: string;
+  formats?: {
+    medium?: { url: string };
+    small?: { url: string };
+    thumbnail?: { url: string };
+  };
+}
+
 interface StrapiBlogPost {
   id: number;
   title_fr: string;
@@ -87,6 +96,12 @@ interface StrapiBlogPost {
   slug: string;
   excerpt_fr: string;
   excerpt_en: string;
+  body_fr?: string;
+  body_en?: string;
+  author?: string;
+  readingTime?: number;
+  featured?: boolean;
+  coverImage?: StrapiMedia;
   publishedAt: string;
   categories?: { id: number; title_fr: string; title_en: string; slug: string }[];
 }
@@ -321,15 +336,30 @@ function parsePriceText(fr: string, en: string): PPPrice {
 
 const TONES: Array<'warm' | 'mono' | 'dark'> = ['warm', 'mono', 'dark'];
 
+function estimateReadingTime(text: string): number {
+  const words = text.trim().split(/\s+/).length;
+  return Math.max(1, Math.round(words / 200));
+}
+
+function resolveStrapiMediaUrl(media?: StrapiMedia): string | undefined {
+  if (!media?.url) return undefined;
+  const path = media.formats?.medium?.url ?? media.url;
+  if (path.startsWith('http')) return path;
+  return `${STRAPI_URL}${path}`;
+}
+
 export async function fetchDiscoveryPosts(): Promise<DiscoveryPost[]> {
   const res = await fetchStrapi<{ data: StrapiBlogPost[] }>('blog-posts', {
-    'populate': 'categories',
+    'populate': 'categories,coverImage',
     'sort': 'publishedAt:desc',
     'pagination[pageSize]': '50',
   });
 
   return res.data.map((p, i) => {
     const cat = p.categories?.[0];
+    const bodyFr = p.body_fr ?? '';
+    const bodyEn = p.body_en ?? '';
+    const readingTime = p.readingTime ?? estimateReadingTime(bodyFr || bodyEn);
     return {
       id: p.id,
       cat: cat?.slug ?? 'tips',
@@ -337,9 +367,12 @@ export async function fetchDiscoveryPosts(): Promise<DiscoveryPost[]> {
       tag: { fr: cat?.title_fr ?? 'Tips', en: cat?.title_en ?? 'Tips' },
       title: { fr: p.title_fr, en: p.title_en },
       sub: { fr: p.excerpt_fr, en: p.excerpt_en },
+      body: { fr: bodyFr, en: bodyEn },
       date: formatStrapiDate(p.publishedAt),
-      read: '5 min',
-      author: 'Studio',
+      read: `${readingTime} min`,
+      author: p.author ?? 'Studio',
+      coverUrl: resolveStrapiMediaUrl(p.coverImage),
+      featured: p.featured ?? false,
     };
   });
 }

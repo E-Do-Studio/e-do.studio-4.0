@@ -26,7 +26,11 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({ post, lang, onOpen, he
   >
     {badge != null && <CellBadge n={badge} />}
     <div className="relative min-h-0 border-b border-border">
-      <DiscoveryCover tone={post.tone} seed={post.id + 1} />
+      {post.coverUrl ? (
+        <img src={post.coverUrl} alt={post.title[lang]} className="absolute inset-0 h-full w-full object-cover" />
+      ) : (
+        <DiscoveryCover tone={post.tone} seed={post.id + 1} />
+      )}
     </div>
 
     <div className={cn(
