@@ -147,8 +147,6 @@ interface StrapiGalleryProject {
   slug: string;
   stage: string;
   year: number;
-  referenceCount: number;
-  tone: 'mono' | 'dark' | 'warm';
   orderRank: number;
   category?: StrapiGalleryCategory;
   images?: StrapiMedia[];
@@ -455,7 +453,6 @@ export interface GalleryProject {
   cat: string;
   plateau: string;
   year: number;
-  refs: number;
   tone: 'mono' | 'dark' | 'warm';
   imageUrls: string[];
 }
@@ -473,15 +470,14 @@ export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
     'pagination[pageSize]': '100',
   });
 
-  return res.data.map(p => ({
+  return res.data.map((p, i) => ({
     id: p.id,
     title: p.title,
     slug: p.slug,
     cat: p.category?.slug ?? 'other',
     plateau: p.stage,
     year: p.year,
-    refs: p.referenceCount,
-    tone: p.tone,
+    tone: TONES[i % 3],
     imageUrls: (p.images ?? []).map(img => resolveStrapiMediaUrl(img)).filter((u): u is string => !!u),
   }));
 }
