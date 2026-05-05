@@ -3,7 +3,7 @@ import type { CSSProperties } from "react";
 import { usePageContext } from "./router";
 import { useDocumentMeta } from "./lib/use-document-meta";
 import type { Lang } from "./types";
-import { Button, PageHeader, IconArrowRight, IconMenu, CellLabel, Wordmark } from "./ui";
+import { Button, PageHeader, IconArrowRight, CellLabel, Wordmark } from "./ui";
 import { cn } from "./ui/cn";
 
 /* =================================================================
@@ -543,9 +543,6 @@ const GalleryPageV3 = () => {
 
       {/* Desktop header col 1 (190px) – logo */}
       <div className="hidden md:flex h-full gap-px bg-foreground md:col-start-1 md:row-start-1">
-        <button onClick={openMenu} aria-label="Open menu" className="edo-focus-ring flex h-full basis-header flex-none cursor-pointer items-center justify-center border-0 bg-background text-foreground transition-colors hover:bg-muted">
-          <IconMenu width="18" height="18" />
-        </button>
         <button onClick={() => goto("home")} aria-label="E-Do Studio home" className="edo-focus-ring flex h-full min-w-0 flex-1 cursor-pointer items-center justify-center border-0 bg-background p-2 transition-colors hover:bg-muted">
           <Wordmark size={32} />
         </button>
