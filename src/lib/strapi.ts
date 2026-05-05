@@ -463,29 +463,73 @@ export interface GalleryCategory {
   en: string;
 }
 
-export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
-  const res = await fetchStrapi<{ data: StrapiGalleryProject[] }>('gallery-projects', {
-    'populate': 'category,images',
-    'sort': 'orderRank:asc',
-    'pagination[pageSize]': '100',
-  });
+const FALLBACK_GALLERY_CATEGORIES: GalleryCategory[] = [
+  { k: 'pap', fr: 'Prêt-à-porter', en: 'Ready-to-wear' },
+  { k: 'accessoires', fr: 'Accessoires', en: 'Accessories' },
+  { k: 'eyewear', fr: 'Eyewear', en: 'Eyewear' },
+  { k: 'bijoux', fr: 'Bijoux', en: 'Jewelry' },
+  { k: 'cosmetique', fr: 'Cosmétique', en: 'Cosmetics' },
+  { k: 'food', fr: 'Food & Spiritueux', en: 'Food & Spirits' },
+];
 
-  return res.data.map((p, i) => ({
-    id: p.id,
-    title: p.title,
-    slug: p.slug,
-    cat: p.category?.slug ?? 'other',
-    plateau: p.stage,
-    year: p.year,
-    tone: TONES[i % 3],
-    imageUrls: (p.images ?? []).map(img => resolveStrapiMediaUrl(img)).filter((u): u is string => !!u),
-  }));
+const FALLBACK_GALLERY_PROJECTS: GalleryProject[] = [
+  { id: 1, title: 'Maison Ortho', slug: 'maison-ortho', cat: 'pap', plateau: 'cyclorama', year: 2026, tone: 'mono', imageUrls: [] },
+  { id: 2, title: 'Le Monde Béryl', slug: 'le-monde-beryl', cat: 'accessoires', plateau: 'horizontal', year: 2026, tone: 'dark', imageUrls: [] },
+  { id: 3, title: 'Atelier Soie', slug: 'atelier-soie', cat: 'pap', plateau: 'vertical', year: 2026, tone: 'warm', imageUrls: [] },
+  { id: 4, title: 'Kôji — Chapter 3', slug: 'koji-chapter-3', cat: 'eyewear', plateau: 'eclipse', year: 2025, tone: 'mono', imageUrls: [] },
+  { id: 5, title: 'Rue Saint-Honoré', slug: 'rue-saint-honore', cat: 'cosmetique', plateau: 'horizontal', year: 2025, tone: 'dark', imageUrls: [] },
+  { id: 6, title: 'Ganymède', slug: 'ganymede', cat: 'bijoux', plateau: 'eclipse', year: 2025, tone: 'warm', imageUrls: [] },
+  { id: 7, title: 'Moa Studio FW26', slug: 'moa-studio-fw26', cat: 'pap', plateau: 'live', year: 2026, tone: 'mono', imageUrls: [] },
+  { id: 8, title: 'Maison Margin', slug: 'maison-margin', cat: 'pap', plateau: 'vertical', year: 2025, tone: 'dark', imageUrls: [] },
+  { id: 9, title: 'Toby Ombré', slug: 'toby-ombre', cat: 'food', plateau: 'horizontal', year: 2026, tone: 'warm', imageUrls: [] },
+  { id: 10, title: 'Noir Étoilé', slug: 'noir-etoile', cat: 'cosmetique', plateau: 'cyclorama', year: 2025, tone: 'mono', imageUrls: [] },
+  { id: 11, title: 'Orbite', slug: 'orbite', cat: 'eyewear', plateau: 'eclipse', year: 2025, tone: 'dark', imageUrls: [] },
+  { id: 12, title: 'Studio 11', slug: 'studio-11', cat: 'accessoires', plateau: 'horizontal', year: 2026, tone: 'warm', imageUrls: [] },
+  { id: 13, title: 'Parure', slug: 'parure', cat: 'bijoux', plateau: 'eclipse', year: 2026, tone: 'mono', imageUrls: [] },
+  { id: 14, title: 'Rue Cadet', slug: 'rue-cadet', cat: 'pap', plateau: 'cyclorama', year: 2025, tone: 'dark', imageUrls: [] },
+  { id: 15, title: 'Atelier Bois', slug: 'atelier-bois', cat: 'food', plateau: 'horizontal', year: 2025, tone: 'warm', imageUrls: [] },
+  { id: 16, title: 'Maison Ardent', slug: 'maison-ardent', cat: 'pap', plateau: 'vertical', year: 2026, tone: 'mono', imageUrls: [] },
+  { id: 17, title: 'Saar Paris', slug: 'saar-paris', cat: 'accessoires', plateau: 'eclipse', year: 2026, tone: 'dark', imageUrls: [] },
+  { id: 18, title: 'Solène', slug: 'solene', cat: 'bijoux', plateau: 'cyclorama', year: 2025, tone: 'warm', imageUrls: [] },
+];
+
+export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
+  try {
+    const res = await fetchStrapi<{ data: StrapiGalleryProject[] }>('gallery-projects', {
+      'populate': 'category,images',
+      'sort': 'orderRank:asc',
+      'pagination[pageSize]': '100',
+    });
+
+    if (res.data.length > 0) {
+      return res.data.map((p, i) => ({
+        id: p.id,
+        title: p.title,
+        slug: p.slug,
+        cat: p.category?.slug ?? 'other',
+        plateau: p.stage,
+        year: p.year,
+        tone: TONES[i % 3],
+        imageUrls: (p.images ?? []).map(img => resolveStrapiMediaUrl(img)).filter((u): u is string => !!u),
+      }));
+    }
+  } catch {
+    // Strapi gallery-project content type not available yet
+  }
+  return FALLBACK_GALLERY_PROJECTS;
 }
 
 export async function fetchGalleryCategories(): Promise<GalleryCategory[]> {
-  const res = await fetchStrapi<{ data: StrapiGalleryCategory[] }>('gallery-categories', {
-    'sort': 'orderRank:asc',
-  });
-  return res.data.map(c => ({ k: c.slug, fr: c.title_fr, en: c.title_en }));
+  try {
+    const res = await fetchStrapi<{ data: StrapiGalleryCategory[] }>('gallery-categories', {
+      'sort': 'orderRank:asc',
+    });
+    if (res.data.length > 0) {
+      return res.data.map(c => ({ k: c.slug, fr: c.title_fr, en: c.title_en }));
+    }
+  } catch {
+    // Strapi gallery-category content type not available yet
+  }
+  return FALLBACK_GALLERY_CATEGORIES;
 }
 
