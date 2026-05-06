@@ -1,7 +1,0 @@
-{
-  "collectionName": "components_section_marquee",
-  "info": { "displayName": "Section Marquee", "icon": "layout" },
-  "attributes": {
-    "data": { "type": "json" }
-  }
-}

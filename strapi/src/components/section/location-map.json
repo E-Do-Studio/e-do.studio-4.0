@@ -1,7 +1,0 @@
-{
-  "collectionName": "components_section_location_map",
-  "info": { "displayName": "Section Location Map", "icon": "layout" },
-  "attributes": {
-    "data": { "type": "json" }
-  }
-}
