@@ -53,30 +53,30 @@ echo ""
 echo "=== Seeding gallery projects ==="
 
 seed_project() {
-  local order="$1" title="$2" slug="$3" cat_id="$4" stage="$5" year="$6"
+  local slug="$1" cat_id="$2" stage="$3" year="$4"
   local result
-  result=$(post gallery-projects "{\"title\":\"${title}\",\"slug\":\"${slug}\",\"category\":${cat_id},\"stage\":\"${stage}\",\"year\":${year},\"orderRank\":${order}}")
-  echo "  ✓ ${title} → $(echo "$result" | jq -r '.data.id // .error.message')"
+  result=$(post gallery-projects "{\"slug\":\"${slug}\",\"category\":${cat_id},\"stage\":\"${stage}\",\"year\":${year}}")
+  echo "  ✓ ${slug} → $(echo "$result" | jq -r '.data.id // .error.message')"
 }
 
-seed_project 1  "Maison Ortho"      "maison-ortho"      "$id_pap"  "cyclorama"  2026
-seed_project 2  "Le Monde Béryl"    "le-monde-beryl"    "$id_acc"  "horizontal" 2026
-seed_project 3  "Atelier Soie"      "atelier-soie"      "$id_pap"  "vertical"   2026
-seed_project 4  "Kôji — Chapter 3"  "koji-chapter-3"    "$id_eye"  "eclipse"    2025
-seed_project 5  "Rue Saint-Honoré"  "rue-saint-honore"  "$id_cos"  "horizontal" 2025
-seed_project 6  "Ganymède"          "ganymede"          "$id_bij"  "eclipse"    2025
-seed_project 7  "Moa Studio FW26"   "moa-studio-fw26"   "$id_pap"  "live"       2026
-seed_project 8  "Maison Margin"     "maison-margin"     "$id_pap"  "vertical"   2025
-seed_project 9  "Toby Ombré"        "toby-ombre"        "$id_food" "horizontal" 2026
-seed_project 10 "Noir Étoilé"       "noir-etoile"       "$id_cos"  "cyclorama"  2025
-seed_project 11 "Orbite"            "orbite"            "$id_eye"  "eclipse"    2025
-seed_project 12 "Studio 11"         "studio-11"         "$id_acc"  "horizontal" 2026
-seed_project 13 "Parure"            "parure"            "$id_bij"  "eclipse"    2026
-seed_project 14 "Rue Cadet"         "rue-cadet"         "$id_pap"  "cyclorama"  2025
-seed_project 15 "Atelier Bois"      "atelier-bois"      "$id_food" "horizontal" 2025
-seed_project 16 "Maison Ardent"     "maison-ardent"     "$id_pap"  "vertical"   2026
-seed_project 17 "Saar Paris"        "saar-paris"        "$id_acc"  "eclipse"    2026
-seed_project 18 "Solène"            "solene"            "$id_bij"  "cyclorama"  2025
+seed_project "maison-ortho"      "$id_pap"  "cyclorama"  2026
+seed_project "le-monde-beryl"    "$id_acc"  "horizontal" 2026
+seed_project "atelier-soie"      "$id_pap"  "vertical"   2026
+seed_project "koji-chapter-3"    "$id_eye"  "eclipse"    2025
+seed_project "rue-saint-honore"  "$id_cos"  "horizontal" 2025
+seed_project "ganymede"          "$id_bij"  "eclipse"    2025
+seed_project "moa-studio-fw26"   "$id_pap"  "live"       2026
+seed_project "maison-margin"     "$id_pap"  "vertical"   2025
+seed_project "toby-ombre"        "$id_food" "horizontal" 2026
+seed_project "noir-etoile"       "$id_cos"  "cyclorama"  2025
+seed_project "orbite"            "$id_eye"  "eclipse"    2025
+seed_project "studio-11"         "$id_acc"  "horizontal" 2026
+seed_project "parure"            "$id_bij"  "eclipse"    2026
+seed_project "rue-cadet"         "$id_pap"  "cyclorama"  2025
+seed_project "atelier-bois"      "$id_food" "horizontal" 2025
+seed_project "maison-ardent"     "$id_pap"  "vertical"   2026
+seed_project "saar-paris"        "$id_acc"  "eclipse"    2026
+seed_project "solene"            "$id_bij"  "cyclorama"  2025
 
 echo ""
 echo "=== Done! ==="
