@@ -288,7 +288,7 @@ const ProjectLabel = ({ project }: { project: GalleryProject }) => (
     </span>
     <div className="flex min-h-0 flex-1 items-center justify-center py-2 edo-writing-vertical rotate-180">
       <span className="whitespace-nowrap text-tile-large font-medium leading-none tracking-headline text-foreground">
-        {project.title}
+        {project.brand}
       </span>
     </div>
     <span className="self-start font-mono text-micro tracking-code text-muted-foreground">
@@ -313,7 +313,7 @@ const ProjectImage = ({
       {imageUrl ? (
         <img
           src={imageUrl}
-          alt={`${project.title} — ${imageIndex + 1}`}
+          alt={`${project.brand} — ${imageIndex + 1}`}
           className="absolute inset-0 h-full w-full object-cover"
           loading="lazy"
         />

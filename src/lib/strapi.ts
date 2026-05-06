@@ -143,11 +143,10 @@ interface StrapiGalleryCategory {
 
 interface StrapiGalleryProject {
   id: number;
-  title: string;
   slug: string;
   stage: string;
-  year: number;
-  orderRank: number;
+  year: string;
+  brand?: StrapiGalleryBrand;
   category?: StrapiGalleryCategory;
   images?: StrapiMedia[];
 }
@@ -611,11 +610,11 @@ export async function fetchStudioHours(): Promise<Bilingual> {
 
 export interface GalleryProject {
   id: number;
-  title: string;
+  brand: string;
   slug: string;
   cat: string;
   plateau: string;
-  year: number;
+  year: string;
   tone: 'mono' | 'dark' | 'warm';
   imageUrls: string[];
 }
@@ -636,38 +635,38 @@ const FALLBACK_GALLERY_CATEGORIES: GalleryCategory[] = [
 ];
 
 const FALLBACK_GALLERY_PROJECTS: GalleryProject[] = [
-  { id: 1, title: 'Maison Ortho', slug: 'maison-ortho', cat: 'pap', plateau: 'cyclorama', year: 2026, tone: 'mono', imageUrls: [] },
-  { id: 2, title: 'Le Monde Béryl', slug: 'le-monde-beryl', cat: 'accessoires', plateau: 'horizontal', year: 2026, tone: 'dark', imageUrls: [] },
-  { id: 3, title: 'Atelier Soie', slug: 'atelier-soie', cat: 'pap', plateau: 'vertical', year: 2026, tone: 'warm', imageUrls: [] },
-  { id: 4, title: 'Kôji — Chapter 3', slug: 'koji-chapter-3', cat: 'eyewear', plateau: 'eclipse', year: 2025, tone: 'mono', imageUrls: [] },
-  { id: 5, title: 'Rue Saint-Honoré', slug: 'rue-saint-honore', cat: 'cosmetique', plateau: 'horizontal', year: 2025, tone: 'dark', imageUrls: [] },
-  { id: 6, title: 'Ganymède', slug: 'ganymede', cat: 'bijoux', plateau: 'eclipse', year: 2025, tone: 'warm', imageUrls: [] },
-  { id: 7, title: 'Moa Studio FW26', slug: 'moa-studio-fw26', cat: 'pap', plateau: 'live', year: 2026, tone: 'mono', imageUrls: [] },
-  { id: 8, title: 'Maison Margin', slug: 'maison-margin', cat: 'pap', plateau: 'vertical', year: 2025, tone: 'dark', imageUrls: [] },
-  { id: 9, title: 'Toby Ombré', slug: 'toby-ombre', cat: 'food', plateau: 'horizontal', year: 2026, tone: 'warm', imageUrls: [] },
-  { id: 10, title: 'Noir Étoilé', slug: 'noir-etoile', cat: 'cosmetique', plateau: 'cyclorama', year: 2025, tone: 'mono', imageUrls: [] },
-  { id: 11, title: 'Orbite', slug: 'orbite', cat: 'eyewear', plateau: 'eclipse', year: 2025, tone: 'dark', imageUrls: [] },
-  { id: 12, title: 'Studio 11', slug: 'studio-11', cat: 'accessoires', plateau: 'horizontal', year: 2026, tone: 'warm', imageUrls: [] },
-  { id: 13, title: 'Parure', slug: 'parure', cat: 'bijoux', plateau: 'eclipse', year: 2026, tone: 'mono', imageUrls: [] },
-  { id: 14, title: 'Rue Cadet', slug: 'rue-cadet', cat: 'pap', plateau: 'cyclorama', year: 2025, tone: 'dark', imageUrls: [] },
-  { id: 15, title: 'Atelier Bois', slug: 'atelier-bois', cat: 'food', plateau: 'horizontal', year: 2025, tone: 'warm', imageUrls: [] },
-  { id: 16, title: 'Maison Ardent', slug: 'maison-ardent', cat: 'pap', plateau: 'vertical', year: 2026, tone: 'mono', imageUrls: [] },
-  { id: 17, title: 'Saar Paris', slug: 'saar-paris', cat: 'accessoires', plateau: 'eclipse', year: 2026, tone: 'dark', imageUrls: [] },
-  { id: 18, title: 'Solène', slug: 'solene', cat: 'bijoux', plateau: 'cyclorama', year: 2025, tone: 'warm', imageUrls: [] },
+  { id: 1, brand: 'Maison Ortho', slug: 'maison-ortho-2026', cat: 'pap', plateau: 'cyclorama', year: '2026', tone: 'mono', imageUrls: [] },
+  { id: 2, brand: 'Le Monde Béryl', slug: 'le-monde-beryl-2026', cat: 'accessoires', plateau: 'horizontal', year: '2026', tone: 'dark', imageUrls: [] },
+  { id: 3, brand: 'Atelier Soie', slug: 'atelier-soie-2026', cat: 'pap', plateau: 'vertical', year: '2026', tone: 'warm', imageUrls: [] },
+  { id: 4, brand: 'Kôji', slug: 'koji-2025', cat: 'eyewear', plateau: 'eclipse', year: '2025', tone: 'mono', imageUrls: [] },
+  { id: 5, brand: 'Rue Saint-Honoré', slug: 'rue-saint-honore-2025', cat: 'cosmetique', plateau: 'horizontal', year: '2025', tone: 'dark', imageUrls: [] },
+  { id: 6, brand: 'Ganymède', slug: 'ganymede-2025', cat: 'bijoux', plateau: 'eclipse', year: '2025', tone: 'warm', imageUrls: [] },
+  { id: 7, brand: 'Moa Studio', slug: 'moa-studio-2026', cat: 'pap', plateau: 'live', year: '2026', tone: 'mono', imageUrls: [] },
+  { id: 8, brand: 'Maison Margin', slug: 'maison-margin-2025', cat: 'pap', plateau: 'vertical', year: '2025', tone: 'dark', imageUrls: [] },
+  { id: 9, brand: 'Toby Ombré', slug: 'toby-ombre-2026', cat: 'food', plateau: 'horizontal', year: '2026', tone: 'warm', imageUrls: [] },
+  { id: 10, brand: 'Noir Étoilé', slug: 'noir-etoile-2025', cat: 'cosmetique', plateau: 'cyclorama', year: '2025', tone: 'mono', imageUrls: [] },
+  { id: 11, brand: 'Orbite', slug: 'orbite-2025', cat: 'eyewear', plateau: 'eclipse', year: '2025', tone: 'dark', imageUrls: [] },
+  { id: 12, brand: 'Studio 11', slug: 'studio-11-2026', cat: 'accessoires', plateau: 'horizontal', year: '2026', tone: 'warm', imageUrls: [] },
+  { id: 13, brand: 'Parure', slug: 'parure-2026', cat: 'bijoux', plateau: 'eclipse', year: '2026', tone: 'mono', imageUrls: [] },
+  { id: 14, brand: 'Rue Cadet', slug: 'rue-cadet-2025', cat: 'pap', plateau: 'cyclorama', year: '2025', tone: 'dark', imageUrls: [] },
+  { id: 15, brand: 'Atelier Bois', slug: 'atelier-bois-2025', cat: 'food', plateau: 'horizontal', year: '2025', tone: 'warm', imageUrls: [] },
+  { id: 16, brand: 'Maison Ardent', slug: 'maison-ardent-2026', cat: 'pap', plateau: 'vertical', year: '2026', tone: 'mono', imageUrls: [] },
+  { id: 17, brand: 'Saar Paris', slug: 'saar-paris-2026', cat: 'accessoires', plateau: 'eclipse', year: '2026', tone: 'dark', imageUrls: [] },
+  { id: 18, brand: 'Solène', slug: 'solene-2025', cat: 'bijoux', plateau: 'cyclorama', year: '2025', tone: 'warm', imageUrls: [] },
 ];
 
 export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
   try {
     const res = await fetchStrapi<{ data: StrapiGalleryProject[] }>('gallery-projects', {
-      'populate': 'category,images',
-      'sort': 'orderRank:asc',
+      'populate': 'brand,category,images',
+      'sort': 'year:desc,slug:asc',
       'pagination[pageSize]': '100',
     });
 
     if (res.data.length > 0) {
       return res.data.map((p, i) => ({
         id: p.id,
-        title: p.title,
+        brand: p.brand?.name ?? p.slug,
         slug: p.slug,
         cat: p.category?.slug ?? 'other',
         plateau: p.stage,
