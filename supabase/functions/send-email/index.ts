@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.105.1";
+import { syncContactForm, syncBooking } from "../_shared/hubspot.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -219,6 +220,12 @@ function statusChangeAdminHtml(
 </div>`;
 }
 
+function syncToHubSpot(fn: () => Promise<void>): void {
+  const token = Deno.env.get("HUBSPOT_PRIVATE_APP_TOKEN");
+  if (!token) return;
+  fn().catch((err) => console.error("HubSpot sync error:", err));
+}
+
 function escapeHtml(text: string): string {
   return text
     .replace(/&/g, "&amp;")
@@ -334,6 +341,21 @@ async function handleBookingEmail(
       booking.client_email,
     ),
   ]);
+
+  syncToHubSpot(() =>
+    syncBooking(Deno.env.get("HUBSPOT_PRIVATE_APP_TOKEN")!, {
+      reference: booking.reference,
+      clientName: booking.client_name,
+      clientEmail: booking.client_email,
+      clientPhone: booking.client_phone,
+      clientCompany: booking.client_company,
+      projectType: booking.project_type,
+      totalEstimate: booking.total_estimate,
+      preferredDate: booking.preferred_date,
+      notes: booking.notes,
+      plateaux: (sessions ?? []).map((s: { plateau_key: string }) => s.plateau_key),
+    })
+  );
 }
 
 async function handleContactEmail(
@@ -365,6 +387,17 @@ async function handleContactEmail(
       payload.email,
     ),
   ]);
+
+  syncToHubSpot(() =>
+    syncContactForm(Deno.env.get("HUBSPOT_PRIVATE_APP_TOKEN")!, {
+      nom: payload.nom,
+      email: payload.email,
+      telephone: payload.telephone,
+      societe: payload.societe,
+      sujet: payload.sujet,
+      message: payload.message,
+    })
+  );
 }
 
 async function handleBookingStatusChangeEmail(
