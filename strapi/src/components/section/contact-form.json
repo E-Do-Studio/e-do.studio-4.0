@@ -1,7 +1,0 @@
-{
-  "collectionName": "components_section_contact_form",
-  "info": { "displayName": "Section Contact Form", "icon": "layout" },
-  "attributes": {
-    "data": { "type": "json" }
-  }
-}

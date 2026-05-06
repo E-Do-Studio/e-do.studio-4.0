@@ -10,16 +10,36 @@
     "draftAndPublish": true
   },
   "attributes": {
-    "title_fr": { "type": "string" },
-    "title_en": { "type": "string" },
-    "slug": { "type": "uid", "required": true },
-    "description_fr": { "type": "text" },
-    "description_en": { "type": "text" },
+    "title": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "slug": {
+      "type": "uid",
+      "required": true
+    },
+    "description": {
+      "type": "text",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
     "posts": {
       "type": "relation",
       "relation": "manyToMany",
       "target": "api::blog-post.blog-post",
       "mappedBy": "categories"
+    }
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
     }
   }
 }

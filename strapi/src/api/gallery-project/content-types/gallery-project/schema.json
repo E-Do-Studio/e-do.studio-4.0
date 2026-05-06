@@ -14,7 +14,7 @@
     "slug": { "type": "uid", "targetField": "title", "required": true },
     "stage": { "type": "string" },
     "year": { "type": "integer" },
-    "orderRank": { "type": "integer" },
+    "rank": { "type": "integer" },
     "category": {
       "type": "relation",
       "relation": "manyToOne",
@@ -25,10 +25,6 @@
       "relation": "manyToOne",
       "target": "api::gallery-brand.gallery-brand"
     },
-    "images": {
-      "type": "media",
-      "multiple": true,
-      "allowedTypes": ["images"]
-    }
+    "images": { "type": "media", "multiple": true, "allowedTypes": ["images"] }
   }
 }
