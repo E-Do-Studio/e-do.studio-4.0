@@ -4,6 +4,7 @@ import { DiscoveryCover } from './discovery-cover';
 import { ArrowIcon, CellBadge } from './shared';
 import { cn } from '../ui/cn';
 import { cellBase, labelBase } from './styles';
+import { common, discoveryPage } from '../i18n/messages';
 
 interface VisualTileProps {
   tone?: string;
@@ -37,9 +38,7 @@ export const QuoteTile: React.FC<QuoteTileProps> = ({ lang, className }) => (
       {Array.from({ length: 16 }).map((_, index) => <line key={`v-${index}`} x1={index * 14} y1="0" x2={index * 14} y2="100" stroke="currentColor" strokeWidth="0.3" />)}
     </svg>
     <p className="relative m-0 text-balance text-center text-page-title font-bold italic leading-tight tracking-headline text-white">
-      {lang === 'fr'
-        ? 'On apprend en faisant. On partage ce qu\u2019on apprend.'
-        : 'We learn by doing. We share what we learn.'}
+      {discoveryPage.quote[lang]}
     </p>
   </div>
 );
@@ -56,7 +55,7 @@ export const NewsletterCard: React.FC<NewsletterCardProps> = ({ lang, className,
     <span className={cn(labelBase, 'text-primary')}>Newsletter</span>
     <form onSubmit={(event) => event.preventDefault()} className="flex items-center gap-2 border-b border-foreground pb-1.5">
       <input
-        placeholder={lang === 'fr' ? 'votre@email.com' : 'your@email.com'}
+        placeholder={discoveryPage.emailPlaceholder[lang]}
         className="edo-focus-ring min-w-0 flex-1 border-0 bg-transparent py-1 font-sans text-detail text-foreground outline-none placeholder:text-muted-foreground"
       />
       <button type="submit" className="edo-focus-ring cursor-pointer border-0 bg-transparent p-0 font-mono text-label uppercase tracking-label text-primary">
@@ -96,11 +95,11 @@ export const SplitArticleCard: React.FC<SplitArticleCardProps> = ({ post, lang, 
           {post.title[lang]}
         </h3>
         <p className="edo-line-clamp-3 m-0 text-detail leading-normal text-muted-foreground">
-          {post.sub?.[lang] || (lang === 'fr' ? 'Lire l\u2019article complet sur Discovery.' : 'Read the full article on Discovery.')}
+          {post.sub?.[lang] || discoveryPage.readFallback[lang]}
         </p>
       </div>
       <span className="inline-flex items-center gap-2 font-mono text-label uppercase tracking-label text-foreground">
-        {lang === 'fr' ? 'Lire l\u2019article' : 'Read article'} <span className="text-detail">→</span>
+        {discoveryPage.readArticle[lang]} <span className="text-detail">→</span>
       </span>
     </div>
   </button>
@@ -118,10 +117,10 @@ export const BookCtaTile: React.FC<BookCtaTileProps> = ({ lang, goto }) => (
   >
     <span className="flex min-w-0 origin-left flex-col items-start gap-1 transition-transform duration-200 ease-edo-out group-hover:scale-102">
       <span className="font-mono text-label uppercase tracking-label text-white/75">
-        {lang === 'fr' ? 'Studio · 7j/7' : 'Studio · 7d/7'}
+        {discoveryPage.studioOpen[lang]}
       </span>
       <span className="text-tile-title font-normal leading-tight tracking-headline text-white">
-        {lang === 'fr' ? 'Réserver' : 'Book'}
+        {common.book[lang]}
       </span>
     </span>
     <ArrowIcon width="16" height="16" className="shrink-0 text-white transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5 group-hover:scale-110" />
@@ -137,6 +136,6 @@ interface BookBackstageStackProps {
 export const BookBackstageStack: React.FC<BookBackstageStackProps> = ({ lang, goto, className }) => (
   <div className={cn(cellBase, 'order-7 flex min-h-104 flex-col gap-px bg-black lg:min-h-0', className)}>
     <BookCtaTile lang={lang} goto={goto} />
-    <VisualTile tone="warm" seed={9} label={lang === 'fr' ? 'Coulisses' : 'Behind the scenes'} className="order-none flex-1" />
+    <VisualTile tone="warm" seed={9} label={discoveryPage.behindScenes[lang]} className="order-none flex-1" />
   </div>
 );

@@ -2,6 +2,7 @@ import { IconArrowRight, CellLabel, PageHeader, Wordmark } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
 import { usePageContext } from './router';
 import { usePlateaux } from './lib/use-strapi';
+import { common, plateau as plateauMsg } from './i18n/messages';
 
 const PlateauVisual = ({ kind }: { kind: string }) => {
   const svgClass = "h-4/5 w-4/5";
@@ -68,7 +69,7 @@ const PlateauPage = ({ slug }: { slug: string }) => {
   const metaKey = slug === 'cyclorama' ? 'cyclorama' : `plateau-${slug}`;
   useDocumentMeta(metaKey, lang);
   const { data: plateaux, loading } = usePlateaux();
-  if (loading || !plateaux) return <div className="flex items-center justify-center h-full bg-white"><span className="text-muted-foreground text-caption animate-pulse">{lang === 'fr' ? 'Chargement…' : 'Loading…'}</span></div>;
+  if (loading || !plateaux) return <div className="flex items-center justify-center h-full bg-white"><span className="text-muted-foreground text-caption animate-pulse">{common.loading[lang]}</span></div>;
   const p = plateaux[slug] || plateaux.cyclorama;
   const order = ['live','eclipse','horizontal','vertical','cyclorama'];
 
@@ -79,13 +80,13 @@ const PlateauPage = ({ slug }: { slug: string }) => {
       {/* Mobile header (single row, hidden on desktop) */}
       <PageHeader
         lang={lang}
-        title={lang==='fr'?'Plateaux':'Stages'}
+        title={common.stages[lang]}
         className="col-span-full h-14 md:hidden"
         onMenuClick={openMenu}
         onLogoClick={()=>goto('home')}
         onLangToggle={()=>setLang(lang==='fr'?'en':'fr')}
         actions={[
-          { id: 'contact', label: lang==='fr'?'Nous contacter':'Contact us', onClick: () => goto('contact') },
+          { id: 'contact', label: common.contactUs[lang], onClick: () => goto('contact') },
         ]}
       />
 
@@ -100,7 +101,7 @@ const PlateauPage = ({ slug }: { slug: string }) => {
 
       {/* Col 2 – page title */}
       <div className="hidden md:flex min-w-0 items-center bg-background px-6 md:col-start-2 md:row-start-1">
-        <CellLabel className="shrink-0 text-primary">{lang==='fr'?'Plateaux':'Stages'}</CellLabel>
+        <CellLabel className="shrink-0 text-primary">{common.stages[lang]}</CellLabel>
       </div>
 
       {/* Col 3 – post-prod action */}
@@ -112,11 +113,11 @@ const PlateauPage = ({ slug }: { slug: string }) => {
       {/* Col 4 – gallery + lang toggle */}
       <div className="hidden md:flex h-full gap-px bg-foreground md:col-start-4 md:row-start-1">
         <button onClick={()=>goto('gallery')} className="edo-focus-ring flex h-full flex-1 cursor-pointer items-center justify-center gap-2 border-0 bg-background px-5 font-mono text-label tracking-ui uppercase text-foreground no-underline transition-colors hover:bg-muted">
-          <span className="whitespace-nowrap">{lang==='fr'?'Galerie':'Gallery'}</span>
+          <span className="whitespace-nowrap">{common.gallery[lang]}</span>
           <IconArrowRight width={12} height={12} />
         </button>
         <button onClick={()=>setLang(lang==='fr'?'en':'fr')} className="edo-focus-ring flex h-full basis-header flex-none cursor-pointer items-center justify-center border-0 bg-background p-0 transition-colors hover:bg-muted">
-          <span className="font-mono text-label tracking-meta text-foreground">{lang==='fr'?'EN':'FR'}</span>
+          <span className="font-mono text-label tracking-meta text-foreground">{common.langToggleLabel[lang]}</span>
         </button>
       </div>
 
@@ -151,7 +152,7 @@ const PlateauPage = ({ slug }: { slug: string }) => {
 
       {/* Specifications */}
       <div className="bg-white p-3 px-4 flex flex-col gap-1.5 md:col-start-4 md:row-start-3">
-        <CellLabel>{lang==='fr'?'Caractéristiques':'Specifications'}</CellLabel>
+        <CellLabel>{plateauMsg.specs[lang]}</CellLabel>
         <div className="flex flex-col flex-1 min-h-0">
           {p.specs.map((s, i) => (
             <div key={s.k.fr} className={`flex justify-between items-baseline gap-3 text-caption py-1 ${i < p.specs.length - 1 ? 'border-b border-border' : ''}`}>
@@ -164,7 +165,7 @@ const PlateauPage = ({ slug }: { slug: string }) => {
 
       {/* Rates */}
       <div className="bg-white px-4 pt-2.5 pb-3 flex flex-col gap-1 md:col-start-4 md:row-start-4">
-        <CellLabel>{lang==='fr'?'Tarifs HT':'Rates excl. VAT'}</CellLabel>
+        <CellLabel>{plateauMsg.rates[lang]}</CellLabel>
         <div className="flex flex-col flex-1 min-h-0">
           {p.rates.map((r, i) => (
             <div key={r.k.fr} className={`flex justify-between items-baseline text-caption py-1 ${i < p.rates.length - 1 ? 'border-b border-border' : ''}`}>
@@ -183,11 +184,11 @@ const PlateauPage = ({ slug }: { slug: string }) => {
       {/* Description + Uses */}
       <div className="bg-white p-4 flex justify-between items-start gap-6 md:col-start-2 md:col-span-2 md:row-start-5">
         <div className="flex-1 flex flex-col gap-1.5 min-w-0">
-          <CellLabel>{lang==='fr'?'Description':'Description'}</CellLabel>
+          <CellLabel>{common.description[lang]}</CellLabel>
           <p className="m-0 text-caption text-foreground leading-normal max-w-2xl">{p.desc[lang]}</p>
         </div>
         <div className="flex-none w-40 flex flex-col gap-1.5">
-          <CellLabel>{lang==='fr'?'Usages':'Uses'}</CellLabel>
+          <CellLabel>{plateauMsg.uses[lang]}</CellLabel>
           <ul className="list-none m-0 p-0 flex flex-col gap-0.5">
             {p.uses.map(a => <li key={a.fr} className="text-caption text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">· {a[lang]}</li>)}
           </ul>
@@ -197,9 +198,9 @@ const PlateauPage = ({ slug }: { slug: string }) => {
       {/* Book CTA */}
       <button onClick={()=>{ try{localStorage.setItem('edo-book-plateau', slug);}catch(e){} goto('book'); }}
         className="edo-focus-ring bg-primary p-4 border-0 cursor-pointer flex flex-col justify-between text-left text-white font-inherit min-h-20 transition-colors hover:bg-foreground hover:text-white md:col-start-4 md:row-start-5">
-        <CellLabel className="text-white/80">06 · {lang==='fr'?'Réserver':'Book now'}</CellLabel>
+        <CellLabel className="text-white/80">06 · {common.bookNow[lang]}</CellLabel>
         <div className="flex justify-between items-end text-white w-full">
-          <span className="text-tile-large font-medium tracking-headline">{lang==='fr'?'Réserver ce plateau':'Book this stage'}</span>
+          <span className="text-tile-large font-medium tracking-headline">{common.bookThisStage[lang]}</span>
           <IconArrowRight width="20" height="20"/>
         </div>
       </button>

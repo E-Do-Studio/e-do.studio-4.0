@@ -4,6 +4,7 @@ import { DiscoveryCover } from './discovery-cover';
 import { useEscapeKey } from './hooks';
 import { ArticleMeta, ArrowIcon } from './shared';
 import { renderMarkdown } from '../lib/render-markdown';
+import { discoveryPage } from '../i18n/messages';
 
 interface ArticleOverlayProps {
   post: DiscoveryPost;
@@ -21,7 +22,7 @@ export const ArticleOverlay: React.FC<ArticleOverlayProps> = ({ post, lang, onCl
         <button onClick={onClose} className="edo-focus-ring flex flex-none cursor-pointer items-center gap-2.5 border-0 bg-white px-4 text-foreground transition-colors hover:bg-muted md:px-cell-lg">
           <span className="inline-block rotate-180"><ArrowIcon width="14" height="14" /></span>
           <span className="hidden font-mono text-caption uppercase tracking-label text-foreground sm:inline">
-            {lang === 'fr' ? 'Retour journal' : 'Back to journal'}
+            {discoveryPage.backToJournal[lang]}
           </span>
         </button>
         <div className="flex min-w-0 flex-1 items-center gap-3.5 bg-white px-4 md:px-6">
@@ -66,7 +67,7 @@ export const ArticleOverlay: React.FC<ArticleOverlayProps> = ({ post, lang, onCl
               {post.author} · {post.date[lang]}
             </span>
             <button onClick={onClose} className="edo-focus-ring h-10 cursor-pointer border-0 bg-foreground px-cell-lg font-mono text-caption uppercase tracking-label text-white transition-all hover:brightness-110">
-              {lang === 'fr' ? 'Fermer' : 'Close'}
+              {discoveryPage.close[lang]}
             </button>
           </footer>
         </article>

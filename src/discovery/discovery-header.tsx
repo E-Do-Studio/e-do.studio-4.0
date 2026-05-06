@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Lang } from '../types';
 import { PageHeader } from '../ui';
+import { common } from '../i18n/messages';
 
 interface DiscoveryHeaderProps {
   lang: Lang;
@@ -18,9 +19,9 @@ export const DiscoveryHeader: React.FC<DiscoveryHeaderProps> = ({ lang, setLang,
     onLogoClick={() => goto('home')}
     onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
     actions={[
-      { id: 'gallery', label: lang === 'fr' ? 'Galerie' : 'Gallery', onClick: () => goto('gallery'), className: 'hidden md:flex' },
-      { id: 'plateaux', label: lang === 'fr' ? 'Plateaux' : 'Stages', onClick: () => goto('plateau-live'), className: 'hidden md:flex' },
-      { id: 'contact', label: lang === 'fr' ? 'Nous contacter' : 'Contact us', onClick: () => goto('contact'), className: 'hidden lg:flex' },
+      { id: 'gallery', label: common.gallery[lang], onClick: () => goto('gallery'), className: 'hidden md:flex' },
+      { id: 'plateaux', label: common.stages[lang], onClick: () => goto('plateau-live'), className: 'hidden md:flex' },
+      { id: 'contact', label: common.contactUs[lang], onClick: () => goto('contact'), className: 'hidden lg:flex' },
     ]}
   />
 );

@@ -1,33 +1,13 @@
 import { useNavigate } from '@tanstack/react-router';
 import { CellLabel, IconX, cn } from './ui';
 import { useSocialLinks } from './lib/use-strapi';
+import { nav, common } from './i18n/messages';
 import type { Lang, SocialLink } from './types';
 
 interface NavItemDef {
   label: string;
   href: string;
 }
-
-const NAV_ITEMS: Record<Lang, NavItemDef[]> = {
-  fr: [
-    { label: "Accueil", href: "/fr" },
-    { label: "Cyclorama", href: "/fr/cyclorama" },
-    { label: "Galerie", href: "/fr/galerie" },
-    { label: "Discovery", href: "/fr/discovery" },
-    { label: "Post-production", href: "/fr/post-production" },
-    { label: "Contact", href: "/fr/contact" },
-    { label: "Légal", href: "/fr/legal" },
-  ],
-  en: [
-    { label: "Home", href: "/en" },
-    { label: "Cyclorama", href: "/en/cyclorama" },
-    { label: "Gallery", href: "/en/galerie" },
-    { label: "Discovery", href: "/en/discovery" },
-    { label: "Post-production", href: "/en/post-production" },
-    { label: "Contact", href: "/en/contact" },
-    { label: "Legal", href: "/en/legal" },
-  ],
-};
 
 interface NavOverlayProps {
   isOpen: boolean;
@@ -132,7 +112,7 @@ const NavFooter = ({ lang, setLang, onClose, navigate }: NavFooterProps) => {
         onClick={() => setLang(lang === "fr" ? "en" : "fr")}
         className="edo-focus-ring h-12 w-12 cursor-pointer border-0 border-r border-foreground bg-white font-mono text-caption uppercase tracking-label transition-colors hover:bg-muted"
       >
-        {lang === "fr" ? "EN" : "FR"}
+        {common.langToggleLabel[lang]}
       </button>
       <a
         href={bookingHref}
@@ -143,7 +123,7 @@ const NavFooter = ({ lang, setLang, onClose, navigate }: NavFooterProps) => {
         }}
         className="edo-focus-ring h-12 flex cursor-pointer items-center justify-center border-0 bg-primary font-mono text-caption uppercase tracking-label text-white no-underline transition-colors hover:bg-foreground hover:text-white"
       >
-        {lang === "fr" ? "Réserver" : "Book now"}
+        {common.bookNow[lang]}
       </a>
     </div>
   );
@@ -172,7 +152,7 @@ const NavMenu = ({ lang, isOpen, onClose, setLang }: NavMenuProps) => {
         <NavHeader onClose={onClose} />
 
         <nav className="flex flex-1 flex-col overflow-y-auto">
-          {NAV_ITEMS[lang].map((item, index) => (
+          {nav.items[lang].map((item, index) => (
             <NavItemLink key={item.href} item={item} index={index} onClose={onClose} navigate={navigate} />
           ))}
           <SocialGrid links={socialLinks ?? []} />
