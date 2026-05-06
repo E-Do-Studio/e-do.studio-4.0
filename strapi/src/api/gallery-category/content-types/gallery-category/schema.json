@@ -37,7 +37,7 @@
         "post-prod"
       ]
     },
-    "orderRank": {
+    "rank": {
       "type": "integer"
     },
     "assets": {

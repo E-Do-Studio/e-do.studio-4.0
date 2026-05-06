@@ -123,7 +123,7 @@ interface StrapiGalleryCategory {
   name: string;
   slug: string;
   group?: string;
-  orderRank: number;
+  rank: number;
 }
 
 interface StrapiGalleryProject {
@@ -132,7 +132,7 @@ interface StrapiGalleryProject {
   slug: string;
   stage: string;
   year: number | string;
-  orderRank: number;
+  rank: number;
   category?: StrapiGalleryCategory;
   brand?: StrapiGalleryBrand;
   images?: StrapiMedia[];
@@ -690,7 +690,7 @@ export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
   try {
     const res = await fetchStrapi<{ data: StrapiGalleryProject[] }>('gallery-projects', {
       'populate': 'category,brand,images',
-      'sort': 'orderRank:asc',
+      'sort': 'rank:asc',
       'pagination[pageSize]': '100',
     });
 
