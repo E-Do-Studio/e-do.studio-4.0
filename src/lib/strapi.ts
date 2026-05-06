@@ -143,11 +143,9 @@ interface StrapiGalleryCategory {
 
 interface StrapiGalleryProject {
   id: number;
-  title: string;
   slug: string;
   stage: string;
   year: number | string;
-  orderRank: number;
   category?: StrapiGalleryCategory;
   images?: StrapiMedia[];
 }
@@ -656,18 +654,22 @@ const FALLBACK_GALLERY_PROJECTS: GalleryProject[] = [
   { id: 18, brand: 'Solène', slug: 'solene-2025', cat: 'bijoux', plateau: 'cyclorama', year: '2025', tone: 'warm', imageUrls: [] },
 ];
 
+function slugToTitle(slug: string): string {
+  return slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
 export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
   try {
     const res = await fetchStrapi<{ data: StrapiGalleryProject[] }>('gallery-projects', {
       'populate': 'category,images',
-      'sort': 'orderRank:asc',
+      'sort': 'id:asc',
       'pagination[pageSize]': '100',
     });
 
     if (res.data.length > 0) {
       return res.data.map((p, i) => ({
         id: p.id,
-        brand: p.title ?? p.slug,
+        brand: slugToTitle(p.slug),
         slug: p.slug,
         cat: p.category?.slug ?? 'other',
         plateau: p.stage,
