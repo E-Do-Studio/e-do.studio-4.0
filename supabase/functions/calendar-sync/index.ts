@@ -24,7 +24,9 @@ function formatIcalTimestamp(date: Date): string {
   return date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
 }
 
-function buildIcsEvent(booking: Record<string, unknown>, sessions: Record<string, unknown>[], isUpdate: boolean): string {
+interface QuoteRow { lbl: string; amt: number; onReq?: boolean; estimate?: boolean }
+
+function buildIcsEvent(booking: Record<string, unknown>, sessions: Record<string, unknown>[], quoteRows: QuoteRow[], quoteTotal: number | null, isUpdate: boolean): string {
   const uid = `${booking.reference}@e-do.studio`;
   const now = formatIcalTimestamp(new Date());
   const created = formatIcalTimestamp(new Date(booking.created_at as string));
@@ -68,6 +70,15 @@ function buildIcsEvent(booking: Record<string, unknown>, sessions: Record<string
       if (s.postprod_enabled) parts.push(`  Post-prod: oui${s.postprod_video ? " (vidéo)" : ""}`);
       descParts.push(parts.join("\n"));
     }
+  }
+  if (quoteRows.length > 0) {
+    descParts.push("");
+    descParts.push("--- Devis ---");
+    for (const r of quoteRows) {
+      const amt = r.onReq ? "Sur demande" : `${r.amt}€ HT${r.estimate ? " (estimé)" : ""}`;
+      descParts.push(`${r.lbl}: ${amt}`);
+    }
+    if (quoteTotal != null) descParts.push(`Total: ${quoteTotal}€ HT`);
   }
   if (booking.notes) descParts.push(`\nNotes: ${booking.notes}`);
 
@@ -226,13 +237,16 @@ Deno.serve(async (req: Request) => {
     );
   }
 
-  const { data: sessions } = await supabase
-    .from("booking_sessions")
-    .select("*")
-    .eq("booking_id", bookingId);
+  const [{ data: sessions }, { data: quoteRow }] = await Promise.all([
+    supabase.from("booking_sessions").select("*").eq("booking_id", bookingId),
+    supabase.from("booking_quotes").select("*").eq("booking_id", bookingId).maybeSingle(),
+  ]);
+
+  const quoteRows: QuoteRow[] = quoteRow?.rows as QuoteRow[] ?? [];
+  const quoteTotal: number | null = quoteRow?.total ?? null;
 
   const isUpdate = action === "update";
-  const icsData = buildIcsEvent(booking, sessions ?? [], isUpdate);
+  const icsData = buildIcsEvent(booking, sessions ?? [], quoteRows, quoteTotal, isUpdate);
   const result = await caldavPut(caldavUrl, caldavUser, caldavPass, eventUid, icsData, isUpdate);
 
   return new Response(

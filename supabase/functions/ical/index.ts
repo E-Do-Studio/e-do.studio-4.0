@@ -67,7 +67,9 @@ function formatIcalTimestamp(date: Date): string {
   return date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
 }
 
-function buildVEvent(booking: BookingRow, sessions: SessionRow[]): string {
+interface IcalQuoteRow { lbl: string; amt: number; onReq?: boolean; estimate?: boolean }
+
+function buildVEvent(booking: BookingRow, sessions: SessionRow[], quoteRows: IcalQuoteRow[] = [], quoteTotal: number | null = null): string {
   const uid = `${booking.reference}@e-do.studio`;
   const now = formatIcalTimestamp(new Date());
   const created = formatIcalTimestamp(new Date(booking.created_at));
@@ -109,6 +111,15 @@ function buildVEvent(booking: BookingRow, sessions: SessionRow[]): string {
       if (s.postprod_enabled) parts.push(`  Post-prod: oui${s.postprod_video ? " (vidéo)" : ""}`);
       descParts.push(parts.join("\n"));
     }
+  }
+  if (quoteRows.length > 0) {
+    descParts.push("");
+    descParts.push("--- Devis ---");
+    for (const r of quoteRows) {
+      const amt = r.onReq ? "Sur demande" : `${r.amt}€ HT${r.estimate ? " (estimé)" : ""}`;
+      descParts.push(`${r.lbl}: ${amt}`);
+    }
+    if (quoteTotal != null) descParts.push(`Total: ${quoteTotal}€ HT`);
   }
   if (booking.notes) descParts.push(`\nNotes: ${booking.notes}`);
 
@@ -230,12 +241,15 @@ async function handleSingleBooking(
     });
   }
 
-  const { data: sessions } = await supabase
-    .from("booking_sessions")
-    .select("*")
-    .eq("booking_id", booking.id);
+  const [{ data: sessions }, { data: quoteRow }] = await Promise.all([
+    supabase.from("booking_sessions").select("*").eq("booking_id", booking.id),
+    supabase.from("booking_quotes").select("*").eq("booking_id", booking.id).maybeSingle(),
+  ]);
 
-  const vevent = buildVEvent(booking as BookingRow, (sessions ?? []) as SessionRow[]);
+  const quoteRows = (quoteRow?.rows as IcalQuoteRow[]) ?? [];
+  const quoteTotal = quoteRow?.total ?? null;
+
+  const vevent = buildVEvent(booking as BookingRow, (sessions ?? []) as SessionRow[], quoteRows, quoteTotal);
   const ics = wrapCalendar([vevent], `E-Do Studio — ${bookingRef}`);
 
   await upsertIcalFeed(supabase, booking.id, bookingRef);
@@ -303,6 +317,16 @@ async function handleGlobalFeed(
     sessionsByBooking.set(s.booking_id, arr);
   }
 
+  const { data: allQuotes } = await supabase
+    .from("booking_quotes")
+    .select("*")
+    .in("booking_id", bookingIds.length > 0 ? bookingIds : ["__none__"]);
+
+  const quotesByBooking = new Map<string, { rows: IcalQuoteRow[]; total: number }>();
+  for (const q of (allQuotes ?? []) as Array<{ booking_id: string; rows: IcalQuoteRow[]; total: number }>) {
+    quotesByBooking.set(q.booking_id, { rows: q.rows, total: q.total });
+  }
+
   let filteredBookings = bookings ?? [];
   if (plateauFilter) {
     const bookingIdsWithPlateau = new Set(sessionsByBooking.keys());
@@ -313,7 +337,8 @@ async function handleGlobalFeed(
 
   const events = filteredBookings.map((b: BookingRow) => {
     const sessions = sessionsByBooking.get(b.id) ?? [];
-    return buildVEvent(b, sessions);
+    const q = quotesByBooking.get(b.id);
+    return buildVEvent(b, sessions, q?.rows ?? [], q?.total ?? null);
   });
 
   const calName = plateauFilter

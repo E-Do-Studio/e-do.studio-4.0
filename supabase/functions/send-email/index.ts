@@ -75,6 +75,19 @@ interface BookingSession {
   postprod_video?: boolean | null;
 }
 
+interface QuoteRow {
+  lbl: string;
+  amt: number;
+  onReq?: boolean;
+  estimate?: boolean;
+}
+
+interface QuoteData {
+  reference: string;
+  rows: QuoteRow[];
+  total: number;
+}
+
 interface BookingData {
   reference: string;
   client_name: string;
@@ -90,7 +103,28 @@ interface BookingData {
   notes: string | null;
 }
 
-function bookingClientHtml(b: BookingData, sessions: BookingSession[]): string {
+function quoteTableHtml(quote: QuoteData | null): string {
+  if (!quote || quote.rows.length === 0) return "";
+  const rows = quote.rows.map((r) => {
+    const label = escapeHtml(r.lbl);
+    const amt = r.onReq
+      ? "Sur demande"
+      : `${r.amt.toLocaleString("fr-FR")}€ HT${r.estimate ? " (estimé)" : ""}`;
+    return `<tr><td style="padding: 4px 0;">${label}</td><td style="padding: 4px 0; text-align: right; white-space: nowrap;">${amt}</td></tr>`;
+  }).join("");
+  const totalStr = `${quote.total.toLocaleString("fr-FR")}€ HT`;
+  return `
+  <h3 style="margin-bottom: 8px;">Devis ${escapeHtml(quote.reference)}</h3>
+  <table style="width: 100%; border-collapse: collapse; margin: 8px 0;">
+    ${rows}
+    <tr style="border-top: 2px solid #1a1a1a; font-weight: 700;">
+      <td style="padding: 8px 0;">Total</td>
+      <td style="padding: 8px 0; text-align: right;">${totalStr}</td>
+    </tr>
+  </table>`;
+}
+
+function bookingClientHtml(b: BookingData, sessions: BookingSession[], quote: QuoteData | null): string {
   const ref = escapeHtml(b.reference);
   const clientName = escapeHtml(b.client_name);
   const plateaux = sessions.map((s) => `${s.plateau_key} (${s.hours ?? "?"}h, ${s.slot_type})`).join(", ");
@@ -115,6 +149,7 @@ function bookingClientHtml(b: BookingData, sessions: BookingSession[]): string {
     ${b.project_type ? `<tr><td style="padding: 6px 0; color: #666;">Type de projet</td><td style="padding: 6px 0;">${escapeHtml(b.project_type)}</td></tr>` : ""}
     <tr><td style="padding: 6px 0; color: #666;">Estimation</td><td style="padding: 6px 0; font-weight: 600;">${totalStr}</td></tr>
   </table>
+  ${quoteTableHtml(quote)}
   <p>Notre équipe reviendra vers vous très rapidement pour confirmer les détails.</p>
   <p style="color: #666; font-size: 14px;">À bientôt,<br>L'équipe E-Do Studio</p>
 </div>`;
@@ -136,7 +171,7 @@ function sessionDetailRows(sessions: BookingSession[]): string {
   }).join("");
 }
 
-function bookingAdminHtml(b: BookingData, sessions: BookingSession[]): string {
+function bookingAdminHtml(b: BookingData, sessions: BookingSession[], quote: QuoteData | null): string {
   const ref = escapeHtml(b.reference);
   const clientName = escapeHtml(b.client_name);
   const clientEmail = escapeHtml(b.client_email);
@@ -162,6 +197,7 @@ function bookingAdminHtml(b: BookingData, sessions: BookingSession[]): string {
     ${b.notes ? `<tr><td style="padding: 6px 0; color: #666;">Notes</td><td style="padding: 6px 0;">${escapeHtml(b.notes)}</td></tr>` : ""}
   </table>
   ${sessions.length > 0 ? `<h3 style="margin-bottom: 8px;">Détail des sessions</h3>${sessionDetailRows(sessions)}` : ""}
+  ${quoteTableHtml(quote)}
 </div>`;
 }
 
@@ -219,6 +255,7 @@ const STATUS_CHANGE_LABELS: Record<StatusChangeReason, { title: string; intro: s
 function statusChangeClientHtml(
   b: BookingData,
   sessions: BookingSession[],
+  quote: QuoteData | null,
   reason: StatusChangeReason,
   newDate: string | null,
   adminMessage: string | null,
@@ -245,6 +282,7 @@ function statusChangeClientHtml(
     ${b.client_company ? `<tr><td style="padding: 6px 0; color: #666;">Société</td><td style="padding: 6px 0;">${escapeHtml(b.client_company)}</td></tr>` : ""}
     <tr><td style="padding: 6px 0; color: #666;">Estimation</td><td style="padding: 6px 0; font-weight: 600;">${totalStr}</td></tr>
   </table>
+  ${quoteTableHtml(quote)}
   ${adminMessage ? `<div style="background: #f5f5f5; padding: 16px; border-radius: 4px; margin: 16px 0;"><strong>Message :</strong><br>${adminMessage}</div>` : ""}
   <p>Pour toute question, n'hésitez pas à nous contacter par retour de mail.</p>
   <p style="color: #666; font-size: 14px;">À bientôt,<br>L'équipe E-Do Studio</p>
@@ -254,6 +292,7 @@ function statusChangeClientHtml(
 function statusChangeAdminHtml(
   b: BookingData,
   sessions: BookingSession[],
+  quote: QuoteData | null,
   reason: StatusChangeReason,
   newDate: string | null,
   adminMessage: string | null,
@@ -286,6 +325,7 @@ function statusChangeAdminHtml(
     ${adminMessage ? `<tr><td style="padding: 6px 0; color: #666;">Message</td><td style="padding: 6px 0;">${adminMessage}</td></tr>` : ""}
   </table>
   ${sessions.length > 0 ? `<h3 style="margin-bottom: 8px;">Détail des sessions</h3>${sessionDetailRows(sessions)}` : ""}
+  ${quoteTableHtml(quote)}
 </div>`;
 }
 
@@ -375,10 +415,10 @@ async function handleBookingEmail(
     throw new Error(`Booking not found: ${bookingId}`);
   }
 
-  const { data: sessions } = await supabase
-    .from("booking_sessions")
-    .select("*")
-    .eq("booking_id", bookingId);
+  const [{ data: sessions }, { data: quoteRow }] = await Promise.all([
+    supabase.from("booking_sessions").select("*").eq("booking_id", bookingId),
+    supabase.from("booking_quotes").select("*").eq("booking_id", bookingId).maybeSingle(),
+  ]);
 
   const b: BookingData = {
     reference: booking.reference,
@@ -395,20 +435,24 @@ async function handleBookingEmail(
     notes: booking.notes,
   };
 
+  const quote: QuoteData | null = quoteRow
+    ? { reference: quoteRow.reference, rows: quoteRow.rows as QuoteRow[], total: quoteRow.total }
+    : null;
+
   await Promise.all([
     sendResendEmail(
       resendKey,
       fromEmail,
       booking.client_email,
       `Votre réservation ${booking.reference} — E-Do Studio`,
-      bookingClientHtml(b, sessions ?? []),
+      bookingClientHtml(b, sessions ?? [], quote),
     ),
     sendResendEmail(
       resendKey,
       fromEmail,
       STUDIO_EMAIL,
       `Nouvelle réservation ${booking.reference} — ${booking.client_name}`,
-      bookingAdminHtml(b, sessions ?? []),
+      bookingAdminHtml(b, sessions ?? [], quote),
       booking.client_email,
     ),
   ]);
@@ -500,10 +544,10 @@ async function handleBookingStatusChangeEmail(
     }
   }
 
-  const { data: sessions } = await supabase
-    .from("booking_sessions")
-    .select("*")
-    .eq("booking_id", payload.bookingId);
+  const [{ data: sessions }, { data: quoteRow }] = await Promise.all([
+    supabase.from("booking_sessions").select("*").eq("booking_id", payload.bookingId),
+    supabase.from("booking_quotes").select("*").eq("booking_id", payload.bookingId).maybeSingle(),
+  ]);
 
   const b: BookingData = {
     reference: booking.reference,
@@ -520,6 +564,10 @@ async function handleBookingStatusChangeEmail(
     notes: booking.notes,
   };
 
+  const quote: QuoteData | null = quoteRow
+    ? { reference: quoteRow.reference, rows: quoteRow.rows as QuoteRow[], total: quoteRow.total }
+    : null;
+
   const newDate = payload.newDate ?? null;
   const adminMessage = payload.message ? escapeHtml(payload.message) : null;
 
@@ -535,14 +583,14 @@ async function handleBookingStatusChangeEmail(
       fromEmail,
       booking.client_email,
       subjectByReason[payload.reason],
-      statusChangeClientHtml(b, sessions ?? [], payload.reason, newDate, adminMessage),
+      statusChangeClientHtml(b, sessions ?? [], quote, payload.reason, newDate, adminMessage),
     ),
     sendResendEmail(
       resendKey,
       fromEmail,
       STUDIO_EMAIL,
       `${STATUS_CHANGE_LABELS[payload.reason].title} — ${booking.reference}`,
-      statusChangeAdminHtml(b, sessions ?? [], payload.reason, newDate, adminMessage),
+      statusChangeAdminHtml(b, sessions ?? [], quote, payload.reason, newDate, adminMessage),
       booking.client_email,
     ),
   ]);
