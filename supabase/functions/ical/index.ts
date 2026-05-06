@@ -12,8 +12,11 @@ interface BookingRow {
   status: string;
   client_name: string;
   client_email: string;
+  client_phone: string | null;
   client_company: string | null;
+  client_siren: string | null;
   project_type: string | null;
+  urgency: string | null;
   preferred_date: string | null;
   arrival_hour: number | null;
   total_estimate: number | null;
@@ -27,6 +30,16 @@ interface SessionRow {
   plateau_key: string;
   slot_type: string;
   hours: number | null;
+  cyclo_mode?: string | null;
+  product_type?: string | null;
+  method?: string | null;
+  submethod?: string | null;
+  media?: string[] | null;
+  views?: string[] | null;
+  views_count?: number | null;
+  quantity?: number | null;
+  postprod_enabled?: boolean | null;
+  postprod_video?: boolean | null;
 }
 
 function escapeIcalText(text: string): string {
@@ -62,16 +75,42 @@ function buildVEvent(booking: BookingRow, sessions: SessionRow[]): string {
   const plateaux = sessions.map((s) => s.plateau_key).join(", ");
   const totalHours = sessions.reduce((sum, s) => sum + (s.hours ?? 0), 0);
 
-  const summary = `E-Do Studio — ${booking.reference}`;
+  const summary = plateaux
+    ? `${plateaux} — ${booking.client_name}`
+    : `E-Do Studio — ${booking.client_name}`;
   const descParts: string[] = [];
   descParts.push(`Référence: ${booking.reference}`);
   descParts.push(`Client: ${booking.client_name}`);
+  if (booking.client_email) descParts.push(`Email: ${booking.client_email}`);
+  if (booking.client_phone) descParts.push(`Téléphone: ${booking.client_phone}`);
   if (booking.client_company) descParts.push(`Société: ${booking.client_company}`);
+  if (booking.client_siren) descParts.push(`SIREN: ${booking.client_siren}`);
   if (plateaux) descParts.push(`Plateau(x): ${plateaux}`);
-  if (totalHours > 0) descParts.push(`Durée: ${totalHours}h`);
-  if (booking.project_type) descParts.push(`Type: ${booking.project_type}`);
-  if (booking.total_estimate) descParts.push(`Estimation: ${booking.total_estimate}€`);
-  if (booking.notes) descParts.push(`Notes: ${booking.notes}`);
+  if (totalHours > 0) descParts.push(`Durée totale: ${totalHours}h`);
+  if (booking.arrival_hour != null) descParts.push(`Heure d'arrivée: ${booking.arrival_hour}h`);
+  if (booking.preferred_date) {
+    const pd = new Date(booking.preferred_date);
+    descParts.push(`Date souhaitée: ${pd.toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}`);
+  }
+  if (booking.project_type) descParts.push(`Type de projet: ${booking.project_type}`);
+  if (booking.urgency) descParts.push(`Urgence: ${booking.urgency}`);
+  if (booking.total_estimate) descParts.push(`Estimation: ${booking.total_estimate}€ HT`);
+  if (sessions.length > 0) {
+    descParts.push("");
+    descParts.push("--- Détail des sessions ---");
+    for (const s of sessions) {
+      const parts = [`${s.plateau_key} (${s.hours ?? "?"}h, ${s.slot_type})`];
+      if (s.cyclo_mode) parts.push(`  Cyclo: ${s.cyclo_mode}`);
+      if (s.product_type) parts.push(`  Produit: ${s.product_type}`);
+      if (s.method) parts.push(`  Méthode: ${s.method}${s.submethod ? ` / ${s.submethod}` : ""}`);
+      if (s.quantity && s.quantity > 1) parts.push(`  Quantité: ${s.quantity}`);
+      if (s.media && s.media.length > 0) parts.push(`  Médias: ${s.media.join(", ")}`);
+      if (s.views && s.views.length > 0) parts.push(`  Vues: ${s.views.join(", ")} (${s.views_count ?? s.views.length})`);
+      if (s.postprod_enabled) parts.push(`  Post-prod: oui${s.postprod_video ? " (vidéo)" : ""}`);
+      descParts.push(parts.join("\n"));
+    }
+  }
+  if (booking.notes) descParts.push(`\nNotes: ${booking.notes}`);
 
   const description = escapeIcalText(descParts.join("\n"));
 
@@ -193,7 +232,7 @@ async function handleSingleBooking(
 
   const { data: sessions } = await supabase
     .from("booking_sessions")
-    .select("id, plateau_key, slot_type, hours")
+    .select("*")
     .eq("booking_id", booking.id);
 
   const vevent = buildVEvent(booking as BookingRow, (sessions ?? []) as SessionRow[]);
@@ -248,7 +287,7 @@ async function handleGlobalFeed(
 
   let sessionsQuery = supabase
     .from("booking_sessions")
-    .select("id, booking_id, plateau_key, slot_type, hours")
+    .select("*, booking_id")
     .in("booking_id", bookingIds.length > 0 ? bookingIds : ["__none__"]);
 
   if (plateauFilter) {
