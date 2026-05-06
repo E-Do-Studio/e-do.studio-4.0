@@ -220,10 +220,10 @@ function statusChangeAdminHtml(
 </div>`;
 }
 
-function syncToHubSpot(fn: () => Promise<void>): void {
+function syncToHubSpot(fn: (token: string) => Promise<void>): void {
   const token = Deno.env.get("HUBSPOT_PRIVATE_APP_TOKEN");
   if (!token) return;
-  fn().catch((err) => console.error("HubSpot sync error:", err));
+  fn(token).catch((err) => console.error("HubSpot sync error:", err));
 }
 
 function escapeHtml(text: string): string {
@@ -342,8 +342,8 @@ async function handleBookingEmail(
     ),
   ]);
 
-  syncToHubSpot(() =>
-    syncBooking(Deno.env.get("HUBSPOT_PRIVATE_APP_TOKEN")!, {
+  syncToHubSpot((token) =>
+    syncBooking(token, {
       reference: booking.reference,
       clientName: booking.client_name,
       clientEmail: booking.client_email,
@@ -388,8 +388,8 @@ async function handleContactEmail(
     ),
   ]);
 
-  syncToHubSpot(() =>
-    syncContactForm(Deno.env.get("HUBSPOT_PRIVATE_APP_TOKEN")!, {
+  syncToHubSpot((token) =>
+    syncContactForm(token, {
       nom: payload.nom,
       email: payload.email,
       telephone: payload.telephone,
