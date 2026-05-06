@@ -1,0 +1,14 @@
+{
+  "collectionName": "components_page_grid_configs",
+  "info": {
+    "displayName": "Grid Config",
+    "icon": "grid"
+  },
+  "attributes": {
+    "desktopCols": { "type": "integer", "default": 4 },
+    "desktopRows": { "type": "integer", "default": 4 },
+    "mobileCols": { "type": "integer", "default": 2 },
+    "mobileRows": { "type": "integer", "default": 8 },
+    "desktopGridTemplate": { "type": "text" }
+  }
+}

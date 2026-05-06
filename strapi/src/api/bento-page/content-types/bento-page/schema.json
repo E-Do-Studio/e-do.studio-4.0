@@ -1,0 +1,45 @@
+{
+  "kind": "collectionType",
+  "collectionName": "bento_pages",
+  "info": {
+    "singularName": "bento-page",
+    "pluralName": "bento-pages",
+    "displayName": "Bento Page"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title_fr": { "type": "string" },
+    "title_en": { "type": "string" },
+    "pathname": { "type": "string", "required": true, "unique": true },
+    "internalTitle": { "type": "string" },
+    "indexable": { "type": "boolean", "default": true },
+    "gridConfig": {
+      "type": "component",
+      "component": "page.grid-config",
+      "repeatable": false
+    },
+    "cells": {
+      "type": "dynamiczone",
+      "components": [
+        "cell.image",
+        "cell.text",
+        "cell.cta",
+        "cell.service",
+        "cell.contact",
+        "cell.chat",
+        "cell.gallery",
+        "cell.page-link",
+        "cell.machine",
+        "cell.machine-list",
+        "cell.video",
+        "cell.model3d",
+        "cell.details"
+      ]
+    },
+    "seo_title": { "type": "string" },
+    "seo_description": { "type": "text" },
+    "seo_image": { "type": "media", "multiple": false }
+  }
+}

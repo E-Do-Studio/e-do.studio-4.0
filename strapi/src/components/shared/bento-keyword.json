@@ -1,0 +1,20 @@
+{
+  "collectionName": "components_shared_bento_keywords",
+  "info": {
+    "displayName": "Bento Keyword",
+    "icon": "key"
+  },
+  "attributes": {
+    "label": { "type": "string" },
+    "machine": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::machine.machine"
+    },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    }
+  }
+}

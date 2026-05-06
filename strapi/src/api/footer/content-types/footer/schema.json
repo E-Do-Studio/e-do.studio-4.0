@@ -1,0 +1,43 @@
+{
+  "kind": "singleType",
+  "collectionName": "footers",
+  "info": {
+    "singularName": "footer",
+    "pluralName": "footers",
+    "displayName": "Footer"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "tagline_fr": { "type": "string" },
+    "tagline_en": { "type": "string" },
+    "email": { "type": "string" },
+    "phone": { "type": "string" },
+    "addressName": { "type": "string" },
+    "addressStreet": { "type": "string" },
+    "addressCity": { "type": "string" },
+    "addressNote_fr": { "type": "string" },
+    "addressNote_en": { "type": "string" },
+    "weekdayHours_fr": { "type": "string" },
+    "weekdayHours_en": { "type": "string" },
+    "weekendHours_fr": { "type": "string" },
+    "weekendHours_en": { "type": "string" },
+    "navigationGroups": {
+      "type": "component",
+      "component": "footer.navigation-group",
+      "repeatable": true
+    },
+    "socialLinks": {
+      "type": "component",
+      "component": "shared.social-link",
+      "repeatable": true
+    },
+    "legalLinks": {
+      "type": "component",
+      "component": "shared.nav-link",
+      "repeatable": true
+    },
+    "copyright": { "type": "string" }
+  }
+}

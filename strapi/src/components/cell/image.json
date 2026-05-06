@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_cell_images",
+  "info": {
+    "displayName": "Cell Image",
+    "icon": "picture"
+  },
+  "attributes": {
+    "label_fr": { "type": "string" },
+    "label_en": { "type": "string" },
+    "title_fr": { "type": "string" },
+    "title_en": { "type": "string" },
+    "href": { "type": "string" },
+    "images": { "type": "media", "multiple": true },
+    "slideshow": { "type": "boolean", "default": true },
+    "slideshowInterval": { "type": "integer", "default": 10000 },
+    "size": { "type": "enumeration", "enum": ["default", "wide", "tall", "large"] },
+    "desktopRow": { "type": "integer" },
+    "desktopCol": { "type": "integer" },
+    "mobileRow": { "type": "integer" },
+    "mobileCol": { "type": "integer" }
+  }
+}

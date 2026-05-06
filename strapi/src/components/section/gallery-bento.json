@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_section_gallery_bentos",
+  "info": {
+    "displayName": "Gallery Bento",
+    "icon": "picture"
+  },
+  "attributes": {
+    "title_fr": { "type": "string" },
+    "title_en": { "type": "string" },
+    "subtitle_fr": { "type": "string" },
+    "subtitle_en": { "type": "string" },
+    "images": {
+      "type": "component",
+      "component": "shared.image-with-alt",
+      "repeatable": true
+    },
+    "columns": { "type": "integer", "min": 3, "max": 6, "default": 4 }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "collectionName": "components_section_feature_highlight",
+  "info": { "displayName": "Section Feature Highlight", "icon": "layout" },
+  "attributes": {
+    "data": { "type": "json" }
+  }
+}

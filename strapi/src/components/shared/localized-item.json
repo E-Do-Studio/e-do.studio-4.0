@@ -1,0 +1,11 @@
+{
+  "collectionName": "components_shared_localized_items",
+  "info": {
+    "displayName": "Localized Item",
+    "icon": "globe"
+  },
+  "attributes": {
+    "fr": { "type": "string" },
+    "en": { "type": "string" }
+  }
+}

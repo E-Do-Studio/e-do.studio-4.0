@@ -1,0 +1,22 @@
+{
+  "kind": "singleType",
+  "collectionName": "faq_pages",
+  "info": {
+    "singularName": "faq-page",
+    "pluralName": "faq-pages",
+    "displayName": "FAQ Page"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "title_fr": { "type": "string" },
+    "title_en": { "type": "string" },
+    "subtitle_fr": { "type": "string" },
+    "subtitle_en": { "type": "string" },
+    "seo_title_fr": { "type": "string" },
+    "seo_title_en": { "type": "string" },
+    "seo_description_fr": { "type": "text" },
+    "seo_description_en": { "type": "text" }
+  }
+}

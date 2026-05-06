@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_shared_specs",
+  "info": {
+    "displayName": "Spec",
+    "icon": "list"
+  },
+  "attributes": {
+    "label_fr": { "type": "string" },
+    "label_en": { "type": "string" },
+    "value_fr": { "type": "string" },
+    "value_en": { "type": "string" }
+  }
+}

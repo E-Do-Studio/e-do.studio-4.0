@@ -1,0 +1,7 @@
+{
+  "collectionName": "components_section_faq",
+  "info": { "displayName": "Section FAQ", "icon": "layout" },
+  "attributes": {
+    "data": { "type": "json" }
+  }
+}

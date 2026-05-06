@@ -1,0 +1,5 @@
+{
+  "collectionName": "components_section_pricing_cards",
+  "info": { "displayName": "Section pricing cards", "icon": "layout" },
+  "attributes": { "data": { "type": "json" } }
+}
