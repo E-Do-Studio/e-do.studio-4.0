@@ -143,10 +143,10 @@ interface StrapiGalleryCategory {
 
 interface StrapiGalleryProject {
   id: number;
+  title: string;
   slug: string;
   stage: string;
-  year: string;
-  brand?: StrapiGalleryBrand;
+  year: number | string;
   category?: StrapiGalleryCategory;
   images?: StrapiMedia[];
 }
@@ -658,7 +658,7 @@ const FALLBACK_GALLERY_PROJECTS: GalleryProject[] = [
 export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
   try {
     const res = await fetchStrapi<{ data: StrapiGalleryProject[] }>('gallery-projects', {
-      'populate': 'brand,category,images',
+      'populate': 'category,images',
       'sort': 'year:desc,slug:asc',
       'pagination[pageSize]': '100',
     });
@@ -666,11 +666,11 @@ export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
     if (res.data.length > 0) {
       return res.data.map((p, i) => ({
         id: p.id,
-        brand: p.brand?.name ?? p.slug,
+        brand: p.title ?? p.slug,
         slug: p.slug,
         cat: p.category?.slug ?? 'other',
         plateau: p.stage,
-        year: p.year,
+        year: String(p.year),
         tone: TONES[i % 3],
         imageUrls: (p.images ?? []).map(img => resolveStrapiMediaUrl(img)).filter((u): u is string => !!u),
       }));
