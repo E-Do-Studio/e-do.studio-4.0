@@ -9,14 +9,18 @@ import {
   fetchBrands,
   fetchContact,
   fetchStudioHours,
+  fetchSiteDefaults,
   fetchGalleryProjects,
   fetchGalleryCategories,
   type PlateauSpec,
   type PPCat,
   type GalleryProject,
   type GalleryCategory,
+  type ContactInfo,
+  type StudioHours,
+  type SiteDefaults,
 } from './strapi';
-import type { MachineInfo, DiscoveryPost, DiscoveryCategory, SocialLink, Bilingual } from '../types';
+import type { MachineInfo, DiscoveryPost, DiscoveryCategory, SocialLink } from '../types';
 
 type AsyncState<T> = { data: T | null; loading: boolean; error: Error | null };
 
@@ -61,20 +65,15 @@ export function useBrands() {
 }
 
 export function useContact() {
-  return useAsync<{
-    phone: string;
-    phoneHref: string;
-    email: string;
-    emailHref: string;
-    address: { street: string; zip: string };
-    fullAddress?: string;
-    googleMapsUrl?: string;
-    etouch: string;
-  }>(fetchContact);
+  return useAsync<ContactInfo>(fetchContact);
 }
 
 export function useStudioHours() {
-  return useAsync<Bilingual>(fetchStudioHours);
+  return useAsync<StudioHours>(fetchStudioHours);
+}
+
+export function useSiteDefaults() {
+  return useAsync<SiteDefaults>(fetchSiteDefaults);
 }
 
 export function useGalleryProjects() {
