@@ -9,10 +9,30 @@
   "options": {
     "draftAndPublish": true
   },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
   "attributes": {
-    "title": { "type": "string", "required": true },
+    "title": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
     "slug": { "type": "uid", "targetField": "title", "required": true },
-    "stage": { "type": "string" },
+    "stage": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
     "year": { "type": "integer" },
     "rank": { "type": "integer" },
     "category": {

@@ -42,6 +42,16 @@ async function findBySlug(collection, slug) {
   return res.data?.[0] ?? null;
 }
 
+async function findByName(collection, name) {
+  const res = await api(`${collection}?filters[name][$eq]=${encodeURIComponent(name)}&locale=fr`);
+  return res.data?.[0] ?? null;
+}
+
+async function findByTitle(collection, title) {
+  const res = await api(`${collection}?filters[title][$eq]=${encodeURIComponent(title)}&locale=fr`);
+  return res.data?.[0] ?? null;
+}
+
 async function upsertCollection(collection, slug, frData, enData) {
   const existing = await findBySlug(collection, slug);
   if (existing) {
@@ -67,6 +77,39 @@ async function upsertCollection(collection, slug, frData, enData) {
       body: JSON.stringify({ data: enData }),
     });
     console.log(`  + created ${collection}/${slug}`);
+    return docId;
+  }
+}
+
+async function upsertByName(collection, name, frData, enData) {
+  const existing = await findByName(collection, name);
+  if (existing) {
+    const docId = existing.documentId;
+    await api(`${collection}/${docId}?locale=fr`, {
+      method: 'PUT',
+      body: JSON.stringify({ data: frData }),
+    });
+    if (enData) {
+      await api(`${collection}/${docId}?locale=en`, {
+        method: 'PUT',
+        body: JSON.stringify({ data: enData }),
+      });
+    }
+    console.log(`  ✓ updated ${collection}/${name}`);
+    return docId;
+  } else {
+    const created = await api(collection, {
+      method: 'POST',
+      body: JSON.stringify({ data: { ...frData, locale: 'fr' } }),
+    });
+    const docId = created.data.documentId;
+    if (enData) {
+      await api(`${collection}/${docId}?locale=en`, {
+        method: 'PUT',
+        body: JSON.stringify({ data: enData }),
+      });
+    }
+    console.log(`  + created ${collection}/${name}`);
     return docId;
   }
 }
@@ -307,7 +350,6 @@ async function seedMachines() {
     );
   }
 
-  // Also ensure the Cyclorama entry in the machines collection has full data
   await upsertCollection(
     'machines',
     'cyclorama',
@@ -356,7 +398,7 @@ async function seedMachines() {
   );
 }
 
-// ─── 3. Post-production types (includes / features) ────────────────────────
+// ─── 3. Post-production types ─────────────────────────────────────────────
 
 async function seedPostProdTypes() {
   console.log('\n✂️  Seeding Post-production types…');
@@ -581,57 +623,133 @@ async function seedGalleryCategories() {
     { slug: 'food', fr: 'Food & Spiritueux', en: 'Food & Spirits', rank: 6 },
   ];
 
+  const categoryDocIds = {};
   for (const cat of cats) {
-    await upsertCollection(
+    const docId = await upsertCollection(
       'gallery-categories',
       cat.slug,
       { name: cat.fr, slug: cat.slug, rank: cat.rank },
       { name: cat.en },
     );
+    categoryDocIds[cat.slug] = docId;
   }
+  return categoryDocIds;
 }
 
-// ─── 5. Gallery projects (add titles) ──────────────────────────────────────
+// ─── 5. Gallery brands ────────────────────────────────────────────────────
 
-async function seedGalleryProjects() {
+async function seedGalleryBrands() {
+  console.log('\n🏢 Seeding Gallery brands…');
+
+  const brands = [
+    'Maison Ortho',
+    'Le Monde Béryl',
+    'Atelier Soie',
+    'Kôji',
+    'Rue Saint-Honoré',
+    'Ganymède',
+    'Moa Studio',
+    'Maison Margin',
+    'Toby Ombré',
+    'Noir Étoilé',
+    'Orbite',
+    'Studio 11',
+    'Parure',
+    'Rue Cadet',
+    'Atelier Bois',
+    'Maison Ardent',
+    'Saar Paris',
+    'Solène',
+  ];
+
+  const brandDocIds = {};
+  for (let i = 0; i < brands.length; i++) {
+    const name = brands[i];
+    const docId = await upsertByName(
+      'gallery-brands',
+      name,
+      { name, rank: i + 1 },
+      { name },
+    );
+    brandDocIds[name] = docId;
+  }
+  return brandDocIds;
+}
+
+// ─── 6. Gallery projects (CREATE with full data) ──────────────────────────
+
+async function seedGalleryProjects(categoryDocIds, brandDocIds) {
   console.log('\n🖼️  Seeding Gallery projects…');
 
   const projects = [
-    { slug: 'maison-ortho', title: 'Maison Ortho', rank: 1 },
-    { slug: 'le-monde-beryl', title: 'Le Monde Béryl', rank: 2 },
-    { slug: 'atelier-soie', title: 'Atelier Soie', rank: 3 },
-    { slug: 'koji-chapter-3', title: 'Kôji', rank: 4 },
-    { slug: 'rue-saint-honore', title: 'Rue Saint-Honoré', rank: 5 },
-    { slug: 'ganymede', title: 'Ganymède', rank: 6 },
-    { slug: 'moa-studio-fw26', title: 'Moa Studio', rank: 7 },
-    { slug: 'maison-margin', title: 'Maison Margin', rank: 8 },
-    { slug: 'toby-ombre', title: 'Toby Ombré', rank: 9 },
-    { slug: 'noir-etoile', title: 'Noir Étoilé', rank: 10 },
-    { slug: 'orbite', title: 'Orbite', rank: 11 },
-    { slug: 'studio-11', title: 'Studio 11', rank: 12 },
-    { slug: 'parure', title: 'Parure', rank: 13 },
-    { slug: 'rue-cadet', title: 'Rue Cadet', rank: 14 },
-    { slug: 'atelier-bois', title: 'Atelier Bois', rank: 15 },
-    { slug: 'maison-ardent', title: 'Maison Ardent', rank: 16 },
-    { slug: 'saar-paris', title: 'Saar Paris', rank: 17 },
-    { slug: 'solene', title: 'Solène', rank: 18 },
+    { slug: 'maison-ortho-2026', title: 'Maison Ortho', brand: 'Maison Ortho', cat: 'pap', stage: 'cyclorama', year: 2026, rank: 1 },
+    { slug: 'le-monde-beryl-2026', title: 'Le Monde Béryl', brand: 'Le Monde Béryl', cat: 'accessoires', stage: 'horizontal', year: 2026, rank: 2 },
+    { slug: 'atelier-soie-2026', title: 'Atelier Soie', brand: 'Atelier Soie', cat: 'pap', stage: 'vertical', year: 2026, rank: 3 },
+    { slug: 'koji-2025', title: 'Kôji', brand: 'Kôji', cat: 'eyewear', stage: 'eclipse', year: 2025, rank: 4 },
+    { slug: 'rue-saint-honore-2025', title: 'Rue Saint-Honoré', brand: 'Rue Saint-Honoré', cat: 'cosmetique', stage: 'horizontal', year: 2025, rank: 5 },
+    { slug: 'ganymede-2025', title: 'Ganymède', brand: 'Ganymède', cat: 'bijoux', stage: 'eclipse', year: 2025, rank: 6 },
+    { slug: 'moa-studio-2026', title: 'Moa Studio', brand: 'Moa Studio', cat: 'pap', stage: 'live', year: 2026, rank: 7 },
+    { slug: 'maison-margin-2025', title: 'Maison Margin', brand: 'Maison Margin', cat: 'pap', stage: 'vertical', year: 2025, rank: 8 },
+    { slug: 'toby-ombre-2026', title: 'Toby Ombré', brand: 'Toby Ombré', cat: 'food', stage: 'horizontal', year: 2026, rank: 9 },
+    { slug: 'noir-etoile-2025', title: 'Noir Étoilé', brand: 'Noir Étoilé', cat: 'cosmetique', stage: 'cyclorama', year: 2025, rank: 10 },
+    { slug: 'orbite-2025', title: 'Orbite', brand: 'Orbite', cat: 'eyewear', stage: 'eclipse', year: 2025, rank: 11 },
+    { slug: 'studio-11-2026', title: 'Studio 11', brand: 'Studio 11', cat: 'accessoires', stage: 'horizontal', year: 2026, rank: 12 },
+    { slug: 'parure-2026', title: 'Parure', brand: 'Parure', cat: 'bijoux', stage: 'eclipse', year: 2026, rank: 13 },
+    { slug: 'rue-cadet-2025', title: 'Rue Cadet', brand: 'Rue Cadet', cat: 'pap', stage: 'cyclorama', year: 2025, rank: 14 },
+    { slug: 'atelier-bois-2025', title: 'Atelier Bois', brand: 'Atelier Bois', cat: 'food', stage: 'horizontal', year: 2025, rank: 15 },
+    { slug: 'maison-ardent-2026', title: 'Maison Ardent', brand: 'Maison Ardent', cat: 'pap', stage: 'vertical', year: 2026, rank: 16 },
+    { slug: 'saar-paris-2026', title: 'Saar Paris', brand: 'Saar Paris', cat: 'accessoires', stage: 'eclipse', year: 2026, rank: 17 },
+    { slug: 'solene-2025', title: 'Solène', brand: 'Solène', cat: 'bijoux', stage: 'cyclorama', year: 2025, rank: 18 },
   ];
 
   for (const p of projects) {
-    const existing = await findBySlug('gallery-projects', p.slug);
-    if (existing) {
-      await api(`gallery-projects/${existing.documentId}`, {
-        method: 'PUT',
-        body: JSON.stringify({ data: { title: p.title, rank: p.rank } }),
-      });
-      console.log(`  ✓ updated gallery-projects/${p.slug}`);
-    } else {
-      console.log(`  ⚠ gallery-projects/${p.slug} not found — skipping (create manually with images)`);
+    const frData = {
+      title: p.title,
+      slug: p.slug,
+      stage: p.stage,
+      year: p.year,
+      rank: p.rank,
+    };
+
+    if (categoryDocIds[p.cat]) {
+      frData.category = { documentId: categoryDocIds[p.cat] };
     }
+    if (brandDocIds[p.brand]) {
+      frData.brand = { documentId: brandDocIds[p.brand] };
+    }
+
+    await upsertCollection(
+      'gallery-projects',
+      p.slug,
+      frData,
+      { title: p.title, stage: p.stage },
+    );
   }
 }
 
-// ─── 6. Site settings ──────────────────────────────────────────────────────
+// ─── 7. Blog categories ──────────────────────────────────────────────────
+
+async function seedBlogCategories() {
+  console.log('\n📂 Seeding Blog categories…');
+
+  const cats = [
+    { slug: 'tips', fr: 'Tips', en: 'Tips' },
+    { slug: 'backstage', fr: 'Backstage', en: 'Backstage' },
+    { slug: 'tendances', fr: 'Tendances', en: 'Trends' },
+    { slug: 'clients', fr: 'Clients', en: 'Clients' },
+  ];
+
+  for (const cat of cats) {
+    await upsertCollection(
+      'blog-categories',
+      cat.slug,
+      { title: cat.fr, slug: cat.slug },
+      { title: cat.en },
+    );
+  }
+}
+
+// ─── 8. Site settings ─────────────────────────────────────────────────────
 
 async function seedSiteSettings() {
   console.log('\n⚙️  Seeding Site settings…');
@@ -648,9 +766,13 @@ async function seedSiteSettings() {
       city: 'Saint-Ouen',
       postalCode: '93400',
       country: 'France',
-      fullAddress: 'Parc d\'activités Victor Hugo, Bât 6.7, 69 boulevard Victor Hugo, 93400 Saint-Ouen',
+      fullAddress: "Parc d'activités Victor Hugo, Bât 6.7, 69 boulevard Victor Hugo, 93400 Saint-Ouen",
+      googleMapsUrl: 'https://maps.google.com/?q=69+boulevard+Victor+Hugo+93400+Saint-Ouen',
+      mapsEmbedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2622.0!2d2.3345!3d48.9122!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2z69+boulevard+Victor+Hugo+93400+Saint-Ouen!5e0!3m2!1sfr!2sfr!4v1',
       hours: 'Lun–Ven 10:00–18:00',
       weekendHours: 'Sam–Dim sur demande',
+      defaultSeoTitle: 'E-Do Studio — Photo & Vidéo E-commerce',
+      defaultSeoDescription: 'Studio photo et vidéo e-commerce à Saint-Ouen : packshot, on-model, ghost, still life, 360° et post-production.',
       socialLinks: [
         { platform: 'instagram', label: 'Instagram', url: 'https://www.instagram.com/edostudio/' },
         { platform: 'linkedin', label: 'LinkedIn', url: 'https://www.linkedin.com/company/e-do/' },
@@ -671,14 +793,17 @@ async function seedSiteSettings() {
       ],
     },
     {
+      siteTitle: 'E-Do Studio',
       siteDescription: 'E-commerce photo & video studio in Saint-Ouen. Packshot, on-model, ghost, still life production and art direction.',
       hours: 'Mon–Fri 10:00–18:00',
       weekendHours: 'Sat–Sun on request',
+      defaultSeoTitle: 'E-Do Studio — E-commerce Photo & Video',
+      defaultSeoDescription: 'E-commerce photo and video studio in Saint-Ouen: packshot, on-model, ghost, still life, 360° and post-production.',
     },
   );
 }
 
-// ─── 7. Blog posts (populate bodies where missing) ─────────────────────────
+// ─── 9. Blog posts (populate bodies where missing) ────────────────────────
 
 async function seedBlogPosts() {
   console.log('\n📝 Checking Blog posts for missing content…');
@@ -718,8 +843,10 @@ async function main() {
   await seedCyclorama();
   await seedMachines();
   await seedPostProdTypes();
-  await seedGalleryCategories();
-  await seedGalleryProjects();
+  const categoryDocIds = await seedGalleryCategories();
+  const brandDocIds = await seedGalleryBrands();
+  await seedGalleryProjects(categoryDocIds, brandDocIds);
+  await seedBlogCategories();
   await seedSiteSettings();
   await seedBlogPosts();
 

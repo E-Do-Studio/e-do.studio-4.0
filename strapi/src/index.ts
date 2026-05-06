@@ -1,15 +1,10 @@
 import type { Core } from '@strapi/strapi';
 
 const ORDERABLE_CONTENT_TYPES = [
-  'api::gallery-asset.gallery-asset',
   'api::gallery-brand.gallery-brand',
   'api::gallery-category.gallery-category',
-  'api::gallery-subcategory.gallery-subcategory',
-  'api::gallery-embed.gallery-embed',
   'api::gallery-project.gallery-project',
   'api::machine.machine',
-  'api::testimonial.testimonial',
-  'api::faq-entry.faq-entry',
   'api::post-production-type.post-production-type',
 ];
 
