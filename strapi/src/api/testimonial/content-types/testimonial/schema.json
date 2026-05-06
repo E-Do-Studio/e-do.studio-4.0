@@ -16,6 +16,6 @@
     "content": { "type": "text", "required": true },
     "image": { "type": "media", "multiple": false },
     "rating": { "type": "integer", "min": 1, "max": 5 },
-    "orderRank": { "type": "integer" }
+    "rank": { "type": "integer" }
   }
 }

@@ -17,6 +17,6 @@
       "multiple": false,
       "allowedTypes": ["images"]
     },
-    "orderRank": { "type": "integer" }
+    "rank": { "type": "integer" }
   }
 }

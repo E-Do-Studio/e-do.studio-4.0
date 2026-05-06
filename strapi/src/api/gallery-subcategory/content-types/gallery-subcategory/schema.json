@@ -23,7 +23,7 @@
       "type": "uid",
       "required": true
     },
-    "orderRank": {
+    "rank": {
       "type": "integer"
     },
     "assets": {

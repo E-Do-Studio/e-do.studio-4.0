@@ -681,7 +681,7 @@ export interface ApiFaqEntryFaqEntry extends Struct.CollectionTypeSchema {
       "api::faq-entry.faq-entry"
     > &
       Schema.Attribute.Private;
-    orderRank: Schema.Attribute.Integer;
+    rank: Schema.Attribute.Integer;
     publishedAt: Schema.Attribute.DateTime;
     question: Schema.Attribute.String & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
@@ -796,7 +796,7 @@ export interface ApiGalleryAssetGalleryAsset
     > &
       Schema.Attribute.Private;
     mediaType: Schema.Attribute.Enumeration<["image", "video"]>;
-    orderRank: Schema.Attribute.Integer;
+    rank: Schema.Attribute.Integer;
     originalFilename: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     subcategory: Schema.Attribute.Relation<
@@ -832,7 +832,7 @@ export interface ApiGalleryBrandGalleryBrand
       Schema.Attribute.Private;
     logo: Schema.Attribute.Media<"images">;
     name: Schema.Attribute.String & Schema.Attribute.Required;
-    orderRank: Schema.Attribute.Integer;
+    rank: Schema.Attribute.Integer;
     publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
@@ -880,7 +880,7 @@ export interface ApiGalleryCategoryGalleryCategory
     > &
       Schema.Attribute.Private;
     name: Schema.Attribute.String & Schema.Attribute.Required;
-    order: Schema.Attribute.Integer;
+    rank: Schema.Attribute.Integer;
     publishedAt: Schema.Attribute.DateTime;
     slug: Schema.Attribute.UID & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
@@ -919,7 +919,7 @@ export interface ApiGalleryProjectGalleryProject
       "api::gallery-project.gallery-project"
     > &
       Schema.Attribute.Private;
-    orderRank: Schema.Attribute.Integer;
+    rank: Schema.Attribute.Integer;
     publishedAt: Schema.Attribute.DateTime;
     slug: Schema.Attribute.UID<"title"> & Schema.Attribute.Required;
     stage: Schema.Attribute.String;
@@ -957,7 +957,7 @@ export interface ApiGalleryEmbedGalleryEmbed
       "api::gallery-embed.gallery-embed"
     > &
       Schema.Attribute.Private;
-    order: Schema.Attribute.Integer;
+    rank: Schema.Attribute.Integer;
     publishedAt: Schema.Attribute.DateTime;
     thumbnail: Schema.Attribute.Media;
     title: Schema.Attribute.String;
@@ -993,7 +993,7 @@ export interface ApiGallerySubcategoryGallerySubcategory
     > &
       Schema.Attribute.Private;
     name: Schema.Attribute.String & Schema.Attribute.Required;
-    order: Schema.Attribute.Integer;
+    rank: Schema.Attribute.Integer;
     publishedAt: Schema.Attribute.DateTime;
     slug: Schema.Attribute.UID & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
@@ -1026,7 +1026,7 @@ export interface ApiMachineMachine extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     operatorPricing: Schema.Attribute.String;
-    orderRank: Schema.Attribute.Integer;
+    rank: Schema.Attribute.Integer;
     pricing: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     slug: Schema.Attribute.UID<"title"> & Schema.Attribute.Required;
@@ -1160,7 +1160,7 @@ export interface ApiPostProductionTypePostProductionType
       "api::post-production-type.post-production-type"
     > &
       Schema.Attribute.Private;
-    orderRank: Schema.Attribute.Integer;
+    rank: Schema.Attribute.Integer;
     price: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     slug: Schema.Attribute.UID & Schema.Attribute.Required;
@@ -1249,7 +1249,7 @@ export interface ApiTestimonialTestimonial extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     name: Schema.Attribute.String & Schema.Attribute.Required;
-    orderRank: Schema.Attribute.Integer;
+    rank: Schema.Attribute.Integer;
     publishedAt: Schema.Attribute.DateTime;
     rating: Schema.Attribute.Integer &
       Schema.Attribute.SetMinMax<

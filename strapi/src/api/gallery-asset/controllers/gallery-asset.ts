@@ -3,7 +3,7 @@ import { factories } from '@strapi/strapi';
 export default factories.createCoreController('api::gallery-asset.gallery-asset', ({ strapi }) => ({
   async shuffle(ctx) {
     const entries = await strapi.documents('api::gallery-asset.gallery-asset').findMany({
-      fields: ['id', 'orderRank'],
+      fields: ['id', 'rank'],
       limit: 10000,
     });
 
@@ -15,12 +15,11 @@ export default factories.createCoreController('api::gallery-asset.gallery-asset'
       [ids[i], ids[j]] = [ids[j], ids[i]];
     }
 
-    // Update orderRank in batches
     let updated = 0;
     for (let i = 0; i < ids.length; i++) {
       await strapi.documents('api::gallery-asset.gallery-asset').update({
         documentId: ids[i],
-        data: { orderRank: i + 1 },
+        data: { rank: i + 1 },
       });
       updated++;
     }

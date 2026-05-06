@@ -51,7 +51,7 @@
       "type": "media",
       "multiple": true
     },
-    "orderRank": {
+    "rank": {
       "type": "integer"
     }
   },

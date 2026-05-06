@@ -26,7 +26,7 @@
     },
     "mediaType": { "type": "enumeration", "enum": ["image", "video"] },
     "originalFilename": { "type": "string" },
-    "orderRank": { "type": "integer" },
+    "rank": { "type": "integer" },
     "brand": {
       "type": "relation",
       "relation": "manyToOne",
