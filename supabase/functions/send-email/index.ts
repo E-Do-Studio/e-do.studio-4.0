@@ -174,10 +174,12 @@ function statusChangeClientHtml(
   ref: string,
   clientName: string,
   reason: StatusChangeReason,
+  originalDate: string | null,
   newDate: string | null,
   adminMessage: string | null,
 ): string {
   const labels = STATUS_CHANGE_LABELS[reason];
+  const dateFmt = (d: string) => new Date(d).toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
 
   return `
 <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a;">
@@ -188,7 +190,8 @@ function statusChangeClientHtml(
   <p>${labels.intro}</p>
   <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
     <tr><td style="padding: 6px 0; color: #666;">Référence</td><td style="padding: 6px 0; font-weight: 600;">${ref}</td></tr>
-    ${newDate ? `<tr><td style="padding: 6px 0; color: #666;">Nouvelle date</td><td style="padding: 6px 0; font-weight: 600;">${new Date(newDate).toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</td></tr>` : ""}
+    ${originalDate ? `<tr><td style="padding: 6px 0; color: #666;">Date initiale</td><td style="padding: 6px 0;">${dateFmt(originalDate)}</td></tr>` : ""}
+    ${newDate ? `<tr><td style="padding: 6px 0; color: #666;">Nouvelle date</td><td style="padding: 6px 0; font-weight: 600;">${dateFmt(newDate)}</td></tr>` : ""}
   </table>
   ${adminMessage ? `<div style="background: #f5f5f5; padding: 16px; border-radius: 4px; margin: 16px 0;"><strong>Message :</strong><br>${adminMessage}</div>` : ""}
   <p>Pour toute question, n'hésitez pas à nous contacter par retour de mail.</p>
@@ -201,10 +204,12 @@ function statusChangeAdminHtml(
   clientName: string,
   clientEmail: string,
   reason: StatusChangeReason,
+  originalDate: string | null,
   newDate: string | null,
   adminMessage: string | null,
 ): string {
   const labels = STATUS_CHANGE_LABELS[reason];
+  const dateFmt = (d: string) => new Date(d).toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
 
   return `
 <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a;">
@@ -214,7 +219,8 @@ function statusChangeAdminHtml(
   <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
     <tr><td style="padding: 6px 0; color: #666; width: 140px;">Client</td><td style="padding: 6px 0;"><strong>${clientName}</strong> (<a href="mailto:${clientEmail}">${clientEmail}</a>)</td></tr>
     <tr><td style="padding: 6px 0; color: #666;">Motif</td><td style="padding: 6px 0;">${labels.title}</td></tr>
-    ${newDate ? `<tr><td style="padding: 6px 0; color: #666;">Nouvelle date</td><td style="padding: 6px 0;">${new Date(newDate).toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</td></tr>` : ""}
+    ${originalDate ? `<tr><td style="padding: 6px 0; color: #666;">Date initiale</td><td style="padding: 6px 0;">${dateFmt(originalDate)}</td></tr>` : ""}
+    ${newDate ? `<tr><td style="padding: 6px 0; color: #666;">Nouvelle date</td><td style="padding: 6px 0;">${dateFmt(newDate)}</td></tr>` : ""}
     ${adminMessage ? `<tr><td style="padding: 6px 0; color: #666;">Message</td><td style="padding: 6px 0;">${adminMessage}</td></tr>` : ""}
   </table>
 </div>`;
@@ -420,8 +426,18 @@ async function handleBookingStatusChangeEmail(
     throw new Error(`Booking not found: ${payload.bookingId}`);
   }
 
+  if (payload.reason === "rejet" && booking.preferred_date) {
+    const bookingDate = new Date(booking.preferred_date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (bookingDate < today) {
+      return;
+    }
+  }
+
   const clientName = escapeHtml(booking.client_name);
   const ref = escapeHtml(booking.reference);
+  const originalDate = booking.preferred_date ?? null;
   const newDate = payload.newDate ?? null;
   const adminMessage = payload.message ? escapeHtml(payload.message) : null;
 
@@ -437,7 +453,7 @@ async function handleBookingStatusChangeEmail(
       fromEmail,
       booking.client_email,
       subjectByReason[payload.reason],
-      statusChangeClientHtml(ref, clientName, payload.reason, newDate, adminMessage),
+      statusChangeClientHtml(ref, clientName, payload.reason, originalDate, newDate, adminMessage),
     ),
     sendResendEmail(
       resendKey,
@@ -449,6 +465,7 @@ async function handleBookingStatusChangeEmail(
         clientName,
         escapeHtml(booking.client_email),
         payload.reason,
+        originalDate,
         newDate,
         adminMessage,
       ),
