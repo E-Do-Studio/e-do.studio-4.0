@@ -24,7 +24,9 @@ function formatIcalTimestamp(date: Date): string {
   return date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
 }
 
-function buildIcsEvent(booking: Record<string, unknown>, sessions: Record<string, unknown>[], isUpdate: boolean): string {
+interface QuoteRow { lbl: string; amt: number; onReq?: boolean; estimate?: boolean }
+
+function buildIcsEvent(booking: Record<string, unknown>, sessions: Record<string, unknown>[], quoteRows: QuoteRow[], quoteTotal: number | null, isUpdate: boolean): string {
   const uid = `${booking.reference}@e-do.studio`;
   const now = formatIcalTimestamp(new Date());
   const created = formatIcalTimestamp(new Date(booking.created_at as string));
@@ -32,16 +34,53 @@ function buildIcsEvent(booking: Record<string, unknown>, sessions: Record<string
   const plateaux = sessions.map((s) => s.plateau_key).join(", ");
   const totalHours = sessions.reduce((sum, s) => sum + ((s.hours as number) ?? 0), 0);
 
-  const summary = `E-Do Studio — ${booking.reference}`;
+  const summary = plateaux
+    ? `${plateaux} — ${booking.client_name}`
+    : `E-Do Studio — ${booking.client_name}`;
   const descParts: string[] = [];
   descParts.push(`Référence: ${booking.reference}`);
   descParts.push(`Client: ${booking.client_name}`);
+  if (booking.client_email) descParts.push(`Email: ${booking.client_email}`);
+  if (booking.client_phone) descParts.push(`Téléphone: ${booking.client_phone}`);
   if (booking.client_company) descParts.push(`Société: ${booking.client_company}`);
+  if (booking.client_siren) descParts.push(`SIREN: ${booking.client_siren}`);
   if (plateaux) descParts.push(`Plateau(x): ${plateaux}`);
-  if (totalHours > 0) descParts.push(`Durée: ${totalHours}h`);
-  if (booking.project_type) descParts.push(`Type: ${booking.project_type}`);
-  if (booking.total_estimate) descParts.push(`Estimation: ${booking.total_estimate}€`);
-  if (booking.notes) descParts.push(`Notes: ${booking.notes}`);
+  if (totalHours > 0) descParts.push(`Durée totale: ${totalHours}h`);
+  if (booking.arrival_hour != null) descParts.push(`Heure d'arrivée: ${booking.arrival_hour}h`);
+  if (booking.preferred_date) {
+    const d = new Date(booking.preferred_date as string);
+    descParts.push(`Date souhaitée: ${d.toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}`);
+  }
+  if (booking.project_type) descParts.push(`Type de projet: ${booking.project_type}`);
+  if (booking.urgency) descParts.push(`Urgence: ${booking.urgency}`);
+  if (booking.total_estimate) descParts.push(`Estimation: ${booking.total_estimate}€ HT`);
+  if (sessions.length > 0) {
+    descParts.push("");
+    descParts.push("--- Détail des sessions ---");
+    for (const s of sessions) {
+      const parts = [`${s.plateau_key} (${s.hours ?? "?"}h, ${s.slot_type})`];
+      if (s.cyclo_mode) parts.push(`  Cyclo: ${s.cyclo_mode}`);
+      if (s.product_type) parts.push(`  Produit: ${s.product_type}`);
+      if (s.method) parts.push(`  Méthode: ${s.method}${s.submethod ? ` / ${s.submethod}` : ""}`);
+      if (s.quantity && (s.quantity as number) > 1) parts.push(`  Quantité: ${s.quantity}`);
+      const mediaArr = s.media as string[] | null;
+      if (mediaArr && mediaArr.length > 0) parts.push(`  Médias: ${mediaArr.join(", ")}`);
+      const viewsArr = s.views as string[] | null;
+      if (viewsArr && viewsArr.length > 0) parts.push(`  Vues: ${viewsArr.join(", ")} (${s.views_count ?? viewsArr.length})`);
+      if (s.postprod_enabled) parts.push(`  Post-prod: oui${s.postprod_video ? " (vidéo)" : ""}`);
+      descParts.push(parts.join("\n"));
+    }
+  }
+  if (quoteRows.length > 0) {
+    descParts.push("");
+    descParts.push("--- Devis ---");
+    for (const r of quoteRows) {
+      const amt = r.onReq ? "Sur demande" : `${r.amt}€ HT${r.estimate ? " (estimé)" : ""}`;
+      descParts.push(`${r.lbl}: ${amt}`);
+    }
+    if (quoteTotal != null) descParts.push(`Total: ${quoteTotal}€ HT`);
+  }
+  if (booking.notes) descParts.push(`\nNotes: ${booking.notes}`);
 
   const description = escapeIcalText(descParts.join("\n"));
 
@@ -198,13 +237,16 @@ Deno.serve(async (req: Request) => {
     );
   }
 
-  const { data: sessions } = await supabase
-    .from("booking_sessions")
-    .select("*")
-    .eq("booking_id", bookingId);
+  const [{ data: sessions }, { data: quoteRow }] = await Promise.all([
+    supabase.from("booking_sessions").select("*").eq("booking_id", bookingId),
+    supabase.from("booking_quotes").select("*").eq("booking_id", bookingId).maybeSingle(),
+  ]);
+
+  const quoteRows: QuoteRow[] = quoteRow?.rows as QuoteRow[] ?? [];
+  const quoteTotal: number | null = quoteRow?.total ?? null;
 
   const isUpdate = action === "update";
-  const icsData = buildIcsEvent(booking, sessions ?? [], isUpdate);
+  const icsData = buildIcsEvent(booking, sessions ?? [], quoteRows, quoteTotal, isUpdate);
   const result = await caldavPut(caldavUrl, caldavUser, caldavPass, eventUid, icsData, isUpdate);
 
   return new Response(

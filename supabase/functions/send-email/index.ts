@@ -59,15 +59,77 @@ async function sendResendEmail(
   }
 }
 
-function bookingClientHtml(
-  ref: string,
-  clientName: string,
-  date: string | null,
-  total: number | null,
-  sessions: { plateau_key: string; hours: number | null }[],
-): string {
-  const plateaux = sessions.map((s) => s.plateau_key).join(", ");
-  const totalStr = total != null ? `${total.toLocaleString("fr-FR")}€ HT` : "Sur demande";
+interface BookingSession {
+  plateau_key: string;
+  slot_type: string;
+  hours: number | null;
+  cyclo_mode?: string | null;
+  product_type?: string | null;
+  method?: string | null;
+  submethod?: string | null;
+  media?: string[] | null;
+  views?: string[] | null;
+  views_count?: number | null;
+  quantity?: number | null;
+  postprod_enabled?: boolean | null;
+  postprod_video?: boolean | null;
+}
+
+interface QuoteRow {
+  lbl: string;
+  amt: number;
+  onReq?: boolean;
+  estimate?: boolean;
+}
+
+interface QuoteData {
+  reference: string;
+  rows: QuoteRow[];
+  total: number;
+}
+
+interface BookingData {
+  reference: string;
+  client_name: string;
+  client_email: string;
+  client_phone: string | null;
+  client_company: string | null;
+  client_siren: string | null;
+  project_type: string | null;
+  urgency: string | null;
+  total_estimate: number | null;
+  preferred_date: string | null;
+  arrival_hour: number | null;
+  notes: string | null;
+}
+
+function quoteTableHtml(quote: QuoteData | null): string {
+  if (!quote || quote.rows.length === 0) return "";
+  const rows = quote.rows.map((r) => {
+    const label = escapeHtml(r.lbl);
+    const amt = r.onReq
+      ? "Sur demande"
+      : `${r.amt.toLocaleString("fr-FR")}€ HT${r.estimate ? " (estimé)" : ""}`;
+    return `<tr><td style="padding: 4px 0;">${label}</td><td style="padding: 4px 0; text-align: right; white-space: nowrap;">${amt}</td></tr>`;
+  }).join("");
+  const totalStr = `${quote.total.toLocaleString("fr-FR")}€ HT`;
+  return `
+  <h3 style="margin-bottom: 8px;">Devis ${escapeHtml(quote.reference)}</h3>
+  <table style="width: 100%; border-collapse: collapse; margin: 8px 0;">
+    ${rows}
+    <tr style="border-top: 2px solid #1a1a1a; font-weight: 700;">
+      <td style="padding: 8px 0;">Total</td>
+      <td style="padding: 8px 0; text-align: right;">${totalStr}</td>
+    </tr>
+  </table>`;
+}
+
+function bookingClientHtml(b: BookingData, sessions: BookingSession[], quote: QuoteData | null): string {
+  const ref = escapeHtml(b.reference);
+  const clientName = escapeHtml(b.client_name);
+  const plateaux = sessions.map((s) => `${s.plateau_key} (${s.hours ?? "?"}h, ${s.slot_type})`).join(", ");
+  const totalStr = b.total_estimate != null ? `${b.total_estimate.toLocaleString("fr-FR")}€ HT` : "Sur demande";
+  const dateFmt = (d: string) => new Date(d).toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
 
   return `
 <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a;">
@@ -78,28 +140,43 @@ function bookingClientHtml(
   <p>Nous avons bien reçu votre demande de réservation. Voici le récapitulatif :</p>
   <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
     <tr><td style="padding: 6px 0; color: #666;">Référence</td><td style="padding: 6px 0; font-weight: 600;">${ref}</td></tr>
+    <tr><td style="padding: 6px 0; color: #666;">Email</td><td style="padding: 6px 0;">${escapeHtml(b.client_email)}</td></tr>
+    ${b.client_phone ? `<tr><td style="padding: 6px 0; color: #666;">Téléphone</td><td style="padding: 6px 0;">${escapeHtml(b.client_phone)}</td></tr>` : ""}
+    ${b.client_company ? `<tr><td style="padding: 6px 0; color: #666;">Société</td><td style="padding: 6px 0;">${escapeHtml(b.client_company)}</td></tr>` : ""}
     ${plateaux ? `<tr><td style="padding: 6px 0; color: #666;">Plateau(x)</td><td style="padding: 6px 0;">${plateaux}</td></tr>` : ""}
-    ${date ? `<tr><td style="padding: 6px 0; color: #666;">Date souhaitée</td><td style="padding: 6px 0;">${new Date(date).toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</td></tr>` : ""}
+    ${b.preferred_date ? `<tr><td style="padding: 6px 0; color: #666;">Date souhaitée</td><td style="padding: 6px 0;">${dateFmt(b.preferred_date)}</td></tr>` : ""}
+    ${b.arrival_hour != null ? `<tr><td style="padding: 6px 0; color: #666;">Heure d'arrivée</td><td style="padding: 6px 0;">${b.arrival_hour}h</td></tr>` : ""}
+    ${b.project_type ? `<tr><td style="padding: 6px 0; color: #666;">Type de projet</td><td style="padding: 6px 0;">${escapeHtml(b.project_type)}</td></tr>` : ""}
     <tr><td style="padding: 6px 0; color: #666;">Estimation</td><td style="padding: 6px 0; font-weight: 600;">${totalStr}</td></tr>
   </table>
+  ${quoteTableHtml(quote)}
   <p>Notre équipe reviendra vers vous très rapidement pour confirmer les détails.</p>
   <p style="color: #666; font-size: 14px;">À bientôt,<br>L'équipe E-Do Studio</p>
 </div>`;
 }
 
-function bookingAdminHtml(
-  ref: string,
-  clientName: string,
-  clientEmail: string,
-  clientPhone: string | null,
-  clientCompany: string | null,
-  date: string | null,
-  total: number | null,
-  sessions: { plateau_key: string; slot_type: string; hours: number | null }[],
-  notes: string | null,
-): string {
-  const plateaux = sessions.map((s) => `${s.plateau_key} (${s.hours ?? "?"}h, ${s.slot_type})`).join(", ");
-  const totalStr = total != null ? `${total.toLocaleString("fr-FR")}€ HT` : "Sur demande";
+function sessionDetailRows(sessions: BookingSession[]): string {
+  if (sessions.length === 0) return "";
+  return sessions.map((s) => {
+    const details: string[] = [];
+    details.push(`<strong>${s.plateau_key}</strong> — ${s.hours ?? "?"}h, ${s.slot_type}`);
+    if (s.cyclo_mode) details.push(`Cyclo: ${s.cyclo_mode}`);
+    if (s.product_type) details.push(`Produit: ${s.product_type}`);
+    if (s.method) details.push(`Méthode: ${s.method}${s.submethod ? ` / ${s.submethod}` : ""}`);
+    if (s.quantity && s.quantity > 1) details.push(`Quantité: ${s.quantity}`);
+    if (s.media && s.media.length > 0) details.push(`Médias: ${s.media.join(", ")}`);
+    if (s.views && s.views.length > 0) details.push(`Vues: ${s.views.join(", ")} (${s.views_count ?? s.views.length})`);
+    if (s.postprod_enabled) details.push(`Post-prod: oui${s.postprod_video ? " (vidéo)" : ""}`);
+    return `<div style="background: #f5f5f5; padding: 12px; border-radius: 4px; margin: 8px 0;">${details.join("<br>")}</div>`;
+  }).join("");
+}
+
+function bookingAdminHtml(b: BookingData, sessions: BookingSession[], quote: QuoteData | null): string {
+  const ref = escapeHtml(b.reference);
+  const clientName = escapeHtml(b.client_name);
+  const clientEmail = escapeHtml(b.client_email);
+  const totalStr = b.total_estimate != null ? `${b.total_estimate.toLocaleString("fr-FR")}€ HT` : "Sur demande";
+  const dateFmt = (d: string) => new Date(d).toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
 
   return `
 <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a;">
@@ -109,13 +186,18 @@ function bookingAdminHtml(
   <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
     <tr><td style="padding: 6px 0; color: #666; width: 140px;">Client</td><td style="padding: 6px 0;"><strong>${clientName}</strong></td></tr>
     <tr><td style="padding: 6px 0; color: #666;">Email</td><td style="padding: 6px 0;"><a href="mailto:${clientEmail}">${clientEmail}</a></td></tr>
-    ${clientPhone ? `<tr><td style="padding: 6px 0; color: #666;">Téléphone</td><td style="padding: 6px 0;">${clientPhone}</td></tr>` : ""}
-    ${clientCompany ? `<tr><td style="padding: 6px 0; color: #666;">Société</td><td style="padding: 6px 0;">${clientCompany}</td></tr>` : ""}
-    ${plateaux ? `<tr><td style="padding: 6px 0; color: #666;">Plateau(x)</td><td style="padding: 6px 0;">${plateaux}</td></tr>` : ""}
-    ${date ? `<tr><td style="padding: 6px 0; color: #666;">Date souhaitée</td><td style="padding: 6px 0;">${new Date(date).toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</td></tr>` : ""}
+    ${b.client_phone ? `<tr><td style="padding: 6px 0; color: #666;">Téléphone</td><td style="padding: 6px 0;">${escapeHtml(b.client_phone)}</td></tr>` : ""}
+    ${b.client_company ? `<tr><td style="padding: 6px 0; color: #666;">Société</td><td style="padding: 6px 0;">${escapeHtml(b.client_company)}</td></tr>` : ""}
+    ${b.client_siren ? `<tr><td style="padding: 6px 0; color: #666;">SIREN</td><td style="padding: 6px 0;">${escapeHtml(b.client_siren)}</td></tr>` : ""}
+    ${b.preferred_date ? `<tr><td style="padding: 6px 0; color: #666;">Date souhaitée</td><td style="padding: 6px 0;">${dateFmt(b.preferred_date)}</td></tr>` : ""}
+    ${b.arrival_hour != null ? `<tr><td style="padding: 6px 0; color: #666;">Heure d'arrivée</td><td style="padding: 6px 0;">${b.arrival_hour}h</td></tr>` : ""}
+    ${b.project_type ? `<tr><td style="padding: 6px 0; color: #666;">Type de projet</td><td style="padding: 6px 0;">${escapeHtml(b.project_type)}</td></tr>` : ""}
+    ${b.urgency ? `<tr><td style="padding: 6px 0; color: #666;">Urgence</td><td style="padding: 6px 0;">${escapeHtml(b.urgency)}</td></tr>` : ""}
     <tr><td style="padding: 6px 0; color: #666;">Estimation</td><td style="padding: 6px 0; font-weight: 600;">${totalStr}</td></tr>
-    ${notes ? `<tr><td style="padding: 6px 0; color: #666;">Notes</td><td style="padding: 6px 0;">${notes}</td></tr>` : ""}
+    ${b.notes ? `<tr><td style="padding: 6px 0; color: #666;">Notes</td><td style="padding: 6px 0;">${escapeHtml(b.notes)}</td></tr>` : ""}
   </table>
+  ${sessions.length > 0 ? `<h3 style="margin-bottom: 8px;">Détail des sessions</h3>${sessionDetailRows(sessions)}` : ""}
+  ${quoteTableHtml(quote)}
 </div>`;
 }
 
@@ -171,14 +253,18 @@ const STATUS_CHANGE_LABELS: Record<StatusChangeReason, { title: string; intro: s
 };
 
 function statusChangeClientHtml(
-  ref: string,
-  clientName: string,
+  b: BookingData,
+  sessions: BookingSession[],
+  quote: QuoteData | null,
   reason: StatusChangeReason,
-  originalDate: string | null,
   newDate: string | null,
   adminMessage: string | null,
 ): string {
   const labels = STATUS_CHANGE_LABELS[reason];
+  const ref = escapeHtml(b.reference);
+  const clientName = escapeHtml(b.client_name);
+  const plateaux = sessions.map((s) => `${s.plateau_key} (${s.hours ?? "?"}h, ${s.slot_type})`).join(", ");
+  const totalStr = b.total_estimate != null ? `${b.total_estimate.toLocaleString("fr-FR")}€ HT` : "Sur demande";
   const dateFmt = (d: string) => new Date(d).toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
 
   return `
@@ -190,9 +276,13 @@ function statusChangeClientHtml(
   <p>${labels.intro}</p>
   <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
     <tr><td style="padding: 6px 0; color: #666;">Référence</td><td style="padding: 6px 0; font-weight: 600;">${ref}</td></tr>
-    ${originalDate ? `<tr><td style="padding: 6px 0; color: #666;">Date initiale</td><td style="padding: 6px 0;">${dateFmt(originalDate)}</td></tr>` : ""}
+    ${plateaux ? `<tr><td style="padding: 6px 0; color: #666;">Plateau(x)</td><td style="padding: 6px 0;">${plateaux}</td></tr>` : ""}
+    ${b.preferred_date ? `<tr><td style="padding: 6px 0; color: #666;">Date initiale</td><td style="padding: 6px 0;">${dateFmt(b.preferred_date)}</td></tr>` : ""}
     ${newDate ? `<tr><td style="padding: 6px 0; color: #666;">Nouvelle date</td><td style="padding: 6px 0; font-weight: 600;">${dateFmt(newDate)}</td></tr>` : ""}
+    ${b.client_company ? `<tr><td style="padding: 6px 0; color: #666;">Société</td><td style="padding: 6px 0;">${escapeHtml(b.client_company)}</td></tr>` : ""}
+    <tr><td style="padding: 6px 0; color: #666;">Estimation</td><td style="padding: 6px 0; font-weight: 600;">${totalStr}</td></tr>
   </table>
+  ${quoteTableHtml(quote)}
   ${adminMessage ? `<div style="background: #f5f5f5; padding: 16px; border-radius: 4px; margin: 16px 0;"><strong>Message :</strong><br>${adminMessage}</div>` : ""}
   <p>Pour toute question, n'hésitez pas à nous contacter par retour de mail.</p>
   <p style="color: #666; font-size: 14px;">À bientôt,<br>L'équipe E-Do Studio</p>
@@ -200,15 +290,19 @@ function statusChangeClientHtml(
 }
 
 function statusChangeAdminHtml(
-  ref: string,
-  clientName: string,
-  clientEmail: string,
+  b: BookingData,
+  sessions: BookingSession[],
+  quote: QuoteData | null,
   reason: StatusChangeReason,
-  originalDate: string | null,
   newDate: string | null,
   adminMessage: string | null,
 ): string {
   const labels = STATUS_CHANGE_LABELS[reason];
+  const ref = escapeHtml(b.reference);
+  const clientName = escapeHtml(b.client_name);
+  const clientEmail = escapeHtml(b.client_email);
+  const plateaux = sessions.map((s) => `${s.plateau_key} (${s.hours ?? "?"}h, ${s.slot_type})`).join(", ");
+  const totalStr = b.total_estimate != null ? `${b.total_estimate.toLocaleString("fr-FR")}€ HT` : "Sur demande";
   const dateFmt = (d: string) => new Date(d).toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
 
   return `
@@ -217,12 +311,21 @@ function statusChangeAdminHtml(
   <p style="color: #666; margin-top: 0;">${ref}</p>
   <hr style="border: none; border-top: 1px solid #e5e5e5;">
   <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
-    <tr><td style="padding: 6px 0; color: #666; width: 140px;">Client</td><td style="padding: 6px 0;"><strong>${clientName}</strong> (<a href="mailto:${clientEmail}">${clientEmail}</a>)</td></tr>
+    <tr><td style="padding: 6px 0; color: #666; width: 140px;">Client</td><td style="padding: 6px 0;"><strong>${clientName}</strong></td></tr>
+    <tr><td style="padding: 6px 0; color: #666;">Email</td><td style="padding: 6px 0;"><a href="mailto:${clientEmail}">${clientEmail}</a></td></tr>
+    ${b.client_phone ? `<tr><td style="padding: 6px 0; color: #666;">Téléphone</td><td style="padding: 6px 0;">${escapeHtml(b.client_phone)}</td></tr>` : ""}
+    ${b.client_company ? `<tr><td style="padding: 6px 0; color: #666;">Société</td><td style="padding: 6px 0;">${escapeHtml(b.client_company)}</td></tr>` : ""}
+    ${b.client_siren ? `<tr><td style="padding: 6px 0; color: #666;">SIREN</td><td style="padding: 6px 0;">${escapeHtml(b.client_siren)}</td></tr>` : ""}
+    ${plateaux ? `<tr><td style="padding: 6px 0; color: #666;">Plateau(x)</td><td style="padding: 6px 0;">${plateaux}</td></tr>` : ""}
     <tr><td style="padding: 6px 0; color: #666;">Motif</td><td style="padding: 6px 0;">${labels.title}</td></tr>
-    ${originalDate ? `<tr><td style="padding: 6px 0; color: #666;">Date initiale</td><td style="padding: 6px 0;">${dateFmt(originalDate)}</td></tr>` : ""}
-    ${newDate ? `<tr><td style="padding: 6px 0; color: #666;">Nouvelle date</td><td style="padding: 6px 0;">${dateFmt(newDate)}</td></tr>` : ""}
+    ${b.preferred_date ? `<tr><td style="padding: 6px 0; color: #666;">Date initiale</td><td style="padding: 6px 0;">${dateFmt(b.preferred_date)}</td></tr>` : ""}
+    ${newDate ? `<tr><td style="padding: 6px 0; color: #666;">Nouvelle date</td><td style="padding: 6px 0; font-weight: 600;">${dateFmt(newDate)}</td></tr>` : ""}
+    ${b.project_type ? `<tr><td style="padding: 6px 0; color: #666;">Type de projet</td><td style="padding: 6px 0;">${escapeHtml(b.project_type)}</td></tr>` : ""}
+    <tr><td style="padding: 6px 0; color: #666;">Estimation</td><td style="padding: 6px 0; font-weight: 600;">${totalStr}</td></tr>
     ${adminMessage ? `<tr><td style="padding: 6px 0; color: #666;">Message</td><td style="padding: 6px 0;">${adminMessage}</td></tr>` : ""}
   </table>
+  ${sessions.length > 0 ? `<h3 style="margin-bottom: 8px;">Détail des sessions</h3>${sessionDetailRows(sessions)}` : ""}
+  ${quoteTableHtml(quote)}
 </div>`;
 }
 
@@ -312,13 +415,29 @@ async function handleBookingEmail(
     throw new Error(`Booking not found: ${bookingId}`);
   }
 
-  const { data: sessions } = await supabase
-    .from("booking_sessions")
-    .select("plateau_key, slot_type, hours")
-    .eq("booking_id", bookingId);
+  const [{ data: sessions }, { data: quoteRow }] = await Promise.all([
+    supabase.from("booking_sessions").select("*").eq("booking_id", bookingId),
+    supabase.from("booking_quotes").select("*").eq("booking_id", bookingId).maybeSingle(),
+  ]);
 
-  const clientName = escapeHtml(booking.client_name);
-  const ref = escapeHtml(booking.reference);
+  const b: BookingData = {
+    reference: booking.reference,
+    client_name: booking.client_name,
+    client_email: booking.client_email,
+    client_phone: booking.client_phone,
+    client_company: booking.client_company,
+    client_siren: booking.client_siren,
+    project_type: booking.project_type,
+    urgency: booking.urgency,
+    total_estimate: booking.total_estimate,
+    preferred_date: booking.preferred_date,
+    arrival_hour: booking.arrival_hour,
+    notes: booking.notes,
+  };
+
+  const quote: QuoteData | null = quoteRow
+    ? { reference: quoteRow.reference, rows: quoteRow.rows as QuoteRow[], total: quoteRow.total }
+    : null;
 
   await Promise.all([
     sendResendEmail(
@@ -326,24 +445,14 @@ async function handleBookingEmail(
       fromEmail,
       booking.client_email,
       `Votre réservation ${booking.reference} — E-Do Studio`,
-      bookingClientHtml(ref, clientName, booking.preferred_date, booking.total_estimate, sessions ?? []),
+      bookingClientHtml(b, sessions ?? [], quote),
     ),
     sendResendEmail(
       resendKey,
       fromEmail,
       STUDIO_EMAIL,
       `Nouvelle réservation ${booking.reference} — ${booking.client_name}`,
-      bookingAdminHtml(
-        ref,
-        clientName,
-        escapeHtml(booking.client_email),
-        booking.client_phone ? escapeHtml(booking.client_phone) : null,
-        booking.client_company ? escapeHtml(booking.client_company) : null,
-        booking.preferred_date,
-        booking.total_estimate,
-        sessions ?? [],
-        booking.notes ? escapeHtml(booking.notes) : null,
-      ),
+      bookingAdminHtml(b, sessions ?? [], quote),
       booking.client_email,
     ),
   ]);
@@ -435,9 +544,30 @@ async function handleBookingStatusChangeEmail(
     }
   }
 
-  const clientName = escapeHtml(booking.client_name);
-  const ref = escapeHtml(booking.reference);
-  const originalDate = booking.preferred_date ?? null;
+  const [{ data: sessions }, { data: quoteRow }] = await Promise.all([
+    supabase.from("booking_sessions").select("*").eq("booking_id", payload.bookingId),
+    supabase.from("booking_quotes").select("*").eq("booking_id", payload.bookingId).maybeSingle(),
+  ]);
+
+  const b: BookingData = {
+    reference: booking.reference,
+    client_name: booking.client_name,
+    client_email: booking.client_email,
+    client_phone: booking.client_phone,
+    client_company: booking.client_company,
+    client_siren: booking.client_siren,
+    project_type: booking.project_type,
+    urgency: booking.urgency,
+    total_estimate: booking.total_estimate,
+    preferred_date: booking.preferred_date,
+    arrival_hour: booking.arrival_hour,
+    notes: booking.notes,
+  };
+
+  const quote: QuoteData | null = quoteRow
+    ? { reference: quoteRow.reference, rows: quoteRow.rows as QuoteRow[], total: quoteRow.total }
+    : null;
+
   const newDate = payload.newDate ?? null;
   const adminMessage = payload.message ? escapeHtml(payload.message) : null;
 
@@ -453,22 +583,14 @@ async function handleBookingStatusChangeEmail(
       fromEmail,
       booking.client_email,
       subjectByReason[payload.reason],
-      statusChangeClientHtml(ref, clientName, payload.reason, originalDate, newDate, adminMessage),
+      statusChangeClientHtml(b, sessions ?? [], quote, payload.reason, newDate, adminMessage),
     ),
     sendResendEmail(
       resendKey,
       fromEmail,
       STUDIO_EMAIL,
       `${STATUS_CHANGE_LABELS[payload.reason].title} — ${booking.reference}`,
-      statusChangeAdminHtml(
-        ref,
-        clientName,
-        escapeHtml(booking.client_email),
-        payload.reason,
-        originalDate,
-        newDate,
-        adminMessage,
-      ),
+      statusChangeAdminHtml(b, sessions ?? [], quote, payload.reason, newDate, adminMessage),
       booking.client_email,
     ),
   ]);
