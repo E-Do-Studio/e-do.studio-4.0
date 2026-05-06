@@ -13,7 +13,10 @@ const STUDIO_OPEN = 9;
 const STUDIO_CLOSE = 19;
 
 const dayCache = new Map<string, Record<number, AvailabilityState>>();
-const hourCache = new Map<string, Set<number>>();
+
+export function clearAvailabilityCache(): void {
+  dayCache.clear();
+}
 
 function getOccupiedHours(arrivalHour: number, totalHours: number): number[] {
   const hours: number[] = [];
@@ -38,7 +41,8 @@ export function useAvailability(
   plateauKey: string | undefined,
   year: number,
   month: number,
-  rentalHours: number = 1
+  rentalHours: number = 1,
+  refreshKey: number = 0
 ): { availMap: Record<number, AvailabilityState>; bookedHoursMap: Record<number, Set<number>>; loading: boolean } {
   const [availMap, setAvailMap] = useState<Record<number, AvailabilityState>>({});
   const [bookedHoursMap, setBookedHoursMap] = useState<Record<number, Set<number>>>({});
@@ -49,13 +53,9 @@ export function useAvailability(
     if (!plateauKey) return;
 
     const cacheKey = `${plateauKey}-${year}-${month}-${rentalHours}`;
-    const hourCacheKey = `${plateauKey}-${year}-${month}`;
     const cachedDay = dayCache.get(cacheKey);
-    const cachedHours = hourCache.get(hourCacheKey);
-    if (cachedDay && cachedHours) {
+    if (cachedDay && refreshKey === 0) {
       setAvailMap(cachedDay);
-      const hourMap: Record<number, Set<number>> = {};
-      cachedHours.forEach(() => {});
       setLoading(false);
       return;
     }
@@ -110,7 +110,7 @@ export function useAvailability(
       });
 
     return () => { controller.abort(); };
-  }, [plateauKey, year, month, rentalHours]);
+  }, [plateauKey, year, month, rentalHours, refreshKey]);
 
   return { availMap, bookedHoursMap, loading };
 }
