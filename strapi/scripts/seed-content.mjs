@@ -591,47 +591,104 @@ async function seedGalleryCategories() {
   }
 }
 
-// ─── 5. Gallery projects (add titles) ──────────────────────────────────────
+// ─── 5. Gallery brands ─────────────────────────────────────────────────────
+
+async function seedGalleryBrands() {
+  console.log('\n💎 Seeding Gallery brands…');
+
+  const brands = [
+    { name: 'JEAN PAUL GAULTIER', rank: 1 },
+    { name: 'BALENCIAGA', rank: 2 },
+    { name: 'COPERNI', rank: 3 },
+    { name: 'CARVEN', rank: 4 },
+    { name: 'THE KOOPLES', rank: 5 },
+    { name: 'VUARNET', rank: 6 },
+    { name: 'GIAMBATTISTA VALLI', rank: 7 },
+    { name: 'NUMÉRO', rank: 8 },
+    { name: 'JOHN LOBB', rank: 9 },
+    { name: 'HARTFORD', rank: 10 },
+    { name: 'INOUI', rank: 11 },
+    { name: 'DIPTYQUE', rank: 12 },
+    { name: 'RIMOWA', rank: 13 },
+    { name: 'NODALETO', rank: 14 },
+    { name: 'LCD', rank: 15 },
+  ];
+
+  for (const b of brands) {
+    const res = await api(`gallery-brands?filters[name][$eq]=${encodeURIComponent(b.name)}`);
+    const existing = res.data?.[0];
+    if (existing) {
+      await api(`gallery-brands/${existing.documentId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ data: { name: b.name, rank: b.rank } }),
+      });
+      console.log(`  ✓ updated gallery-brands/${b.name}`);
+    } else {
+      await api('gallery-brands', {
+        method: 'POST',
+        body: JSON.stringify({ data: { name: b.name, rank: b.rank } }),
+      });
+      console.log(`  + created gallery-brands/${b.name}`);
+    }
+  }
+}
+
+// ─── 6. Gallery projects ───────────────────────────────────────────────────
 
 async function seedGalleryProjects() {
   console.log('\n🖼️  Seeding Gallery projects…');
 
   const projects = [
-    { slug: 'maison-ortho', title: 'Maison Ortho', rank: 1 },
-    { slug: 'le-monde-beryl', title: 'Le Monde Béryl', rank: 2 },
-    { slug: 'atelier-soie', title: 'Atelier Soie', rank: 3 },
-    { slug: 'koji-chapter-3', title: 'Kôji', rank: 4 },
-    { slug: 'rue-saint-honore', title: 'Rue Saint-Honoré', rank: 5 },
-    { slug: 'ganymede', title: 'Ganymède', rank: 6 },
-    { slug: 'moa-studio-fw26', title: 'Moa Studio', rank: 7 },
-    { slug: 'maison-margin', title: 'Maison Margin', rank: 8 },
-    { slug: 'toby-ombre', title: 'Toby Ombré', rank: 9 },
-    { slug: 'noir-etoile', title: 'Noir Étoilé', rank: 10 },
-    { slug: 'orbite', title: 'Orbite', rank: 11 },
-    { slug: 'studio-11', title: 'Studio 11', rank: 12 },
-    { slug: 'parure', title: 'Parure', rank: 13 },
-    { slug: 'rue-cadet', title: 'Rue Cadet', rank: 14 },
-    { slug: 'atelier-bois', title: 'Atelier Bois', rank: 15 },
-    { slug: 'maison-ardent', title: 'Maison Ardent', rank: 16 },
-    { slug: 'saar-paris', title: 'Saar Paris', rank: 17 },
-    { slug: 'solene', title: 'Solène', rank: 18 },
+    { slug: 'maison-ortho', title: 'Maison Ortho', stage: 'cyclorama', year: 2026, cat: 'pap', rank: 1 },
+    { slug: 'le-monde-beryl', title: 'Le Monde Béryl', stage: 'horizontal', year: 2026, cat: 'accessoires', rank: 2 },
+    { slug: 'atelier-soie', title: 'Atelier Soie', stage: 'vertical', year: 2026, cat: 'pap', rank: 3 },
+    { slug: 'koji-chapter-3', title: 'Kôji', stage: 'eclipse', year: 2025, cat: 'eyewear', rank: 4 },
+    { slug: 'rue-saint-honore', title: 'Rue Saint-Honoré', stage: 'horizontal', year: 2025, cat: 'cosmetique', rank: 5 },
+    { slug: 'ganymede', title: 'Ganymède', stage: 'eclipse', year: 2025, cat: 'bijoux', rank: 6 },
+    { slug: 'moa-studio-fw26', title: 'Moa Studio', stage: 'live', year: 2026, cat: 'pap', rank: 7 },
+    { slug: 'maison-margin', title: 'Maison Margin', stage: 'vertical', year: 2025, cat: 'pap', rank: 8 },
+    { slug: 'toby-ombre', title: 'Toby Ombré', stage: 'horizontal', year: 2026, cat: 'food', rank: 9 },
+    { slug: 'noir-etoile', title: 'Noir Étoilé', stage: 'cyclorama', year: 2025, cat: 'cosmetique', rank: 10 },
+    { slug: 'orbite', title: 'Orbite', stage: 'eclipse', year: 2025, cat: 'eyewear', rank: 11 },
+    { slug: 'studio-11', title: 'Studio 11', stage: 'horizontal', year: 2026, cat: 'accessoires', rank: 12 },
+    { slug: 'parure', title: 'Parure', stage: 'eclipse', year: 2026, cat: 'bijoux', rank: 13 },
+    { slug: 'rue-cadet', title: 'Rue Cadet', stage: 'cyclorama', year: 2025, cat: 'pap', rank: 14 },
+    { slug: 'atelier-bois', title: 'Atelier Bois', stage: 'horizontal', year: 2025, cat: 'food', rank: 15 },
+    { slug: 'maison-ardent', title: 'Maison Ardent', stage: 'vertical', year: 2026, cat: 'pap', rank: 16 },
+    { slug: 'saar-paris', title: 'Saar Paris', stage: 'eclipse', year: 2026, cat: 'accessoires', rank: 17 },
+    { slug: 'solene', title: 'Solène', stage: 'cyclorama', year: 2025, cat: 'bijoux', rank: 18 },
   ];
+
+  // Resolve category slugs → documentIds for relational linking
+  const catMap = new Map();
+  const catRes = await api('gallery-categories?locale=fr&pagination[pageSize]=50');
+  for (const c of catRes.data ?? []) {
+    catMap.set(c.slug, c.documentId);
+  }
 
   for (const p of projects) {
     const existing = await findBySlug('gallery-projects', p.slug);
+    const data = { title: p.title, stage: p.stage, year: p.year, rank: p.rank };
+    const catDocId = catMap.get(p.cat);
+    if (catDocId) data.category = catDocId;
+
     if (existing) {
       await api(`gallery-projects/${existing.documentId}`, {
         method: 'PUT',
-        body: JSON.stringify({ data: { title: p.title, rank: p.rank } }),
+        body: JSON.stringify({ data }),
       });
       console.log(`  ✓ updated gallery-projects/${p.slug}`);
     } else {
-      console.log(`  ⚠ gallery-projects/${p.slug} not found — skipping (create manually with images)`);
+      await api('gallery-projects', {
+        method: 'POST',
+        body: JSON.stringify({ data: { ...data, slug: p.slug } }),
+      });
+      console.log(`  + created gallery-projects/${p.slug}`);
     }
   }
 }
 
-// ─── 6. Site settings ──────────────────────────────────────────────────────
+// ─── 7. Site settings ──────────────────────────────────────────────────────
 
 async function seedSiteSettings() {
   console.log('\n⚙️  Seeding Site settings…');
@@ -678,7 +735,7 @@ async function seedSiteSettings() {
   );
 }
 
-// ─── 7. Blog posts (populate bodies where missing) ─────────────────────────
+// ─── 8. Blog posts (populate bodies where missing) ─────────────────────────
 
 async function seedBlogPosts() {
   console.log('\n📝 Checking Blog posts for missing content…');
@@ -719,6 +776,7 @@ async function main() {
   await seedMachines();
   await seedPostProdTypes();
   await seedGalleryCategories();
+  await seedGalleryBrands();
   await seedGalleryProjects();
   await seedSiteSettings();
   await seedBlogPosts();
