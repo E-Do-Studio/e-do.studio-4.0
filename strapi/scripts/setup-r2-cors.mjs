@@ -1,17 +1,30 @@
 import { S3Client, PutBucketCorsCommand } from '@aws-sdk/client-s3';
 
+const {
+  CF_ACCOUNT_ID,
+  CF_ACCESS_KEY_ID,
+  CF_ACCESS_SECRET,
+  CF_BUCKET = 'website',
+} = process.env;
+
+if (!CF_ACCOUNT_ID || !CF_ACCESS_KEY_ID || !CF_ACCESS_SECRET) {
+  console.error('Missing required env vars: CF_ACCOUNT_ID, CF_ACCESS_KEY_ID, CF_ACCESS_SECRET');
+  console.error('Source the Strapi prod .env (or export them) before running this script.');
+  process.exit(1);
+}
+
 const s3 = new S3Client({
   region: 'auto',
-  endpoint: 'https://40b1f3eb00963de1f0c69c748e35eed3.r2.cloudflarestorage.com',
+  endpoint: `https://${CF_ACCOUNT_ID}.r2.cloudflarestorage.com`,
   credentials: {
-    accessKeyId: '00c62ee8708b37fd51460652897ad646',
-    secretAccessKey: '87c44f90ebd5874859810145c62c7f62aec5a7a903d20689e0822aba8064ff46',
+    accessKeyId: CF_ACCESS_KEY_ID,
+    secretAccessKey: CF_ACCESS_SECRET,
   },
   forcePathStyle: true,
 });
 
 await s3.send(new PutBucketCorsCommand({
-  Bucket: 'website',
+  Bucket: CF_BUCKET,
   CORSConfiguration: {
     CORSRules: [
       {
@@ -30,4 +43,4 @@ await s3.send(new PutBucketCorsCommand({
   },
 }));
 
-console.log('R2 CORS configured successfully');
+console.log(`R2 CORS configured successfully for bucket "${CF_BUCKET}"`);
