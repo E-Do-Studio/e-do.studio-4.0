@@ -3,19 +3,31 @@ import fs from 'fs/promises';
 import path from 'path';
 import { lookup } from 'mime-types';
 
+const {
+  CF_ACCOUNT_ID,
+  CF_ACCESS_KEY_ID,
+  CF_ACCESS_SECRET,
+  CF_BUCKET = 'website',
+} = process.env;
+
+if (!CF_ACCOUNT_ID || !CF_ACCESS_KEY_ID || !CF_ACCESS_SECRET) {
+  console.error('Missing required env vars: CF_ACCOUNT_ID, CF_ACCESS_KEY_ID, CF_ACCESS_SECRET');
+  console.error('Source the Strapi prod .env (or export them) before running this script.');
+  process.exit(1);
+}
+
 const UPLOADS_DIR = path.resolve('../public/uploads');
 
 const s3 = new S3Client({
   region: 'auto',
-  endpoint: `https://40b1f3eb00963de1f0c69c748e35eed3.r2.cloudflarestorage.com`,
+  endpoint: `https://${CF_ACCOUNT_ID}.r2.cloudflarestorage.com`,
   credentials: {
-    accessKeyId: '00c62ee8708b37fd51460652897ad646',
-    secretAccessKey: '87c44f90ebd5874859810145c62c7f62aec5a7a903d20689e0822aba8064ff46',
+    accessKeyId: CF_ACCESS_KEY_ID,
+    secretAccessKey: CF_ACCESS_SECRET,
   },
   forcePathStyle: true,
 });
 
-const BUCKET = 'website';
 const BATCH_SIZE = 10;
 
 async function uploadFile(filePath, key) {
@@ -23,7 +35,7 @@ async function uploadFile(filePath, key) {
   const contentType = lookup(filePath) || 'application/octet-stream';
 
   await s3.send(new PutObjectCommand({
-    Bucket: BUCKET,
+    Bucket: CF_BUCKET,
     Key: key,
     Body: body,
     ContentType: contentType,
@@ -33,7 +45,7 @@ async function uploadFile(filePath, key) {
 async function main() {
   const entries = await fs.readdir(UPLOADS_DIR);
   const files = entries.filter(f => !f.startsWith('.'));
-  console.log(`Found ${files.length} files to upload to R2\n`);
+  console.log(`Found ${files.length} files to upload to R2 bucket "${CF_BUCKET}"\n`);
 
   let uploaded = 0;
   let errors = 0;
