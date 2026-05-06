@@ -19,6 +19,6 @@
       "relation": "manyToOne",
       "target": "api::gallery-category.gallery-category"
     },
-    "order": { "type": "integer" }
+    "orderRank": { "type": "integer" }
   }
 }

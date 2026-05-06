@@ -13,7 +13,7 @@
     "name_fr": { "type": "string", "required": true },
     "name_en": { "type": "string" },
     "slug": { "type": "uid", "required": true },
-    "order": { "type": "integer" },
+    "orderRank": { "type": "integer" },
     "assets": {
       "type": "relation",
       "relation": "oneToMany",
