@@ -9,6 +9,7 @@ import { loadDraft, clearDraft, useBookingDraftSaver } from './lib/use-booking-d
 import { useAvailability, isHourBlocked, clearAvailabilityCache } from './lib/availability';
 import type { Lang } from './types';
 import type { BookingSessionData } from './lib/bookings';
+import { common, booking as bookingMsg } from './i18n/messages';
 
 type BilingualText = Record<Lang, string>;
 type BookMode = 'config' | 'manual';
@@ -413,17 +414,17 @@ const BookPageV2 = () => {
         const rec = recommendSession(s, configGlobal);
         const px = BOOK_PLATEAUX.find(x => x.k === rec.plateau);
         if (!px) return;
-        const sessionTag = (configSessions.length > 1) ? `${lang==='fr'?'Session':'Session'} ${String(idx+1).padStart(2,'0')} · ` : '';
-        if (px.isCyclo || rec.onRequest) { previewRows.push({ lbl: `${sessionTag}${px[lang]} · ${lang==='fr'?'sur demande':'on request'}`, amt: 0, onReq: true }); }
+        const sessionTag = (configSessions.length > 1) ? `${bookingMsg.session[lang]} ${String(idx+1).padStart(2,'0')} · ` : '';
+        if (px.isCyclo || rec.onRequest) { previewRows.push({ lbl: `${sessionTag}${px[lang]} · ${common.onRequest[lang]}`, amt: 0, onReq: true }); }
         else if (rec.slotType === 'hour') { const h = rec.hours || 1; previewRows.push({ lbl: `${sessionTag}${px[lang]} · ${h}h`, amt: +(((px.rates.hour ?? 0) * h).toFixed(2)) }); }
-        else if (rec.slotType === 'half') { const hh = Math.max(4, Math.min(7, rec.hours || 4)); const amt = hh === 4 ? (px.rates.half ?? 0) : +(((px.rates.half ?? 0) * hh / 4).toFixed(2)); previewRows.push({ lbl: `${sessionTag}${px[lang]} · ${lang==='fr'?`Demi-journée (${hh}h)`:`Half day (${hh}h)`}`, amt }); }
+        else if (rec.slotType === 'half') { const hh = Math.max(4, Math.min(7, rec.hours || 4)); const amt = hh === 4 ? (px.rates.half ?? 0) : +(((px.rates.half ?? 0) * hh / 4).toFixed(2)); previewRows.push({ lbl: `${sessionTag}${px[lang]} · ${bookingMsg.halfDay[lang]} (${hh}h)`, amt }); }
         else if (rec.slotType === 'full') {
           const totalH = rec.hours || 8; const fullDays = Math.floor(totalH / 8); const extraH = totalH - fullDays * 8;
           if (fullDays >= 1) { previewRows.push({ lbl: `${sessionTag}${px[lang]} · ${fullDays} ${lang==='fr'?(fullDays>1?'journées (8h)':'journée (8h)'):(fullDays>1?'days (8h)':'day (8h)')}`, amt: +(((px.rates.full ?? 0) * fullDays).toFixed(2)) }); }
-          if (extraH > 0) { const hourlyFromFull = (px.rates.full ?? 0) / 8; const amt = +(hourlyFromFull * extraH).toFixed(2); const lbl = extraH === 4 ? `${sessionTag}${px[lang]} · ${lang==='fr'?'Demi-journée (4h)':'Half day (4h)'}` : `${sessionTag}${px[lang]} · ${extraH}h`; previewRows.push({ lbl, amt }); }
+          if (extraH > 0) { const hourlyFromFull = (px.rates.full ?? 0) / 8; const amt = +(hourlyFromFull * extraH).toFixed(2); const lbl = extraH === 4 ? `${sessionTag}${px[lang]} · ${bookingMsg.halfDay[lang]} (4h)` : `${sessionTag}${px[lang]} · ${extraH}h`; previewRows.push({ lbl, amt }); }
         }
-        if (s.postprod) { const pp = computePostprodPrice(s); if (pp) { previewRows.push({ lbl: `${sessionTag}${lang==='fr'?'Post-production':'Post-production'} · ${pp.images} ${lang==='fr'?'images':'images'}`, amt: pp.amount, estimate: true, breakdown: pp.breakdown, perView: pp.perView }); } else { previewRows.push({ lbl: `${sessionTag}${lang==='fr'?'Post-production':'Post-production'} · ${lang==='fr'?'sur demande':'on request'}`, amt: 0, onReq: true }); } }
-        if (s.postprodVideo) { previewRows.push({ lbl: `${sessionTag}${lang==='fr'?'Montage vidéo':'Video editing'}`, amt: 0, onReq: true }); }
+        if (s.postprod) { const pp = computePostprodPrice(s); if (pp) { previewRows.push({ lbl: `${sessionTag}${bookingMsg.postProduction[lang]} · ${pp.images} ${bookingMsg.images[lang]}`, amt: pp.amount, estimate: true, breakdown: pp.breakdown, perView: pp.perView }); } else { previewRows.push({ lbl: `${sessionTag}${bookingMsg.postProduction[lang]} · ${common.onRequest[lang]}`, amt: 0, onReq: true }); } }
+        if (s.postprodVideo) { previewRows.push({ lbl: `${sessionTag}${bookingMsg.videoEditing[lang]}`, amt: 0, onReq: true }); }
       });
       const total = previewRows.reduce((s,r)=>s+r.amt, 0);
       return { rows: previewRows, groups: [], sharedRows: [], sharedSubtotal: 0, total, isPreview: true };
@@ -434,29 +435,29 @@ const BookPageV2 = () => {
       const st: PerPlateauState = isLegacyOnly ? { slotType, hours, cycloMode, paint, kwh, team } : (perPlateau[k] || { slotType:'hour', hours:1, cycloMode:'halfH', paint:false, kwh:0, team:{} });
       const pRows: QuoteRow[] = [];
       if (px.isCyclo) {
-        if (st.cycloMode==='halfH') pRows.push({lbl:lang==='fr'?'Cyclorama · 5h':'Cyclorama · 5h', amt:px.rates.halfH ?? 0});
-        else if (st.cycloMode==='fullH') pRows.push({lbl:lang==='fr'?'Cyclorama · 10h':'Cyclorama · 10h', amt:px.rates.fullH ?? 0});
-        else if (st.cycloMode==='editorial') pRows.push({lbl:lang==='fr'?'Cyclorama · 10h éditorial':'Cyclorama · 10h editorial', amt:0, onReq:true});
-        if (st.paint) pRows.push({lbl:lang==='fr'?'Peinture cyclo':'Cyclo paint', amt:CYCLO_EXTRAS.paint});
-        if ((st.kwh ?? 0) > 0) pRows.push({lbl:`${lang==='fr'?'Électricité':'Electricity'} · ${st.kwh} kWh`, amt:+((st.kwh ?? 0)*CYCLO_EXTRAS.kwh).toFixed(2)});
-      } else if (px.isVisite) { pRows.push({lbl:lang==='fr'?'Visite du studio':'Studio visit', amt:0}); }
+        if (st.cycloMode==='halfH') pRows.push({lbl:bookingMsg.cyclo5h[lang], amt:px.rates.halfH ?? 0});
+        else if (st.cycloMode==='fullH') pRows.push({lbl:bookingMsg.cyclo10h[lang], amt:px.rates.fullH ?? 0});
+        else if (st.cycloMode==='editorial') pRows.push({lbl:bookingMsg.cyclo10hEditorial[lang], amt:0, onReq:true});
+        if (st.paint) pRows.push({lbl:bookingMsg.cycloPaint[lang], amt:CYCLO_EXTRAS.paint});
+        if ((st.kwh ?? 0) > 0) pRows.push({lbl:`${bookingMsg.electricity[lang]} · ${st.kwh} kWh`, amt:+((st.kwh ?? 0)*CYCLO_EXTRAS.kwh).toFixed(2)});
+      } else if (px.isVisite) { pRows.push({lbl:bookingMsg.studioVisit[lang], amt:0}); }
       else {
         const h = st.hours || 1;
         if (st.slotType==='hour') pRows.push({lbl:`${px[lang]} · ${h}h`, amt:(px.rates.hour ?? 0)*h});
-        else if (st.slotType==='half') { const hh = Math.max(4, Math.min(7, h)); const amt = hh===4 ? (px.rates.half ?? 0) : +(((px.rates.half ?? 0) * hh / 4).toFixed(2)); pRows.push({lbl:`${px[lang]} · ${lang==='fr'?`Demi-journée (${hh}h)`:`Half day (${hh}h)`}`, amt}); }
+        else if (st.slotType==='half') { const hh = Math.max(4, Math.min(7, h)); const amt = hh===4 ? (px.rates.half ?? 0) : +(((px.rates.half ?? 0) * hh / 4).toFixed(2)); pRows.push({lbl:`${px[lang]} · ${bookingMsg.halfDay[lang]} (${hh}h)`, amt}); }
         else { const totalH = h || 8; const fullDays = Math.floor(totalH / 8); const extraH = totalH - fullDays * 8;
           if (fullDays > 0) { pRows.push({ lbl: `${px[lang]} · ${fullDays} ${lang==='fr'?(fullDays>1?'journées (8h)':'journée (8h)'):(fullDays>1?'days (8h)':'day (8h)')}`, amt: +(((px.rates.full ?? 0) * fullDays).toFixed(2)) }); }
-          if (extraH > 0) { const hourlyFromFull = (px.rates.full ?? 0) / 8; const extraAmt = +(hourlyFromFull * extraH).toFixed(2); if (extraH === 4) { pRows.push({lbl:`${px[lang]} · ${lang==='fr'?'Demi-journée (4h)':'Half day (4h)'}`, amt:extraAmt}); } else { pRows.push({lbl:`${px[lang]} · ${extraH}h ${lang==='fr'?'(prorata jour/8)':'(pro-rata day/8)'}`, amt:extraAmt}); } }
+          if (extraH > 0) { const hourlyFromFull = (px.rates.full ?? 0) / 8; const extraAmt = +(hourlyFromFull * extraH).toFixed(2); if (extraH === 4) { pRows.push({lbl:`${px[lang]} · ${bookingMsg.halfDay[lang]} (4h)`, amt:extraAmt}); } else { pRows.push({lbl:`${px[lang]} · ${extraH}h ${bookingMsg.proRataDay[lang]}`, amt:extraAmt}); } }
         }
       }
       const plateauRentalHours = px.isCyclo ? (st.cycloMode === 'halfH' ? 5 : 10) : px.isVisite ? 1 : (st.slotType === 'hour' ? (st.hours||1) : st.slotType === 'half' ? Math.max(4,Math.min(7,st.hours||4)) : (st.hours||8));
       const plateauTeam = st.team || {};
-      EQUIPE.forEach(e=>{ const val = plateauTeam[e.k]; if (!val) return; if (e.unit === 'hour') { if (typeof val === 'number' && val>0) { const amt = +(e.price * plateauRentalHours * val).toFixed(2); pRows.push({lbl:`${e[lang]} · ${val} × ${plateauRentalHours}h`, amt}); } } else { if (val===true) pRows.push({lbl:`${e[lang]} · ${lang==='fr'?'sur demande':'on request'}`, amt:0, onReq:true}); } });
+      EQUIPE.forEach(e=>{ const val = plateauTeam[e.k]; if (!val) return; if (e.unit === 'hour') { if (typeof val === 'number' && val>0) { const amt = +(e.price * plateauRentalHours * val).toFixed(2); pRows.push({lbl:`${e[lang]} · ${val} × ${plateauRentalHours}h`, amt}); } } else { if (val===true) pRows.push({lbl:`${e[lang]} · ${common.onRequest[lang]}`, amt:0, onReq:true}); } });
       const plateauPostprod = st.postprod || {};
       if (plateauPostprod.enabled) {
-        if ((plateauPostprod.amount ?? 0) > 0) { pRows.push({ lbl: `${lang==='fr'?'Post-production':'Post-production'} · ${plateauPostprod.images ?? 0} ${lang==='fr'?'images':'images'}`, amt: plateauPostprod.amount ?? 0, estimate: true, breakdown: plateauPostprod.breakdown, perView: plateauPostprod.perView }); }
-        else { pRows.push({ lbl: `${lang==='fr'?'Post-production':'Post-production'} · ${lang==='fr'?'sur demande':'on request'}`, amt: 0, onReq: true }); }
-        if (plateauPostprod.video) { pRows.push({ lbl: `${lang==='fr'?'Montage vidéo':'Video editing'}`, amt: 0, onReq: true }); }
+        if ((plateauPostprod.amount ?? 0) > 0) { pRows.push({ lbl: `${bookingMsg.postProduction[lang]} · ${plateauPostprod.images ?? 0} ${bookingMsg.images[lang]}`, amt: plateauPostprod.amount ?? 0, estimate: true, breakdown: plateauPostprod.breakdown, perView: plateauPostprod.perView }); }
+        else { pRows.push({ lbl: `${bookingMsg.postProduction[lang]} · ${common.onRequest[lang]}`, amt: 0, onReq: true }); }
+        if (plateauPostprod.video) { pRows.push({ lbl: bookingMsg.videoEditing[lang], amt: 0, onReq: true }); }
       }
       const subtotal = pRows.reduce((s,r)=>s+r.amt, 0);
       groups.push({plateauKey:k, plateauName:px[lang], rows:pRows, subtotal});
@@ -547,11 +548,11 @@ const BookPageV2 = () => {
       const px = BOOK_PLATEAUX.find(x => x.k === r.plateau); const s = r.session;
       const productLbl = PRODUCTS.find(x=>x.k===s.product)?.[lang] || s.product;
       const subLbl = s.submethod ? ` · ${s.submethod}` : ''; const mediaLbl = (s.media||[]).length ? ` (${(s.media||[]).join('+')})` : '';
-      const dur = r.onRequest ? (lang==='fr'?'sur demande':'on request') : r.slotType==='full' ? (() => { const totalH = r.hours || (r.totalDays ? r.totalDays*8 : 8); const fd = Math.floor(totalH/8); const ex = totalH - fd*8; if (ex===0) return fd>1 ? `${fd}×8h` : '8h'; return `${fd}×8h+${ex}h`; })() : r.slotType==='half' ? `${r.hours}h (½j)` : `${r.hours}h`;
-      briefLines.push(`\n${lang==='fr'?'Session':'Session'} ${i+1} — ${productLbl}${subLbl}${mediaLbl} → ${px ? px[lang] : r.plateau} · ${dur}`);
-      briefLines.push(` ${lang==='fr'?'Quantité':'Quantity'} : ${s.quantity} ${lang==='fr'?'produits':'products'}`);
-      if (s.views && s.views.length) { briefLines.push(` ${lang==='fr'?'Vues':'Views'} : ${s.views.join(', ')}`); } else if (s.viewsCount) { briefLines.push(` ${lang==='fr'?'Vues par produit':'Views per product'} : ${s.viewsCount}`); }
-      if (s.postprod) { briefLines.push(` ${lang==='fr'?'Post-production':'Post-production'} : ${lang==='fr'?'oui':'yes'}${s.postprodVideo ? ` + ${lang==='fr'?'montage vidéo':'video edit'}` : ''}`); }
+      const dur = r.onRequest ? common.onRequest[lang] : r.slotType==='full' ? (() => { const totalH = r.hours || (r.totalDays ? r.totalDays*8 : 8); const fd = Math.floor(totalH/8); const ex = totalH - fd*8; if (ex===0) return fd>1 ? `${fd}×8h` : '8h'; return `${fd}×8h+${ex}h`; })() : r.slotType==='half' ? `${r.hours}h (½j)` : `${r.hours}h`;
+      briefLines.push(`\n${bookingMsg.session[lang]} ${i+1} — ${productLbl}${subLbl}${mediaLbl} → ${px ? px[lang] : r.plateau} · ${dur}`);
+      briefLines.push(` ${bookingMsg.quantity[lang]} : ${s.quantity} ${bookingMsg.products[lang]}`);
+      if (s.views && s.views.length) { briefLines.push(` ${bookingMsg.views[lang]} : ${s.views.join(', ')}`); } else if (s.viewsCount) { briefLines.push(` ${bookingMsg.viewsPerProduct[lang]} : ${s.viewsCount}`); }
+      if (s.postprod) { briefLines.push(` ${bookingMsg.postProduction[lang]} : ${bookingMsg.yes[lang]}${s.postprodVideo ? ` + ${bookingMsg.videoEdit[lang]}` : ''}`); }
     });
     setContact(c => ({ ...c, typesArticles: productLabels, quantiteArticles: String(totalSKUs || ''), vuesParArticle: '', autresInfos: c.autresInfos || '' }));
     setConfigApplied(true); setStep(2);
@@ -638,7 +639,7 @@ const BookPageV2 = () => {
         clearAvailabilityCache();
         setAvailRefreshKey(k => k + 1);
       }
-      setSaveError(msg || (lang === 'fr' ? 'Erreur lors de la sauvegarde' : 'Failed to save booking'));
+      setSaveError(msg || bookingMsg.saveError[lang]);
     } finally {
       setSaving(false);
     }
@@ -658,42 +659,42 @@ const BookPageV2 = () => {
       {/* Mobile header */}
       <PageHeader
         lang={lang}
-        title={lang==='fr'?'Réservation':'Booking'}
+        title={bookingMsg.title[lang]}
         className="col-span-full h-14 md:hidden"
         onMenuClick={openMenu}
-        onLogoClick={()=>goto('home')}
-        onLangToggle={()=>setLang(lang==='fr'?'en':'fr')}
+        onLogoClick={()=>goto(‘home’)}
+        onLangToggle={()=>setLang(lang===’fr’?’en’:’fr’)}
         actions={[
-          { id: 'help', label: lang==='fr'?'Besoin d’aide':'Need help', onClick: () => goto('contact') },
+          { id: ‘help’, label: bookingMsg.needHelp[lang], onClick: () => goto(‘contact’) },
         ]}
       />
 
       {/* Desktop col 1 – logo */}
       <div className="hidden md:flex h-full gap-px bg-foreground md:col-start-1 md:row-start-1">
-        <button onClick={()=>goto('home')} aria-label="E-Do Studio home" className="edo-focus-ring flex h-full min-w-0 flex-1 cursor-pointer items-center justify-center border-0 bg-background p-2 transition-colors hover:bg-muted">
+        <button onClick={()=>goto(‘home’)} aria-label="E-Do Studio home" className="edo-focus-ring flex h-full min-w-0 flex-1 cursor-pointer items-center justify-center border-0 bg-background p-2 transition-colors hover:bg-muted">
           <Wordmark size={32} />
         </button>
       </div>
 
       {/* Desktop col 2 – title */}
       <div className="hidden md:flex h-full min-w-0 items-center bg-background px-6 md:col-start-2 md:row-start-1">
-        <CellLabel className="shrink-0 text-primary">{lang==='fr'?'Réservation':'Booking'}</CellLabel>
+        <CellLabel className="shrink-0 text-primary">{bookingMsg.title[lang]}</CellLabel>
       </div>
 
       {/* Desktop col 3 – help + lang toggle */}
       <div className="hidden md:flex h-full gap-px bg-foreground md:col-start-3 md:row-start-1">
-        <button onClick={()=>goto('contact')} className="edo-focus-ring flex h-full flex-1 cursor-pointer items-center justify-center gap-2 border-0 bg-background px-5 font-mono text-label tracking-ui uppercase text-foreground no-underline transition-colors hover:bg-muted">
-          <span className="whitespace-nowrap">{lang==='fr'?'Besoin d’aide':'Need help'}</span>
+        <button onClick={()=>goto(‘contact’)} className="edo-focus-ring flex h-full flex-1 cursor-pointer items-center justify-center gap-2 border-0 bg-background px-5 font-mono text-label tracking-ui uppercase text-foreground no-underline transition-colors hover:bg-muted">
+          <span className="whitespace-nowrap">{bookingMsg.needHelp[lang]}</span>
           <IconArrowRight width={12} height={12} />
         </button>
-        <button onClick={()=>setLang(lang==='fr'?'en':'fr')} className="edo-focus-ring flex h-full basis-header flex-none cursor-pointer items-center justify-center border-0 bg-background p-0 transition-colors hover:bg-muted">
-          <span className="font-mono text-label tracking-meta text-foreground">{lang==='fr'?'EN':'FR'}</span>
+        <button onClick={()=>setLang(lang===’fr’?’en’:’fr’)} className="edo-focus-ring flex h-full basis-header flex-none cursor-pointer items-center justify-center border-0 bg-background p-0 transition-colors hover:bg-muted">
+          <span className="font-mono text-label tracking-meta text-foreground">{common.langToggleLabel[lang]}</span>
         </button>
       </div>
 
       {/* Desktop col 4 – dark label matching quote panel below */}
       <div className="hidden md:flex h-full items-center bg-foreground px-6 md:col-start-4 md:row-start-1">
-        <CellLabel className="text-white/55">{lang==='fr'?'Votre devis':'Your quote'}</CellLabel>
+        <CellLabel className="text-white/55">{bookingMsg.yourQuote[lang]}</CellLabel>
       </div>
 
       <div className="bg-white overflow-x-auto flex flex-row md:col-start-1 md:row-start-2 md:flex-col md:overflow-x-hidden md:overflow-y-auto md:min-h-0">
@@ -718,17 +719,17 @@ const BookPageV2 = () => {
         {mode === 'manual' && (
           <div className="px-5 flex items-center justify-between gap-3 bg-muted min-h-control box-border shrink-0 border-b border-foreground">
             <span className="font-mono text-micro tracking-code uppercase text-muted-foreground min-w-0">
-              {lang==='fr'?'Choix manuel — ou ':'Manual mode — or '}
-              <span className="text-primary font-semibold">{lang==='fr'?'← laissez-vous guider':'← let us guide you'}</span>
+              {bookingMsg.manualOr[lang]}
+              <span className="text-primary font-semibold">{bookingMsg.letUsGuide[lang]}</span>
             </span>
             <div className="flex items-center gap-2 flex-none">
               <button onClick={()=>{ setPlateau(null); setPlateaus([]); setPerPlateau({}); setSlotType('hour'); setHours(1); setCycloMode('halfH'); setPaint(false); setKwh(0); setTeam({}); setPp({}); setSelected(null); setStep(1); }}
                 className="edo-focus-ring bg-transparent border border-border px-2 py-1 cursor-pointer font-mono text-micro tracking-code uppercase text-foreground whitespace-nowrap leading-normal">
-                ↻ {lang==='fr'?'Réinitialiser':'Reset'}
+                ↻ {common.reset[lang]}
               </button>
               <button onClick={()=>setStep(0)}
                 className="edo-focus-ring bg-primary border border-primary px-3 py-1.5 cursor-pointer font-mono text-label tracking-code uppercase text-white whitespace-nowrap leading-normal font-semibold transition-all duration-150 hover:bg-foreground hover:text-white hover:border-foreground">
-                ← {lang==='fr'?'Configurateur':'Configurator'}
+                ← {bookingMsg.configurator[lang]}
               </button>
             </div>
           </div>
@@ -736,9 +737,9 @@ const BookPageV2 = () => {
         <div ref={innerScrollRef} className="flex-1 overflow-y-auto">
           {step===0 && <Step0Configurator lang={lang} global={configGlobal} setGlobal={setConfigGlobal} sessions={configSessions} setSessions={setConfigSessions} activeIdx={activeSessionIdx} setActiveIdx={setActiveSessionIdx} onApply={applyConfig} onSkip={skipConfig} onReset={()=>{ setPlateau(null); setPlateaus([]); setPerPlateau({}); setSlotType('hour'); setHours(1); setCycloMode('halfH'); setPaint(false); setKwh(0); setTeam({}); setPp({}); setSelected(null); setConfigApplied(false); }}/>}
           {step===1 && <Step1Plateau lang={lang} plateau={plateau} setPlateau={setPlateau} plateaus={plateaus} togglePlateau={togglePlateau} setCycloMode={setCycloMode} setSlotType={setSlotType} setHours={setHours} onConfigurator={()=>setStep(0)}/>}
-          {step===2 && <MultiPlateauStep lang={lang} plateaus={plateaus.length?plateaus:(plateau?[plateau]:[])} perPlateau={perPlateau} setPerPlateau={setPerPlateau} fallback={{slotType,hours,cycloMode,setSlotType,setHours,setCycloMode}} topBanner={(() => { const list = plateaus.length?plateaus:(plateau?[plateau]:[]); const allVisite = list.length>0 && list.every(k => BOOK_PLATEAUX.find(x=>x.k===k)?.isVisite); if (allVisite) return null; return (<div className="px-6 border-b border-foreground flex items-center h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local"><span className="edo-cell-label text-primary whitespace-nowrap">02 · {lang==='fr'?'Durée de location':'Rental duration'}</span><span className="font-mono text-label tracking-caption text-muted-foreground">{list.length > 1 ? (lang==='fr'?'Choisissez une durée pour chaque plateau (pré rempli selon estimation).':'Choose a duration for each stage (pre-filled based on estimate).') : (lang==='fr'?'Choisissez la durée pour votre plateau (pré rempli selon estimation).':'Choose a duration for your stage (pre-filled based on estimate).')}</span></div>); })()} renderOne={(px: AnyProps, st: AnyProps, setSt: (patch: AnyProps) => void) => (<Step3Slot lang={lang} p={px} slotType={st.slotType||'hour'} setSlotType={(v: string)=>setSt({slotType:v})} hours={st.hours||1} setHours={(v: number)=>setSt({hours:v})} cycloMode={st.cycloMode||'halfH'} setCycloMode={(v: string)=>setSt({cycloMode:v})}/>)}/>}
-          {step===3 && <MultiPlateauStep lang={lang} plateaus={plateaus.length?plateaus:(plateau?[plateau]:[])} perPlateau={perPlateau} setPerPlateau={setPerPlateau} fallback={{team,setTeam}} topBanner={<div className="px-6 border-b border-foreground flex items-center h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local"><span className="edo-cell-label text-primary whitespace-nowrap">03 · {lang==='fr'?'Équipe E-DO (optionnel)':'E-DO team (optional)'}</span></div>} renderOne={(px: AnyProps, st: AnyProps, setSt: (patch: AnyProps) => void) => (<Step5Team lang={lang} p={px} team={st.team || {}} configSessions={configSessions} setTeam={(updater: any) => { const next = typeof updater === 'function' ? updater(st.team || {}) : updater; setSt({team: next}); }}/>)}/>}
-          {step===4 && <MultiPlateauStep lang={lang} plateaus={plateaus.length?plateaus:(plateau?[plateau]:[])} perPlateau={perPlateau} setPerPlateau={setPerPlateau} fallback={{postprod:{},setPostprod:()=>{}}} topBanner={<div className="px-6 border-b border-foreground flex items-center h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local"><span className="edo-cell-label text-primary whitespace-nowrap">04 · {lang==='fr'?'Post-production (optionnel)':'Post-production (optional)'}</span></div>} renderOne={(px: AnyProps, st: AnyProps, setSt: (patch: AnyProps) => void) => (<Step6Postprod lang={lang} plateauKey={px && px.k} postprod={st.postprod || {}} setPostprod={(v: AnyProps) => setSt({postprod: v})}/>)}/>}
+          {step===2 && <MultiPlateauStep lang={lang} plateaus={plateaus.length?plateaus:(plateau?[plateau]:[])} perPlateau={perPlateau} setPerPlateau={setPerPlateau} fallback={{slotType,hours,cycloMode,setSlotType,setHours,setCycloMode}} topBanner={(() => { const list = plateaus.length?plateaus:(plateau?[plateau]:[]); const allVisite = list.length>0 && list.every(k => BOOK_PLATEAUX.find(x=>x.k===k)?.isVisite); if (allVisite) return null; return (<div className="px-6 border-b border-foreground flex items-center h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local"><span className="edo-cell-label text-primary whitespace-nowrap">02 · {bookingMsg.rentalDuration[lang]}</span><span className="font-mono text-label tracking-caption text-muted-foreground">{list.length > 1 ? bookingMsg.chooseDurationEach[lang] : bookingMsg.chooseDurationSingle[lang]}</span></div>); })()} renderOne={(px: AnyProps, st: AnyProps, setSt: (patch: AnyProps) => void) => (<Step3Slot lang={lang} p={px} slotType={st.slotType||'hour'} setSlotType={(v: string)=>setSt({slotType:v})} hours={st.hours||1} setHours={(v: number)=>setSt({hours:v})} cycloMode={st.cycloMode||'halfH'} setCycloMode={(v: string)=>setSt({cycloMode:v})}/>)}/>}
+          {step===3 && <MultiPlateauStep lang={lang} plateaus={plateaus.length?plateaus:(plateau?[plateau]:[])} perPlateau={perPlateau} setPerPlateau={setPerPlateau} fallback={{team,setTeam}} topBanner={<div className="px-6 border-b border-foreground flex items-center h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local"><span className="edo-cell-label text-primary whitespace-nowrap">03 · {bookingMsg.teamOptional[lang]}</span></div>} renderOne={(px: AnyProps, st: AnyProps, setSt: (patch: AnyProps) => void) => (<Step5Team lang={lang} p={px} team={st.team || {}} configSessions={configSessions} setTeam={(updater: any) => { const next = typeof updater === 'function' ? updater(st.team || {}) : updater; setSt({team: next}); }}/>)}/>}
+          {step===4 && <MultiPlateauStep lang={lang} plateaus={plateaus.length?plateaus:(plateau?[plateau]:[])} perPlateau={perPlateau} setPerPlateau={setPerPlateau} fallback={{postprod:{},setPostprod:()=>{}}} topBanner={<div className="px-6 border-b border-foreground flex items-center h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local"><span className="edo-cell-label text-primary whitespace-nowrap">04 · {bookingMsg.postProdOptional[lang]}</span></div>} renderOne={(px: AnyProps, st: AnyProps, setSt: (patch: AnyProps) => void) => (<Step6Postprod lang={lang} plateauKey={px && px.k} postprod={st.postprod || {}} setPostprod={(v: AnyProps) => setSt({postprod: v})}/>)}/>}
           {step===5 && <Step7Contact lang={lang} contact={contact} setContact={setContact} p={p} configMode={configApplied} errors={contactErrors}/>}
           {step===6 && (() => {
             const list = plateaus && plateaus.length > 0 ? plateaus : (plateau ? [plateau] : []);

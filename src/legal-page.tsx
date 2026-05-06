@@ -3,6 +3,7 @@ import { Button, CellLabel, IconArrowRight, PageHeader, Wordmark } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
 import type { Lang, Bilingual } from './types';
 import { usePageContext } from './router';
+import { common, legalPage } from './i18n/messages';
 
 interface Section {
   k: string;
@@ -302,13 +303,13 @@ const LegalPage = () => {
       {/* Mobile header */}
       <PageHeader
         lang={lang}
-        title={lang==='fr'?'Légal':'Legal'}
+        title={common.legal[lang]}
         className="col-span-full h-14 md:hidden"
         onMenuClick={openMenu}
         onLogoClick={()=>goto('home')}
         onLangToggle={()=>setLang(lang==='fr'?'en':'fr')}
         actions={[
-          { id: 'contact', label: lang==='fr'?'Nous contacter':'Contact us', onClick: () => goto('contact') },
+          { id: 'contact', label: common.contactUs[lang], onClick: () => goto('contact') },
         ]}
       />
 
@@ -321,24 +322,24 @@ const LegalPage = () => {
 
       {/* Desktop col 2 – title */}
       <div className="hidden md:flex h-full min-w-0 items-center bg-background px-6 md:col-start-2 md:row-start-1">
-        <CellLabel className="shrink-0 text-primary">{lang==='fr'?'Légal':'Legal'}</CellLabel>
+        <CellLabel className="shrink-0 text-primary">{common.legal[lang]}</CellLabel>
       </div>
 
       {/* Desktop col 3 – contact + lang toggle */}
       <div className="hidden md:flex h-full gap-px bg-foreground md:col-start-3 md:row-start-1">
         <button onClick={()=>goto('contact')} className="edo-focus-ring flex h-full flex-1 cursor-pointer items-center justify-center gap-2 border-0 bg-background px-5 font-mono text-label tracking-ui uppercase text-foreground no-underline transition-colors hover:bg-muted">
-          <span className="whitespace-nowrap">{lang==='fr'?'Nous contacter':'Contact us'}</span>
+          <span className="whitespace-nowrap">{common.contactUs[lang]}</span>
           <IconArrowRight width={12} height={12} />
         </button>
         <button onClick={()=>setLang(lang==='fr'?'en':'fr')} className="edo-focus-ring flex h-full basis-header flex-none cursor-pointer items-center justify-center border-0 bg-background p-0 transition-colors hover:bg-muted">
-          <span className="font-mono text-label tracking-meta text-foreground">{lang==='fr'?'EN':'FR'}</span>
+          <span className="font-mono text-label tracking-meta text-foreground">{common.langToggleLabel[lang]}</span>
         </button>
       </div>
 
       {/* Sidebar: horizontal tabs on mobile, vertical list on desktop */}
       <div className="bg-white overflow-auto flex flex-row md:col-start-1 md:row-start-2 md:flex-col">
         <div className="px-4 pt-4 pb-2.5 shrink-0">
-          <span className="edo-cell-label">{lang==='fr'?'Sommaire':'Contents'}</span>
+          <span className="edo-cell-label">{legalPage.contents[lang]}</span>
         </div>
         {SECTIONS.map((s,i)=>{
           const isActive = sec===s.k;
@@ -353,9 +354,9 @@ const LegalPage = () => {
         })}
 
         <div className="px-4 py-cell-lg border-t border-border mt-3 hidden md:block">
-          <span className="edo-cell-label mb-2.5 block">{lang==='fr'?'Une question ?':'Got a question?'}</span>
+          <span className="edo-cell-label mb-2.5 block">{legalPage.gotQuestion[lang]}</span>
           <p className="text-caption text-muted-foreground leading-normal mb-3">
-            {lang==='fr'?'Écrivez-nous directement.':'Write to us directly.'}
+            {legalPage.writeDirectly[lang]}
           </p>
           <a href="mailto:contact@e-do.studio" className="edo-focus-ring inline-flex items-center gap-2 text-caption text-foreground no-underline border-b border-foreground pb-0.5">contact@e-do.studio <IconArrowRight width="10" height="10"/></a>
         </div>
@@ -368,7 +369,7 @@ const LegalPage = () => {
         <div className="bg-white pt-9 px-5 pb-7 border-b border-border grid grid-cols-fluid-auto gap-6 items-end md:px-10">
           <div>
             <span className="edo-cell-label text-primary">
-              {String(SECTIONS.findIndex(s=>s.k===sec)+1).padStart(2,'0')} · {lang==='fr'?'Légal':'Legal'}
+              {String(SECTIONS.findIndex(s=>s.k===sec)+1).padStart(2,'0')} · {common.legal[lang]}
             </span>
             <h1 className="mt-2.5 mb-3 text-page-title font-light tracking-display leading-none text-foreground">
               {active[lang]}<span className="text-primary">.</span>
@@ -377,7 +378,7 @@ const LegalPage = () => {
           </div>
           <div className="text-right flex flex-col gap-1">
             <span className="font-mono text-label tracking-meta uppercase text-muted-foreground">
-              {lang==='fr'?'Dernière mise à jour':'Last updated'}
+              {legalPage.lastUpdated[lang]}
             </span>
             <span className="font-mono text-detail tracking-caption text-foreground">{active.updated}</span>
           </div>
@@ -390,8 +391,8 @@ const LegalPage = () => {
           {(sec==='cgv' || sec==='cgu' || sec==='privacy') && C.articles && (
             <>
               <div className="pt-4 pb-2 border-b border-border flex justify-between font-mono text-label tracking-meta uppercase text-muted-foreground">
-                <span>{C.articles.length} {lang==='fr'?'articles':'articles'}</span>
-                <span>{lang==='fr'?'Version ':'Version '}{active.updated}</span>
+                <span>{C.articles.length} articles</span>
+                <span>Version {active.updated}</span>
               </div>
               {C.articles.map(a=><Article key={a.n} {...a} lang={lang}/>)}
             </>
@@ -400,17 +401,17 @@ const LegalPage = () => {
           {sec==='cookies' && C.table && (
             <div className="pt-5 overflow-x-auto">
               <div className="min-w-[600px] grid grid-cols-cookie-table gap-4 py-3 border-b border-foreground font-mono text-label tracking-meta uppercase text-foreground">
-                <span>{lang==='fr'?'Nom':'Name'}</span>
-                <span>{lang==='fr'?'Catégorie':'Category'}</span>
-                <span>{lang==='fr'?'Finalité':'Purpose'}</span>
-                <span>{lang==='fr'?'Durée':'Duration'}</span>
-                <span>{lang==='fr'?'Émis par':'Issued by'}</span>
+                <span>{legalPage.cookieName[lang]}</span>
+                <span>{legalPage.cookieCategory[lang]}</span>
+                <span>{legalPage.cookiePurpose[lang]}</span>
+                <span>{legalPage.cookieDuration[lang]}</span>
+                <span>{legalPage.cookieIssuedBy[lang]}</span>
               </div>
               {C.table.map((r)=>(
                 <div key={r.n} className="min-w-[600px] grid grid-cols-cookie-table gap-4 py-3.5 border-b border-border text-detail items-center">
                   <span className="font-mono tracking-caption text-foreground">{r.n}</span>
                   <span>
-                    <span className={`inline-block font-mono text-micro tracking-code uppercase px-2 py-1 text-white ${r.cat==='essential'?'bg-foreground':'bg-primary'}`}>{r.cat==='essential'?(lang==='fr'?'Essentiel':'Essential'):(lang==='fr'?'Mesure':'Measure')}</span>
+                    <span className={`inline-block font-mono text-micro tracking-code uppercase px-2 py-1 text-white ${r.cat==='essential'?'bg-foreground':'bg-primary'}`}>{r.cat==='essential'?legalPage.essential[lang]:legalPage.measure[lang]}</span>
                   </span>
                   <span className="text-muted-foreground">{lang==='fr'?r.fr:r.en}</span>
                   <span className="font-mono text-muted-foreground">{r.dur[lang]}</span>
@@ -418,30 +419,26 @@ const LegalPage = () => {
                 </div>
               ))}
               <p className="mt-7 text-detail text-muted-foreground leading-relaxed max-w-3xl">
-                {lang==='fr'
-                  ? "Vous pouvez « accepter » ou « refuser » les cookies via le bandeau qui s'affiche lors de votre navigation. À défaut d'action, la poursuite de la navigation vaut acceptation. Vous pouvez à tout moment modifier votre choix en effaçant les cookies depuis les préférences de votre navigateur, ou en nous écrivant à contact@e-do.studio."
-                  : "You may \"accept\" or \"refuse\" cookies via the banner displayed during your browsing. Continuing to browse without action is considered acceptance. You may modify your choice at any time by clearing cookies in your browser preferences or writing to contact@e-do.studio."}
+                {legalPage.cookieConsent[lang]}
               </p>
 
               <div className="mt-9 bg-foreground text-white py-7 px-8 grid grid-cols-fluid-auto gap-6 items-center">
                 <div>
                   <span className="font-mono text-label tracking-label uppercase text-primary">© GRW · E-Do Studio</span>
                   <p className="mt-1.5 text-detail leading-copy opacity-75 max-w-xl">
-                    {lang==='fr'
-                      ? "RCS Bobigny 891 710 857 · 69 boulevard Victor Hugo · 93400 Saint-Ouen-sur-Seine. Tous droits réservés."
-                      : "RCS Bobigny 891 710 857 · 69 boulevard Victor Hugo · 93400 Saint-Ouen-sur-Seine. All rights reserved."}
+                    {legalPage.allRightsReserved[lang]}
                   </p>
                 </div>
-                <Button variant="default" size="lg" onClick={()=>goto('home')}>{lang==='fr'?'Retour accueil':'Back to home'} <IconArrowRight width="14" height="14"/></Button>
+                <Button variant="default" size="lg" onClick={()=>goto('home')}>{legalPage.backToHome[lang]} <IconArrowRight width="14" height="14"/></Button>
               </div>
             </div>
           )}
 
           <div className="mt-8 flex justify-between items-center gap-5 font-mono text-label tracking-code uppercase text-muted-foreground">
-            <span>{lang==='fr'?'Document consultable · Imprimable · Archivable':'Viewable · Printable · Archivable'}</span>
+            <span>{legalPage.viewPrintArchive[lang]}</span>
             <div className="flex gap-5">
               <button onClick={()=>window.print()} className="edo-focus-ring bg-transparent border-0 cursor-pointer text-foreground font-inherit tracking-inherit text-transform-inherit">
-                ↓ {lang==='fr'?'Imprimer':'Print'}
+                ↓ {legalPage.print[lang]}
               </button>
               <a href="mailto:contact@e-do.studio" className="edo-focus-ring text-foreground no-underline">
                 contact@e-do.studio

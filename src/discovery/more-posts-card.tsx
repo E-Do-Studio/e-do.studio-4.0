@@ -5,6 +5,7 @@ import { DiscoveryCover } from './discovery-cover';
 import { FilterChips } from './filter-chips';
 import { cn } from '../ui/cn';
 import { cellBase, labelBase } from './styles';
+import { discoveryPage } from '../i18n/messages';
 
 interface MorePostsCardProps {
   posts: DiscoveryPost[];
@@ -26,7 +27,7 @@ export const MorePostsCard: React.FC<MorePostsCardProps> = ({ posts, lang, onOpe
       <div className="flex shrink-0 flex-col gap-2.5 border-b border-border px-cell py-3.5">
         <div className="flex items-center justify-between gap-3">
           <span className={cn(labelBase, 'text-primary')}>
-            {lang === 'fr' ? 'Plus d\u2019articles' : 'More posts'}
+            {discoveryPage.morePosts[lang]}
           </span>
           <span className="font-mono text-micro tracking-ui text-muted-foreground">
             {filteredPosts.length}/{posts.length}
@@ -60,7 +61,7 @@ export const MorePostsCard: React.FC<MorePostsCardProps> = ({ posts, lang, onOpe
 
         {filteredPosts.length === 0 && (
           <div className="px-cell py-8 text-center font-mono text-caption uppercase tracking-ui text-muted-foreground">
-            {lang === 'fr' ? 'Aucun article' : 'No posts'}
+            {discoveryPage.noPosts[lang]}
           </div>
         )}
       </div>

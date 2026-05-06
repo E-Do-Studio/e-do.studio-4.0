@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { IconArrowRight, cn } from './ui';
 import type { Lang, ChatMessage } from './types';
+import { assistant as assistantMsg } from './i18n/messages';
 
 declare global {
   interface Window {
@@ -51,7 +52,7 @@ interface AssistantHeaderProps {
 const AssistantHeader = ({ lang, mode, loading, onReset }: AssistantHeaderProps) => (
   <div className="flex shrink-0 items-center justify-between">
     <div className="flex items-center gap-2">
-      <span className="edo-cell-label">{lang === 'fr' ? 'Assistant' : 'Assistant'}</span>
+      <span className="edo-cell-label">Assistant</span>
       {mode === 'chat' && (
         <span
           className={cn(
@@ -67,7 +68,7 @@ const AssistantHeader = ({ lang, mode, loading, onReset }: AssistantHeaderProps)
         onClick={onReset}
         className="edo-focus-ring cursor-pointer border-0 bg-transparent p-0 font-mono text-micro uppercase tracking-code text-muted-foreground transition-colors hover:text-foreground"
       >
-        {lang === 'fr' ? '↺ Reset' : '↺ Reset'}
+        ↺ Reset
       </button>
     )}
   </div>
@@ -194,7 +195,7 @@ const AssistantInput = ({ input, setInput, loading, lang, onSend, inputRef }: As
       value={input}
       onChange={(event) => setInput(event.target.value)}
       disabled={loading}
-      placeholder={lang === 'fr' ? 'Écrire votre demande…' : 'Type your request…'}
+      placeholder={assistantMsg.placeholder[lang]}
       className="edo-focus-ring min-w-0 flex-1 border-0 bg-transparent font-sans text-detail text-foreground opacity-100 placeholder:text-muted-foreground placeholder:transition-colors disabled:opacity-50 group-hover:placeholder:text-primary"
     />
     <button
@@ -243,9 +244,7 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
     } catch (_error) {
       setMessages((currentMessages) => [...currentMessages, {
         role: 'assistant',
-        content: lang === 'fr'
-          ? 'Désolé, je n\'ai pas pu traiter votre demande. Contactez-nous directement à contact@e-do.studio.'
-          : 'Sorry, I couldn\'t process your request. Contact us directly at contact@e-do.studio.'
+        content: assistantMsg.errorFallback[lang],
       }]);
     } finally {
       setLoading(false);

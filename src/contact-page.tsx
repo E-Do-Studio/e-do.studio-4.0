@@ -5,6 +5,7 @@ import { useDocumentMeta } from './lib/use-document-meta';
 import type { Lang, ContactFormData, Bilingual } from './types';
 import { usePageContext } from './router';
 import { submitContactForm } from './lib/contact';
+import { common, contact as contactMsg } from './i18n/messages';
 
 interface Subject extends Bilingual {
   k: string;
@@ -69,10 +70,10 @@ const ContactRail = ({ lang }: ContactRailProps) => (
 
 const FindUsSection = ({ lang }: { lang: Lang }) => (
   <section className="border-b border-border p-6">
-    <CellLabel className="mb-5 block">{lang === 'fr' ? 'Nous trouver' : 'Find us'}</CellLabel>
+    <CellLabel className="mb-5 block">{contactMsg.findUs[lang]}</CellLabel>
     <div className="text-detail leading-copy font-normal text-muted-foreground">
       <span className="mb-2 block font-mono text-label uppercase tracking-ui">
-        Parc d'activités Victor&nbsp;Hugo · {lang === 'fr' ? 'Bât.' : 'Bldg.'} 6.7
+        Parc d'activités Victor&nbsp;Hugo · {contactMsg.bldg[lang]} 6.7
       </span>
       69 boulevard Victor Hugo<br />
       93400 <span className="whitespace-nowrap">Saint-Ouen</span>,<br />France
@@ -101,10 +102,10 @@ const MetroLine = ({ line, label, className }: MetroLineProps) => (
 
 const HoursSection = ({ lang }: { lang: Lang }) => (
   <section className="border-b border-border p-6">
-    <CellLabel className="mb-5 block">{lang === 'fr' ? 'Horaires' : 'Hours'}</CellLabel>
+    <CellLabel className="mb-5 block">{contactMsg.hours[lang]}</CellLabel>
     <div className="flex flex-col gap-3 text-caption">
-      <HoursRow label={lang === 'fr' ? 'Lun — Ven' : 'Mon — Fri'} value="10:00 — 18:00" />
-      <HoursRow label={lang === 'fr' ? 'Sam — Dim' : 'Sat — Sun'} value={lang === 'fr' ? 'Sur demande' : 'On request'} muted />
+      <HoursRow label={contactMsg.monFri[lang]} value="10:00 — 18:00" />
+      <HoursRow label={contactMsg.satSun[lang]} value={common.onRequest[lang]} muted />
     </div>
   </section>
 );
@@ -124,7 +125,7 @@ const HoursRow = ({ label, value, muted = false }: HoursRowProps) => (
 
 const PhoneSection = ({ lang }: { lang: Lang }) => (
   <section className="p-6">
-    <CellLabel className="mb-5 block">{lang === 'fr' ? 'Téléphone' : 'Phone'}</CellLabel>
+    <CellLabel className="mb-5 block">{contactMsg.phone[lang]}</CellLabel>
     <a href="tel:+33144041149" className="text-caption font-mono tracking-ui text-foreground no-underline">
       +33 1 44 04 11 49
     </a>
@@ -185,9 +186,9 @@ const ContactForm = ({ lang, form, setForm, submit, sending, sendError }: Contac
     className="grid h-full grid-cols-2 grid-rows-contact-form gap-px bg-border"
   >
     <div className="col-span-2 flex flex-col justify-center bg-white px-5 py-2.5">
-      <span className="edo-cell-label text-primary">{lang === 'fr' ? 'Écrivez-nous' : 'Write to us'}</span>
+      <span className="edo-cell-label text-primary">{contactMsg.writeToUs[lang]}</span>
       <h1 className="m-0 mt-0.5 text-tile-large font-light leading-none tracking-display text-foreground">
-        {lang === 'fr' ? 'Un projet, une visite ?' : 'A project, a visit?'}
+        {contactMsg.projectVisit[lang]}
       </h1>
     </div>
 
@@ -202,11 +203,11 @@ const ContactForm = ({ lang, form, setForm, submit, sending, sendError }: Contac
       />
     ))}
 
-    <ContactInput required value={form.nom} onChange={(value) => setForm({...form, nom: value})} placeholder={lang === 'fr' ? 'Nom*' : 'Name*'} className="col-start-1 row-start-4" />
-    <ContactInput required type="tel" value={form.telephone} onChange={(value) => setForm({...form, telephone: value})} placeholder={lang === 'fr' ? 'Téléphone*' : 'Phone*'} className="col-start-2 row-start-4" />
+    <ContactInput required value={form.nom} onChange={(value) => setForm({...form, nom: value})} placeholder={contactMsg.name[lang]} className="col-start-1 row-start-4" />
+    <ContactInput required type="tel" value={form.telephone} onChange={(value) => setForm({...form, telephone: value})} placeholder={contactMsg.phonePlaceholder[lang]} className="col-start-2 row-start-4" />
     <ContactInput required type="email" value={form.email} onChange={(value) => setForm({...form, email: value})} placeholder="Email*" className="col-span-2 row-start-5" />
-    <ContactInput required value={form.societe} onChange={(value) => setForm({...form, societe: value})} placeholder={lang === 'fr' ? 'Société · Marque*' : 'Company · Brand*'} className="col-span-2 row-start-6" />
-    <ContactTextarea required value={form.message} onChange={(value) => setForm({...form, message: value})} placeholder={lang === 'fr' ? 'Votre message*' : 'Your message*'} />
+    <ContactInput required value={form.societe} onChange={(value) => setForm({...form, societe: value})} placeholder={contactMsg.companyBrand[lang]} className="col-span-2 row-start-6" />
+    <ContactTextarea required value={form.message} onChange={(value) => setForm({...form, message: value})} placeholder={contactMsg.yourMessage[lang]} />
 
     {sendError && (
       <div className="col-span-2 flex items-center bg-red-50 px-5 py-2 text-sm text-red-600">
@@ -220,8 +221,8 @@ const ContactForm = ({ lang, form, setForm, submit, sending, sendError }: Contac
       className="edo-focus-ring col-span-2 row-start-8 flex cursor-pointer items-center justify-center gap-3.5 border-0 bg-primary font-mono text-caption uppercase tracking-label text-white transition-colors hover:bg-foreground hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {sending
-        ? (lang === 'fr' ? 'Envoi en cours…' : 'Sending…')
-        : <>{lang === 'fr' ? 'Envoyer' : 'Send'} <IconArrowRight width="16" height="16" /></>
+        ? common.sending[lang]
+        : <>{common.send[lang]} <IconArrowRight width="16" height="16" /></>
       }
     </button>
   </form>
@@ -301,14 +302,12 @@ interface ContactSuccessProps {
 
 const ContactSuccess = ({ lang, setForm, setSent, goto }: ContactSuccessProps) => (
   <div className="flex h-full flex-col items-start justify-center gap-4 bg-white px-7 py-8">
-    <span className="edo-cell-label text-primary">✓ {lang === 'fr' ? 'Message envoyé' : 'Message sent'}</span>
+    <span className="edo-cell-label text-primary">✓ {contactMsg.messageSent[lang]}</span>
     <h1 className="m-0 max-w-lg text-page-title font-light leading-tight tracking-display text-foreground">
-      {lang === 'fr' ? 'Merci — à très vite.' : 'Thanks — talk soon.'}
+      {contactMsg.thanksSoon[lang]}
     </h1>
     <p className="m-0 max-w-md text-detail leading-normal text-muted-foreground">
-      {lang === 'fr'
-        ? 'Notre équipe vous répond sous 24 h ouvrées. En attendant, vous pouvez parcourir la galerie ou explorer les plateaux.'
-        : 'Our team replies within 1 business day. In the meantime, browse the gallery or explore the stages.'}
+      {contactMsg.replyTime[lang]}
     </p>
     <div className="mt-3 flex flex-wrap gap-2.5">
       <Button
@@ -319,13 +318,13 @@ const ContactSuccess = ({ lang, setForm, setSent, goto }: ContactSuccessProps) =
           setForm(INITIAL_FORM);
         }}
       >
-        {lang === 'fr' ? 'Nouveau message' : 'Another message'}
+        {contactMsg.newMessage[lang]}
       </Button>
       <Button
         size="lg"
         onClick={() => goto('gallery')}
       >
-        {lang === 'fr' ? 'Voir la galerie' : 'See gallery'} →
+        {contactMsg.seeGallery[lang]} →
       </Button>
     </div>
   </div>
@@ -348,7 +347,7 @@ const ContactMap = ({ lang }: { lang: Lang }) => (
       className="absolute inset-0 h-full w-full border-0"
       loading="lazy"
       referrerPolicy="no-referrer-when-downgrade"
-      title={lang === 'fr' ? 'Carte du studio E-Do' : 'E-Do studio map'}
+      title={contactMsg.mapTitle[lang]}
     />
 
     <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-3 bg-white/95 px-3 py-2.5">
@@ -362,7 +361,7 @@ const ContactMap = ({ lang }: { lang: Lang }) => (
         rel="noopener noreferrer"
         className="shrink-0 font-mono text-label uppercase tracking-meta text-primary no-underline"
       >
-        {lang === 'fr' ? 'Itinéraire →' : 'Directions →'}
+        {contactMsg.directions[lang]}
       </a>
     </div>
   </section>
@@ -370,7 +369,7 @@ const ContactMap = ({ lang }: { lang: Lang }) => (
 
 const TeamPanel = ({ lang }: { lang: Lang }) => (
   <section className="flex flex-col gap-3.5 bg-foreground p-6 text-white">
-    <span className="edo-cell-label text-white/70">{lang === 'fr' ? "L'équipe" : 'The team'}</span>
+    <span className="edo-cell-label text-white/70">{contactMsg.team[lang]}</span>
     <div className="flex flex-col gap-2.5">
       {TEAM.map((member, index) => (
         <TeamMemberRow key={index} member={member} lang={lang} />
@@ -414,7 +413,7 @@ const ContactPage = () => {
       await submitContactForm(form);
       setSent(true);
     } catch (err) {
-      setSendError(err instanceof Error ? err.message : lang === 'fr' ? 'Erreur lors de l\'envoi' : 'Failed to send message');
+      setSendError(err instanceof Error ? err.message : contactMsg.errorSend[lang]);
     } finally {
       setSending(false);
     }
@@ -425,13 +424,13 @@ const ContactPage = () => {
       {/* Mobile header */}
       <PageHeader
         lang={lang}
-        title={lang === 'fr' ? 'Nous contacter' : 'Contact us'}
+        title={common.contactUs[lang]}
         className="col-span-full h-14 md:hidden"
         onMenuClick={openMenu}
         onLogoClick={() => goto('home')}
         onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
         actions={[
-          { id: 'book', label: lang === 'fr' ? 'Réserver' : 'Book', onClick: () => goto('book'), variant: 'primary' },
+          { id: 'book', label: common.book[lang], onClick: () => goto('book'), variant: 'primary' },
         ]}
       />
 
@@ -444,23 +443,23 @@ const ContactPage = () => {
 
       {/* Desktop col 2 – title */}
       <div className="hidden md:flex h-full min-w-0 items-center bg-background px-6 md:col-start-2 md:row-start-1">
-        <CellLabel className="shrink-0 text-primary">{lang === 'fr' ? 'Nous contacter' : 'Contact us'}</CellLabel>
+        <CellLabel className="shrink-0 text-primary">{common.contactUs[lang]}</CellLabel>
       </div>
 
       {/* Desktop col 3 – stages */}
       <button onClick={() => goto('plateau-live')} className="edo-focus-ring hidden md:flex h-full cursor-pointer items-center justify-center gap-2 border-0 bg-background px-5 font-mono text-label tracking-ui uppercase text-foreground no-underline transition-colors hover:bg-muted md:col-start-3 md:row-start-1">
-        <span className="whitespace-nowrap">{lang === 'fr' ? 'Plateaux' : 'Stages'}</span>
+        <span className="whitespace-nowrap">{common.stages[lang]}</span>
         <IconArrowRight width={12} height={12} />
       </button>
 
       {/* Desktop col 4 – book + lang toggle */}
       <div className="hidden md:flex h-full items-center gap-px bg-foreground md:col-start-4 md:row-start-1">
         <button onClick={() => goto('book')} className="edo-focus-ring flex h-full flex-1 cursor-pointer items-center justify-center gap-2 border-0 bg-primary px-5 font-mono text-label tracking-ui uppercase text-white no-underline transition-colors hover:bg-foreground">
-          <span className="whitespace-nowrap">{lang === 'fr' ? 'Réserver' : 'Book'}</span>
+          <span className="whitespace-nowrap">{common.book[lang]}</span>
           <IconArrowRight width={12} height={12} />
         </button>
         <button onClick={() => setLang(lang === 'fr' ? 'en' : 'fr')} className="edo-focus-ring flex h-full basis-header flex-none cursor-pointer items-center justify-center border-0 bg-background p-0 transition-colors hover:bg-muted">
-          <span className="font-mono text-label tracking-meta text-foreground">{lang === 'fr' ? 'EN' : 'FR'}</span>
+          <span className="font-mono text-label tracking-meta text-foreground">{common.langToggleLabel[lang]}</span>
         </button>
       </div>
       <ContactRail lang={lang} />

@@ -3,6 +3,7 @@ import type { Lang } from '../types';
 import { IconGlobe } from './icons';
 import logoFull from '../../brand/logo-full.png';
 import logoMark from '../../brand/logo-mark.png';
+import { common } from '../i18n/messages';
 
 interface WordmarkProps {
   size?: 32 | 40;
@@ -34,7 +35,7 @@ const LangSwitch = ({ lang, onToggle }: LangSwitchProps) => (
   >
     <IconGlobe width="14" height="14" />
     <div className="flex items-center gap-0.5 font-mono text-micro font-medium text-muted-foreground">
-      <span>{lang === 'fr' ? 'EN' : 'FR'}</span>
+      <span>{common.langToggleLabel[lang]}</span>
       <svg
         width="10"
         height="10"
@@ -47,7 +48,7 @@ const LangSwitch = ({ lang, onToggle }: LangSwitchProps) => (
         <path d="M5 12h14" />
         <path d="m12 5 7 7-7 7" />
       </svg>
-      <span>{lang === 'fr' ? 'EN' : 'FR'}</span>
+      <span>{common.langToggleLabel[lang]}</span>
     </div>
   </button>
 );
