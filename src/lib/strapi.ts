@@ -44,10 +44,13 @@ interface StrapiMachine {
   subtitle_en: string;
   description_fr: string;
   description_en: string;
+  image?: StrapiMedia;
   pricing_fr: string;
   pricing_en: string;
   operatorPricing_fr: string | null;
   operatorPricing_en: string | null;
+  gallery?: StrapiMedia[];
+  video?: StrapiMedia;
   orderRank: number;
   specs?: StrapiSpec[];
 }
@@ -59,10 +62,18 @@ interface StrapiCyclorama {
   subtitle_en: string;
   description_fr: string;
   description_en: string;
+  image?: StrapiMedia;
   pricing_fr: string;
   pricing_en: string;
+  comfortText_fr?: string;
+  comfortText_en?: string;
+  complementaryServices_fr?: string;
+  complementaryServices_en?: string;
+  equipmentRental_fr?: string;
+  equipmentRental_en?: string;
   pricingDescription_fr: string;
   pricingDescription_en: string;
+  gallery?: StrapiMedia[];
   specs?: StrapiSpec[];
   amenities?: StrapiLocalizedItem[];
 }
@@ -76,6 +87,8 @@ interface StrapiPostProdType {
   description_en: string;
   price_fr: string;
   price_en: string;
+  image?: StrapiMedia;
+  gallery?: StrapiMedia[];
   orderRank: number;
   includes?: StrapiLocalizedItem[];
 }
@@ -98,12 +111,17 @@ interface StrapiBlogPost {
   excerpt_en: string;
   body_fr?: string;
   body_en?: string;
-  author?: string;
-  readingTime?: number;
-  featured?: boolean;
   coverImage?: StrapiMedia;
   publishedAt: string;
   categories?: { id: number; title_fr: string; title_en: string; slug: string }[];
+  cta_text_fr?: string;
+  cta_text_en?: string;
+  cta_label_fr?: string;
+  cta_label_en?: string;
+  cta_url?: string;
+  seo_title?: string;
+  seo_description?: string;
+  seo_image?: StrapiMedia;
 }
 
 interface StrapiBlogCategory {
@@ -113,40 +131,68 @@ interface StrapiBlogCategory {
   slug: string;
 }
 
+interface StrapiLabelItem { label_fr: string; label_en: string; value: string }
+interface StrapiAddressEntry { name: string; address: string; note_fr?: string; note_en?: string }
+
 interface StrapiSiteSettings {
   siteTitle: string;
+  siteDescription_fr?: string;
+  siteDescription_en?: string;
+  logo?: StrapiMedia;
   phone: string;
   phoneHref: string;
   email: string;
   street: string;
   city: string;
   postalCode: string;
+  country?: string;
   fullAddress: string;
+  googleMapsUrl?: string;
+  mapsEmbedUrl?: string;
+  latitude?: number;
+  longitude?: number;
+  transport?: StrapiLabelItem[];
+  parking_fr?: string;
+  parking_en?: string;
+  entries?: StrapiAddressEntry[];
   hours_fr: string;
   hours_en: string;
+  weekendHours_fr?: string;
+  weekendHours_en?: string;
+  openingHoursSpec?: string;
   socialLinks?: StrapiSocialLink[];
+  defaultSeoTitle?: string;
+  defaultSeoDescription?: string;
+  defaultSeoImage?: StrapiMedia;
+  googleAnalyticsId?: string;
 }
 
 interface StrapiGalleryBrand {
   id: number;
   name: string;
+  url?: string;
+  logo?: StrapiMedia;
   orderRank: number;
 }
 
 interface StrapiGalleryCategory {
   id: number;
-  title_fr: string;
-  title_en: string;
+  name_fr: string;
+  name_en: string;
   slug: string;
-  orderRank: number;
+  group?: 'live' | 'eclipse' | 'ghost' | 'pique' | 'horizontal' | 'vertical' | 'packshot' | 'cyclorama' | 'post-prod';
+  order: number;
 }
 
 interface StrapiGalleryProject {
   id: number;
+  title: string;
   slug: string;
   stage: string;
   year: number | string;
+  orderRank: number;
   category?: StrapiGalleryCategory;
+  brand?: { id: number; name: string };
   images?: StrapiMedia[];
 }
 
@@ -404,8 +450,8 @@ const FALLBACK_MACHINES: MachineInfo[] = [
 export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
   try {
     const [machinesRes, cycloRes] = await Promise.all([
-      fetchStrapi<{ data: StrapiMachine[] }>('machines', { 'populate': 'specs', 'sort': 'orderRank:asc' }),
-      fetchStrapi<{ data: StrapiCyclorama }>('cyclorama', { 'populate': 'specs,amenities' }),
+      fetchStrapi<{ data: StrapiMachine[] }>('machines', { 'populate': 'specs,image', 'sort': 'orderRank:asc' }),
+      fetchStrapi<{ data: StrapiCyclorama }>('cyclorama', { 'populate': 'specs,amenities,image' }),
     ]);
 
     const result: Record<string, PlateauSpec> = {};
@@ -482,7 +528,7 @@ export async function fetchMachines(): Promise<MachineInfo[]> {
 
 export async function fetchPostProdTypes(): Promise<PPCat[]> {
   const res = await fetchStrapi<{ data: StrapiPostProdType[] }>('post-production-types', {
-    'populate': 'includes',
+    'populate': 'includes,image',
     'sort': 'orderRank:asc',
   });
 
@@ -539,7 +585,7 @@ export async function fetchDiscoveryPosts(): Promise<DiscoveryPost[]> {
     const cat = p.categories?.[0];
     const bodyFr = p.body_fr ?? '';
     const bodyEn = p.body_en ?? '';
-    const readingTime = p.readingTime ?? estimateReadingTime(bodyFr || bodyEn);
+    const readingTime = estimateReadingTime(bodyFr || bodyEn);
     return {
       id: p.id,
       cat: cat?.slug ?? 'tips',
@@ -550,9 +596,8 @@ export async function fetchDiscoveryPosts(): Promise<DiscoveryPost[]> {
       body: { fr: bodyFr, en: bodyEn },
       date: formatStrapiDate(p.publishedAt),
       read: `${readingTime} min`,
-      author: p.author ?? 'Studio',
+      author: 'Studio',
       coverUrl: resolveStrapiMediaUrl(p.coverImage),
-      featured: p.featured ?? false,
     };
   });
 }
@@ -574,13 +619,20 @@ export async function fetchDiscoveryCategories(): Promise<DiscoveryCategory[]> {
   ];
 }
 
+function fetchSiteSettings(): Promise<{ data: StrapiSiteSettings }> {
+  return fetchStrapi<{ data: StrapiSiteSettings }>('site-setting', {
+    'populate': 'socialLinks,transport,entries,logo',
+  });
+}
+
 export async function fetchSocialLinks(): Promise<SocialLink[]> {
-  const res = await fetchStrapi<{ data: StrapiSiteSettings }>('site-setting', { 'populate': 'socialLinks' });
+  const res = await fetchSiteSettings();
   return (res.data.socialLinks ?? []).map(s => ({ k: s.platform, label: s.label, href: s.url }));
 }
 
 export async function fetchBrands(): Promise<string[]> {
   const res = await fetchStrapi<{ data: StrapiGalleryBrand[] }>('gallery-brands', {
+    'populate': 'logo',
     'sort': 'orderRank:asc',
     'pagination[pageSize]': '50',
   });
@@ -588,7 +640,7 @@ export async function fetchBrands(): Promise<string[]> {
 }
 
 export async function fetchContact() {
-  const res = await fetchStrapi<{ data: StrapiSiteSettings }>('site-setting');
+  const res = await fetchSiteSettings();
   const s = res.data;
   return {
     phone: s.phone,
@@ -596,12 +648,14 @@ export async function fetchContact() {
     email: s.email,
     emailHref: `mailto:${s.email}`,
     address: { street: s.street, zip: `${s.postalCode} ${s.city}` },
+    fullAddress: s.fullAddress,
+    googleMapsUrl: s.googleMapsUrl,
     etouch: 'https://etouch.e-do.studio',
   };
 }
 
 export async function fetchStudioHours(): Promise<Bilingual> {
-  const res = await fetchStrapi<{ data: StrapiSiteSettings }>('site-setting');
+  const res = await fetchSiteSettings();
   return { fr: res.data.hours_fr, en: res.data.hours_en };
 }
 
@@ -661,15 +715,15 @@ function slugToTitle(slug: string): string {
 export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
   try {
     const res = await fetchStrapi<{ data: StrapiGalleryProject[] }>('gallery-projects', {
-      'populate': 'category,images',
-      'sort': 'id:asc',
+      'populate': 'category,brand,images',
+      'sort': 'orderRank:asc',
       'pagination[pageSize]': '100',
     });
 
     if (res.data.length > 0) {
       return res.data.map((p, i) => ({
         id: p.id,
-        brand: slugToTitle(p.slug),
+        brand: p.brand?.name ?? p.title ?? slugToTitle(p.slug),
         slug: p.slug,
         cat: p.category?.slug ?? 'other',
         plateau: p.stage,
@@ -687,10 +741,10 @@ export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
 export async function fetchGalleryCategories(): Promise<GalleryCategory[]> {
   try {
     const res = await fetchStrapi<{ data: StrapiGalleryCategory[] }>('gallery-categories', {
-      'sort': 'orderRank:asc',
+      'sort': 'order:asc',
     });
     if (res.data.length > 0) {
-      return res.data.map(c => ({ k: c.slug, fr: c.title_fr, en: c.title_en }));
+      return res.data.map(c => ({ k: c.slug, fr: c.name_fr, en: c.name_en }));
     }
   } catch {
     // Strapi gallery-category content type not available yet
