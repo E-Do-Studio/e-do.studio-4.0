@@ -1,13 +1,5 @@
 const HUBSPOT_API = "https://api.hubapi.com";
 
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
 interface HubSpotContactProperties {
   email: string;
   firstname?: string;
@@ -155,13 +147,13 @@ export async function syncContactForm(
   });
 
   const noteBody = [
-    `<strong>Formulaire de contact — ${escapeHtml(params.sujet)}</strong>`,
+    `<strong>Formulaire de contact — ${params.sujet}</strong>`,
     `<br><br>`,
-    `<strong>Nom :</strong> ${escapeHtml(params.nom)}<br>`,
-    `<strong>Email :</strong> ${escapeHtml(params.email)}<br>`,
-    params.telephone ? `<strong>Téléphone :</strong> ${escapeHtml(params.telephone)}<br>` : "",
-    params.societe ? `<strong>Société :</strong> ${escapeHtml(params.societe)}<br>` : "",
-    `<br><strong>Message :</strong><br>${escapeHtml(params.message)}`,
+    `<strong>Nom :</strong> ${params.nom}<br>`,
+    `<strong>Email :</strong> ${params.email}<br>`,
+    params.telephone ? `<strong>Téléphone :</strong> ${params.telephone}<br>` : "",
+    params.societe ? `<strong>Société :</strong> ${params.societe}<br>` : "",
+    `<br><strong>Message :</strong><br>${params.message}`,
   ].filter(Boolean).join("");
 
   await createNote(token, noteBody, contactId);
