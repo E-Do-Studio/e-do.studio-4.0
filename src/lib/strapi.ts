@@ -48,7 +48,6 @@ interface StrapiMachine {
   pricing_en: string;
   operatorPricing_fr: string | null;
   operatorPricing_en: string | null;
-  orderRank: number;
   specs?: StrapiSpec[];
 }
 
@@ -76,7 +75,6 @@ interface StrapiPostProdType {
   description_en: string;
   price_fr: string;
   price_en: string;
-  orderRank: number;
   includes?: StrapiLocalizedItem[];
 }
 
@@ -127,7 +125,6 @@ interface StrapiSiteSettings {
 interface StrapiGalleryBrand {
   id: number;
   name: string;
-  orderRank: number;
 }
 
 interface StrapiGalleryCategory {
@@ -145,7 +142,6 @@ interface StrapiGalleryProject {
   slug: string;
   stage: string;
   year: number | string;
-  orderRank: number;
   category?: StrapiGalleryCategory;
   brand?: StrapiGalleryBrand;
   images?: StrapiMedia[];
@@ -405,7 +401,7 @@ const FALLBACK_MACHINES: MachineInfo[] = [
 export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
   try {
     const [machinesRes, cycloRes] = await Promise.all([
-      fetchStrapi<{ data: StrapiMachine[] }>('machines', { 'populate': 'specs', 'sort': 'orderRank:asc' }),
+      fetchStrapi<{ data: StrapiMachine[] }>('machines', { 'populate': 'specs', 'sort': 'rank:asc' }),
       fetchStrapi<{ data: StrapiCyclorama }>('cyclorama', { 'populate': 'specs,amenities' }),
     ]);
 
@@ -427,9 +423,9 @@ export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
       };
     }
 
-    for (const m of machinesRes.data) {
+    machinesRes.data.forEach((m, i) => {
       result[m.slug] = {
-        num: String(m.orderRank).padStart(2, '0'),
+        num: String(i + 2).padStart(2, '0'),
         name: m.title,
         slug: m.slug,
         tagline: { fr: m.subtitle_fr, en: m.subtitle_en },
@@ -439,7 +435,7 @@ export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
         rates: parsePricingToRates(m.pricing_fr, m.pricing_en),
         visual: m.slug,
       };
-    }
+    });
 
     if (Object.keys(result).length > 0) return result;
   } catch {
@@ -451,7 +447,7 @@ export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
 export async function fetchMachines(): Promise<MachineInfo[]> {
   try {
     const [machinesRes, cycloRes] = await Promise.all([
-      fetchStrapi<{ data: StrapiMachine[] }>('machines', { 'sort': 'orderRank:asc' }),
+      fetchStrapi<{ data: StrapiMachine[] }>('machines', { 'sort': 'rank:asc' }),
       fetchStrapi<{ data: StrapiCyclorama }>('cyclorama'),
     ]);
 
@@ -484,7 +480,7 @@ export async function fetchMachines(): Promise<MachineInfo[]> {
 export async function fetchPostProdTypes(): Promise<PPCat[]> {
   const res = await fetchStrapi<{ data: StrapiPostProdType[] }>('post-production-types', {
     'populate': 'includes',
-    'sort': 'orderRank:asc',
+    'sort': 'rank:asc',
   });
 
   return res.data.map(t => ({
@@ -582,7 +578,7 @@ export async function fetchSocialLinks(): Promise<SocialLink[]> {
 
 export async function fetchBrands(): Promise<string[]> {
   const res = await fetchStrapi<{ data: StrapiGalleryBrand[] }>('gallery-brands', {
-    'sort': 'orderRank:asc',
+    'sort': 'rank:asc',
     'pagination[pageSize]': '50',
   });
   return res.data.map(b => b.name);
@@ -688,7 +684,7 @@ export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
 export async function fetchGalleryCategories(): Promise<GalleryCategory[]> {
   try {
     const res = await fetchStrapi<{ data: StrapiGalleryCategory[] }>('gallery-categories', {
-      'sort': 'orderRank:asc',
+      'sort': 'rank:asc',
     });
     if (res.data.length > 0) {
       return res.data.map(c => ({ k: c.slug, fr: c.name_fr, en: c.name_en ?? c.name_fr }));
