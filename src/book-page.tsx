@@ -6,7 +6,7 @@ import { MarqueeCell } from './cells';
 import { createBooking } from './lib/bookings';
 import { validateContact, type ContactFormErrors } from './lib/booking-schema';
 import { loadDraft, clearDraft, useBookingDraftSaver } from './lib/use-booking-draft';
-import { useAvailability, isHourBlocked } from './lib/availability';
+import { useAvailability, isHourBlocked, clearAvailabilityCache } from './lib/availability';
 import type { Lang } from './types';
 import type { BookingSessionData } from './lib/bookings';
 
@@ -390,6 +390,7 @@ const BookPageV2 = () => {
   const [sent, setSent] = useStateBook<SentMode>(false);
   const [saving, setSaving] = useStateBook<boolean>(false);
   const [saveError, setSaveError] = useStateBook<string | null>(null);
+  const [availRefreshKey, setAvailRefreshKey] = useStateBook(0);
   const [savedRef, setSavedRef] = useStateBook<string | null>(null);
   const saveDraft = useBookingDraftSaver(() => ({
     step, configGlobal, configSessions, activeSessionIdx, configApplied,
@@ -632,7 +633,12 @@ const BookPageV2 = () => {
       clearDraft();
       setSent(submitMode);
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : lang === 'fr' ? 'Erreur lors de la sauvegarde' : 'Failed to save booking');
+      const msg = err instanceof Error ? err.message : '';
+      if (msg.includes('réservé') || msg.includes('already booked')) {
+        clearAvailabilityCache();
+        setAvailRefreshKey(k => k + 1);
+      }
+      setSaveError(msg || (lang === 'fr' ? 'Erreur lors de la sauvegarde' : 'Failed to save booking'));
     } finally {
       setSaving(false);
     }
@@ -736,14 +742,14 @@ const BookPageV2 = () => {
           {step===5 && <Step7Contact lang={lang} contact={contact} setContact={setContact} p={p} configMode={configApplied} errors={contactErrors}/>}
           {step===6 && (() => {
             const list = plateaus && plateaus.length > 0 ? plateaus : (plateau ? [plateau] : []);
-            if (list.length <= 1) { return <Step2Date lang={lang} p={p} viewY={viewY} viewM={viewM} months={months} days={days} calCells={calCells} selected={selected} setSelected={setSelected} arrivalHour={arrivalHour} setArrivalHour={setArrivalHour} rentalHours={rentalHours} isPast={isPast} nextMonth={nextMonth} prevMonth={prevMonth}/>; }
+            if (list.length <= 1) { return <Step2Date lang={lang} p={p} viewY={viewY} viewM={viewM} months={months} days={days} calCells={calCells} selected={selected} setSelected={setSelected} arrivalHour={arrivalHour} setArrivalHour={setArrivalHour} rentalHours={rentalHours} isPast={isPast} nextMonth={nextMonth} prevMonth={prevMonth} refreshKey={availRefreshKey}/>; }
             const safeIdx = Math.max(0, Math.min(dateIdx, list.length - 1));
             const k = list[safeIdx]; const px = BOOK_PLATEAUX.find(x => x.k === k); const st = perPlateau[k] || {};
             const setSt = (patch: PerPlateauState) => setPerPlateau(prev => ({...prev, [k]: {...(prev[k]||{}), ...patch}}));
             const stHours = st.hours != null ? st.hours : (st.slotType==='hour' ? 1 : st.slotType==='half' ? 4 : 8);
             const stRentalHours = px && px.isCyclo ? ((st.cycloMode||'halfH')==='halfH' ? 5 : 10) : px && px.isVisite ? 1 : stHours;
             const stSelected = st.date || null; const stArrival = st.arrivalHour != null ? st.arrivalHour : 10;
-            return (<div><div className="px-6 border-b border-foreground flex items-center h-control box-border gap-4 bg-white flex-wrap sticky top-0 z-10"><span className="edo-cell-label text-primary whitespace-nowrap">{lang==='fr'?'Plateau':'Stage'} {String(safeIdx+1).padStart(2,'0')} / {String(list.length).padStart(2,'0')}</span><span className="text-detail font-normal tracking-copy-tight text-foreground">{px ? px[lang] : k}</span><div className="flex gap-1.5 ml-auto">{list.map((kk, i) => { const has = perPlateau[kk] && perPlateau[kk].date; const active = i === safeIdx; return (<button key={kk} onClick={()=>setDateIdx(i)} className={`${active ? 'bg-foreground text-white border-foreground' : has ? 'bg-primary text-white border-primary' : 'bg-white text-foreground border-border'} border px-2.5 py-1 cursor-pointer font-mono text-label tracking-ui min-w-7 text-center`}>{String(i+1).padStart(2,'0')}{has?' ✓':''}</button>); })}</div></div><Step2Date lang={lang} p={px} viewY={viewY} viewM={viewM} months={months} days={days} calCells={calCells} selected={stSelected} setSelected={(d: DateSelection)=>setSt({date:d})} arrivalHour={stArrival} setArrivalHour={(h: number)=>setSt({arrivalHour:h})} rentalHours={stRentalHours} isPast={isPast} nextMonth={nextMonth} prevMonth={prevMonth}/></div>);
+            return (<div><div className="px-6 border-b border-foreground flex items-center h-control box-border gap-4 bg-white flex-wrap sticky top-0 z-10"><span className="edo-cell-label text-primary whitespace-nowrap">{lang==='fr'?'Plateau':'Stage'} {String(safeIdx+1).padStart(2,'0')} / {String(list.length).padStart(2,'0')}</span><span className="text-detail font-normal tracking-copy-tight text-foreground">{px ? px[lang] : k}</span><div className="flex gap-1.5 ml-auto">{list.map((kk, i) => { const has = perPlateau[kk] && perPlateau[kk].date; const active = i === safeIdx; return (<button key={kk} onClick={()=>setDateIdx(i)} className={`${active ? 'bg-foreground text-white border-foreground' : has ? 'bg-primary text-white border-primary' : 'bg-white text-foreground border-border'} border px-2.5 py-1 cursor-pointer font-mono text-label tracking-ui min-w-7 text-center`}>{String(i+1).padStart(2,'0')}{has?' ✓':''}</button>); })}</div></div><Step2Date lang={lang} p={px} viewY={viewY} viewM={viewM} months={months} days={days} calCells={calCells} selected={stSelected} setSelected={(d: DateSelection)=>setSt({date:d})} arrivalHour={stArrival} setArrivalHour={(h: number)=>setSt({arrivalHour:h})} rentalHours={stRentalHours} isPast={isPast} nextMonth={nextMonth} prevMonth={prevMonth} refreshKey={availRefreshKey}/></div>);
           })()}
         </div>
 
@@ -1019,8 +1025,8 @@ const Step1Plateau = ({ lang, plateau, setPlateau, plateaus, togglePlateau, setC
   </div>
 );
 
-const Step2Date = ({ lang, p, viewY, viewM, months, days, calCells, selected, setSelected, arrivalHour, setArrivalHour, rentalHours, isPast, nextMonth, prevMonth }: AnyProps) => {
-  const { availMap, bookedHoursMap, loading: availLoading } = useAvailability(p?.k, viewY, viewM, rentalHours);
+const Step2Date = ({ lang, p, viewY, viewM, months, days, calCells, selected, setSelected, arrivalHour, setArrivalHour, rentalHours, isPast, nextMonth, prevMonth, refreshKey = 0 }: AnyProps) => {
+  const { availMap, bookedHoursMap, loading: availLoading } = useAvailability(p?.k, viewY, viewM, rentalHours, refreshKey);
   const isSelected = (d: number) => selected && selected.y===viewY && selected.m===viewM && selected.d===d;
   const now = new Date();
   const todayY = now.getFullYear(); const todayM = now.getMonth(); const todayD = now.getDate();
@@ -1097,14 +1103,14 @@ const Step2Date = ({ lang, p, viewY, viewM, months, days, calCells, selected, se
       <span className="edo-cell-label">{fr ? "Heure d'arrivée" : 'Arrival time'}</span>
       <span className="font-mono text-label tracking-ui text-muted-foreground">{String(arrivalHour).padStart(2,'0')}:00 {"→"} {String(arrivalHour+rentalHours).padStart(2,'0')}:00 {"·"} {rentalHours}h</span>
     </div>
-    <div className="grid grid-cols-10 gap-px bg-black border-b border-foreground w-full">{Array.from({length:10},(_,i)=>i+9).map(h=>{
+    <div className="grid grid-cols-5 sm:grid-cols-10 gap-px bg-black border-b border-foreground w-full">{Array.from({length:10},(_,i)=>i+9).map(h=>{
       const on = arrivalHour===h; const endsTooLate = h + rentalHours > 19;
       const pastHour = isSelectedToday && h <= currentHour;
       const booked = isHourBlocked(selectedDayBooked, h, rentalHours);
       const disabled = endsTooLate || pastHour || booked;
       return (<button key={h} disabled={disabled} onClick={()=>!disabled && setArrivalHour(h)}
         title={booked ? (fr ? 'Créneau déjà réservé' : 'Time slot already booked') : pastHour ? (fr ? 'Créneau passé' : 'Past time slot') : endsTooLate ? (fr ? `Termine à ${h+rentalHours}h, après la fermeture` : `Ends at ${h+rentalHours}h, past closing`) : ''}
-        className={`${on ? 'bg-foreground text-white' : disabled ? 'bg-muted text-muted-foreground' : 'bg-white text-foreground hover:bg-edo-gray-100'} border-0 ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'} flex items-center justify-center font-mono text-caption tracking-caption min-w-0 aspect-arrival transition-colors duration-100${booked ? ' line-through' : ''}`}>
+        className={`${on ? 'bg-foreground text-white' : disabled ? 'bg-muted text-muted-foreground' : 'bg-white text-foreground hover:bg-edo-gray-100'} border-0 ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'} flex items-center justify-center font-mono text-caption tracking-caption min-w-0 py-3 sm:py-0 sm:aspect-arrival transition-colors duration-100${booked ? ' line-through' : ''}`}>
         {String(h).padStart(2,'0')}:00
       </button>);
     })}</div>
@@ -1271,7 +1277,7 @@ const Confirmation = ({ lang, openMenu, goto, setLang, plateau, selected, arriva
         <div className="bg-white px-5 py-3"><div className="edo-cell-label text-muted-foreground mb-1">{lang==='fr'?'Société':'Company'}</div><div className="text-detail font-medium tracking-copy-tight">{contact.societe||'—'}</div></div>
         <div className="bg-white px-5 py-3"><div className="edo-cell-label text-muted-foreground mb-1">SIREN</div><div className="font-mono text-caption tracking-caption">{contact.siren||'—'}</div></div>
       </div>
-      <div className="bg-white px-12 py-cell pb-5"><div className="edo-cell-label text-muted-foreground mb-2.5">{lang==='fr'?'Détail du devis*':'Quote breakdown*'}</div><div className="flex flex-col">{rows.map((r,i)=>(<div key={i} className={`flex flex-col py-1.5 gap-0.5 ${i===rows.length-1 ? '' : 'border-b border-b-border'}`}><div className="flex justify-between items-baseline text-caption"><span className="tracking-copy-tight">{(() => { const idx = r.lbl.indexOf(' · '); if (idx === -1) return <span className="text-foreground">{r.lbl}</span>; return (<><span className="text-muted-foreground">{r.lbl.slice(0, idx)}</span><span className="text-foreground">{r.lbl.slice(idx)}</span></>); })()}</span><span className="font-mono tabular-nums text-foreground">{r.onReq ? (lang==='fr'?'sur demande':'on request') : `${fmtEUR(r.amt)} €`}</span></div>{r.breakdown && r.breakdown.length > 0 && (<div className="flex flex-col gap-px mt-0.5">{r.breakdown.map((b, bi) => { const viewLbl = b.labels ? b.labels[lang] : null; const formula = b.imagesPerSku && b.imagesPerSku > 1 ? `${b.qty} × ${b.imagesPerSku} × ${fmtEUR(b.unit)} €` : `${b.qty} × ${fmtEUR(b.unit)} €`; const line = viewLbl ? `${viewLbl} · ${formula}` : formula; return (<div key={bi} className="flex justify-between gap-2 font-mono text-label text-muted-foreground tracking-caption"><span>→ {line}</span><span className="tabular-nums">{fmtEUR(b.subtotal)} €</span></div>); })}</div>)}</div>))}<div className="flex justify-between items-baseline mt-3 pt-2.5 border-t-2 border-t-foreground"><span className="font-mono text-caption tracking-meta uppercase">Total HT*</span><span className="text-page-title font-light tracking-display tabular-nums">{fmtEUR(total)} €</span></div><div className="font-mono text-label text-muted-foreground mt-2.5 tracking-caption leading-copy pt-2 border-t border-t-border">{lang==='fr' ? '* Les montants affichés sont une estimation indicative basée sur les éléments renseignés et ne constituent pas un devis définitif. Le devis final, contractuel et signable, vous sera adressé par e-mail après brief avec notre équipe et pourra être ajusté selon le volume réel, la complexité, les vues additionnelles ou la post-production.' : '* The amounts shown are an indicative estimate based on the information provided and do not constitute a final quote. The final, contractual and signable quote will be sent by email after a brief with our team and may be adjusted based on actual volume, complexity, additional views or post-production.'}</div></div></div>
+      <div className="bg-white px-12 py-cell pb-5 flex-1"><div className="edo-cell-label text-muted-foreground mb-2.5">{lang==='fr'?'Détail du devis*':'Quote breakdown*'}</div><div className="flex flex-col">{rows.map((r,i)=>(<div key={i} className={`flex flex-col py-1.5 gap-0.5 ${i===rows.length-1 ? '' : 'border-b border-b-border'}`}><div className="flex justify-between items-baseline text-caption"><span className="tracking-copy-tight">{(() => { const idx = r.lbl.indexOf(' · '); if (idx === -1) return <span className="text-foreground">{r.lbl}</span>; return (<><span className="text-muted-foreground">{r.lbl.slice(0, idx)}</span><span className="text-foreground">{r.lbl.slice(idx)}</span></>); })()}</span><span className="font-mono tabular-nums text-foreground">{r.onReq ? (lang==='fr'?'sur demande':'on request') : `${fmtEUR(r.amt)} €`}</span></div>{r.breakdown && r.breakdown.length > 0 && (<div className="flex flex-col gap-px mt-0.5">{r.breakdown.map((b, bi) => { const viewLbl = b.labels ? b.labels[lang] : null; const formula = b.imagesPerSku && b.imagesPerSku > 1 ? `${b.qty} × ${b.imagesPerSku} × ${fmtEUR(b.unit)} €` : `${b.qty} × ${fmtEUR(b.unit)} €`; const line = viewLbl ? `${viewLbl} · ${formula}` : formula; return (<div key={bi} className="flex justify-between gap-2 font-mono text-label text-muted-foreground tracking-caption"><span>→ {line}</span><span className="tabular-nums">{fmtEUR(b.subtotal)} €</span></div>); })}</div>)}</div>))}<div className="flex justify-between items-baseline mt-3 pt-2.5 border-t-2 border-t-foreground"><span className="font-mono text-caption tracking-meta uppercase">Total HT*</span><span className="text-page-title font-light tracking-display tabular-nums">{fmtEUR(total)} €</span></div><div className="font-mono text-label text-muted-foreground mt-2.5 tracking-caption leading-copy pt-2 border-t border-t-border">{lang==='fr' ? '* Les montants affichés sont une estimation indicative basée sur les éléments renseignés et ne constituent pas un devis définitif. Le devis final, contractuel et signable, vous sera adressé par e-mail après brief avec notre équipe et pourra être ajusté selon le volume réel, la complexité, les vues additionnelles ou la post-production.' : '* The amounts shown are an indicative estimate based on the information provided and do not constitute a final quote. The final, contractual and signable quote will be sent by email after a brief with our team and may be adjusted based on actual volume, complexity, additional views or post-production.'}</div></div></div>
       <div className="grid grid-cols-2 gap-px bg-black">
         <div className="bg-white px-5 py-3 flex items-center"><button onClick={()=>goto('home')} className={navBtnCls.replace('bg-white','bg-transparent').replace('border border-border','border-0').replace('px-5','px-0')}>← {lang==='fr'?"Retour à l'accueil":'Back home'}</button></div>
         <div className="bg-white px-5 py-3 flex items-center justify-end"><button onClick={()=>window.location.reload()} className={navBtnPrimaryCls.replace('bg-foreground','bg-primary')}>{lang==='fr'?'Nouvelle demande':'New request'} <IconArrowRight width="14" height="14"/></button></div>
