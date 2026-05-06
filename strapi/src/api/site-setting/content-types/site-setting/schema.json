@@ -11,7 +11,12 @@
   },
   "attributes": {
     "siteTitle": {
-      "type": "string"
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
     },
     "siteDescription": {
       "type": "text",
@@ -109,10 +114,20 @@
       "repeatable": true
     },
     "defaultSeoTitle": {
-      "type": "string"
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
     },
     "defaultSeoDescription": {
-      "type": "text"
+      "type": "text",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
     },
     "defaultSeoImage": {
       "type": "media",
