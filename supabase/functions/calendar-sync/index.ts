@@ -9,6 +9,7 @@ const corsHeaders = {
 interface BookingPayload {
   bookingId: string;
   action: "create" | "update" | "delete";
+  newDate?: string;
 }
 
 function escapeIcalText(text: string): string {
@@ -23,7 +24,7 @@ function formatIcalTimestamp(date: Date): string {
   return date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
 }
 
-function buildIcsEvent(booking: Record<string, unknown>, sessions: Record<string, unknown>[]): string {
+function buildIcsEvent(booking: Record<string, unknown>, sessions: Record<string, unknown>[], isUpdate: boolean): string {
   const uid = `${booking.reference}@e-do.studio`;
   const now = formatIcalTimestamp(new Date());
   const created = formatIcalTimestamp(new Date(booking.created_at as string));
@@ -76,6 +77,7 @@ function buildIcsEvent(booking: Record<string, unknown>, sessions: Record<string
     `DESCRIPTION:${description}`,
     "LOCATION:E-Do Studio\\, Paris",
     `STATUS:${booking.status === "confirmed" ? "CONFIRMED" : "TENTATIVE"}`,
+    `SEQUENCE:${isUpdate ? 1 : 0}`,
   ];
 
   if (booking.preferred_date) {
@@ -107,19 +109,20 @@ async function caldavPut(
   password: string,
   eventUid: string,
   icsData: string,
+  isUpdate: boolean,
 ): Promise<{ ok: boolean; status: number; statusText: string }> {
   const eventUrl = `${calendarUrl.replace(/\/$/, "")}/${eventUid}.ics`;
   const auth = btoa(`${username}:${password}`);
 
-  const res = await fetch(eventUrl, {
-    method: "PUT",
-    headers: {
-      Authorization: `Basic ${auth}`,
-      "Content-Type": "text/calendar; charset=utf-8",
-      "If-None-Match": "*",
-    },
-    body: icsData,
-  });
+  const headers: Record<string, string> = {
+    Authorization: `Basic ${auth}`,
+    "Content-Type": "text/calendar; charset=utf-8",
+  };
+  if (!isUpdate) {
+    headers["If-None-Match"] = "*";
+  }
+
+  const res = await fetch(eventUrl, { method: "PUT", headers, body: icsData });
 
   return { ok: res.ok || res.status === 201 || res.status === 204, status: res.status, statusText: res.statusText };
 }
@@ -200,8 +203,9 @@ Deno.serve(async (req: Request) => {
     .select("*")
     .eq("booking_id", bookingId);
 
-  const icsData = buildIcsEvent(booking, sessions ?? []);
-  const result = await caldavPut(caldavUrl, caldavUser, caldavPass, eventUid, icsData);
+  const isUpdate = action === "update";
+  const icsData = buildIcsEvent(booking, sessions ?? [], isUpdate);
+  const result = await caldavPut(caldavUrl, caldavUser, caldavPass, eventUid, icsData, isUpdate);
 
   return new Response(
     JSON.stringify({ success: result.ok, status: result.status, statusText: result.statusText, eventUid }),
