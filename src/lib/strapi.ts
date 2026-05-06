@@ -30,51 +30,47 @@ async function fetchStrapi<T>(path: string, params?: Record<string, string>): Pr
   return json;
 }
 
-// ─── Strapi response types ──────────────────────────────────────────────────
+async function fetchStrapiBilingual<T>(path: string, params?: Record<string, string>): Promise<{ fr: T; en: T }> {
+  const [fr, en] = await Promise.all([
+    fetchStrapi<T>(path, { ...params, locale: 'fr' }),
+    fetchStrapi<T>(path, { ...params, locale: 'en' }),
+  ]);
+  return { fr, en };
+}
 
-interface StrapiSpec { label_fr: string; label_en: string; value_fr: string; value_en: string }
-interface StrapiLocalizedItem { fr: string; en: string }
+// ─── Strapi response types (single-locale, matching i18n API) ──────────────
+
+interface StrapiSpec { label: string; value: string }
+interface StrapiLocalizedItem { text: string }
 interface StrapiSocialLink { platform: string; label: string; url: string }
 
 interface StrapiMachine {
   id: number;
   title: string;
   slug: string;
-  subtitle_fr: string;
-  subtitle_en: string;
-  description_fr: string;
-  description_en: string;
-  pricing_fr: string;
-  pricing_en: string;
-  operatorPricing_fr: string | null;
-  operatorPricing_en: string | null;
+  subtitle: string;
+  description: string;
+  pricing: string;
+  operatorPricing: string | null;
   specs?: StrapiSpec[];
 }
 
 interface StrapiCyclorama {
-  title_fr: string;
-  title_en: string;
-  subtitle_fr: string;
-  subtitle_en: string;
-  description_fr: string;
-  description_en: string;
-  pricing_fr: string;
-  pricing_en: string;
-  pricingDescription_fr: string;
-  pricingDescription_en: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  pricing: string;
+  pricingDescription: string;
   specs?: StrapiSpec[];
   amenities?: StrapiLocalizedItem[];
 }
 
 interface StrapiPostProdType {
   id: number;
-  title_fr: string;
-  title_en: string;
+  title: string;
   slug: string;
-  description_fr: string;
-  description_en: string;
-  price_fr: string;
-  price_en: string;
+  description: string;
+  price: string;
   includes?: StrapiLocalizedItem[];
 }
 
@@ -89,22 +85,18 @@ interface StrapiMedia {
 
 interface StrapiBlogPost {
   id: number;
-  title_fr: string;
-  title_en: string;
+  title: string;
   slug: string;
-  excerpt_fr: string;
-  excerpt_en: string;
-  body_fr?: string;
-  body_en?: string;
+  excerpt: string;
+  body?: string;
   coverImage?: StrapiMedia;
   publishedAt: string;
-  categories?: { id: number; title_fr: string; title_en: string; slug: string }[];
+  categories?: { id: number; title: string; slug: string }[];
 }
 
 interface StrapiBlogCategory {
   id: number;
-  title_fr: string;
-  title_en: string;
+  title: string;
   slug: string;
 }
 
@@ -117,8 +109,7 @@ interface StrapiSiteSettings {
   city: string;
   postalCode: string;
   fullAddress: string;
-  hours_fr: string;
-  hours_en: string;
+  hours: string;
   socialLinks?: StrapiSocialLink[];
 }
 
@@ -129,11 +120,10 @@ interface StrapiGalleryBrand {
 
 interface StrapiGalleryCategory {
   id: number;
-  name_fr: string;
-  name_en?: string;
+  name: string;
   slug: string;
   group?: string;
-  orderRank: number;
+  rank: number;
 }
 
 interface StrapiGalleryProject {
@@ -142,7 +132,7 @@ interface StrapiGalleryProject {
   slug: string;
   stage: string;
   year: number | string;
-  orderRank: number;
+  rank: number;
   category?: StrapiGalleryCategory;
   brand?: StrapiGalleryBrand;
   images?: StrapiMedia[];
@@ -188,8 +178,24 @@ export interface PPCat {
 
 // ─── Transform helpers ──────────────────────────────────────────────────────
 
-function specToBilingual(s: StrapiSpec): { k: Bilingual; v: Bilingual } {
-  return { k: { fr: s.label_fr, en: s.label_en }, v: { fr: s.value_fr, en: s.value_en } };
+function mergeSpecs(frSpecs: StrapiSpec[], enSpecs: StrapiSpec[]): { k: Bilingual; v: Bilingual }[] {
+  const len = Math.max(frSpecs.length, enSpecs.length);
+  const result: { k: Bilingual; v: Bilingual }[] = [];
+  for (let i = 0; i < len; i++) {
+    result.push({
+      k: { fr: frSpecs[i]?.label ?? '', en: enSpecs[i]?.label ?? '' },
+      v: { fr: frSpecs[i]?.value ?? '', en: enSpecs[i]?.value ?? '' },
+    });
+  }
+  return result;
+}
+
+function mergeLocalizedItems(frItems: StrapiLocalizedItem[], enItems: StrapiLocalizedItem[]): Bilingual[] {
+  const len = Math.max(frItems.length, enItems.length);
+  return Array.from({ length: len }, (_, i) => ({
+    fr: frItems[i]?.text ?? '',
+    en: enItems[i]?.text ?? '',
+  }));
 }
 
 function parsePricingToRates(pricingFr: string, pricingEn: string): { k: Bilingual; v: string }[] {
@@ -401,40 +407,44 @@ const FALLBACK_MACHINES: MachineInfo[] = [
 
 export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
   try {
-    const [machinesRes, cycloRes] = await Promise.all([
-      fetchStrapi<{ data: StrapiMachine[] }>('machines', { 'populate': 'specs', 'sort': 'rank:asc' }),
-      fetchStrapi<{ data: StrapiCyclorama }>('cyclorama', { 'populate': 'specs,amenities' }),
+    const [machinesBI, cycloBI] = await Promise.all([
+      fetchStrapiBilingual<{ data: StrapiMachine[] }>('machines', { 'populate': 'specs', 'sort': 'rank:asc' }),
+      fetchStrapiBilingual<{ data: StrapiCyclorama }>('cyclorama', { 'populate': 'specs,amenities' }),
     ]);
 
     const result: Record<string, PlateauSpec> = {};
 
-    const cyc = cycloRes.data;
-    if (cyc) {
+    const cycFr = cycloBI.fr.data;
+    const cycEn = cycloBI.en.data;
+    if (cycFr) {
       result.cyclorama = {
         num: '01',
         name: 'Cyclorama',
         slug: 'cyclorama',
-        tagline: { fr: cyc.subtitle_fr, en: cyc.subtitle_en },
-        desc: { fr: cyc.description_fr, en: cyc.description_en },
-        specs: (cyc.specs ?? []).map(specToBilingual),
-        uses: (cyc.amenities ?? []).map(a => ({ fr: a.fr, en: a.en })),
-        rates: parsePricingToRates(cyc.pricing_fr, cyc.pricing_en),
-        ratesNote: cyc.pricingDescription_fr ? { fr: cyc.pricingDescription_fr, en: cyc.pricingDescription_en } : undefined,
+        tagline: { fr: cycFr.subtitle, en: cycEn?.subtitle ?? cycFr.subtitle },
+        desc: { fr: cycFr.description, en: cycEn?.description ?? cycFr.description },
+        specs: mergeSpecs(cycFr.specs ?? [], cycEn?.specs ?? []),
+        uses: mergeLocalizedItems(cycFr.amenities ?? [], cycEn?.amenities ?? []),
+        rates: parsePricingToRates(cycFr.pricing, cycEn?.pricing ?? cycFr.pricing),
+        ratesNote: cycFr.pricingDescription ? { fr: cycFr.pricingDescription, en: cycEn?.pricingDescription ?? cycFr.pricingDescription } : undefined,
         visual: 'cyc',
       };
     }
 
-    machinesRes.data.forEach((m, i) => {
-      result[m.slug] = {
+    const machinesFr = machinesBI.fr.data;
+    const machinesEn = machinesBI.en.data;
+    machinesFr.forEach((mFr, i) => {
+      const mEn = machinesEn.find(e => e.slug === mFr.slug) ?? mFr;
+      result[mFr.slug] = {
         num: String(i + 2).padStart(2, '0'),
-        name: m.title,
-        slug: m.slug,
-        tagline: { fr: m.subtitle_fr, en: m.subtitle_en },
-        desc: { fr: m.description_fr, en: m.description_en },
-        specs: (m.specs ?? []).map(specToBilingual),
-        uses: MACHINE_USES[m.slug] ?? [],
-        rates: parsePricingToRates(m.pricing_fr, m.pricing_en),
-        visual: m.slug,
+        name: mFr.title,
+        slug: mFr.slug,
+        tagline: { fr: mFr.subtitle, en: mEn.subtitle },
+        desc: { fr: mFr.description, en: mEn.description },
+        specs: mergeSpecs(mFr.specs ?? [], mEn.specs ?? []),
+        uses: MACHINE_USES[mFr.slug] ?? [],
+        rates: parsePricingToRates(mFr.pricing, mEn.pricing),
+        visual: mFr.slug,
       };
     });
 
@@ -447,27 +457,31 @@ export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
 
 export async function fetchMachines(): Promise<MachineInfo[]> {
   try {
-    const [machinesRes, cycloRes] = await Promise.all([
-      fetchStrapi<{ data: StrapiMachine[] }>('machines', { 'sort': 'rank:asc' }),
-      fetchStrapi<{ data: StrapiCyclorama }>('cyclorama'),
+    const [machinesBI, cycloBI] = await Promise.all([
+      fetchStrapiBilingual<{ data: StrapiMachine[] }>('machines', { 'sort': 'rank:asc' }),
+      fetchStrapiBilingual<{ data: StrapiCyclorama }>('cyclorama'),
     ]);
 
-    const cyc = cycloRes.data;
+    const cycFr = cycloBI.fr.data;
+    const cycEn = cycloBI.en.data;
     const list: MachineInfo[] = [];
 
-    if (cyc) {
+    if (cycFr) {
       list.push({
         slug: 'cyclorama',
-        fr: { t: cyc.title_fr || 'Cyclorama', sub: cyc.subtitle_fr, label: MACHINE_LABELS.cyclorama?.fr },
-        en: { t: cyc.title_en || 'Cyclorama', sub: cyc.subtitle_en, label: MACHINE_LABELS.cyclorama?.en },
+        fr: { t: cycFr.title || 'Cyclorama', sub: cycFr.subtitle, label: MACHINE_LABELS.cyclorama?.fr },
+        en: { t: cycEn?.title || 'Cyclorama', sub: cycEn?.subtitle ?? cycFr.subtitle, label: MACHINE_LABELS.cyclorama?.en },
       });
     }
 
-    for (const m of machinesRes.data) {
+    const machinesFr = machinesBI.fr.data;
+    const machinesEn = machinesBI.en.data;
+    for (const mFr of machinesFr) {
+      const mEn = machinesEn.find(e => e.slug === mFr.slug) ?? mFr;
       list.push({
-        slug: m.slug,
-        fr: { t: m.title, sub: m.subtitle_fr, label: MACHINE_LABELS[m.slug]?.fr },
-        en: { t: m.title, sub: m.subtitle_en, label: MACHINE_LABELS[m.slug]?.en },
+        slug: mFr.slug,
+        fr: { t: mFr.title, sub: mFr.subtitle, label: MACHINE_LABELS[mFr.slug]?.fr },
+        en: { t: mEn.title, sub: mEn.subtitle, label: MACHINE_LABELS[mFr.slug]?.en },
       });
     }
 
@@ -479,36 +493,42 @@ export async function fetchMachines(): Promise<MachineInfo[]> {
 }
 
 export async function fetchPostProdTypes(): Promise<PPCat[]> {
-  const res = await fetchStrapi<{ data: StrapiPostProdType[] }>('post-production-types', {
+  const resBI = await fetchStrapiBilingual<{ data: StrapiPostProdType[] }>('post-production-types', {
     'populate': 'includes',
     'sort': 'rank:asc',
   });
 
-  return res.data.map(t => ({
-    k: t.slug,
-    medium: 'photo',
-    fr: t.title_fr,
-    en: t.title_en,
-    tagline: { fr: t.description_fr, en: t.description_en },
-    price: parsePriceText(t.price_fr, t.price_en),
-    note: { fr: '', en: '' },
-    features: {
-      fr: (t.includes ?? []).map(i => i.fr),
-      en: (t.includes ?? []).map(i => i.en),
-    },
-    formats: [],
-    samples: [],
-    brands: [],
-  }));
+  const frTypes = resBI.fr.data;
+  const enTypes = resBI.en.data;
+
+  return frTypes.map(tFr => {
+    const tEn = enTypes.find(e => e.slug === tFr.slug) ?? tFr;
+    return {
+      k: tFr.slug,
+      medium: 'photo',
+      fr: tFr.title,
+      en: tEn.title,
+      tagline: { fr: tFr.description, en: tEn.description },
+      price: parsePriceText(tFr.price),
+      note: { fr: '', en: '' },
+      features: {
+        fr: (tFr.includes ?? []).map(i => i.text),
+        en: (tEn.includes ?? []).map(i => i.text),
+      },
+      formats: [],
+      samples: [],
+      brands: [],
+    };
+  });
 }
 
-function parsePriceText(fr: string, en: string): PPPrice {
-  const fromFr = fr?.startsWith('À partir de') || fr?.startsWith('Sur devis');
-  const amountMatch = fr?.match(/[\d,]+\s*€/);
+function parsePriceText(text: string): PPPrice {
+  const from = text?.startsWith('À partir de') || text?.startsWith('Sur devis');
+  const amountMatch = text?.match(/[\d,]+\s*€/);
   return {
-    amount: amountMatch?.[0] ?? fr,
-    from: fromFr,
-    kind: fr?.includes('devis') ? 'quote' : 'unit',
+    amount: amountMatch?.[0] ?? text,
+    from,
+    kind: text?.includes('devis') ? 'quote' : 'unit',
   };
 }
 
@@ -527,29 +547,34 @@ function resolveStrapiMediaUrl(media?: StrapiMedia): string | undefined {
 }
 
 export async function fetchDiscoveryPosts(): Promise<DiscoveryPost[]> {
-  const res = await fetchStrapi<{ data: StrapiBlogPost[] }>('blog-posts', {
+  const resBI = await fetchStrapiBilingual<{ data: StrapiBlogPost[] }>('blog-posts', {
     'populate': 'categories,coverImage',
     'sort': 'publishedAt:desc',
     'pagination[pageSize]': '50',
   });
 
-  return res.data.map((p, i) => {
-    const cat = p.categories?.[0];
-    const bodyFr = p.body_fr ?? '';
-    const bodyEn = p.body_en ?? '';
+  const frPosts = resBI.fr.data;
+  const enPosts = resBI.en.data;
+
+  return frPosts.map((pFr, i) => {
+    const pEn = enPosts.find(e => e.slug === pFr.slug) ?? pFr;
+    const catFr = pFr.categories?.[0];
+    const catEn = pEn.categories?.[0];
+    const bodyFr = pFr.body ?? '';
+    const bodyEn = pEn.body ?? '';
     const readingTime = estimateReadingTime(bodyFr || bodyEn);
     return {
-      id: p.id,
-      cat: cat?.slug ?? 'tips',
+      id: pFr.id,
+      cat: catFr?.slug ?? 'tips',
       tone: TONES[i % 3],
-      tag: { fr: cat?.title_fr ?? 'Tips', en: cat?.title_en ?? 'Tips' },
-      title: { fr: p.title_fr, en: p.title_en },
-      sub: { fr: p.excerpt_fr, en: p.excerpt_en },
+      tag: { fr: catFr?.title ?? 'Tips', en: catEn?.title ?? 'Tips' },
+      title: { fr: pFr.title, en: pEn.title },
+      sub: { fr: pFr.excerpt, en: pEn.excerpt },
       body: { fr: bodyFr, en: bodyEn },
-      date: formatStrapiDate(p.publishedAt),
+      date: formatStrapiDate(pFr.publishedAt),
       read: `${readingTime} min`,
       author: 'Studio',
-      coverUrl: resolveStrapiMediaUrl(p.coverImage),
+      coverUrl: resolveStrapiMediaUrl(pFr.coverImage),
       featured: false,
     };
   });
@@ -565,15 +590,20 @@ function formatStrapiDate(iso: string): Bilingual {
 }
 
 export async function fetchDiscoveryCategories(): Promise<DiscoveryCategory[]> {
-  const res = await fetchStrapi<{ data: StrapiBlogCategory[] }>('blog-categories', { 'sort': 'title_fr:asc' });
+  const resBI = await fetchStrapiBilingual<{ data: StrapiBlogCategory[] }>('blog-categories', { 'sort': 'title:asc' });
+  const frCats = resBI.fr.data;
+  const enCats = resBI.en.data;
   return [
     { k: 'all', fr: 'Tout', en: 'All' },
-    ...res.data.map(c => ({ k: c.slug, fr: c.title_fr, en: c.title_en })),
+    ...frCats.map(cFr => {
+      const cEn = enCats.find(e => e.slug === cFr.slug) ?? cFr;
+      return { k: cFr.slug, fr: cFr.title, en: cEn.title };
+    }),
   ];
 }
 
 export async function fetchSocialLinks(): Promise<SocialLink[]> {
-  const res = await fetchStrapi<{ data: StrapiSiteSettings }>('site-setting', { 'populate': 'socialLinks' });
+  const res = await fetchStrapi<{ data: StrapiSiteSettings }>('site-setting', { 'populate': 'socialLinks', 'locale': 'fr' });
   return (res.data.socialLinks ?? []).map(s => ({ k: s.platform, label: s.label, href: s.url }));
 }
 
@@ -586,7 +616,7 @@ export async function fetchBrands(): Promise<string[]> {
 }
 
 export async function fetchContact() {
-  const res = await fetchStrapi<{ data: StrapiSiteSettings }>('site-setting');
+  const res = await fetchStrapi<{ data: StrapiSiteSettings }>('site-setting', { 'locale': 'fr' });
   const s = res.data;
   return {
     phone: s.phone,
@@ -599,8 +629,8 @@ export async function fetchContact() {
 }
 
 export async function fetchStudioHours(): Promise<Bilingual> {
-  const res = await fetchStrapi<{ data: StrapiSiteSettings }>('site-setting');
-  return { fr: res.data.hours_fr, en: res.data.hours_en };
+  const resBI = await fetchStrapiBilingual<{ data: StrapiSiteSettings }>('site-setting');
+  return { fr: resBI.fr.data.hours, en: resBI.en.data.hours };
 }
 
 // ─── Gallery types & fetchers ──────────────────────────────────────────────
@@ -660,7 +690,7 @@ export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
   try {
     const res = await fetchStrapi<{ data: StrapiGalleryProject[] }>('gallery-projects', {
       'populate': 'category,brand,images',
-      'sort': 'orderRank:asc',
+      'sort': 'rank:asc',
       'pagination[pageSize]': '100',
     });
 
@@ -684,15 +714,19 @@ export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
 
 export async function fetchGalleryCategories(): Promise<GalleryCategory[]> {
   try {
-    const res = await fetchStrapi<{ data: StrapiGalleryCategory[] }>('gallery-categories', {
+    const resBI = await fetchStrapiBilingual<{ data: StrapiGalleryCategory[] }>('gallery-categories', {
       'sort': 'rank:asc',
     });
-    if (res.data.length > 0) {
-      return res.data.map(c => ({ k: c.slug, fr: c.name_fr, en: c.name_en ?? c.name_fr }));
+    const frCats = resBI.fr.data;
+    const enCats = resBI.en.data;
+    if (frCats.length > 0) {
+      return frCats.map(cFr => {
+        const cEn = enCats.find(e => e.slug === cFr.slug) ?? cFr;
+        return { k: cFr.slug, fr: cFr.name, en: cEn.name };
+      });
     }
   } catch {
     // Strapi gallery-category content type not available yet
   }
   return FALLBACK_GALLERY_CATEGORIES;
 }
-

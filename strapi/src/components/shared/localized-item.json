@@ -5,7 +5,13 @@
     "icon": "globe"
   },
   "attributes": {
-    "fr": { "type": "string" },
-    "en": { "type": "string" }
+    "text": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    }
   }
 }

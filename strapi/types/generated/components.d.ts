@@ -42,8 +42,7 @@ export interface SharedLocalizedItem extends Struct.ComponentSchema {
     icon: "globe";
   };
   attributes: {
-    en: Schema.Attribute.String;
-    fr: Schema.Attribute.String;
+    text: Schema.Attribute.String;
   };
 }
 
@@ -67,10 +66,8 @@ export interface SharedSpec extends Struct.ComponentSchema {
     icon: "list";
   };
   attributes: {
-    label_en: Schema.Attribute.String;
-    label_fr: Schema.Attribute.String;
-    value_en: Schema.Attribute.String;
-    value_fr: Schema.Attribute.String;
+    label: Schema.Attribute.String;
+    value: Schema.Attribute.String;
   };
 }
 
