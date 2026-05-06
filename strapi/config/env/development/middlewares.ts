@@ -11,7 +11,9 @@ const config: Core.Config.Middlewares = [
         directives: {
           'connect-src': [
             "'self'",
-            'https://cms.e-do.studio',
+            'http://localhost:1337',
+            'http://localhost:3000',
+            'ws://localhost:1337',
             'https://pub-9b79de66b20440cdb7e8bae53605296c.r2.dev',
           ],
           'img-src': [
@@ -34,10 +36,11 @@ const config: Core.Config.Middlewares = [
   {
     name: 'strapi::cors',
     config: {
-      // Origins are intentionally not hardcoded here. They are set per
-      // environment in config/env/<NODE_ENV>/middlewares.ts (lodash merges
-      // by index, so the middleware order must stay aligned across files).
-      origin: [],
+      origin: [
+        'http://localhost:3000',
+        'http://localhost:1337',
+        'http://localhost:5173',
+      ],
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'],
       headers: ['Content-Type', 'Authorization', 'Origin', 'Accept'],
       keepHeaderOnError: true,

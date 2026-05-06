@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import type { Lang } from '../types';
+import { useSiteDefaults } from './use-strapi';
 
 interface PageMeta {
   title: string;
@@ -130,21 +131,36 @@ const META: Record<string, Record<Lang, PageMeta>> = {
 };
 
 export function useDocumentMeta(page: string, lang: Lang) {
-  useEffect(() => {
-    const meta = META[page]?.[lang] ?? META.home[lang];
-    document.title = meta.title;
+  const { data: defaults } = useSiteDefaults();
+  const seoTitle = defaults?.seoTitle?.[lang] || '';
+  const seoDescription = defaults?.seoDescription?.[lang] || '';
+  const seoImageUrl = defaults?.seoImageUrl;
 
-    let descTag = document.querySelector('meta[name="description"]');
-    if (descTag) {
-      descTag.setAttribute('content', meta.description);
+  useEffect(() => {
+    const pageMeta = META[page]?.[lang];
+    const fallbackTitle = seoTitle || META.home[lang].title;
+    const fallbackDescription = seoDescription || META.home[lang].description;
+    const title = pageMeta?.title ?? fallbackTitle;
+    const description = pageMeta?.description ?? fallbackDescription;
+
+    document.title = title;
+
+    const descTag = document.querySelector('meta[name="description"]');
+    if (descTag) descTag.setAttribute('content', description);
+
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute('content', title);
+
+    const ogDesc = document.querySelector('meta[property="og:description"]');
+    if (ogDesc) ogDesc.setAttribute('content', description);
+
+    if (seoImageUrl) {
+      const ogImage = document.querySelector('meta[property="og:image"]');
+      if (ogImage) ogImage.setAttribute('content', seoImageUrl);
+      const twitterImage = document.querySelector('meta[name="twitter:image"]');
+      if (twitterImage) twitterImage.setAttribute('content', seoImageUrl);
     }
 
-    let ogTitle = document.querySelector('meta[property="og:title"]');
-    if (ogTitle) ogTitle.setAttribute('content', meta.title);
-
-    let ogDesc = document.querySelector('meta[property="og:description"]');
-    if (ogDesc) ogDesc.setAttribute('content', meta.description);
-
     document.documentElement.lang = lang === 'en' ? 'en' : 'fr';
-  }, [page, lang]);
+  }, [page, lang, seoTitle, seoDescription, seoImageUrl]);
 }

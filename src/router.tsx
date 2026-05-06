@@ -10,6 +10,7 @@ import {
 import { createContext, useContext, useState } from 'react';
 import type { Lang } from './types';
 import { NavMenu } from './nav-menu';
+import { useGoogleAnalytics } from './lib/use-google-analytics';
 import { DirectionA } from './direction-editorial';
 import { PlateauPage } from './plateau-page';
 import { DiscoveryVariants } from './discovery-pages';
@@ -72,6 +73,7 @@ function LangLayout() {
   const pathname = useRouterState({ select: (s) => s.resolvedLocation?.pathname ?? '' });
   const langSegment = pathname.split('/')[1];
   const lang: Lang = VALID_LANGS.includes(langSegment as Lang) ? (langSegment as Lang) : DEFAULT_LANG;
+  useGoogleAnalytics();
 
   const setLang = (newLang: Lang) => {
     persistLang(newLang);

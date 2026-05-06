@@ -34,10 +34,11 @@ const config: Core.Config.Middlewares = [
   {
     name: 'strapi::cors',
     config: {
-      // Origins are intentionally not hardcoded here. They are set per
-      // environment in config/env/<NODE_ENV>/middlewares.ts (lodash merges
-      // by index, so the middleware order must stay aligned across files).
-      origin: [],
+      origin: [
+        'https://e-do.studio',
+        'https://www.e-do.studio',
+        'https://cms.e-do.studio',
+      ],
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'],
       headers: ['Content-Type', 'Authorization', 'Origin', 'Accept'],
       keepHeaderOnError: true,

@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, CellLabel, IconArrowRight, PageHeader, Wordmark } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
-import type { Bilingual } from './types';
+import { usePostProdTypes } from './lib/use-strapi';
+import type { PPCat as StrapiPPCat } from './lib/strapi';
+import type { Bilingual, Lang } from './types';
 import { usePageContext } from './router';
 import { common, postprod as postprodMsg } from './i18n/messages';
 
@@ -27,7 +29,7 @@ interface PPCat {
   featured?: boolean;
 }
 
-const PP_CATS: PPCat[] = [
+const FALLBACK_PP_CATS: PPCat[] = [
   {
     k:'on-model', medium:'photo',
     fr:'On model', en:'On model',
@@ -206,12 +208,57 @@ const SampleImage = ({ seed, label, medium }: SampleImageProps) => {
   );
 };
 
+const POSTPROD_UNAVAILABLE: Bilingual = {
+  fr: 'Contenu temporairement indisponible',
+  en: 'Content temporarily unavailable',
+};
+
+const PostprodOfflineNote = ({ lang }: { lang: Lang }) => (
+  <div className="flex-none w-full bg-muted px-4 py-2 border-b border-border md:border-b-0 md:border-r-0">
+    <span className="block font-mono text-micro uppercase tracking-meta text-muted-foreground opacity-65">
+      {POSTPROD_UNAVAILABLE[lang]} · offline
+    </span>
+  </div>
+);
+
+const SAMPLE_CYCLE = ['warm-a','warm-b','warm-c','warm-d','warm-e','warm-b'];
+
+function fillSamples(samples: string[]): string[] {
+  const out: string[] = [];
+  for (let i = 0; i < 6; i++) out.push(samples[i] || SAMPLE_CYCLE[i % SAMPLE_CYCLE.length]);
+  return out;
+}
+
+function adaptStrapiCats(strapi: StrapiPPCat[]): PPCat[] {
+  return strapi.map(c => ({
+    k: c.k,
+    medium: c.medium,
+    fr: c.fr,
+    en: c.en,
+    tagline: c.tagline,
+    price: c.price,
+    note: c.note,
+    features: c.features,
+    formats: c.formats ?? [],
+    samples: fillSamples(c.samples ?? []),
+    brands: c.brands ?? [],
+  }));
+}
+
 const PostprodPage = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
   useDocumentMeta('postprod', lang);
-  const [k, setK] = useState(PP_CATS[0].k);
-  const cat = PP_CATS.find(c=>c.k===k) || PP_CATS[0];
-  const dark = !!cat.featured;
+  const ppQuery = usePostProdTypes();
+  const offline = !ppQuery.loading && (!!ppQuery.error || !ppQuery.data || ppQuery.data.length === 0);
+  const cats: PPCat[] = ppQuery.data && ppQuery.data.length > 0
+    ? adaptStrapiCats(ppQuery.data)
+    : FALLBACK_PP_CATS;
+  const [k, setK] = useState<string>(cats[0]?.k ?? FALLBACK_PP_CATS[0].k);
+  useEffect(() => {
+    if (!cats.find(c => c.k === k) && cats[0]) setK(cats[0].k);
+  }, [cats, k]);
+  const cat = cats.find(c=>c.k===k) || cats[0];
+  const dark = !!cat?.featured;
   const bgCls = dark ? 'bg-foreground' : 'bg-white';
   const fgCls = dark ? 'text-white' : 'text-foreground';
   const mutedCls = dark ? 'text-white/62' : 'text-muted-foreground';
@@ -265,9 +312,10 @@ const PostprodPage = () => {
 
       {/* Sidebar: horizontal tab scroll on mobile, vertical list on desktop */}
       <aside className="bg-white flex flex-row overflow-x-auto scrollbar-thin md:col-start-1 md:row-start-2 md:flex-col md:overflow-x-hidden md:overflow-y-auto">
-        {PP_CATS.map((c,idx)=>{
+        {offline && <PostprodOfflineNote lang={lang} />}
+        {cats.map((c,idx)=>{
           const active = k===c.k;
-          const isLast = idx===PP_CATS.length-1;
+          const isLast = idx===cats.length-1;
           return (
             <button key={c.k} onClick={()=>setK(c.k)}
               className={`edo-focus-ring flex-none border-0 ${active?'bg-muted border-b-2 border-b-primary md:border-b-0 md:border-l-2 md:border-l-primary':'bg-white border-b-2 border-b-transparent md:border-b-0 md:border-l-2 md:border-l-transparent'} ${idx>0?'md:border-t md:border-t-border':''} ${isLast?'md:border-b md:border-b-border':''} py-3 px-4 cursor-pointer text-left flex flex-col gap-1 transition-all duration-150 min-h-16 md:min-h-18`}>
@@ -294,7 +342,7 @@ const PostprodPage = () => {
         <div className="flex flex-col gap-5">
           <div className="flex items-center gap-2.5 flex-wrap">
             <span className="font-mono text-label tracking-label text-primary">
-              {String(PP_CATS.findIndex(x=>x.k===k)+1).padStart(2,'0')} · {postprodMsg.category[lang]}
+              {String(cats.findIndex(x=>x.k===k)+1).padStart(2,'0')} · {postprodMsg.category[lang]}
             </span>
             {cat.featured && (
               <span className="font-mono text-nano tracking-label uppercase bg-primary text-white px-2 py-0.5">
