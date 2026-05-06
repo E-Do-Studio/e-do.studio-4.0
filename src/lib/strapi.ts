@@ -147,6 +147,7 @@ interface StrapiGalleryProject {
   slug: string;
   stage: string;
   year: number | string;
+  orderRank: number;
   category?: StrapiGalleryCategory;
   images?: StrapiMedia[];
 }
@@ -659,7 +660,7 @@ export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
   try {
     const res = await fetchStrapi<{ data: StrapiGalleryProject[] }>('gallery-projects', {
       'populate': 'category,images',
-      'sort': 'year:desc,slug:asc',
+      'sort': 'orderRank:asc',
       'pagination[pageSize]': '100',
     });
 
