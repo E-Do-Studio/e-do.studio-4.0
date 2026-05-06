@@ -9,20 +9,41 @@
   "options": {
     "draftAndPublish": true
   },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
   "attributes": {
-    "name_fr": { "type": "string", "required": true },
-    "name_en": { "type": "string" },
-    "slug": { "type": "uid", "required": true },
+    "name": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "slug": {
+      "type": "uid",
+      "required": true
+    },
     "group": {
       "type": "enumeration",
-      "enum": ["live", "eclipse", "ghost", "pique", "horizontal", "vertical", "packshot", "cyclorama", "post-prod"]
+      "enum": [
+        "live",
+        "eclipse",
+        "ghost",
+        "pique",
+        "horizontal",
+        "vertical",
+        "packshot",
+        "cyclorama",
+        "post-prod"
+      ]
     },
-    "orderRank": { "type": "integer" },
-    "assets": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::gallery-asset.gallery-asset",
-      "mappedBy": "category"
+    "rank": {
+      "type": "integer"
     }
   }
 }

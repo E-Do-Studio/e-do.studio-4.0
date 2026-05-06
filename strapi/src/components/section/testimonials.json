@@ -1,7 +1,0 @@
-{
-  "collectionName": "components_section_testimonials",
-  "info": { "displayName": "Section Testimonials", "icon": "layout" },
-  "attributes": {
-    "data": { "type": "json" }
-  }
-}

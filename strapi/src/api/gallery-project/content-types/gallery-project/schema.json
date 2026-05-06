@@ -14,7 +14,7 @@
     "slug": { "type": "uid", "targetField": "title", "required": true },
     "stage": { "type": "string" },
     "year": { "type": "integer" },
-    "orderRank": { "type": "integer" },
+    "rank": { "type": "integer" },
     "category": {
       "type": "relation",
       "relation": "manyToOne",
