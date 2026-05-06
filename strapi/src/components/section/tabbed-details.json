@@ -1,0 +1,7 @@
+{
+  "collectionName": "components_section_tabbed_details",
+  "info": { "displayName": "Section Tabbed Details", "icon": "layout" },
+  "attributes": {
+    "data": { "type": "json" }
+  }
+}

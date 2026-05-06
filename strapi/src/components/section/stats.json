@@ -1,0 +1,7 @@
+{
+  "collectionName": "components_section_stats",
+  "info": { "displayName": "Section Stats", "icon": "layout" },
+  "attributes": {
+    "data": { "type": "json" }
+  }
+}

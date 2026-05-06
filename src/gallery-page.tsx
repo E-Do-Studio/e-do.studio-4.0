@@ -7,6 +7,7 @@ import type { GalleryProject } from "./lib/strapi";
 import type { Lang } from "./types";
 import { Button, PageHeader, IconArrowRight, CellLabel, Wordmark } from "./ui";
 import { cn } from "./ui/cn";
+import { common, galleryPage } from "./i18n/messages";
 
 const PLATEAU_LABELS: Record<string, { fr: string; en: string }> = {
   cyclorama: { fr: "Cyclorama", en: "Cyclorama" },
@@ -84,9 +85,9 @@ const GalleryFilters = ({
 
   return (
     <aside className="flex flex-col bg-white">
-      <FilterHeader label={lang === "fr" ? "Catégories" : "Categories"} />
+      <FilterHeader label={galleryPage.categories[lang]} />
       <FilterCell
-        label={lang === "fr" ? "Tout" : "All"}
+        label={common.all[lang]}
         active={cat === "all"}
         count={countCat("all")}
         onClick={() => setCat("all")}
@@ -110,9 +111,9 @@ const GalleryFilters = ({
         );
       })}
 
-      <FilterHeader label={lang === "fr" ? "Plateaux" : "Stages"} />
+      <FilterHeader label={common.stages[lang]} />
       <FilterCell
-        label={lang === "fr" ? "Tout" : "All"}
+        label={common.all[lang]}
         active={plateau === "all"}
         count={countPlateau("all")}
         onClick={() => setPlateau("all")}
@@ -144,7 +145,7 @@ const GalleryFilters = ({
           }}
           className="edo-focus-ring shrink-0 cursor-pointer border-0 border-b border-border bg-white px-3.5 py-3 text-left font-mono text-label uppercase tracking-label text-primary transition-colors hover:bg-muted"
         >
-          ↺ {lang === "fr" ? "Réinitialiser" : "Reset"}
+          ↺ {common.reset[lang]}
         </button>
       )}
     </aside>
@@ -251,10 +252,10 @@ const GalleryEmptyState = ({
 }) => (
   <div className="flex min-h-96 flex-col items-center justify-center gap-2.5 bg-white px-6 py-20 text-muted-foreground">
     <span className="edo-cell-label">
-      {lang === "fr" ? "Aucun résultat" : "No results"}
+      {galleryPage.noResults[lang]}
     </span>
     <span className="text-detail">
-      {lang === "fr" ? "Essayez un autre filtre." : "Try another filter."}
+      {galleryPage.tryAnotherFilter[lang]}
     </span>
     <Button
       variant="outline"
@@ -262,7 +263,7 @@ const GalleryEmptyState = ({
       onClick={onReset}
       className="mt-2.5"
     >
-      {lang === "fr" ? "Réinitialiser" : "Reset"}
+      {common.reset[lang]}
     </Button>
   </div>
 );
@@ -416,13 +417,13 @@ const GalleryPageV3 = () => {
 
       <PageHeader
         lang={lang}
-        title={lang === "fr" ? "Galerie" : "Gallery"}
+        title={common.gallery[lang]}
         className="col-span-full h-14 md:hidden"
         onMenuClick={openMenu}
         onLogoClick={() => goto("home")}
         onLangToggle={() => setLang(lang === "fr" ? "en" : "fr")}
         actions={[
-          { id: "book", label: lang === "fr" ? "Réserver" : "Book", onClick: () => goto("book"), variant: "primary" },
+          { id: "book", label: common.book[lang], onClick: () => goto("book"), variant: "primary" },
         ]}
       />
 
@@ -433,7 +434,7 @@ const GalleryPageV3 = () => {
       </div>
 
       <div className="hidden md:flex h-full min-w-0 items-center bg-background px-2 md:col-start-2 md:row-start-1">
-        <CellLabel className="shrink-0 text-primary truncate">{lang === "fr" ? "Galerie" : "Gallery"}</CellLabel>
+        <CellLabel className="shrink-0 text-primary truncate">{common.gallery[lang]}</CellLabel>
       </div>
 
       <button onClick={() => goto("postprod")} className="edo-focus-ring hidden md:flex h-full cursor-pointer items-center justify-center gap-2 border-0 bg-background px-5 font-mono text-label tracking-ui uppercase text-foreground no-underline transition-colors hover:bg-muted md:col-start-3 md:row-start-1">
@@ -442,17 +443,17 @@ const GalleryPageV3 = () => {
       </button>
 
       <button onClick={() => goto("plateau-live")} className="edo-focus-ring hidden md:flex h-full cursor-pointer items-center justify-center gap-2 border-0 bg-background px-5 font-mono text-label tracking-ui uppercase text-foreground no-underline transition-colors hover:bg-muted md:col-start-4 md:row-start-1">
-        <span className="whitespace-nowrap">{lang === "fr" ? "Plateaux" : "Stages"}</span>
+        <span className="whitespace-nowrap">{common.stages[lang]}</span>
         <IconArrowRight width={12} height={12} />
       </button>
 
       <div className="hidden md:flex h-full gap-px bg-foreground md:col-start-5 md:row-start-1">
         <button onClick={() => goto("book")} className="edo-focus-ring flex h-full flex-1 cursor-pointer items-center justify-center gap-2 border-0 bg-primary px-5 font-mono text-label tracking-ui uppercase text-white no-underline transition-colors hover:bg-foreground">
-          <span className="whitespace-nowrap">{lang === "fr" ? "Réserver" : "Book"}</span>
+          <span className="whitespace-nowrap">{common.book[lang]}</span>
           <IconArrowRight width={12} height={12} className="text-white" />
         </button>
         <button onClick={() => setLang(lang === "fr" ? "en" : "fr")} className="edo-focus-ring flex h-full basis-header flex-none cursor-pointer items-center justify-center border-0 bg-background p-0 transition-colors hover:bg-muted">
-          <span className="font-mono text-label tracking-meta text-foreground">{lang === "fr" ? "EN" : "FR"}</span>
+          <span className="font-mono text-label tracking-meta text-foreground">{common.langToggleLabel[lang]}</span>
         </button>
       </div>
 

@@ -8,6 +8,7 @@ import type { Lang } from './types';
 import { usePageContext } from './router';
 import galleryHero from '../assets/gallery-hero.jpg';
 import showreelPreview from '../assets/showreel-preview.png';
+import { common, home as homeMsg } from './i18n/messages';
 
 interface CatIconProps {
   kind: string;
@@ -88,19 +89,19 @@ const DirectionA = () => {
   return (
     /* Mobile: 2-col grid, vertical scroll. Desktop (md+): 12-col bento, fixed viewport */
     <div className="edo-page-enter grid w-full grid-cols-2 gap-px bg-black overflow-y-auto md:h-full md:grid-cols-12 md:grid-rows-home md:overflow-hidden">
-      <h1 className="sr-only">E-Do Studio — {lang === 'fr' ? 'Studio photo et vidéo professionnel à Paris' : 'Professional photo and video studio in Paris'}</h1>
+      <h1 className="sr-only">E-Do Studio — {homeMsg.srTitle[lang]}</h1>
 
       {/* ── Row 1: Header ── */}
       <PageHeader
         lang={lang}
-        title={lang === 'fr' ? 'Lun–Sam · 10—18' : 'Mon–Sat · 10—18'}
+        title={homeMsg.monSatHours[lang]}
         className="col-span-2 h-14 md:col-start-1 md:col-span-12 md:row-start-1 md:h-full"
         onMenuClick={openMenu}
         onLogoClick={() => goto('home')}
         onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
         actions={[
           { id: 'phone', label: '01 44 04 11 49', href: 'tel:+33144041149', showArrow: false, className: 'hidden sm:flex' },
-          { id: 'contact', label: lang === 'fr' ? 'Nous contacter' : 'Contact us', onClick: () => goto('contact'), className: 'hidden md:flex' },
+          { id: 'contact', label: common.contactUs[lang], onClick: () => goto('contact'), className: 'hidden md:flex' },
           { id: 'legal', label: 'Legal', onClick: () => goto('legal'), showArrow: false, className: 'hidden md:flex' },
           { id: 'etouch', label: 'Etouch', href: 'https://etouch.e-do.studio/', target: '_blank', rel: 'noopener noreferrer', variant: 'dark', showArrow: false, className: 'hidden sm:flex' },
         ]}
@@ -110,11 +111,11 @@ const DirectionA = () => {
       <div className="col-span-2 min-h-72 flex flex-col overflow-hidden bg-white md:col-start-1 md:col-end-7 md:row-start-2 md:row-end-4 md:min-h-0">
         <div className="flex flex-wrap items-center justify-between gap-2 px-4 pt-6">
           <h2 className="m-0 min-w-0 flex-1 truncate whitespace-nowrap text-page-title font-light tracking-display leading-none text-foreground">
-            {lang === 'fr' ? 'Shooting e-commerce' : 'E-commerce shooting'}
+            {homeMsg.ecommShooting[lang]}
           </h2>
           <button
             onClick={() => setEcomMode(ecomMode === 'type' ? 'machine' : 'type')}
-            aria-label={lang === 'fr' ? 'Basculer mode' : 'Toggle mode'}
+            aria-label={homeMsg.toggleMode[lang]}
             className="edo-focus-ring relative grid grid-cols-2 gap-1 border border-foreground bg-white p-1 font-mono flex-shrink-0"
           >
             <span
@@ -131,7 +132,7 @@ const DirectionA = () => {
                   key={o.v}
                   className={`relative z-10 whitespace-nowrap px-3 py-2 text-center font-mono text-caption uppercase tracking-meta transition-colors duration-150 ${active ? 'text-white' : 'text-foreground'}`}
                 >
-                  {lang === 'fr' ? o.fr : o.en}
+                  {o[lang]}
                 </span>
               );
             })}
@@ -140,7 +141,7 @@ const DirectionA = () => {
 
         <div className="px-4 pb-3.5">
           <div className="font-mono text-caption uppercase tracking-ui text-muted-foreground">
-            {lang === 'fr' ? '4 solutions intelligentes' : '4 smart solutions'}
+            {homeMsg.smartSolutions[lang]}
           </div>
         </div>
 
@@ -155,7 +156,7 @@ const DirectionA = () => {
                 >
                   <CatIcon kind={c.k} size={20} />
                   <div className="truncate text-caption font-medium tracking-copy-tight leading-snug">
-                    {lang === 'fr' ? c.fr : c.en}
+                    {c[lang]}
                   </div>
                 </button>
               ))}
@@ -199,7 +200,7 @@ const DirectionA = () => {
         <div className="flex w-full items-end justify-between gap-4">
           <div className="min-w-0">
             <div className="text-hero font-light tracking-display leading-solid text-white transition-transform duration-300 group-hover:scale-102">
-              {lang === 'fr' ? 'Galerie' : 'Gallery'}
+              {common.gallery[lang]}
             </div>
           </div>
           <div className="flex-shrink-0">
@@ -237,7 +238,7 @@ const DirectionA = () => {
               Cyclorama
             </div>
             <div className="mt-1.5 text-caption font-mono uppercase tracking-ui text-muted-foreground">
-              {lang === 'fr' ? 'Production libre · Photo & Vidéo' : 'Free production · Photo & Video'}
+              {homeMsg.freeProductionPhotovideo[lang]}
             </div>
           </div>
           <div className="flex flex-shrink-0 items-center justify-center">
@@ -256,10 +257,10 @@ const DirectionA = () => {
       >
         <div className="flex min-w-0 flex-col gap-1 transition-transform duration-150 group-hover:scale-102">
           <span className="font-mono text-label uppercase tracking-label text-white/75">
-            {lang === 'fr' ? 'Demander un devis ou' : 'Request a quote or'}
+            {homeMsg.requestQuoteOr[lang]}
           </span>
           <span className="text-tile-title font-normal tracking-headline leading-tight text-white">
-            {lang === 'fr' ? 'Réserver' : 'Book'}
+            {common.book[lang]}
           </span>
         </div>
         <IconArrowRight
@@ -279,7 +280,7 @@ const DirectionA = () => {
         <div className="relative flex min-w-0 flex-col gap-1 transition-transform duration-150 group-hover:scale-102">
           <CellLabel className="text-white/70">Discovery</CellLabel>
           <div className="text-tile-title font-normal tracking-headline leading-tight text-white">
-            {lang === 'fr' ? "Dites-m'en plus" : 'Tell me more'}
+            {homeMsg.tellMeMore[lang]}
           </div>
         </div>
         <div className="relative flex-shrink-0">
@@ -301,7 +302,7 @@ const DirectionA = () => {
               Post-production
             </div>
             <div className="mt-1.5 font-mono text-caption uppercase tracking-ui text-muted-foreground">
-              {lang === 'fr' ? 'Retouche · Photo & Vidéo' : 'Retouching · Photo & Video'}
+              {homeMsg.retouchPhotoVideo[lang]}
             </div>
           </div>
           <IconArrowRight

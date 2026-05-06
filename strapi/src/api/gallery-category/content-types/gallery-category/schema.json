@@ -1,0 +1,28 @@
+{
+  "kind": "collectionType",
+  "collectionName": "gallery_categories",
+  "info": {
+    "singularName": "gallery-category",
+    "pluralName": "gallery-categories",
+    "displayName": "Gallery Category"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "name_fr": { "type": "string", "required": true },
+    "name_en": { "type": "string" },
+    "slug": { "type": "uid", "required": true },
+    "group": {
+      "type": "enumeration",
+      "enum": ["live", "eclipse", "ghost", "pique", "horizontal", "vertical", "packshot", "cyclorama", "post-prod"]
+    },
+    "orderRank": { "type": "integer" },
+    "assets": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::gallery-asset.gallery-asset",
+      "mappedBy": "category"
+    }
+  }
+}

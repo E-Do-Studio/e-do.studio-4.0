@@ -1,0 +1,7 @@
+{
+  "collectionName": "components_section_instagram_feed",
+  "info": { "displayName": "Section Instagram Feed", "icon": "layout" },
+  "attributes": {
+    "data": { "type": "json" }
+  }
+}

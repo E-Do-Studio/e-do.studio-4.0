@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_section_contents",
+  "info": {
+    "displayName": "Content",
+    "icon": "file"
+  },
+  "attributes": {
+    "title_fr": { "type": "string" },
+    "title_en": { "type": "string" },
+    "content_fr": { "type": "richtext" },
+    "content_en": { "type": "richtext" }
+  }
+}

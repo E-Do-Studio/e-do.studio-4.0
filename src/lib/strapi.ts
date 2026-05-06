@@ -96,9 +96,6 @@ interface StrapiBlogPost {
   excerpt_en: string;
   body_fr?: string;
   body_en?: string;
-  author?: string;
-  readingTime?: number;
-  featured?: boolean;
   coverImage?: StrapiMedia;
   publishedAt: string;
   categories?: { id: number; title_fr: string; title_en: string; slug: string }[];
@@ -132,9 +129,11 @@ interface StrapiGalleryBrand {
 
 interface StrapiGalleryCategory {
   id: number;
-  title_fr: string;
-  title_en: string;
+  name_fr: string;
+  name_en?: string;
   slug: string;
+  group?: string;
+  orderRank: number;
 }
 
 interface StrapiGalleryProject {
@@ -144,6 +143,7 @@ interface StrapiGalleryProject {
   stage: string;
   year: number | string;
   category?: StrapiGalleryCategory;
+  brand?: StrapiGalleryBrand;
   images?: StrapiMedia[];
 }
 
@@ -536,7 +536,7 @@ export async function fetchDiscoveryPosts(): Promise<DiscoveryPost[]> {
     const cat = p.categories?.[0];
     const bodyFr = p.body_fr ?? '';
     const bodyEn = p.body_en ?? '';
-    const readingTime = p.readingTime ?? estimateReadingTime(bodyFr || bodyEn);
+    const readingTime = estimateReadingTime(bodyFr || bodyEn);
     return {
       id: p.id,
       cat: cat?.slug ?? 'tips',
@@ -547,9 +547,9 @@ export async function fetchDiscoveryPosts(): Promise<DiscoveryPost[]> {
       body: { fr: bodyFr, en: bodyEn },
       date: formatStrapiDate(p.publishedAt),
       read: `${readingTime} min`,
-      author: p.author ?? 'Studio',
+      author: 'Studio',
       coverUrl: resolveStrapiMediaUrl(p.coverImage),
-      featured: p.featured ?? false,
+      featured: false,
     };
   });
 }
@@ -651,18 +651,22 @@ const FALLBACK_GALLERY_PROJECTS: GalleryProject[] = [
   { id: 18, brand: 'Solène', slug: 'solene-2025', cat: 'bijoux', plateau: 'cyclorama', year: '2025', tone: 'warm', imageUrls: [] },
 ];
 
+function slugToTitle(slug: string): string {
+  return slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
 export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
   try {
     const res = await fetchStrapi<{ data: StrapiGalleryProject[] }>('gallery-projects', {
-      'populate': 'category,images',
-      'sort': 'rank:asc',
+      'populate': 'category,brand,images',
+      'sort': 'orderRank:asc',
       'pagination[pageSize]': '100',
     });
 
     if (res.data.length > 0) {
       return res.data.map((p, i) => ({
         id: p.id,
-        brand: p.title ?? p.slug,
+        brand: p.brand?.name ?? p.title ?? slugToTitle(p.slug),
         slug: p.slug,
         cat: p.category?.slug ?? 'other',
         plateau: p.stage,
@@ -683,7 +687,7 @@ export async function fetchGalleryCategories(): Promise<GalleryCategory[]> {
       'sort': 'rank:asc',
     });
     if (res.data.length > 0) {
-      return res.data.map(c => ({ k: c.slug, fr: c.title_fr, en: c.title_en }));
+      return res.data.map(c => ({ k: c.slug, fr: c.name_fr, en: c.name_en ?? c.name_fr }));
     }
   } catch {
     // Strapi gallery-category content type not available yet

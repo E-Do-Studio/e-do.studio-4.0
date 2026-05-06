@@ -1,0 +1,42 @@
+{
+  "kind": "singleType",
+  "collectionName": "cycloramas",
+  "info": {
+    "singularName": "cyclorama",
+    "pluralName": "cycloramas",
+    "displayName": "Cyclorama"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title_fr": { "type": "string" },
+    "title_en": { "type": "string" },
+    "subtitle_fr": { "type": "string" },
+    "subtitle_en": { "type": "string" },
+    "description_fr": { "type": "text" },
+    "description_en": { "type": "text" },
+    "image": { "type": "media", "multiple": false },
+    "specs": {
+      "type": "component",
+      "component": "shared.spec",
+      "repeatable": true
+    },
+    "amenities": {
+      "type": "component",
+      "component": "shared.localized-item",
+      "repeatable": true
+    },
+    "pricing_fr": { "type": "string" },
+    "pricing_en": { "type": "string" },
+    "comfortText_fr": { "type": "text" },
+    "comfortText_en": { "type": "text" },
+    "complementaryServices_fr": { "type": "text" },
+    "complementaryServices_en": { "type": "text" },
+    "equipmentRental_fr": { "type": "text" },
+    "equipmentRental_en": { "type": "text" },
+    "pricingDescription_fr": { "type": "text" },
+    "pricingDescription_en": { "type": "text" },
+    "gallery": { "type": "media", "multiple": true }
+  }
+}

@@ -4,6 +4,7 @@ import { CellLabel } from './typography';
 import { cn } from './cn';
 import { Wordmark } from './brand';
 import { IconArrowRight, IconMenu } from './icons';
+import { common } from '../i18n/messages';
 
 interface PageHeaderAction {
   id: string;
@@ -134,7 +135,7 @@ const PageHeader = ({
       className="edo-focus-ring flex h-full basis-header flex-none cursor-pointer items-center justify-center border-0 bg-background p-0 transition-colors hover:bg-muted"
     >
       <span className="font-mono text-label tracking-meta text-foreground">
-        {lang === 'fr' ? 'EN' : 'FR'}
+        {common.langToggleLabel[lang]}
       </span>
     </button>
   </header>

@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import { CellLabel, CellTitle, IconArrowRight, IconPlay, IconMenu, Wordmark, LangSwitch, cn } from './ui';
 import { useMachines, useBrands } from './lib/use-strapi';
 import type { Lang, MachineInfo } from './types';
+import { common, cells as cellsMsg, assistant as assistantMsg } from './i18n/messages';
 
 const KEYWORDS = {
   fr: [
@@ -76,7 +77,7 @@ const CycloramaCell = ({ lang, onOpen, variant = 'full' }: CycloramaCellProps) =
       <ellipse cx="250" cy="280" rx="170" ry="10" fill="rgba(0,0,0,0.08)" />
     </svg>
     <div className="relative">
-      <CellLabel>{lang === 'fr' ? 'Production libre · Studio cyclorama' : 'Free production · Cyclorama studio'}</CellLabel>
+      <CellLabel>{cellsMsg.freeProduction[lang]}</CellLabel>
     </div>
     <div className="relative flex items-end justify-between gap-2">
       <div>
@@ -166,7 +167,7 @@ const PostProdCell = ({ lang, onOpen }: PostProdCellProps) => (
       <div>
         <div className="text-tile-large font-light tracking-headline leading-none">Post-production</div>
         <div className="mt-2 font-mono text-label uppercase tracking-label text-white/55">
-          {lang === 'fr' ? 'Retouche · colorimétrie · détourage' : 'Retouching · color · clipping path'}
+          {cellsMsg.retouching[lang]}
         </div>
       </div>
       <IconArrowRight width="18" height="18" className="text-white" />
@@ -188,9 +189,9 @@ const EtouchCell = ({ lang }: EtouchCellProps) => (
     <CellLabel>etouch</CellLabel>
     <div className="flex items-end justify-between">
       <div>
-        <div className="text-tile-title font-light tracking-headline leading-none">{lang === 'fr' ? 'Espace client' : 'Client portal'}</div>
+        <div className="text-tile-title font-light tracking-headline leading-none">{cellsMsg.clientPortal[lang]}</div>
         <div className="mt-2 font-mono text-label uppercase tracking-label text-muted-foreground">
-          {lang === 'fr' ? 'Livrables · validation · archive' : 'Deliverables · review · archive'}
+          {cellsMsg.deliverables[lang]}
         </div>
       </div>
       <IconArrowRight width="18" height="18" />
@@ -247,8 +248,8 @@ const ContactCell = ({ lang }: ContactCellProps) => (
     </div>
     <div className="grid grid-cols-2 gap-px border-t border-foreground bg-black">
       {[
-        { label: lang === 'fr' ? 'Nous contacter' : 'Contact us', href: '/contact' },
-        { label: lang === 'fr' ? 'Légal' : 'Legal', href: '/legal' },
+        { label: common.contactUs[lang], href: '/contact' },
+        { label: common.legal[lang], href: '/legal' },
       ].map((link, i) => (
         <a
           key={i}
@@ -322,7 +323,7 @@ const ChatCell = ({ lang }: ChatCellProps) => {
   const submit = (e: FormEvent) => { e.preventDefault(); if (!input.trim()) return; type(getResp(input, lang)); setInput(''); };
   return (
     <div className="flex h-full flex-col justify-between bg-white p-4">
-      <CellLabel>{lang === 'fr' ? 'Assistant E-Do' : 'E-Do assistant'}</CellLabel>
+      <CellLabel>{cellsMsg.assistant[lang]}</CellLabel>
       <div className="flex flex-1 items-start py-2">
         <p className="m-0 text-detail leading-copy text-muted-foreground">
           {msg.slice(0, shown)}{shown < msg.length && <span className="animate-pulse">|</span>}
@@ -332,7 +333,7 @@ const ChatCell = ({ lang }: ChatCellProps) => {
         <input
           value={input}
           onChange={e => setInput(e.target.value)}
-          placeholder={lang === 'fr' ? 'prix, devis, cyclorama…' : 'price, quote, cyclorama…'}
+          placeholder={assistantMsg.chatPlaceholder[lang]}
           className="flex-1 border-b border-foreground bg-transparent pb-1 text-detail text-foreground outline-none"
         />
         <button type="submit" aria-label="send" className="edo-focus-ring cursor-pointer border-0 bg-transparent text-muted-foreground">
@@ -380,7 +381,7 @@ const GalleryCell = ({ columns = 3, rows = 1, onOpen, seeds = null, palette = 'e
           onClick={() => onOpen?.('all')}
           className="edo-focus-ring group flex cursor-pointer items-center justify-center border-0 bg-white font-mono text-label uppercase tracking-label text-muted-foreground transition-colors duration-150 hover:bg-muted"
         >
-          {lang === 'fr' ? 'Galerie →' : 'Gallery →'}
+          {common.galleryArrow[lang]}
         </button>
       )}
     </div>
@@ -442,11 +443,9 @@ interface AboutCellProps {
 
 const AboutCell = ({ lang, size = 'sm' }: AboutCellProps) => (
   <div className="flex h-full flex-col justify-between bg-white p-4">
-    <CellLabel>{lang === 'fr' ? 'À propos' : 'About'}</CellLabel>
+    <CellLabel>{cellsMsg.about[lang]}</CellLabel>
     <p className={['m-0 text-wrap pretty font-normal leading-normal text-foreground', size === 'lg' ? 'text-cell' : 'text-caption'].join(' ')}>
-      {lang === 'fr'
-        ? "E-Do Studio est un espace hybride dédié à la production d'images haut de gamme pour les marques de mode et de luxe."
-        : "E-Do Studio is a hybrid space dedicated to premium image production for fashion and luxury brands."}
+      {cellsMsg.aboutBody[lang]}
     </p>
   </div>
 );
@@ -498,7 +497,7 @@ const BrandStackCell = ({ lang, setLang, onMenu, onLogo, onVideo }: BrandStackCe
     >
       <CellLabel>E-Do Studio</CellLabel>
       <div className="flex w-full items-center justify-between">
-        <CellTitle className="text-detail">{lang === 'fr' ? 'Découverte' : 'Discovery'}</CellTitle>
+        <CellTitle className="text-detail">{cellsMsg.discovery[lang]}</CellTitle>
         <IconArrowRight width="14" height="14" />
       </div>
     </button>

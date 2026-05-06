@@ -1,0 +1,29 @@
+{
+  "kind": "collectionType",
+  "collectionName": "post_production_types",
+  "info": {
+    "singularName": "post-production-type",
+    "pluralName": "post-production-types",
+    "displayName": "Post Production Type"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title_fr": { "type": "string" },
+    "title_en": { "type": "string" },
+    "slug": { "type": "uid", "required": true },
+    "description_fr": { "type": "text" },
+    "description_en": { "type": "text" },
+    "price_fr": { "type": "string" },
+    "price_en": { "type": "string" },
+    "includes": {
+      "type": "component",
+      "component": "shared.localized-item",
+      "repeatable": true
+    },
+    "image": { "type": "media", "multiple": false },
+    "gallery": { "type": "media", "multiple": true },
+    "orderRank": { "type": "integer" }
+  }
+}

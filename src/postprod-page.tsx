@@ -3,6 +3,7 @@ import { Button, CellLabel, IconArrowRight, PageHeader, Wordmark } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
 import type { Bilingual } from './types';
 import { usePageContext } from './router';
+import { common, postprod as postprodMsg } from './i18n/messages';
 
 interface PPPrice {
   amount?: string;
@@ -229,7 +230,7 @@ const PostprodPage = () => {
         onLogoClick={()=>goto('home')}
         onLangToggle={()=>setLang(lang==='fr'?'en':'fr')}
         actions={[
-          { id: 'book', label: lang==='fr'?'Réserver':'Book', onClick: () => goto('book'), variant: 'primary' },
+          { id: 'book', label: common.book[lang], onClick: () => goto('book'), variant: 'primary' },
         ]}
       />
 
@@ -247,18 +248,18 @@ const PostprodPage = () => {
 
       {/* Desktop col 3 – gallery */}
       <button onClick={()=>goto('gallery')} className="edo-focus-ring hidden md:flex h-full cursor-pointer items-center justify-center gap-2 border-0 bg-background px-5 font-mono text-label tracking-ui uppercase text-foreground no-underline transition-colors hover:bg-muted md:col-start-3 md:row-start-1">
-        <span className="whitespace-nowrap">{lang==='fr'?'Galerie':'Gallery'}</span>
+        <span className="whitespace-nowrap">{common.gallery[lang]}</span>
         <IconArrowRight width={12} height={12} />
       </button>
 
       {/* Desktop col 4 – book + lang toggle */}
       <div className="hidden md:flex h-full gap-px bg-foreground md:col-start-4 md:row-start-1">
         <button onClick={()=>goto('book')} className="edo-focus-ring flex h-full flex-1 cursor-pointer items-center justify-center gap-2 border-0 bg-primary px-5 font-mono text-label tracking-ui uppercase text-white no-underline transition-colors hover:bg-foreground">
-          <span className="whitespace-nowrap">{lang==='fr'?'Réserver':'Book'}</span>
+          <span className="whitespace-nowrap">{common.book[lang]}</span>
           <IconArrowRight width={12} height={12} />
         </button>
         <button onClick={()=>setLang(lang==='fr'?'en':'fr')} className="edo-focus-ring flex h-full basis-header flex-none cursor-pointer items-center justify-center border-0 bg-background p-0 transition-colors hover:bg-muted">
-          <span className="font-mono text-label tracking-meta text-foreground">{lang==='fr'?'EN':'FR'}</span>
+          <span className="font-mono text-label tracking-meta text-foreground">{common.langToggleLabel[lang]}</span>
         </button>
       </div>
 
@@ -273,17 +274,17 @@ const PostprodPage = () => {
               <span className={`font-mono text-micro tracking-label ${active?'text-primary':'text-muted-foreground'}`}>{String(idx+1).padStart(2,'0')}</span>
               <span className={`text-detail ${active?'font-medium':'font-normal'} tracking-copy-tight text-foreground leading-snug whitespace-nowrap overflow-hidden text-ellipsis`}>{c[lang]}</span>
               <span className="hidden md:block font-mono text-micro text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis mt-auto">
-                {c.price?.kind==='quote' ? (lang==='fr'?'Sur demande':'On request') : `${c.price.from?(lang==='fr'?'À partir de ':'From '):''}${c.price.amount}${c.price.unit?.[lang] ?? ''}`}
+                {c.price?.kind==='quote' ? common.onRequest[lang] : `${c.price.from?(postprodMsg.from[lang] + ' '):''}${c.price.amount}${c.price.unit?.[lang] ?? ''}`}
               </span>
             </button>
           );
         })}
         <div className="hidden md:flex mt-auto py-3.5 px-4 border-t border-t-border flex-col gap-1.5 shrink-0 bg-muted">
           <span className="font-mono text-micro tracking-label uppercase text-primary">
-            {lang==='fr'?'À noter':'Note'}
+            {postprodMsg.note[lang]}
           </span>
           <span className="text-caption text-muted-foreground leading-normal text-pretty">
-            {lang==='fr'?'Nous retouchons aussi vos images non shootées chez nous.':'We also retouch images not shot at our studio.'}
+            {postprodMsg.noteBody[lang]}
           </span>
         </div>
       </aside>
@@ -293,11 +294,11 @@ const PostprodPage = () => {
         <div className="flex flex-col gap-5">
           <div className="flex items-center gap-2.5 flex-wrap">
             <span className="font-mono text-label tracking-label text-primary">
-              {String(PP_CATS.findIndex(x=>x.k===k)+1).padStart(2,'0')} · {lang==='fr'?'CATÉGORIE':'CATEGORY'}
+              {String(PP_CATS.findIndex(x=>x.k===k)+1).padStart(2,'0')} · {postprodMsg.category[lang]}
             </span>
             {cat.featured && (
               <span className="font-mono text-nano tracking-label uppercase bg-primary text-white px-2 py-0.5">
-                {lang==='fr'?'Standard':'Standard'}
+                {postprodMsg.standard[lang]}
               </span>
             )}
           </div>
@@ -322,11 +323,11 @@ const PostprodPage = () => {
             <div className="flex items-baseline gap-2.5 flex-wrap">
               {cat.price.kind==='quote' ? (
                 <span className={`text-page-title font-light tracking-headline leading-none ${fgCls}`}>
-                  {lang==='fr'?'Sur demande':'On request'}
+                  {common.onRequest[lang]}
                 </span>
               ) : (
                 <>
-                  {cat.price.from && <span className={`font-mono text-label tracking-label uppercase ${mutedCls}`}>{lang==='fr'?'À partir de':'From'}</span>}
+                  {cat.price.from && <span className={`font-mono text-label tracking-label uppercase ${mutedCls}`}>{postprodMsg.from[lang]}</span>}
                   <span className={`text-hero font-light tracking-headline leading-none ${fgCls}`}>{cat.price.amount}</span>
                   <span className={`text-detail opacity-65 ${fgCls}`}>{cat.price.unit?.[lang] ?? ''}</span>
                 </>
@@ -334,7 +335,7 @@ const PostprodPage = () => {
             </div>
           )}
           <Button onClick={()=>goto('contact')} className="w-full justify-between py-3.5 px-5 mt-2">
-            {lang==='fr'?'Demander un devis':'Request a quote'}
+            {postprodMsg.requestQuote[lang]}
             <IconArrowRight width="16" height="16"/>
           </Button>
         </div>

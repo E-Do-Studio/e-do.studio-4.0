@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_footer_navigation_groups",
+  "info": {
+    "displayName": "Navigation Group",
+    "icon": "layer"
+  },
+  "attributes": {
+    "title": { "type": "string" },
+    "links": {
+      "type": "component",
+      "component": "shared.nav-link",
+      "repeatable": true
+    }
+  }
+}

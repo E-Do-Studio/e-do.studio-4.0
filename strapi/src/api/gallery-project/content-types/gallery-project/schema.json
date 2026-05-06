@@ -1,0 +1,30 @@
+{
+  "kind": "collectionType",
+  "collectionName": "gallery_projects",
+  "info": {
+    "singularName": "gallery-project",
+    "pluralName": "gallery-projects",
+    "displayName": "Gallery Project"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": { "type": "string", "required": true },
+    "slug": { "type": "uid", "targetField": "title", "required": true },
+    "stage": { "type": "string" },
+    "year": { "type": "integer" },
+    "orderRank": { "type": "integer" },
+    "category": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::gallery-category.gallery-category"
+    },
+    "brand": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::gallery-brand.gallery-brand"
+    },
+    "images": { "type": "media", "multiple": true, "allowedTypes": ["images"] }
+  }
+}
