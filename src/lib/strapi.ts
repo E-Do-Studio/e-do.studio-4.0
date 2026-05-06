@@ -142,6 +142,7 @@ interface StrapiGalleryProject {
   slug: string;
   stage: string;
   year: number | string;
+  orderRank: number;
   category?: StrapiGalleryCategory;
   brand?: StrapiGalleryBrand;
   images?: StrapiMedia[];
