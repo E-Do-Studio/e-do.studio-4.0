@@ -67,6 +67,8 @@ export function useContact() {
     email: string;
     emailHref: string;
     address: { street: string; zip: string };
+    fullAddress?: string;
+    googleMapsUrl?: string;
     etouch: string;
   }>(fetchContact);
 }
