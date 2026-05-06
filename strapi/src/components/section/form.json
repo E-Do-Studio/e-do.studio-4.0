@@ -5,12 +5,33 @@
     "icon": "pencil"
   },
   "attributes": {
-    "title_fr": { "type": "string" },
-    "title_en": { "type": "string" },
-    "description_fr": { "type": "text" },
-    "description_en": { "type": "text" },
-    "pricing_fr": { "type": "string" },
-    "pricing_en": { "type": "string" },
-    "showDuration": { "type": "boolean", "default": true }
+    "title": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "description": {
+      "type": "text",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "pricing": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "showDuration": {
+      "type": "boolean",
+      "default": true
+    }
   }
 }

@@ -451,16 +451,11 @@ export interface ApiAboutUsAboutUs extends Struct.SingleTypeSchema {
     > &
       Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
-    seo_description_en: Schema.Attribute.Text;
-    seo_description_fr: Schema.Attribute.Text;
-    seo_title_en: Schema.Attribute.String;
-    seo_title_fr: Schema.Attribute.String;
-    story_en: Schema.Attribute.RichText;
-    story_fr: Schema.Attribute.RichText;
-    subtitle_en: Schema.Attribute.String;
-    subtitle_fr: Schema.Attribute.String;
-    title_en: Schema.Attribute.String;
-    title_fr: Schema.Attribute.String;
+    seo_description: Schema.Attribute.Text;
+    seo_title: Schema.Attribute.String;
+    story: Schema.Attribute.RichText;
+    subtitle: Schema.Attribute.String;
+    title: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
       Schema.Attribute.Private;
@@ -514,8 +509,7 @@ export interface ApiBentoPageBentoPage extends Struct.CollectionTypeSchema {
     seo_description: Schema.Attribute.Text;
     seo_image: Schema.Attribute.Media;
     seo_title: Schema.Attribute.String;
-    title_en: Schema.Attribute.String;
-    title_fr: Schema.Attribute.String;
+    title: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
       Schema.Attribute.Private;
@@ -537,8 +531,7 @@ export interface ApiBlogCategoryBlogCategory
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
       Schema.Attribute.Private;
-    description_en: Schema.Attribute.Text;
-    description_fr: Schema.Attribute.Text;
+    description: Schema.Attribute.Text;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       "oneToMany",
@@ -548,8 +541,7 @@ export interface ApiBlogCategoryBlogCategory
     posts: Schema.Attribute.Relation<"manyToMany", "api::blog-post.blog-post">;
     publishedAt: Schema.Attribute.DateTime;
     slug: Schema.Attribute.UID & Schema.Attribute.Required;
-    title_en: Schema.Attribute.String;
-    title_fr: Schema.Attribute.String;
+    title: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
       Schema.Attribute.Private;
@@ -567,8 +559,7 @@ export interface ApiBlogPostBlogPost extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
-    body_en: Schema.Attribute.RichText;
-    body_fr: Schema.Attribute.RichText;
+    body: Schema.Attribute.RichText;
     categories: Schema.Attribute.Relation<
       "manyToMany",
       "api::blog-category.blog-category"
@@ -577,8 +568,7 @@ export interface ApiBlogPostBlogPost extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
       Schema.Attribute.Private;
-    excerpt_en: Schema.Attribute.Text;
-    excerpt_fr: Schema.Attribute.Text;
+    excerpt: Schema.Attribute.Text;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       "oneToMany",
@@ -590,8 +580,7 @@ export interface ApiBlogPostBlogPost extends Struct.CollectionTypeSchema {
     seo_image: Schema.Attribute.Media;
     seo_title: Schema.Attribute.String;
     slug: Schema.Attribute.UID & Schema.Attribute.Required;
-    title_en: Schema.Attribute.String;
-    title_fr: Schema.Attribute.String;
+    title: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
       Schema.Attribute.Private;
@@ -609,15 +598,12 @@ export interface ApiCookieBannerCookieBanner extends Struct.SingleTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
-    acceptButton_en: Schema.Attribute.String;
-    acceptButton_fr: Schema.Attribute.String;
+    acceptButton: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
       Schema.Attribute.Private;
-    customizeButton_en: Schema.Attribute.String;
-    customizeButton_fr: Schema.Attribute.String;
-    description_en: Schema.Attribute.Text;
-    description_fr: Schema.Attribute.Text;
+    customizeButton: Schema.Attribute.String;
+    description: Schema.Attribute.Text;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       "oneToMany",
@@ -625,12 +611,9 @@ export interface ApiCookieBannerCookieBanner extends Struct.SingleTypeSchema {
     > &
       Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
-    rejectButton_en: Schema.Attribute.String;
-    rejectButton_fr: Schema.Attribute.String;
-    saveButton_en: Schema.Attribute.String;
-    saveButton_fr: Schema.Attribute.String;
-    title_en: Schema.Attribute.String;
-    title_fr: Schema.Attribute.String;
+    rejectButton: Schema.Attribute.String;
+    saveButton: Schema.Attribute.String;
+    title: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
       Schema.Attribute.Private;
@@ -649,17 +632,13 @@ export interface ApiCycloramaCyclorama extends Struct.SingleTypeSchema {
   };
   attributes: {
     amenities: Schema.Attribute.Component<"shared.localized-item", true>;
-    comfortText_en: Schema.Attribute.Text;
-    comfortText_fr: Schema.Attribute.Text;
-    complementaryServices_en: Schema.Attribute.Text;
-    complementaryServices_fr: Schema.Attribute.Text;
+    comfortText: Schema.Attribute.Text;
+    complementaryServices: Schema.Attribute.Text;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
       Schema.Attribute.Private;
-    description_en: Schema.Attribute.Text;
-    description_fr: Schema.Attribute.Text;
-    equipmentRental_en: Schema.Attribute.Text;
-    equipmentRental_fr: Schema.Attribute.Text;
+    description: Schema.Attribute.Text;
+    equipmentRental: Schema.Attribute.Text;
     gallery: Schema.Attribute.Media<undefined, true>;
     image: Schema.Attribute.Media;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
@@ -668,16 +647,12 @@ export interface ApiCycloramaCyclorama extends Struct.SingleTypeSchema {
       "api::cyclorama.cyclorama"
     > &
       Schema.Attribute.Private;
-    pricing_en: Schema.Attribute.String;
-    pricing_fr: Schema.Attribute.String;
-    pricingDescription_en: Schema.Attribute.Text;
-    pricingDescription_fr: Schema.Attribute.Text;
+    pricing: Schema.Attribute.String;
+    pricingDescription: Schema.Attribute.Text;
     publishedAt: Schema.Attribute.DateTime;
     specs: Schema.Attribute.Component<"shared.spec", true>;
-    subtitle_en: Schema.Attribute.String;
-    subtitle_fr: Schema.Attribute.String;
-    title_en: Schema.Attribute.String;
-    title_fr: Schema.Attribute.String;
+    subtitle: Schema.Attribute.String;
+    title: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
       Schema.Attribute.Private;
@@ -695,10 +670,8 @@ export interface ApiFaqEntryFaqEntry extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
-    answer_en: Schema.Attribute.Text;
-    answer_fr: Schema.Attribute.Text & Schema.Attribute.Required;
-    category_en: Schema.Attribute.String;
-    category_fr: Schema.Attribute.String;
+    answer: Schema.Attribute.Text & Schema.Attribute.Required;
+    category: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
       Schema.Attribute.Private;
@@ -710,8 +683,7 @@ export interface ApiFaqEntryFaqEntry extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     orderRank: Schema.Attribute.Integer;
     publishedAt: Schema.Attribute.DateTime;
-    question_en: Schema.Attribute.String;
-    question_fr: Schema.Attribute.String & Schema.Attribute.Required;
+    question: Schema.Attribute.String & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
       Schema.Attribute.Private;
@@ -739,14 +711,10 @@ export interface ApiFaqPageFaqPage extends Struct.SingleTypeSchema {
     > &
       Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
-    seo_description_en: Schema.Attribute.Text;
-    seo_description_fr: Schema.Attribute.Text;
-    seo_title_en: Schema.Attribute.String;
-    seo_title_fr: Schema.Attribute.String;
-    subtitle_en: Schema.Attribute.String;
-    subtitle_fr: Schema.Attribute.String;
-    title_en: Schema.Attribute.String;
-    title_fr: Schema.Attribute.String;
+    seo_description: Schema.Attribute.Text;
+    seo_title: Schema.Attribute.String;
+    subtitle: Schema.Attribute.String;
+    title: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
       Schema.Attribute.Private;
@@ -766,8 +734,7 @@ export interface ApiFooterFooter extends Struct.SingleTypeSchema {
   attributes: {
     addressCity: Schema.Attribute.String;
     addressName: Schema.Attribute.String;
-    addressNote_en: Schema.Attribute.String;
-    addressNote_fr: Schema.Attribute.String;
+    addressNote: Schema.Attribute.String;
     addressStreet: Schema.Attribute.String;
     copyright: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
@@ -788,15 +755,12 @@ export interface ApiFooterFooter extends Struct.SingleTypeSchema {
     phone: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     socialLinks: Schema.Attribute.Component<"shared.social-link", true>;
-    tagline_en: Schema.Attribute.String;
-    tagline_fr: Schema.Attribute.String;
+    tagline: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
       Schema.Attribute.Private;
-    weekdayHours_en: Schema.Attribute.String;
-    weekdayHours_fr: Schema.Attribute.String;
-    weekendHours_en: Schema.Attribute.String;
-    weekendHours_fr: Schema.Attribute.String;
+    weekdayHours: Schema.Attribute.String;
+    weekendHours: Schema.Attribute.String;
   };
 }
 
@@ -915,8 +879,7 @@ export interface ApiGalleryCategoryGalleryCategory
       "api::gallery-category.gallery-category"
     > &
       Schema.Attribute.Private;
-    name_en: Schema.Attribute.String;
-    name_fr: Schema.Attribute.String & Schema.Attribute.Required;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
     order: Schema.Attribute.Integer;
     publishedAt: Schema.Attribute.DateTime;
     slug: Schema.Attribute.UID & Schema.Attribute.Required;
@@ -997,8 +960,7 @@ export interface ApiGalleryEmbedGalleryEmbed
     order: Schema.Attribute.Integer;
     publishedAt: Schema.Attribute.DateTime;
     thumbnail: Schema.Attribute.Media;
-    title_en: Schema.Attribute.String;
-    title_fr: Schema.Attribute.String;
+    title: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
       Schema.Attribute.Private;
@@ -1030,8 +992,7 @@ export interface ApiGallerySubcategoryGallerySubcategory
       "api::gallery-subcategory.gallery-subcategory"
     > &
       Schema.Attribute.Private;
-    name_en: Schema.Attribute.String;
-    name_fr: Schema.Attribute.String & Schema.Attribute.Required;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
     order: Schema.Attribute.Integer;
     publishedAt: Schema.Attribute.DateTime;
     slug: Schema.Attribute.UID & Schema.Attribute.Required;
@@ -1055,8 +1016,7 @@ export interface ApiMachineMachine extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
       Schema.Attribute.Private;
-    description_en: Schema.Attribute.Text;
-    description_fr: Schema.Attribute.Text;
+    description: Schema.Attribute.Text;
     gallery: Schema.Attribute.Media<undefined, true>;
     image: Schema.Attribute.Media;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
@@ -1065,16 +1025,13 @@ export interface ApiMachineMachine extends Struct.CollectionTypeSchema {
       "api::machine.machine"
     > &
       Schema.Attribute.Private;
-    operatorPricing_en: Schema.Attribute.String;
-    operatorPricing_fr: Schema.Attribute.String;
+    operatorPricing: Schema.Attribute.String;
     orderRank: Schema.Attribute.Integer;
-    pricing_en: Schema.Attribute.String;
-    pricing_fr: Schema.Attribute.String;
+    pricing: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     slug: Schema.Attribute.UID<"title"> & Schema.Attribute.Required;
     specs: Schema.Attribute.Component<"shared.spec", true>;
-    subtitle_en: Schema.Attribute.String;
-    subtitle_fr: Schema.Attribute.String;
+    subtitle: Schema.Attribute.String;
     title: Schema.Attribute.String & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
@@ -1169,8 +1126,7 @@ export interface ApiNotFoundNotFound extends Struct.SingleTypeSchema {
       "api::not-found.not-found"
     > &
       Schema.Attribute.Private;
-    message_en: Schema.Attribute.String;
-    message_fr: Schema.Attribute.String;
+    message: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     text: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
@@ -1194,8 +1150,7 @@ export interface ApiPostProductionTypePostProductionType
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
       Schema.Attribute.Private;
-    description_en: Schema.Attribute.Text;
-    description_fr: Schema.Attribute.Text;
+    description: Schema.Attribute.Text;
     gallery: Schema.Attribute.Media<undefined, true>;
     image: Schema.Attribute.Media;
     includes: Schema.Attribute.Component<"shared.localized-item", true>;
@@ -1206,12 +1161,10 @@ export interface ApiPostProductionTypePostProductionType
     > &
       Schema.Attribute.Private;
     orderRank: Schema.Attribute.Integer;
-    price_en: Schema.Attribute.String;
-    price_fr: Schema.Attribute.String;
+    price: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     slug: Schema.Attribute.UID & Schema.Attribute.Required;
-    title_en: Schema.Attribute.String;
-    title_fr: Schema.Attribute.String;
+    title: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
       Schema.Attribute.Private;
@@ -1243,8 +1196,7 @@ export interface ApiSiteSettingSiteSetting extends Struct.SingleTypeSchema {
     fullAddress: Schema.Attribute.String;
     googleAnalyticsId: Schema.Attribute.String;
     googleMapsUrl: Schema.Attribute.String;
-    hours_en: Schema.Attribute.String;
-    hours_fr: Schema.Attribute.String;
+    hours: Schema.Attribute.String;
     latitude: Schema.Attribute.Float;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -1256,14 +1208,12 @@ export interface ApiSiteSettingSiteSetting extends Struct.SingleTypeSchema {
     longitude: Schema.Attribute.Float;
     mapsEmbedUrl: Schema.Attribute.String;
     openingHoursSpec: Schema.Attribute.Text;
-    parking_en: Schema.Attribute.Text;
-    parking_fr: Schema.Attribute.Text;
+    parking: Schema.Attribute.Text;
     phone: Schema.Attribute.String;
     phoneHref: Schema.Attribute.String;
     postalCode: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
-    siteDescription_en: Schema.Attribute.Text;
-    siteDescription_fr: Schema.Attribute.Text;
+    siteDescription: Schema.Attribute.Text;
     siteTitle: Schema.Attribute.String;
     socialLinks: Schema.Attribute.Component<"shared.social-link", true>;
     street: Schema.Attribute.String;
@@ -1271,8 +1221,7 @@ export interface ApiSiteSettingSiteSetting extends Struct.SingleTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
       Schema.Attribute.Private;
-    weekendHours_en: Schema.Attribute.String;
-    weekendHours_fr: Schema.Attribute.String;
+    weekendHours: Schema.Attribute.String;
   };
 }
 

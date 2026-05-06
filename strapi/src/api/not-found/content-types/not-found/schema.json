@@ -10,10 +10,27 @@
     "draftAndPublish": false
   },
   "attributes": {
-    "text": { "type": "string" },
-    "message_fr": { "type": "string" },
-    "message_en": { "type": "string" },
-    "ctaLabel": { "type": "string" },
-    "ctaLink": { "type": "string" }
+    "text": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "ctaLabel": {
+      "type": "string"
+    },
+    "ctaLink": {
+      "type": "string"
+    }
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
   }
 }

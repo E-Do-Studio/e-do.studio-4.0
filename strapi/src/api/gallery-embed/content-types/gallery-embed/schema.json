@@ -10,15 +10,34 @@
     "draftAndPublish": true
   },
   "attributes": {
-    "title_fr": { "type": "string" },
-    "title_en": { "type": "string" },
-    "embedUrl": { "type": "string", "required": true },
-    "thumbnail": { "type": "media", "multiple": false },
+    "title": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "embedUrl": {
+      "type": "string",
+      "required": true
+    },
+    "thumbnail": {
+      "type": "media",
+      "multiple": false
+    },
     "category": {
       "type": "relation",
       "relation": "manyToOne",
       "target": "api::gallery-category.gallery-category"
     },
-    "orderRank": { "type": "integer" }
+    "orderRank": {
+      "type": "integer"
+    }
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
   }
 }

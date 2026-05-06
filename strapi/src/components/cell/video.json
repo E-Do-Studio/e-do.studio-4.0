@@ -5,18 +5,58 @@
     "icon": "play"
   },
   "attributes": {
-    "label_fr": { "type": "string" },
-    "label_en": { "type": "string" },
-    "videoFile": { "type": "media", "multiple": false, "required": true },
-    "posterImage": { "type": "media", "multiple": false },
-    "autoplay": { "type": "boolean", "default": true },
-    "loop": { "type": "boolean", "default": true },
-    "muted": { "type": "boolean", "default": true },
-    "href": { "type": "string" },
-    "size": { "type": "enumeration", "enum": ["default", "wide", "tall", "large"] },
-    "desktopRow": { "type": "integer" },
-    "desktopCol": { "type": "integer" },
-    "mobileRow": { "type": "integer" },
-    "mobileCol": { "type": "integer" }
+    "label": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "videoFile": {
+      "type": "media",
+      "multiple": false,
+      "required": true
+    },
+    "posterImage": {
+      "type": "media",
+      "multiple": false
+    },
+    "autoplay": {
+      "type": "boolean",
+      "default": true
+    },
+    "loop": {
+      "type": "boolean",
+      "default": true
+    },
+    "muted": {
+      "type": "boolean",
+      "default": true
+    },
+    "href": {
+      "type": "string"
+    },
+    "size": {
+      "type": "enumeration",
+      "enum": [
+        "default",
+        "wide",
+        "tall",
+        "large"
+      ]
+    },
+    "desktopRow": {
+      "type": "integer"
+    },
+    "desktopCol": {
+      "type": "integer"
+    },
+    "mobileRow": {
+      "type": "integer"
+    },
+    "mobileCol": {
+      "type": "integer"
+    }
   }
 }

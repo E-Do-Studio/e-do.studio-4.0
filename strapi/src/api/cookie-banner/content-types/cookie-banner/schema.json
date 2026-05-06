@@ -10,17 +10,58 @@
     "draftAndPublish": false
   },
   "attributes": {
-    "title_fr": { "type": "string" },
-    "title_en": { "type": "string" },
-    "description_fr": { "type": "text" },
-    "description_en": { "type": "text" },
-    "acceptButton_fr": { "type": "string" },
-    "acceptButton_en": { "type": "string" },
-    "rejectButton_fr": { "type": "string" },
-    "rejectButton_en": { "type": "string" },
-    "customizeButton_fr": { "type": "string" },
-    "customizeButton_en": { "type": "string" },
-    "saveButton_fr": { "type": "string" },
-    "saveButton_en": { "type": "string" }
+    "title": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "description": {
+      "type": "text",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "acceptButton": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "rejectButton": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "customizeButton": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "saveButton": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    }
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
   }
 }

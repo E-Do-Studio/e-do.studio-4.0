@@ -5,23 +5,60 @@
     "icon": "file"
   },
   "attributes": {
-    "label_fr": { "type": "string" },
-    "label_en": { "type": "string" },
-    "image": { "type": "media", "multiple": false },
+    "label": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "image": {
+      "type": "media",
+      "multiple": false
+    },
     "paragraphs": {
       "type": "component",
       "component": "shared.localized-item",
       "repeatable": true
     },
-    "ctaText_fr": { "type": "string" },
-    "ctaText_en": { "type": "string" },
-    "href": { "type": "string" },
-    "hoverReveal": { "type": "boolean" },
-    "expandable": { "type": "boolean" },
-    "size": { "type": "enumeration", "enum": ["default", "wide", "tall", "large"] },
-    "desktopRow": { "type": "integer" },
-    "desktopCol": { "type": "integer" },
-    "mobileRow": { "type": "integer" },
-    "mobileCol": { "type": "integer" }
+    "ctaText": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "href": {
+      "type": "string"
+    },
+    "hoverReveal": {
+      "type": "boolean"
+    },
+    "expandable": {
+      "type": "boolean"
+    },
+    "size": {
+      "type": "enumeration",
+      "enum": [
+        "default",
+        "wide",
+        "tall",
+        "large"
+      ]
+    },
+    "desktopRow": {
+      "type": "integer"
+    },
+    "desktopCol": {
+      "type": "integer"
+    },
+    "mobileRow": {
+      "type": "integer"
+    },
+    "mobileCol": {
+      "type": "integer"
+    }
   }
 }

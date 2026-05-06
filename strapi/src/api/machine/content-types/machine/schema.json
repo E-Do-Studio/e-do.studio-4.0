@@ -10,24 +10,71 @@
     "draftAndPublish": true
   },
   "attributes": {
-    "title": { "type": "string", "required": true },
-    "slug": { "type": "uid", "targetField": "title", "required": true },
-    "subtitle_fr": { "type": "string" },
-    "subtitle_en": { "type": "string" },
-    "description_fr": { "type": "text" },
-    "description_en": { "type": "text" },
-    "image": { "type": "media", "multiple": false },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true
+    },
+    "subtitle": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "description": {
+      "type": "text",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "image": {
+      "type": "media",
+      "multiple": false
+    },
     "specs": {
       "type": "component",
       "component": "shared.spec",
       "repeatable": true
     },
-    "pricing_fr": { "type": "string" },
-    "pricing_en": { "type": "string" },
-    "operatorPricing_fr": { "type": "string" },
-    "operatorPricing_en": { "type": "string" },
-    "gallery": { "type": "media", "multiple": true },
-    "video": { "type": "media", "multiple": false },
-    "orderRank": { "type": "integer" }
+    "pricing": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "operatorPricing": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "gallery": {
+      "type": "media",
+      "multiple": true
+    },
+    "video": {
+      "type": "media",
+      "multiple": false
+    },
+    "orderRank": {
+      "type": "integer"
+    }
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
   }
 }

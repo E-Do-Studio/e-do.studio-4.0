@@ -5,21 +5,69 @@
     "icon": "message"
   },
   "attributes": {
-    "label_fr": { "type": "string" },
-    "label_en": { "type": "string" },
-    "placeholder_fr": { "type": "string" },
-    "placeholder_en": { "type": "string" },
-    "welcomeMessage_fr": { "type": "text" },
-    "welcomeMessage_en": { "type": "text" },
-    "responses": { "type": "json" },
-    "defaultResponse_fr": { "type": "text" },
-    "defaultResponse_en": { "type": "text" },
-    "systemPrompt_fr": { "type": "text" },
-    "systemPrompt_en": { "type": "text" },
-    "size": { "type": "enumeration", "enum": ["default", "wide", "tall", "large"] },
-    "desktopRow": { "type": "integer" },
-    "desktopCol": { "type": "integer" },
-    "mobileRow": { "type": "integer" },
-    "mobileCol": { "type": "integer" }
+    "label": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "placeholder": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "welcomeMessage": {
+      "type": "text",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "responses": {
+      "type": "json"
+    },
+    "defaultResponse": {
+      "type": "text",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "systemPrompt": {
+      "type": "text",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "size": {
+      "type": "enumeration",
+      "enum": [
+        "default",
+        "wide",
+        "tall",
+        "large"
+      ]
+    },
+    "desktopRow": {
+      "type": "integer"
+    },
+    "desktopCol": {
+      "type": "integer"
+    },
+    "mobileRow": {
+      "type": "integer"
+    },
+    "mobileCol": {
+      "type": "integer"
+    }
   }
 }

@@ -10,13 +10,42 @@
     "draftAndPublish": false
   },
   "attributes": {
-    "title_fr": { "type": "string" },
-    "title_en": { "type": "string" },
-    "subtitle_fr": { "type": "string" },
-    "subtitle_en": { "type": "string" },
-    "seo_title_fr": { "type": "string" },
-    "seo_title_en": { "type": "string" },
-    "seo_description_fr": { "type": "text" },
-    "seo_description_en": { "type": "text" }
+    "title": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "subtitle": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "seo_title": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "seo_description": {
+      "type": "text",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    }
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
   }
 }

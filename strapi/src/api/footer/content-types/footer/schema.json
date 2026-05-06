@@ -10,19 +10,53 @@
     "draftAndPublish": false
   },
   "attributes": {
-    "tagline_fr": { "type": "string" },
-    "tagline_en": { "type": "string" },
-    "email": { "type": "string" },
-    "phone": { "type": "string" },
-    "addressName": { "type": "string" },
-    "addressStreet": { "type": "string" },
-    "addressCity": { "type": "string" },
-    "addressNote_fr": { "type": "string" },
-    "addressNote_en": { "type": "string" },
-    "weekdayHours_fr": { "type": "string" },
-    "weekdayHours_en": { "type": "string" },
-    "weekendHours_fr": { "type": "string" },
-    "weekendHours_en": { "type": "string" },
+    "tagline": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "email": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "addressName": {
+      "type": "string"
+    },
+    "addressStreet": {
+      "type": "string"
+    },
+    "addressCity": {
+      "type": "string"
+    },
+    "addressNote": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "weekdayHours": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "weekendHours": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
     "navigationGroups": {
       "type": "component",
       "component": "footer.navigation-group",
@@ -38,6 +72,13 @@
       "component": "shared.nav-link",
       "repeatable": true
     },
-    "copyright": { "type": "string" }
+    "copyright": {
+      "type": "string"
+    }
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
   }
 }

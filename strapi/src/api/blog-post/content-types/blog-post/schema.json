@@ -10,28 +10,80 @@
     "draftAndPublish": true
   },
   "attributes": {
-    "title_fr": { "type": "string" },
-    "title_en": { "type": "string" },
-    "slug": { "type": "uid", "required": true },
-    "publishedAt": { "type": "datetime" },
+    "title": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "slug": {
+      "type": "uid",
+      "required": true
+    },
+    "publishedAt": {
+      "type": "datetime"
+    },
     "categories": {
       "type": "relation",
       "relation": "manyToMany",
       "target": "api::blog-category.blog-category",
       "inversedBy": "posts"
     },
-    "coverImage": { "type": "media", "multiple": false },
-    "excerpt_fr": { "type": "text" },
-    "excerpt_en": { "type": "text" },
-    "body_fr": { "type": "richtext" },
-    "body_en": { "type": "richtext" },
-    "cta_text_fr": { "type": "string" },
-    "cta_text_en": { "type": "string" },
-    "cta_label_fr": { "type": "string" },
-    "cta_label_en": { "type": "string" },
-    "cta_url": { "type": "string" },
-    "seo_title": { "type": "string" },
-    "seo_description": { "type": "text" },
-    "seo_image": { "type": "media", "multiple": false }
+    "coverImage": {
+      "type": "media",
+      "multiple": false
+    },
+    "excerpt": {
+      "type": "text",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "body": {
+      "type": "richtext",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "cta_text": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "cta_label": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "cta_url": {
+      "type": "string"
+    },
+    "seo_title": {
+      "type": "string"
+    },
+    "seo_description": {
+      "type": "text"
+    },
+    "seo_image": {
+      "type": "media",
+      "multiple": false
+    }
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
   }
 }

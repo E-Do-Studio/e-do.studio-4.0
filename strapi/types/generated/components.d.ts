@@ -7,22 +7,17 @@ export interface CellChat extends Struct.ComponentSchema {
     icon: "message";
   };
   attributes: {
-    defaultResponse_en: Schema.Attribute.Text;
-    defaultResponse_fr: Schema.Attribute.Text;
+    defaultResponse: Schema.Attribute.Text;
     desktopCol: Schema.Attribute.Integer;
     desktopRow: Schema.Attribute.Integer;
-    label_en: Schema.Attribute.String;
-    label_fr: Schema.Attribute.String;
+    label: Schema.Attribute.String;
     mobileCol: Schema.Attribute.Integer;
     mobileRow: Schema.Attribute.Integer;
-    placeholder_en: Schema.Attribute.String;
-    placeholder_fr: Schema.Attribute.String;
+    placeholder: Schema.Attribute.String;
     responses: Schema.Attribute.JSON;
     size: Schema.Attribute.Enumeration<["default", "wide", "tall", "large"]>;
-    systemPrompt_en: Schema.Attribute.Text;
-    systemPrompt_fr: Schema.Attribute.Text;
-    welcomeMessage_en: Schema.Attribute.Text;
-    welcomeMessage_fr: Schema.Attribute.Text;
+    systemPrompt: Schema.Attribute.Text;
+    welcomeMessage: Schema.Attribute.Text;
   };
 }
 
@@ -63,8 +58,7 @@ export interface CellCta extends Struct.ComponentSchema {
     mobileRow: Schema.Attribute.Integer;
     service: Schema.Attribute.Enumeration<["cyclorama", "post-production"]>;
     size: Schema.Attribute.Enumeration<["default", "wide", "tall", "large"]>;
-    text_en: Schema.Attribute.String;
-    text_fr: Schema.Attribute.String & Schema.Attribute.Required;
+    text: Schema.Attribute.String & Schema.Attribute.Required;
     variant: Schema.Attribute.Enumeration<["primary", "secondary"]>;
   };
 }
@@ -76,15 +70,12 @@ export interface CellDetails extends Struct.ComponentSchema {
     icon: "information";
   };
   attributes: {
-    buttonText_en: Schema.Attribute.String;
-    buttonText_fr: Schema.Attribute.String;
+    buttonText: Schema.Attribute.String;
     desktopCol: Schema.Attribute.Integer;
     desktopRow: Schema.Attribute.Integer;
     dialogContent: Schema.Attribute.JSON;
-    dialogTitle_en: Schema.Attribute.String;
-    dialogTitle_fr: Schema.Attribute.String;
-    label_en: Schema.Attribute.String;
-    label_fr: Schema.Attribute.String;
+    dialogTitle: Schema.Attribute.String;
+    label: Schema.Attribute.String;
     mobileCol: Schema.Attribute.Integer;
     mobileRow: Schema.Attribute.Integer;
     size: Schema.Attribute.Enumeration<["default", "wide", "tall", "large"]>;
@@ -101,8 +92,7 @@ export interface CellGallery extends Struct.ComponentSchema {
     desktopCol: Schema.Attribute.Integer;
     desktopRow: Schema.Attribute.Integer;
     images: Schema.Attribute.Media<undefined, true>;
-    label_en: Schema.Attribute.String;
-    label_fr: Schema.Attribute.String;
+    label: Schema.Attribute.String;
     mobileCol: Schema.Attribute.Integer;
     mobileRow: Schema.Attribute.Integer;
     size: Schema.Attribute.Enumeration<["default", "wide", "tall", "large"]>;
@@ -120,16 +110,14 @@ export interface CellImage extends Struct.ComponentSchema {
     desktopRow: Schema.Attribute.Integer;
     href: Schema.Attribute.String;
     images: Schema.Attribute.Media<undefined, true>;
-    label_en: Schema.Attribute.String;
-    label_fr: Schema.Attribute.String;
+    label: Schema.Attribute.String;
     mobileCol: Schema.Attribute.Integer;
     mobileRow: Schema.Attribute.Integer;
     size: Schema.Attribute.Enumeration<["default", "wide", "tall", "large"]>;
     slideshow: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
     slideshowInterval: Schema.Attribute.Integer &
       Schema.Attribute.DefaultTo<10000>;
-    title_en: Schema.Attribute.String;
-    title_fr: Schema.Attribute.String;
+    title: Schema.Attribute.String;
   };
 }
 
@@ -176,8 +164,7 @@ export interface CellModel3D extends Struct.ComponentSchema {
     desktopCol: Schema.Attribute.Integer;
     desktopRow: Schema.Attribute.Integer;
     href: Schema.Attribute.String;
-    label_en: Schema.Attribute.String;
-    label_fr: Schema.Attribute.String & Schema.Attribute.Required;
+    label: Schema.Attribute.String & Schema.Attribute.Required;
     mobileCol: Schema.Attribute.Integer;
     mobileRow: Schema.Attribute.Integer;
     modelPath: Schema.Attribute.String & Schema.Attribute.Required;
@@ -186,8 +173,7 @@ export interface CellModel3D extends Struct.ComponentSchema {
     showOnHoverOnly: Schema.Attribute.Boolean &
       Schema.Attribute.DefaultTo<true>;
     size: Schema.Attribute.Enumeration<["default", "wide", "tall", "large"]>;
-    title_en: Schema.Attribute.String;
-    title_fr: Schema.Attribute.String & Schema.Attribute.Required;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
   };
 }
 
@@ -235,13 +221,11 @@ export interface CellService extends Struct.ComponentSchema {
     desktopRow: Schema.Attribute.Integer;
     external: Schema.Attribute.Boolean;
     href: Schema.Attribute.String & Schema.Attribute.Required;
-    label_en: Schema.Attribute.String;
-    label_fr: Schema.Attribute.String & Schema.Attribute.Required;
+    label: Schema.Attribute.String & Schema.Attribute.Required;
     mobileCol: Schema.Attribute.Integer;
     mobileRow: Schema.Attribute.Integer;
     size: Schema.Attribute.Enumeration<["default", "wide", "tall", "large"]>;
-    title_en: Schema.Attribute.String;
-    title_fr: Schema.Attribute.String & Schema.Attribute.Required;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
   };
 }
 
@@ -252,16 +236,14 @@ export interface CellText extends Struct.ComponentSchema {
     icon: "file";
   };
   attributes: {
-    ctaText_en: Schema.Attribute.String;
-    ctaText_fr: Schema.Attribute.String;
+    ctaText: Schema.Attribute.String;
     desktopCol: Schema.Attribute.Integer;
     desktopRow: Schema.Attribute.Integer;
     expandable: Schema.Attribute.Boolean;
     hoverReveal: Schema.Attribute.Boolean;
     href: Schema.Attribute.String;
     image: Schema.Attribute.Media;
-    label_en: Schema.Attribute.String;
-    label_fr: Schema.Attribute.String;
+    label: Schema.Attribute.String;
     mobileCol: Schema.Attribute.Integer;
     mobileRow: Schema.Attribute.Integer;
     paragraphs: Schema.Attribute.Component<"shared.localized-item", true>;
@@ -280,8 +262,7 @@ export interface CellVideo extends Struct.ComponentSchema {
     desktopCol: Schema.Attribute.Integer;
     desktopRow: Schema.Attribute.Integer;
     href: Schema.Attribute.String;
-    label_en: Schema.Attribute.String;
-    label_fr: Schema.Attribute.String;
+    label: Schema.Attribute.String;
     loop: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
     mobileCol: Schema.Attribute.Integer;
     mobileRow: Schema.Attribute.Integer;
@@ -370,10 +351,8 @@ export interface SectionContent extends Struct.ComponentSchema {
     icon: "file";
   };
   attributes: {
-    content_en: Schema.Attribute.RichText;
-    content_fr: Schema.Attribute.RichText;
-    title_en: Schema.Attribute.String;
-    title_fr: Schema.Attribute.String;
+    content: Schema.Attribute.RichText;
+    title: Schema.Attribute.String;
   };
 }
 
@@ -428,13 +407,10 @@ export interface SectionForm extends Struct.ComponentSchema {
     icon: "pencil";
   };
   attributes: {
-    description_en: Schema.Attribute.Text;
-    description_fr: Schema.Attribute.Text;
-    pricing_en: Schema.Attribute.String;
-    pricing_fr: Schema.Attribute.String;
+    description: Schema.Attribute.Text;
+    pricing: Schema.Attribute.String;
     showDuration: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
-    title_en: Schema.Attribute.String;
-    title_fr: Schema.Attribute.String;
+    title: Schema.Attribute.String;
   };
 }
 
@@ -466,10 +442,8 @@ export interface SectionGalleryBento extends Struct.ComponentSchema {
       > &
       Schema.Attribute.DefaultTo<4>;
     images: Schema.Attribute.Component<"shared.image-with-alt", true>;
-    subtitle_en: Schema.Attribute.String;
-    subtitle_fr: Schema.Attribute.String;
-    title_en: Schema.Attribute.String;
-    title_fr: Schema.Attribute.String;
+    subtitle: Schema.Attribute.String;
+    title: Schema.Attribute.String;
   };
 }
 
@@ -482,12 +456,9 @@ export interface SectionHero extends Struct.ComponentSchema {
   attributes: {
     image: Schema.Attribute.Media;
     imageAlt: Schema.Attribute.String;
-    intro_en: Schema.Attribute.Text;
-    intro_fr: Schema.Attribute.Text;
-    subtitle_en: Schema.Attribute.String;
-    subtitle_fr: Schema.Attribute.String;
-    title_en: Schema.Attribute.String;
-    title_fr: Schema.Attribute.String & Schema.Attribute.Required;
+    intro: Schema.Attribute.Text;
+    subtitle: Schema.Attribute.String;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
   };
 }
 
@@ -666,8 +637,7 @@ export interface SharedLocalizedItem extends Struct.ComponentSchema {
     icon: "globe";
   };
   attributes: {
-    en: Schema.Attribute.String;
-    fr: Schema.Attribute.String;
+    text: Schema.Attribute.String;
   };
 }
 
@@ -704,10 +674,8 @@ export interface SharedSpec extends Struct.ComponentSchema {
     icon: "list";
   };
   attributes: {
-    label_en: Schema.Attribute.String;
-    label_fr: Schema.Attribute.String;
-    value_en: Schema.Attribute.String;
-    value_fr: Schema.Attribute.String;
+    label: Schema.Attribute.String;
+    value: Schema.Attribute.String;
   };
 }
 

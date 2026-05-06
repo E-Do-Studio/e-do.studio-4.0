@@ -10,12 +10,39 @@
     "draftAndPublish": true
   },
   "attributes": {
-    "category_fr": { "type": "string" },
-    "category_en": { "type": "string" },
-    "question_fr": { "type": "string", "required": true },
-    "question_en": { "type": "string" },
-    "answer_fr": { "type": "text", "required": true },
-    "answer_en": { "type": "text" },
-    "orderRank": { "type": "integer" }
+    "category": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "question": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "answer": {
+      "type": "text",
+      "required": true,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "orderRank": {
+      "type": "integer"
+    }
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
   }
 }

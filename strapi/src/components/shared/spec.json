@@ -5,9 +5,21 @@
     "icon": "list"
   },
   "attributes": {
-    "label_fr": { "type": "string" },
-    "label_en": { "type": "string" },
-    "value_fr": { "type": "string" },
-    "value_en": { "type": "string" }
+    "label": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "value": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    }
   }
 }

@@ -10,11 +10,26 @@
     "draftAndPublish": true
   },
   "attributes": {
-    "title_fr": { "type": "string" },
-    "title_en": { "type": "string" },
-    "pathname": { "type": "string", "required": true, "unique": true },
-    "internalTitle": { "type": "string" },
-    "indexable": { "type": "boolean", "default": true },
+    "title": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "pathname": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "internalTitle": {
+      "type": "string"
+    },
+    "indexable": {
+      "type": "boolean",
+      "default": true
+    },
     "gridConfig": {
       "type": "component",
       "component": "page.grid-config",
@@ -38,8 +53,20 @@
         "cell.details"
       ]
     },
-    "seo_title": { "type": "string" },
-    "seo_description": { "type": "text" },
-    "seo_image": { "type": "media", "multiple": false }
+    "seo_title": {
+      "type": "string"
+    },
+    "seo_description": {
+      "type": "text"
+    },
+    "seo_image": {
+      "type": "media",
+      "multiple": false
+    }
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
   }
 }

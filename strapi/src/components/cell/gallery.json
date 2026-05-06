@@ -5,13 +5,38 @@
     "icon": "picture"
   },
   "attributes": {
-    "label_fr": { "type": "string" },
-    "label_en": { "type": "string" },
-    "images": { "type": "media", "multiple": true },
-    "size": { "type": "enumeration", "enum": ["default", "wide", "tall", "large"] },
-    "desktopRow": { "type": "integer" },
-    "desktopCol": { "type": "integer" },
-    "mobileRow": { "type": "integer" },
-    "mobileCol": { "type": "integer" }
+    "label": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "images": {
+      "type": "media",
+      "multiple": true
+    },
+    "size": {
+      "type": "enumeration",
+      "enum": [
+        "default",
+        "wide",
+        "tall",
+        "large"
+      ]
+    },
+    "desktopRow": {
+      "type": "integer"
+    },
+    "desktopCol": {
+      "type": "integer"
+    },
+    "mobileRow": {
+      "type": "integer"
+    },
+    "mobileCol": {
+      "type": "integer"
+    }
   }
 }

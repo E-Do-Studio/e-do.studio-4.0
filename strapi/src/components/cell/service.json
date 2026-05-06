@@ -5,16 +5,51 @@
     "icon": "briefcase"
   },
   "attributes": {
-    "label_fr": { "type": "string", "required": true },
-    "label_en": { "type": "string" },
-    "title_fr": { "type": "string", "required": true },
-    "title_en": { "type": "string" },
-    "href": { "type": "string", "required": true },
-    "external": { "type": "boolean" },
-    "size": { "type": "enumeration", "enum": ["default", "wide", "tall", "large"] },
-    "desktopRow": { "type": "integer" },
-    "desktopCol": { "type": "integer" },
-    "mobileRow": { "type": "integer" },
-    "mobileCol": { "type": "integer" }
+    "label": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "title": {
+      "type": "string",
+      "required": true,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "href": {
+      "type": "string",
+      "required": true
+    },
+    "external": {
+      "type": "boolean"
+    },
+    "size": {
+      "type": "enumeration",
+      "enum": [
+        "default",
+        "wide",
+        "tall",
+        "large"
+      ]
+    },
+    "desktopRow": {
+      "type": "integer"
+    },
+    "desktopCol": {
+      "type": "integer"
+    },
+    "mobileRow": {
+      "type": "integer"
+    },
+    "mobileCol": {
+      "type": "integer"
+    }
   }
 }
