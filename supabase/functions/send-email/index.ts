@@ -124,8 +124,8 @@ function dateFmt(d: string): string {
 
 function emailHeader(): string {
   return `
-  <div style="background: ${COLOR_BLACK}; padding: 20px 32px;">
-    <span style="font-family: ${MONO_FONT}; color: #ffffff; font-size: 16px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;">E-Do Studio</span>
+  <div style="border-top: 3px solid ${COLOR_ORANGE}; padding: 20px 32px 16px; background: #ffffff;">
+    <span style="font-family: ${MONO_FONT}; color: ${COLOR_BLACK}; font-size: 15px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;">E-Do Studio</span>
   </div>`;
 }
 
