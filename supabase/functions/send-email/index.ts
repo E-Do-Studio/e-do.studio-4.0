@@ -103,116 +103,207 @@ interface BookingData {
   notes: string | null;
 }
 
+// ─── Shared helpers ───────────────────────────────────────────────────────────
+
+const BASE_FONT = `'Space Grotesk', system-ui, -apple-system, sans-serif`;
+const MONO_FONT = `'IBM Plex Mono', 'Courier New', monospace`;
+const COLOR_BLACK = `#111111`;
+const COLOR_ORANGE = `#E2641A`;
+const COLOR_GRAY = `#666666`;
+const COLOR_BORDER = `#e5e5e5`;
+const COLOR_BG_LIGHT = `#f8f8f8`;
+
+function dateFmt(d: string): string {
+  return new Date(d).toLocaleDateString("fr-FR", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+function emailHeader(): string {
+  return `
+  <div style="border-top: 3px solid ${COLOR_ORANGE}; padding: 20px 32px 16px; background: #ffffff;">
+    <span style="font-family: ${MONO_FONT}; color: ${COLOR_BLACK}; font-size: 15px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;">E-Do Studio</span>
+  </div>`;
+}
+
+function emailFooter(): string {
+  return `
+  <div style="border-top: 1px solid ${COLOR_BORDER}; padding: 16px 32px; background: ${COLOR_BG_LIGHT};">
+    <p style="margin: 0; font-size: 11px; color: #999999; font-family: ${MONO_FONT}; line-height: 1.8;">
+      E-Do Studio &nbsp;·&nbsp;
+      <a href="https://e-do.studio" style="color: #999999; text-decoration: none;">e-do.studio</a>
+      &nbsp;·&nbsp;
+      <a href="mailto:contact@e-do.studio" style="color: #999999; text-decoration: none;">contact@e-do.studio</a>
+    </p>
+  </div>`;
+}
+
+function emailWrap(subtitle: string, body: string): string {
+  return `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body style="margin: 0; padding: 24px 0; background: #f0f0f0;">
+  <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid ${COLOR_BORDER}; font-family: ${BASE_FONT}; color: ${COLOR_BLACK};">
+    ${emailHeader()}
+    <div style="padding: 12px 32px 4px; border-bottom: 1px solid ${COLOR_BORDER};">
+      <p style="margin: 0; font-size: 12px; font-family: ${MONO_FONT}; color: ${COLOR_GRAY}; text-transform: uppercase; letter-spacing: 0.08em;">${subtitle}</p>
+    </div>
+    <div style="padding: 28px 32px 24px;">
+      ${body}
+    </div>
+    ${emailFooter()}
+  </div>
+</body>
+</html>`;
+}
+
+function dataRow(label: string, value: string, accent = false): string {
+  const valStyle = accent
+    ? `font-weight: 700; color: ${COLOR_ORANGE}; font-family: ${MONO_FONT};`
+    : `font-weight: 500;`;
+  return `<tr>
+    <td style="padding: 7px 0; color: ${COLOR_GRAY}; font-size: 13px; width: 150px; vertical-align: top;">${label}</td>
+    <td style="padding: 7px 0; font-size: 14px; ${valStyle}">${value}</td>
+  </tr>`;
+}
+
+function sectionTitle(text: string): string {
+  return `<p style="margin: 20px 0 8px; font-size: 11px; font-family: ${MONO_FONT}; color: ${COLOR_GRAY}; text-transform: uppercase; letter-spacing: 0.08em; border-top: 1px solid ${COLOR_BORDER}; padding-top: 16px;">${text}</p>`;
+}
+
+function signOff(): string {
+  return `<p style="margin: 24px 0 0; font-size: 14px; color: ${COLOR_GRAY};">Cordialement,<br><strong style="color: ${COLOR_BLACK};">L'équipe E-Do Studio</strong></p>`;
+}
+
+// ─── Quote table ──────────────────────────────────────────────────────────────
+
 function quoteTableHtml(quote: QuoteData | null): string {
   if (!quote || quote.rows.length === 0) return "";
   const rows = quote.rows.map((r) => {
     const label = escapeHtml(r.lbl);
     const amt = r.onReq
-      ? "Sur demande"
-      : `${r.amt.toLocaleString("fr-FR")}€ HT${r.estimate ? " (estimé)" : ""}`;
-    return `<tr><td style="padding: 4px 0;">${label}</td><td style="padding: 4px 0; text-align: right; white-space: nowrap;">${amt}</td></tr>`;
+      ? `<span style="color: ${COLOR_GRAY};">Sur demande</span>`
+      : `${r.amt.toLocaleString("fr-FR")} € HT${r.estimate ? `<span style="color: ${COLOR_GRAY}; font-size: 12px;"> (estimé)</span>` : ""}`;
+    return `<tr>
+      <td style="padding: 6px 0; font-size: 14px; border-bottom: 1px solid ${COLOR_BORDER};">${label}</td>
+      <td style="padding: 6px 0; font-size: 14px; text-align: right; white-space: nowrap; border-bottom: 1px solid ${COLOR_BORDER};">${amt}</td>
+    </tr>`;
   }).join("");
-  const totalStr = `${quote.total.toLocaleString("fr-FR")}€ HT`;
+  const totalStr = `${quote.total.toLocaleString("fr-FR")} € HT`;
   return `
-  <h3 style="margin-bottom: 8px;">Devis ${escapeHtml(quote.reference)}</h3>
-  <table style="width: 100%; border-collapse: collapse; margin: 8px 0;">
+  ${sectionTitle(`Devis ${escapeHtml(quote.reference)}`)}
+  <table style="width: 100%; border-collapse: collapse;">
     ${rows}
-    <tr style="border-top: 2px solid #1a1a1a; font-weight: 700;">
-      <td style="padding: 8px 0;">Total</td>
-      <td style="padding: 8px 0; text-align: right;">${totalStr}</td>
+    <tr>
+      <td style="padding: 10px 0 4px; font-weight: 700; font-size: 14px;">Total</td>
+      <td style="padding: 10px 0 4px; font-weight: 700; font-size: 15px; text-align: right; color: ${COLOR_ORANGE}; font-family: ${MONO_FONT};">${totalStr}</td>
     </tr>
   </table>`;
 }
 
-function bookingClientHtml(b: BookingData, sessions: BookingSession[], quote: QuoteData | null): string {
-  const ref = escapeHtml(b.reference);
-  const clientName = escapeHtml(b.client_name);
-  const plateaux = sessions.map((s) => `${s.plateau_key} (${s.hours ?? "?"}h, ${s.slot_type})`).join(", ");
-  const totalStr = b.total_estimate != null ? `${b.total_estimate.toLocaleString("fr-FR")}€ HT` : "Sur demande";
-  const dateFmt = (d: string) => new Date(d).toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
-
-  return `
-<div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a;">
-  <h2 style="margin-bottom: 4px;">E-Do Studio</h2>
-  <p style="color: #666; margin-top: 0;">Confirmation de réservation</p>
-  <hr style="border: none; border-top: 1px solid #e5e5e5;">
-  <p>Bonjour <strong>${clientName}</strong>,</p>
-  <p>Nous avons bien reçu votre demande de réservation. Voici le récapitulatif :</p>
-  <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
-    <tr><td style="padding: 6px 0; color: #666;">Référence</td><td style="padding: 6px 0; font-weight: 600;">${ref}</td></tr>
-    <tr><td style="padding: 6px 0; color: #666;">Email</td><td style="padding: 6px 0;">${escapeHtml(b.client_email)}</td></tr>
-    ${b.client_phone ? `<tr><td style="padding: 6px 0; color: #666;">Téléphone</td><td style="padding: 6px 0;">${escapeHtml(b.client_phone)}</td></tr>` : ""}
-    ${b.client_company ? `<tr><td style="padding: 6px 0; color: #666;">Société</td><td style="padding: 6px 0;">${escapeHtml(b.client_company)}</td></tr>` : ""}
-    ${plateaux ? `<tr><td style="padding: 6px 0; color: #666;">Plateau(x)</td><td style="padding: 6px 0;">${plateaux}</td></tr>` : ""}
-    ${b.preferred_date ? `<tr><td style="padding: 6px 0; color: #666;">Date souhaitée</td><td style="padding: 6px 0;">${dateFmt(b.preferred_date)}</td></tr>` : ""}
-    ${b.arrival_hour != null ? `<tr><td style="padding: 6px 0; color: #666;">Heure d'arrivée</td><td style="padding: 6px 0;">${b.arrival_hour}h</td></tr>` : ""}
-    ${b.project_type ? `<tr><td style="padding: 6px 0; color: #666;">Type de projet</td><td style="padding: 6px 0;">${escapeHtml(b.project_type)}</td></tr>` : ""}
-    <tr><td style="padding: 6px 0; color: #666;">Estimation</td><td style="padding: 6px 0; font-weight: 600;">${totalStr}</td></tr>
-  </table>
-  ${quoteTableHtml(quote)}
-  <p>Notre équipe reviendra vers vous très rapidement pour confirmer les détails.</p>
-  <p style="color: #666; font-size: 14px;">À bientôt,<br>L'équipe E-Do Studio</p>
-</div>`;
-}
+// ─── Session details ──────────────────────────────────────────────────────────
 
 function sessionDetailRows(sessions: BookingSession[]): string {
   if (sessions.length === 0) return "";
   return sessions.map((s) => {
     const details: string[] = [];
-    details.push(`<strong>${s.plateau_key}</strong> — ${s.hours ?? "?"}h, ${s.slot_type}`);
-    if (s.cyclo_mode) details.push(`Cyclo: ${s.cyclo_mode}`);
-    if (s.product_type) details.push(`Produit: ${s.product_type}`);
-    if (s.method) details.push(`Méthode: ${s.method}${s.submethod ? ` / ${s.submethod}` : ""}`);
-    if (s.quantity && s.quantity > 1) details.push(`Quantité: ${s.quantity}`);
-    if (s.media && s.media.length > 0) details.push(`Médias: ${s.media.join(", ")}`);
-    if (s.views && s.views.length > 0) details.push(`Vues: ${s.views.join(", ")} (${s.views_count ?? s.views.length})`);
-    if (s.postprod_enabled) details.push(`Post-prod: oui${s.postprod_video ? " (vidéo)" : ""}`);
-    return `<div style="background: #f5f5f5; padding: 12px; border-radius: 4px; margin: 8px 0;">${details.join("<br>")}</div>`;
+    details.push(`<strong>${s.plateau_key}</strong> &nbsp;—&nbsp; ${s.hours ?? "?"}h · ${s.slot_type}`);
+    if (s.cyclo_mode) details.push(`Cyclo : ${s.cyclo_mode}`);
+    if (s.product_type) details.push(`Produit : ${s.product_type}`);
+    if (s.method) details.push(`Méthode : ${s.method}${s.submethod ? ` / ${s.submethod}` : ""}`);
+    if (s.quantity && s.quantity > 1) details.push(`Quantité : ${s.quantity}`);
+    if (s.media && s.media.length > 0) details.push(`Médias : ${s.media.join(", ")}`);
+    if (s.views && s.views.length > 0) details.push(`Vues : ${s.views.join(", ")} (${s.views_count ?? s.views.length})`);
+    if (s.postprod_enabled) details.push(`Post-prod : oui${s.postprod_video ? " (vidéo)" : ""}`);
+    return `<div style="background: ${COLOR_BG_LIGHT}; padding: 12px 14px; border-left: 3px solid ${COLOR_ORANGE}; margin: 8px 0; font-size: 13px; line-height: 1.7;">${details.join("<br>")}</div>`;
   }).join("");
 }
+
+// ─── Booking confirmation — client ────────────────────────────────────────────
+
+function bookingClientHtml(b: BookingData, sessions: BookingSession[], quote: QuoteData | null): string {
+  const ref = escapeHtml(b.reference);
+  const clientName = escapeHtml(b.client_name);
+  const plateaux = sessions.map((s) => `${s.plateau_key} (${s.hours ?? "?"}h, ${s.slot_type})`).join(", ");
+  const totalStr = b.total_estimate != null ? `${b.total_estimate.toLocaleString("fr-FR")} € HT` : "Sur demande";
+
+  const body = `
+    <p style="margin: 0 0 20px; font-size: 15px;">Bonjour <strong>${clientName}</strong>,</p>
+    <p style="margin: 0 0 20px; font-size: 14px; line-height: 1.6; color: ${COLOR_GRAY};">
+      Votre demande de réservation a bien été enregistrée. Notre équipe vous recontactera dans les <strong style="color: ${COLOR_BLACK};">24 h ouvrées</strong> pour confirmer les disponibilités.
+    </p>
+    <table style="width: 100%; border-collapse: collapse; margin: 4px 0;">
+      ${dataRow("Référence", ref, true)}
+      ${dataRow("Email", escapeHtml(b.client_email))}
+      ${b.client_phone ? dataRow("Téléphone", escapeHtml(b.client_phone)) : ""}
+      ${b.client_company ? dataRow("Société", escapeHtml(b.client_company)) : ""}
+      ${plateaux ? dataRow("Plateau(x)", plateaux) : ""}
+      ${b.preferred_date ? dataRow("Date souhaitée", dateFmt(b.preferred_date)) : ""}
+      ${b.arrival_hour != null ? dataRow("Heure d'arrivée", `${b.arrival_hour} h`) : ""}
+      ${b.project_type ? dataRow("Type de projet", escapeHtml(b.project_type)) : ""}
+      ${dataRow("Estimation", totalStr)}
+    </table>
+    ${quoteTableHtml(quote)}
+    <p style="margin: 24px 0 8px; font-size: 13px; color: ${COLOR_GRAY};">
+      Pour toute question, répondez directement à cet e-mail ou écrivez-nous à
+      <a href="mailto:contact@e-do.studio" style="color: ${COLOR_BLACK};">contact@e-do.studio</a>.
+    </p>
+    ${signOff()}`;
+
+  return emailWrap("Confirmation de réservation", body);
+}
+
+// ─── Booking confirmation — admin ─────────────────────────────────────────────
 
 function bookingAdminHtml(b: BookingData, sessions: BookingSession[], quote: QuoteData | null): string {
   const ref = escapeHtml(b.reference);
   const clientName = escapeHtml(b.client_name);
   const clientEmail = escapeHtml(b.client_email);
-  const totalStr = b.total_estimate != null ? `${b.total_estimate.toLocaleString("fr-FR")}€ HT` : "Sur demande";
-  const dateFmt = (d: string) => new Date(d).toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+  const totalStr = b.total_estimate != null ? `${b.total_estimate.toLocaleString("fr-FR")} € HT` : "Sur demande";
 
-  return `
-<div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a;">
-  <h2 style="margin-bottom: 4px;">Nouvelle réservation</h2>
-  <p style="color: #666; margin-top: 0;">${ref}</p>
-  <hr style="border: none; border-top: 1px solid #e5e5e5;">
-  <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
-    <tr><td style="padding: 6px 0; color: #666; width: 140px;">Client</td><td style="padding: 6px 0;"><strong>${clientName}</strong></td></tr>
-    <tr><td style="padding: 6px 0; color: #666;">Email</td><td style="padding: 6px 0;"><a href="mailto:${clientEmail}">${clientEmail}</a></td></tr>
-    ${b.client_phone ? `<tr><td style="padding: 6px 0; color: #666;">Téléphone</td><td style="padding: 6px 0;">${escapeHtml(b.client_phone)}</td></tr>` : ""}
-    ${b.client_company ? `<tr><td style="padding: 6px 0; color: #666;">Société</td><td style="padding: 6px 0;">${escapeHtml(b.client_company)}</td></tr>` : ""}
-    ${b.client_siren ? `<tr><td style="padding: 6px 0; color: #666;">SIREN</td><td style="padding: 6px 0;">${escapeHtml(b.client_siren)}</td></tr>` : ""}
-    ${b.preferred_date ? `<tr><td style="padding: 6px 0; color: #666;">Date souhaitée</td><td style="padding: 6px 0;">${dateFmt(b.preferred_date)}</td></tr>` : ""}
-    ${b.arrival_hour != null ? `<tr><td style="padding: 6px 0; color: #666;">Heure d'arrivée</td><td style="padding: 6px 0;">${b.arrival_hour}h</td></tr>` : ""}
-    ${b.project_type ? `<tr><td style="padding: 6px 0; color: #666;">Type de projet</td><td style="padding: 6px 0;">${escapeHtml(b.project_type)}</td></tr>` : ""}
-    ${b.urgency ? `<tr><td style="padding: 6px 0; color: #666;">Urgence</td><td style="padding: 6px 0;">${escapeHtml(b.urgency)}</td></tr>` : ""}
-    <tr><td style="padding: 6px 0; color: #666;">Estimation</td><td style="padding: 6px 0; font-weight: 600;">${totalStr}</td></tr>
-    ${b.notes ? `<tr><td style="padding: 6px 0; color: #666;">Notes</td><td style="padding: 6px 0;">${escapeHtml(b.notes)}</td></tr>` : ""}
-  </table>
-  ${sessions.length > 0 ? `<h3 style="margin-bottom: 8px;">Détail des sessions</h3>${sessionDetailRows(sessions)}` : ""}
-  ${quoteTableHtml(quote)}
-</div>`;
+  const body = `
+    <table style="width: 100%; border-collapse: collapse;">
+      ${dataRow("Client", `<strong>${clientName}</strong>`)}
+      ${dataRow("Email", `<a href="mailto:${clientEmail}" style="color: ${COLOR_BLACK};">${clientEmail}</a>`)}
+      ${b.client_phone ? dataRow("Téléphone", escapeHtml(b.client_phone)) : ""}
+      ${b.client_company ? dataRow("Société", escapeHtml(b.client_company)) : ""}
+      ${b.client_siren ? dataRow("SIREN", escapeHtml(b.client_siren)) : ""}
+      ${b.preferred_date ? dataRow("Date souhaitée", dateFmt(b.preferred_date)) : ""}
+      ${b.arrival_hour != null ? dataRow("Heure d'arrivée", `${b.arrival_hour} h`) : ""}
+      ${b.project_type ? dataRow("Type de projet", escapeHtml(b.project_type)) : ""}
+      ${b.urgency ? dataRow("Urgence", escapeHtml(b.urgency)) : ""}
+      ${dataRow("Estimation", totalStr)}
+      ${b.notes ? dataRow("Notes", escapeHtml(b.notes)) : ""}
+    </table>
+    ${sessions.length > 0 ? `${sectionTitle("Détail des sessions")}${sessionDetailRows(sessions)}` : ""}
+    ${quoteTableHtml(quote)}`;
+
+  return emailWrap(`Nouvelle réservation — ${ref}`, body);
 }
+
+// ─── Contact confirmation — client ────────────────────────────────────────────
 
 function contactClientHtml(nom: string, sujet: string): string {
-  return `
-<div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a;">
-  <h2 style="margin-bottom: 4px;">E-Do Studio</h2>
-  <p style="color: #666; margin-top: 0;">Accusé de réception</p>
-  <hr style="border: none; border-top: 1px solid #e5e5e5;">
-  <p>Bonjour <strong>${nom}</strong>,</p>
-  <p>Nous avons bien reçu votre message concernant : <strong>${sujet}</strong>.</p>
-  <p>Notre équipe vous répondra dans les meilleurs délais.</p>
-  <p style="color: #666; font-size: 14px;">À bientôt,<br>L'équipe E-Do Studio</p>
-</div>`;
+  const body = `
+    <p style="margin: 0 0 20px; font-size: 15px;">Bonjour <strong>${nom}</strong>,</p>
+    <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.6; color: ${COLOR_GRAY};">
+      Nous avons bien reçu votre message concernant : <strong style="color: ${COLOR_BLACK};">${sujet}</strong>.
+    </p>
+    <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.6; color: ${COLOR_GRAY};">
+      Notre équipe vous répondra sous <strong style="color: ${COLOR_BLACK};">48 h ouvrées</strong>.
+    </p>
+    ${signOff()}`;
+
+  return emailWrap("Message reçu", body);
 }
+
+// ─── Contact notification — admin ────────────────────────────────────────────
 
 function contactAdminHtml(
   nom: string,
@@ -222,35 +313,38 @@ function contactAdminHtml(
   sujet: string,
   message: string,
 ): string {
-  return `
-<div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a;">
-  <h2 style="margin-bottom: 4px;">Nouveau message de contact</h2>
-  <hr style="border: none; border-top: 1px solid #e5e5e5;">
-  <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
-    <tr><td style="padding: 6px 0; color: #666; width: 120px;">Nom</td><td style="padding: 6px 0;"><strong>${nom}</strong></td></tr>
-    <tr><td style="padding: 6px 0; color: #666;">Email</td><td style="padding: 6px 0;"><a href="mailto:${email}">${email}</a></td></tr>
-    ${telephone ? `<tr><td style="padding: 6px 0; color: #666;">Téléphone</td><td style="padding: 6px 0;">${telephone}</td></tr>` : ""}
-    ${societe ? `<tr><td style="padding: 6px 0; color: #666;">Société</td><td style="padding: 6px 0;">${societe}</td></tr>` : ""}
-    <tr><td style="padding: 6px 0; color: #666;">Sujet</td><td style="padding: 6px 0;">${sujet}</td></tr>
-  </table>
-  <div style="background: #f5f5f5; padding: 16px; border-radius: 4px; white-space: pre-wrap;">${message}</div>
-</div>`;
+  const body = `
+    <table style="width: 100%; border-collapse: collapse;">
+      ${dataRow("Nom", `<strong>${nom}</strong>`)}
+      ${dataRow("Email", `<a href="mailto:${email}" style="color: ${COLOR_BLACK};">${email}</a>`)}
+      ${telephone ? dataRow("Téléphone", telephone) : ""}
+      ${societe ? dataRow("Société", societe) : ""}
+      ${dataRow("Sujet", sujet)}
+    </table>
+    ${sectionTitle("Message")}
+    <div style="background: ${COLOR_BG_LIGHT}; padding: 16px; border-left: 3px solid ${COLOR_ORANGE}; font-size: 14px; line-height: 1.7; white-space: pre-wrap;">${message}</div>`;
+
+  return emailWrap(`Contact — ${sujet}`, body);
 }
+
+// ─── Status change labels ─────────────────────────────────────────────────────
 
 const STATUS_CHANGE_LABELS: Record<StatusChangeReason, { title: string; intro: string }> = {
   report: {
     title: "Réservation reportée",
-    intro: "Votre réservation a été reportée à une nouvelle date.",
+    intro: "Votre réservation a été reportée à une nouvelle date. Retrouvez ci-dessous le récapitulatif mis à jour.",
   },
   rejet: {
     title: "Réservation non retenue",
-    intro: "Nous avons le regret de vous informer que votre réservation n'a pas pu être retenue.",
+    intro: "Nous sommes au regret de vous informer que nous ne sommes pas en mesure de donner suite à votre demande pour cette date. N'hésitez pas à nous recontacter pour trouver une alternative.",
   },
   autre: {
     title: "Mise à jour de votre réservation",
-    intro: "Votre réservation a fait l'objet d'une modification.",
+    intro: "Votre réservation a fait l'objet d'une modification. Retrouvez ci-dessous les informations actualisées.",
   },
 };
+
+// ─── Status change — client ───────────────────────────────────────────────────
 
 function statusChangeClientHtml(
   b: BookingData,
@@ -264,30 +358,33 @@ function statusChangeClientHtml(
   const ref = escapeHtml(b.reference);
   const clientName = escapeHtml(b.client_name);
   const plateaux = sessions.map((s) => `${s.plateau_key} (${s.hours ?? "?"}h, ${s.slot_type})`).join(", ");
-  const totalStr = b.total_estimate != null ? `${b.total_estimate.toLocaleString("fr-FR")}€ HT` : "Sur demande";
-  const dateFmt = (d: string) => new Date(d).toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+  const totalStr = b.total_estimate != null ? `${b.total_estimate.toLocaleString("fr-FR")} € HT` : "Sur demande";
 
-  return `
-<div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a;">
-  <h2 style="margin-bottom: 4px;">E-Do Studio</h2>
-  <p style="color: #666; margin-top: 0;">${labels.title}</p>
-  <hr style="border: none; border-top: 1px solid #e5e5e5;">
-  <p>Bonjour <strong>${clientName}</strong>,</p>
-  <p>${labels.intro}</p>
-  <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
-    <tr><td style="padding: 6px 0; color: #666;">Référence</td><td style="padding: 6px 0; font-weight: 600;">${ref}</td></tr>
-    ${plateaux ? `<tr><td style="padding: 6px 0; color: #666;">Plateau(x)</td><td style="padding: 6px 0;">${plateaux}</td></tr>` : ""}
-    ${b.preferred_date ? `<tr><td style="padding: 6px 0; color: #666;">Date initiale</td><td style="padding: 6px 0;">${dateFmt(b.preferred_date)}</td></tr>` : ""}
-    ${newDate ? `<tr><td style="padding: 6px 0; color: #666;">Nouvelle date</td><td style="padding: 6px 0; font-weight: 600;">${dateFmt(newDate)}</td></tr>` : ""}
-    ${b.client_company ? `<tr><td style="padding: 6px 0; color: #666;">Société</td><td style="padding: 6px 0;">${escapeHtml(b.client_company)}</td></tr>` : ""}
-    <tr><td style="padding: 6px 0; color: #666;">Estimation</td><td style="padding: 6px 0; font-weight: 600;">${totalStr}</td></tr>
-  </table>
-  ${quoteTableHtml(quote)}
-  ${adminMessage ? `<div style="background: #f5f5f5; padding: 16px; border-radius: 4px; margin: 16px 0;"><strong>Message :</strong><br>${adminMessage}</div>` : ""}
-  <p>Pour toute question, n'hésitez pas à nous contacter par retour de mail.</p>
-  <p style="color: #666; font-size: 14px;">À bientôt,<br>L'équipe E-Do Studio</p>
-</div>`;
+  const body = `
+    <p style="margin: 0 0 20px; font-size: 15px;">Bonjour <strong>${clientName}</strong>,</p>
+    <p style="margin: 0 0 20px; font-size: 14px; line-height: 1.6; color: ${COLOR_GRAY};">${labels.intro}</p>
+    <table style="width: 100%; border-collapse: collapse;">
+      ${dataRow("Référence", ref, true)}
+      ${plateaux ? dataRow("Plateau(x)", plateaux) : ""}
+      ${b.preferred_date ? dataRow("Date initiale", dateFmt(b.preferred_date)) : ""}
+      ${newDate ? dataRow("Nouvelle date", `<strong style="color: ${COLOR_ORANGE};">${dateFmt(newDate)}</strong>`) : ""}
+      ${b.client_company ? dataRow("Société", escapeHtml(b.client_company)) : ""}
+      ${dataRow("Estimation", totalStr)}
+    </table>
+    ${quoteTableHtml(quote)}
+    ${adminMessage ? `
+    ${sectionTitle("Message de l'équipe")}
+    <div style="background: ${COLOR_BG_LIGHT}; padding: 16px; border-left: 3px solid ${COLOR_ORANGE}; font-size: 14px; line-height: 1.7;">${adminMessage}</div>` : ""}
+    <p style="margin: 24px 0 8px; font-size: 13px; color: ${COLOR_GRAY};">
+      Pour toute question, répondez directement à cet e-mail ou contactez-nous à
+      <a href="mailto:contact@e-do.studio" style="color: ${COLOR_BLACK};">contact@e-do.studio</a>.
+    </p>
+    ${signOff()}`;
+
+  return emailWrap(labels.title, body);
 }
+
+// ─── Status change — admin ────────────────────────────────────────────────────
 
 function statusChangeAdminHtml(
   b: BookingData,
@@ -302,31 +399,27 @@ function statusChangeAdminHtml(
   const clientName = escapeHtml(b.client_name);
   const clientEmail = escapeHtml(b.client_email);
   const plateaux = sessions.map((s) => `${s.plateau_key} (${s.hours ?? "?"}h, ${s.slot_type})`).join(", ");
-  const totalStr = b.total_estimate != null ? `${b.total_estimate.toLocaleString("fr-FR")}€ HT` : "Sur demande";
-  const dateFmt = (d: string) => new Date(d).toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+  const totalStr = b.total_estimate != null ? `${b.total_estimate.toLocaleString("fr-FR")} € HT` : "Sur demande";
 
-  return `
-<div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a;">
-  <h2 style="margin-bottom: 4px;">${labels.title}</h2>
-  <p style="color: #666; margin-top: 0;">${ref}</p>
-  <hr style="border: none; border-top: 1px solid #e5e5e5;">
-  <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
-    <tr><td style="padding: 6px 0; color: #666; width: 140px;">Client</td><td style="padding: 6px 0;"><strong>${clientName}</strong></td></tr>
-    <tr><td style="padding: 6px 0; color: #666;">Email</td><td style="padding: 6px 0;"><a href="mailto:${clientEmail}">${clientEmail}</a></td></tr>
-    ${b.client_phone ? `<tr><td style="padding: 6px 0; color: #666;">Téléphone</td><td style="padding: 6px 0;">${escapeHtml(b.client_phone)}</td></tr>` : ""}
-    ${b.client_company ? `<tr><td style="padding: 6px 0; color: #666;">Société</td><td style="padding: 6px 0;">${escapeHtml(b.client_company)}</td></tr>` : ""}
-    ${b.client_siren ? `<tr><td style="padding: 6px 0; color: #666;">SIREN</td><td style="padding: 6px 0;">${escapeHtml(b.client_siren)}</td></tr>` : ""}
-    ${plateaux ? `<tr><td style="padding: 6px 0; color: #666;">Plateau(x)</td><td style="padding: 6px 0;">${plateaux}</td></tr>` : ""}
-    <tr><td style="padding: 6px 0; color: #666;">Motif</td><td style="padding: 6px 0;">${labels.title}</td></tr>
-    ${b.preferred_date ? `<tr><td style="padding: 6px 0; color: #666;">Date initiale</td><td style="padding: 6px 0;">${dateFmt(b.preferred_date)}</td></tr>` : ""}
-    ${newDate ? `<tr><td style="padding: 6px 0; color: #666;">Nouvelle date</td><td style="padding: 6px 0; font-weight: 600;">${dateFmt(newDate)}</td></tr>` : ""}
-    ${b.project_type ? `<tr><td style="padding: 6px 0; color: #666;">Type de projet</td><td style="padding: 6px 0;">${escapeHtml(b.project_type)}</td></tr>` : ""}
-    <tr><td style="padding: 6px 0; color: #666;">Estimation</td><td style="padding: 6px 0; font-weight: 600;">${totalStr}</td></tr>
-    ${adminMessage ? `<tr><td style="padding: 6px 0; color: #666;">Message</td><td style="padding: 6px 0;">${adminMessage}</td></tr>` : ""}
-  </table>
-  ${sessions.length > 0 ? `<h3 style="margin-bottom: 8px;">Détail des sessions</h3>${sessionDetailRows(sessions)}` : ""}
-  ${quoteTableHtml(quote)}
-</div>`;
+  const body = `
+    <table style="width: 100%; border-collapse: collapse;">
+      ${dataRow("Client", `<strong>${clientName}</strong>`)}
+      ${dataRow("Email", `<a href="mailto:${clientEmail}" style="color: ${COLOR_BLACK};">${clientEmail}</a>`)}
+      ${b.client_phone ? dataRow("Téléphone", escapeHtml(b.client_phone)) : ""}
+      ${b.client_company ? dataRow("Société", escapeHtml(b.client_company)) : ""}
+      ${b.client_siren ? dataRow("SIREN", escapeHtml(b.client_siren)) : ""}
+      ${plateaux ? dataRow("Plateau(x)", plateaux) : ""}
+      ${dataRow("Motif", labels.title)}
+      ${b.preferred_date ? dataRow("Date initiale", dateFmt(b.preferred_date)) : ""}
+      ${newDate ? dataRow("Nouvelle date", `<strong style="color: ${COLOR_ORANGE};">${dateFmt(newDate)}</strong>`) : ""}
+      ${b.project_type ? dataRow("Type de projet", escapeHtml(b.project_type)) : ""}
+      ${dataRow("Estimation", totalStr)}
+      ${adminMessage ? dataRow("Message envoyé", adminMessage) : ""}
+    </table>
+    ${sessions.length > 0 ? `${sectionTitle("Détail des sessions")}${sessionDetailRows(sessions)}` : ""}
+    ${quoteTableHtml(quote)}`;
+
+  return emailWrap(`${labels.title} — ${ref}`, body);
 }
 
 function syncToHubSpot(fn: () => Promise<void>): void {
