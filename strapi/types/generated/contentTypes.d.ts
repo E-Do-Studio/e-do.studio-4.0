@@ -926,6 +926,48 @@ export interface ApiGalleryCategoryGalleryCategory
   };
 }
 
+export interface ApiGalleryProjectGalleryProject
+  extends Struct.CollectionTypeSchema {
+  collectionName: "gallery_projects";
+  info: {
+    displayName: "Gallery Project";
+    pluralName: "gallery-projects";
+    singularName: "gallery-project";
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    brand: Schema.Attribute.Relation<
+      "manyToOne",
+      "api::gallery-brand.gallery-brand"
+    >;
+    category: Schema.Attribute.Relation<
+      "manyToOne",
+      "api::gallery-category.gallery-category"
+    >;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
+      Schema.Attribute.Private;
+    images: Schema.Attribute.Media<"images", true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      "oneToMany",
+      "api::gallery-project.gallery-project"
+    > &
+      Schema.Attribute.Private;
+    orderRank: Schema.Attribute.Integer;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<"title"> & Schema.Attribute.Required;
+    stage: Schema.Attribute.String;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
+      Schema.Attribute.Private;
+    year: Schema.Attribute.Integer;
+  };
+}
+
 export interface ApiGalleryEmbedGalleryEmbed
   extends Struct.CollectionTypeSchema {
   collectionName: "gallery_embeds";
@@ -1799,6 +1841,7 @@ declare module "@strapi/strapi" {
       "api::gallery-brand.gallery-brand": ApiGalleryBrandGalleryBrand;
       "api::gallery-category.gallery-category": ApiGalleryCategoryGalleryCategory;
       "api::gallery-embed.gallery-embed": ApiGalleryEmbedGalleryEmbed;
+      "api::gallery-project.gallery-project": ApiGalleryProjectGalleryProject;
       "api::gallery-subcategory.gallery-subcategory": ApiGallerySubcategoryGallerySubcategory;
       "api::machine.machine": ApiMachineMachine;
       "api::modular-page.modular-page": ApiModularPageModularPage;
