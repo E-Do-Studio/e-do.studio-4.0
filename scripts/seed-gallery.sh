@@ -23,22 +23,22 @@ post() {
 
 echo "=== Seeding gallery categories ==="
 
-cat_pap=$(post gallery-categories '{"title_fr":"Prêt-à-porter","title_en":"Ready-to-wear","slug":"pap","orderRank":1}')
+cat_pap=$(post gallery-categories '{"title_fr":"Prêt-à-porter","title_en":"Ready-to-wear","slug":"pap","rank":1}')
 echo "  ✓ Prêt-à-porter → $(echo "$cat_pap" | jq -r '.data.id // .error.message')"
 
-cat_acc=$(post gallery-categories '{"title_fr":"Accessoires","title_en":"Accessories","slug":"accessoires","orderRank":2}')
+cat_acc=$(post gallery-categories '{"title_fr":"Accessoires","title_en":"Accessories","slug":"accessoires","rank":2}')
 echo "  ✓ Accessoires → $(echo "$cat_acc" | jq -r '.data.id // .error.message')"
 
-cat_eye=$(post gallery-categories '{"title_fr":"Eyewear","title_en":"Eyewear","slug":"eyewear","orderRank":3}')
+cat_eye=$(post gallery-categories '{"title_fr":"Eyewear","title_en":"Eyewear","slug":"eyewear","rank":3}')
 echo "  ✓ Eyewear → $(echo "$cat_eye" | jq -r '.data.id // .error.message')"
 
-cat_bij=$(post gallery-categories '{"title_fr":"Bijoux","title_en":"Jewelry","slug":"bijoux","orderRank":4}')
+cat_bij=$(post gallery-categories '{"title_fr":"Bijoux","title_en":"Jewelry","slug":"bijoux","rank":4}')
 echo "  ✓ Bijoux → $(echo "$cat_bij" | jq -r '.data.id // .error.message')"
 
-cat_cos=$(post gallery-categories '{"title_fr":"Cosmétique","title_en":"Cosmetics","slug":"cosmetique","orderRank":5}')
+cat_cos=$(post gallery-categories '{"title_fr":"Cosmétique","title_en":"Cosmetics","slug":"cosmetique","rank":5}')
 echo "  ✓ Cosmétique → $(echo "$cat_cos" | jq -r '.data.id // .error.message')"
 
-cat_food=$(post gallery-categories '{"title_fr":"Food & Spiritueux","title_en":"Food & Spirits","slug":"food","orderRank":6}')
+cat_food=$(post gallery-categories '{"title_fr":"Food & Spiritueux","title_en":"Food & Spirits","slug":"food","rank":6}')
 echo "  ✓ Food & Spiritueux → $(echo "$cat_food" | jq -r '.data.id // .error.message')"
 
 # Extract IDs
@@ -55,7 +55,7 @@ echo "=== Seeding gallery projects ==="
 seed_project() {
   local order="$1" title="$2" slug="$3" cat_id="$4" stage="$5" year="$6"
   local result
-  result=$(post gallery-projects "{\"title\":\"${title}\",\"slug\":\"${slug}\",\"category\":${cat_id},\"stage\":\"${stage}\",\"year\":${year},\"orderRank\":${order}}")
+  result=$(post gallery-projects "{\"title\":\"${title}\",\"slug\":\"${slug}\",\"category\":${cat_id},\"stage\":\"${stage}\",\"year\":${year},\"rank\":${order}}")
   echo "  ✓ ${title} → $(echo "$result" | jq -r '.data.id // .error.message')"
 }
 
