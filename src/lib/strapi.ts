@@ -100,16 +100,31 @@ interface StrapiBlogCategory {
   slug: string;
 }
 
+interface StrapiTransportEntry { label: string }
+interface StrapiAddressEntry { label: string; address: string }
+
 interface StrapiSiteSettings {
-  siteTitle: string;
+  siteTitle?: string;
+  siteDescription?: string;
   phone: string;
-  phoneHref: string;
+  phoneHref?: string;
   email: string;
   street: string;
   city: string;
   postalCode: string;
-  fullAddress: string;
-  hours: string;
+  country?: string;
+  fullAddress?: string;
+  googleMapsUrl?: string;
+  mapsEmbedUrl?: string;
+  hours?: string;
+  weekendHours?: string;
+  parking?: string;
+  transport?: StrapiTransportEntry[];
+  entries?: StrapiAddressEntry[];
+  defaultSeoTitle?: string;
+  defaultSeoDescription?: string;
+  defaultSeoImage?: StrapiMedia;
+  googleAnalyticsId?: string;
   socialLinks?: StrapiSocialLink[];
 }
 
@@ -615,22 +630,87 @@ export async function fetchBrands(): Promise<string[]> {
   return res.data.map(b => b.name);
 }
 
-export async function fetchContact() {
-  const res = await fetchStrapi<{ data: StrapiSiteSettings }>('site-setting', { 'locale': 'fr' });
-  const s = res.data;
+export interface ContactInfo {
+  phone: string;
+  phoneHref: string;
+  email: string;
+  emailHref: string;
+  address: { street: string; zip: string; city: string; postalCode: string; country?: string };
+  fullAddress?: string;
+  googleMapsUrl?: string;
+  mapsEmbedUrl?: string;
+  parking?: Bilingual;
+  transport: { label: string }[];
+  entries: { label: string; address: string }[];
+  etouch: string;
+}
+
+export async function fetchContact(): Promise<ContactInfo> {
+  const resBI = await fetchStrapiBilingual<{ data: StrapiSiteSettings }>(
+    'site-setting',
+    { populate: 'transport,entries' },
+  );
+  const s = resBI.fr.data;
+  const sEn = resBI.en.data;
+  const phoneHref = s.phoneHref || (s.phone ? `tel:${s.phone.replace(/\s/g, '')}` : '');
   return {
     phone: s.phone,
-    phoneHref: s.phoneHref || `tel:${s.phone?.replace(/\s/g, '')}`,
+    phoneHref,
     email: s.email,
-    emailHref: `mailto:${s.email}`,
-    address: { street: s.street, zip: `${s.postalCode} ${s.city}` },
+    emailHref: s.email ? `mailto:${s.email}` : '',
+    address: {
+      street: s.street,
+      zip: `${s.postalCode ?? ''} ${s.city ?? ''}`.trim(),
+      city: s.city,
+      postalCode: s.postalCode,
+      country: s.country,
+    },
+    fullAddress: s.fullAddress,
+    googleMapsUrl: s.googleMapsUrl,
+    mapsEmbedUrl: s.mapsEmbedUrl,
+    parking: s.parking || sEn?.parking ? { fr: s.parking ?? '', en: sEn?.parking ?? s.parking ?? '' } : undefined,
+    transport: s.transport ?? [],
+    entries: s.entries ?? [],
     etouch: 'https://etouch.e-do.studio',
   };
 }
 
-export async function fetchStudioHours(): Promise<Bilingual> {
+export interface StudioHours {
+  weekday: Bilingual;
+  weekend: Bilingual;
+}
+
+export async function fetchStudioHours(): Promise<StudioHours> {
   const resBI = await fetchStrapiBilingual<{ data: StrapiSiteSettings }>('site-setting');
-  return { fr: resBI.fr.data.hours, en: resBI.en.data.hours };
+  return {
+    weekday: { fr: resBI.fr.data.hours ?? '', en: resBI.en.data.hours ?? '' },
+    weekend: { fr: resBI.fr.data.weekendHours ?? '', en: resBI.en.data.weekendHours ?? '' },
+  };
+}
+
+export interface SiteDefaults {
+  seoTitle: Bilingual;
+  seoDescription: Bilingual;
+  seoImageUrl?: string;
+  googleAnalyticsId?: string;
+}
+
+export async function fetchSiteDefaults(): Promise<SiteDefaults> {
+  const resBI = await fetchStrapiBilingual<{ data: StrapiSiteSettings }>(
+    'site-setting',
+    { populate: 'defaultSeoImage' },
+  );
+  const s = resBI.fr.data;
+  const sEn = resBI.en.data;
+  return {
+    seoTitle: { fr: s.defaultSeoTitle ?? '', en: sEn?.defaultSeoTitle ?? s.defaultSeoTitle ?? '' },
+    seoDescription: {
+      fr: s.defaultSeoDescription ?? '',
+      en: sEn?.defaultSeoDescription ?? s.defaultSeoDescription ?? '',
+    },
+    seoImageUrl: resolveStrapiMediaUrl(s.defaultSeoImage),
+    googleAnalyticsId: s.googleAnalyticsId,
+  };
 }
 
 // ─── Gallery types & fetchers ──────────────────────────────────────────────
