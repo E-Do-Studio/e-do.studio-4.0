@@ -1,0 +1,24 @@
+{
+  "kind": "collectionType",
+  "collectionName": "gallery_embeds",
+  "info": {
+    "singularName": "gallery-embed",
+    "pluralName": "gallery-embeds",
+    "displayName": "Gallery Embed"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title_fr": { "type": "string" },
+    "title_en": { "type": "string" },
+    "embedUrl": { "type": "string", "required": true },
+    "thumbnail": { "type": "media", "multiple": false },
+    "category": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::gallery-category.gallery-category"
+    },
+    "order": { "type": "integer" }
+  }
+}

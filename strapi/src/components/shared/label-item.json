@@ -1,0 +1,10 @@
+{
+  "collectionName": "components_shared_label_items",
+  "info": {
+    "displayName": "Label Item",
+    "icon": "tag"
+  },
+  "attributes": {
+    "label": { "type": "string" }
+  }
+}

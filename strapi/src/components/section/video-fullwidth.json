@@ -1,0 +1,7 @@
+{
+  "collectionName": "components_section_video_fullwidth",
+  "info": { "displayName": "Section Video Fullwidth", "icon": "layout" },
+  "attributes": {
+    "data": { "type": "json" }
+  }
+}

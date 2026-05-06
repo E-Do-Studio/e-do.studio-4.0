@@ -1,0 +1,11 @@
+{
+  "collectionName": "components_shared_image_with_alts",
+  "info": {
+    "displayName": "Image With Alt",
+    "icon": "picture"
+  },
+  "attributes": {
+    "image": { "type": "media", "multiple": false },
+    "alt": { "type": "string" }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_cell_machine_lists",
+  "info": {
+    "displayName": "Cell Machine List",
+    "icon": "bulletList"
+  },
+  "attributes": {
+    "machines": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::machine.machine"
+    },
+    "size": { "type": "enumeration", "enum": ["default", "wide", "tall", "large"] },
+    "desktopRow": { "type": "integer" },
+    "desktopCol": { "type": "integer" },
+    "mobileRow": { "type": "integer" },
+    "mobileCol": { "type": "integer" }
+  }
+}

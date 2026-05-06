@@ -1,0 +1,11 @@
+{
+  "collectionName": "components_shared_address_entries",
+  "info": {
+    "displayName": "Address Entry",
+    "icon": "mapPin"
+  },
+  "attributes": {
+    "label": { "type": "string" },
+    "address": { "type": "string" }
+  }
+}

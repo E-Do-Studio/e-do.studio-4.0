@@ -1,0 +1,7 @@
+{
+  "collectionName": "components_section_equipment_showcase",
+  "info": { "displayName": "Section Equipment Showcase", "icon": "layout" },
+  "attributes": {
+    "data": { "type": "json" }
+  }
+}

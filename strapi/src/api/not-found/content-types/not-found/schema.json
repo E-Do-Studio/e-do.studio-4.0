@@ -1,0 +1,19 @@
+{
+  "kind": "singleType",
+  "collectionName": "not_founds",
+  "info": {
+    "singularName": "not-found",
+    "pluralName": "not-founds",
+    "displayName": "Not Found"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "text": { "type": "string" },
+    "message_fr": { "type": "string" },
+    "message_en": { "type": "string" },
+    "ctaLabel": { "type": "string" },
+    "ctaLink": { "type": "string" }
+  }
+}

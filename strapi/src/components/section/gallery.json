@@ -1,0 +1,7 @@
+{
+  "collectionName": "components_section_gallery",
+  "info": { "displayName": "Section Gallery", "icon": "layout" },
+  "attributes": {
+    "data": { "type": "json" }
+  }
+}

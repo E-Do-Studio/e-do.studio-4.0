@@ -1,0 +1,12 @@
+{
+  "collectionName": "components_shared_social_links",
+  "info": {
+    "displayName": "Social Link",
+    "icon": "link"
+  },
+  "attributes": {
+    "platform": { "type": "string" },
+    "label": { "type": "string" },
+    "url": { "type": "string" }
+  }
+}

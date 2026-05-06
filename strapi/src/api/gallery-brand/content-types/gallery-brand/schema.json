@@ -1,0 +1,22 @@
+{
+  "kind": "collectionType",
+  "collectionName": "gallery_brands",
+  "info": {
+    "singularName": "gallery-brand",
+    "pluralName": "gallery-brands",
+    "displayName": "Gallery Brand"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "name": { "type": "string", "required": true },
+    "url": { "type": "string" },
+    "logo": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "orderRank": { "type": "integer" }
+  }
+}

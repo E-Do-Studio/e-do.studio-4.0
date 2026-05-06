@@ -1,0 +1,5 @@
+{
+  "collectionName": "components_section_rich_text",
+  "info": { "displayName": "Section rich text", "icon": "layout" },
+  "attributes": { "data": { "type": "json" } }
+}

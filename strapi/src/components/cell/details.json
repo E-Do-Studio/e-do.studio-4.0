@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_cell_details",
+  "info": {
+    "displayName": "Cell Details",
+    "icon": "information"
+  },
+  "attributes": {
+    "label_fr": { "type": "string" },
+    "label_en": { "type": "string" },
+    "buttonText_fr": { "type": "string" },
+    "buttonText_en": { "type": "string" },
+    "dialogTitle_fr": { "type": "string" },
+    "dialogTitle_en": { "type": "string" },
+    "dialogContent": { "type": "json" },
+    "size": { "type": "enumeration", "enum": ["default", "wide", "tall", "large"] },
+    "desktopRow": { "type": "integer" },
+    "desktopCol": { "type": "integer" },
+    "mobileRow": { "type": "integer" },
+    "mobileCol": { "type": "integer" }
+  }
+}

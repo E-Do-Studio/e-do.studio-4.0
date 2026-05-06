@@ -1,0 +1,61 @@
+{
+  "kind": "singleType",
+  "collectionName": "site_settings",
+  "info": {
+    "singularName": "site-setting",
+    "pluralName": "site-settings",
+    "displayName": "Site Settings"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "siteTitle": { "type": "string" },
+    "siteDescription_fr": { "type": "text" },
+    "siteDescription_en": { "type": "text" },
+    "logo": { "type": "media", "multiple": false },
+    "phone": { "type": "string" },
+    "phoneHref": { "type": "string" },
+    "email": { "type": "string" },
+    "street": { "type": "string" },
+    "city": { "type": "string" },
+    "postalCode": { "type": "string" },
+    "country": { "type": "string" },
+    "fullAddress": { "type": "string" },
+    "googleMapsUrl": { "type": "string" },
+    "mapsEmbedUrl": { "type": "string" },
+    "latitude": { "type": "float" },
+    "longitude": { "type": "float" },
+    "transport": {
+      "type": "component",
+      "component": "shared.label-item",
+      "repeatable": true
+    },
+    "parking_fr": { "type": "text" },
+    "parking_en": { "type": "text" },
+    "entries": {
+      "type": "component",
+      "component": "shared.address-entry",
+      "repeatable": true
+    },
+    "hours_fr": { "type": "string" },
+    "hours_en": { "type": "string" },
+    "weekendHours_fr": { "type": "string" },
+    "weekendHours_en": { "type": "string" },
+    "openingHoursSpec": { "type": "text" },
+    "socialLinks": {
+      "type": "component",
+      "component": "shared.social-link",
+      "repeatable": true
+    },
+    "bentoKeywords": {
+      "type": "component",
+      "component": "shared.bento-keyword",
+      "repeatable": true
+    },
+    "defaultSeoTitle": { "type": "string" },
+    "defaultSeoDescription": { "type": "text" },
+    "defaultSeoImage": { "type": "media", "multiple": false },
+    "googleAnalyticsId": { "type": "string" }
+  }
+}

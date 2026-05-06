@@ -1,0 +1,7 @@
+{
+  "collectionName": "components_section_process_timeline",
+  "info": { "displayName": "Section Process Timeline", "icon": "layout" },
+  "attributes": {
+    "data": { "type": "json" }
+  }
+}
