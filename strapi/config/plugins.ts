@@ -1,6 +1,9 @@
 import type { Core } from '@strapi/strapi';
 
 const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Plugin => ({
+  'drag-drop-content-types': {
+    enabled: true,
+  },
   upload: {
     config: {
       provider: '@strapi/provider-upload-aws-s3',

@@ -17,7 +17,7 @@
       "type": "enumeration",
       "enum": ["live", "eclipse", "ghost", "pique", "horizontal", "vertical", "packshot", "cyclorama", "post-prod"]
     },
-    "order": { "type": "integer" },
+    "orderRank": { "type": "integer" },
     "assets": {
       "type": "relation",
       "relation": "oneToMany",
