@@ -16,60 +16,24 @@
 // Fields use the exact Strapi attribute names (which become DB column names)
 const CONTENT_TYPE_TABLES = [
   {
-    table: 'about_uses',
-    fields: ['title', 'subtitle', 'story', 'seo_title', 'seo_description'],
-  },
-  {
-    table: 'bento_pages',
-    fields: ['title'],
-  },
-  {
     table: 'blog_categories',
     fields: ['title', 'description'],
   },
   {
     table: 'blog_posts',
-    fields: ['title', 'excerpt', 'body', 'cta_text', 'cta_label'],
-  },
-  {
-    table: 'cookie_banners',
-    fields: ['title', 'description', 'acceptButton', 'rejectButton', 'customizeButton', 'saveButton'],
+    fields: ['title', 'excerpt', 'body'],
   },
   {
     table: 'cycloramas',
     fields: ['title', 'subtitle', 'description', 'pricing', 'comfortText', 'complementaryServices', 'equipmentRental', 'pricingDescription'],
   },
   {
-    table: 'faq_entries',
-    fields: ['category', 'question', 'answer'],
-  },
-  {
-    table: 'faq_pages',
-    fields: ['title', 'subtitle', 'seo_title', 'seo_description'],
-  },
-  {
-    table: 'footers',
-    fields: ['tagline', 'addressNote', 'weekdayHours', 'weekendHours'],
-  },
-  {
     table: 'gallery_categories',
-    fields: ['name'],
-  },
-  {
-    table: 'gallery_embeds',
-    fields: ['title'],
-  },
-  {
-    table: 'gallery_subcategories',
     fields: ['name'],
   },
   {
     table: 'machines',
     fields: ['subtitle', 'description', 'pricing', 'operatorPricing'],
-  },
-  {
-    table: 'not_founds',
-    fields: ['message'],
   },
   {
     table: 'post_production_types',
@@ -82,58 +46,6 @@ const CONTENT_TYPE_TABLES = [
 ];
 
 const COMPONENT_TABLES = [
-  {
-    table: 'components_cell_chats',
-    fields: ['label', 'placeholder', 'welcomeMessage', 'defaultResponse', 'systemPrompt'],
-  },
-  {
-    table: 'components_cell_ctas',
-    fields: ['text'],
-  },
-  {
-    table: 'components_cell_details',
-    fields: ['label', 'buttonText', 'dialogTitle'],
-  },
-  {
-    table: 'components_cell_galleries',
-    fields: ['label'],
-  },
-  {
-    table: 'components_cell_images',
-    fields: ['label', 'title'],
-  },
-  {
-    table: 'components_cell_model3ds',
-    fields: ['label', 'title'],
-  },
-  {
-    table: 'components_cell_services',
-    fields: ['label', 'title'],
-  },
-  {
-    table: 'components_cell_texts',
-    fields: ['label', 'ctaText'],
-  },
-  {
-    table: 'components_cell_videos',
-    fields: ['label'],
-  },
-  {
-    table: 'components_section_contents',
-    fields: ['title', 'content'],
-  },
-  {
-    table: 'components_section_forms',
-    fields: ['title', 'description', 'pricing'],
-  },
-  {
-    table: 'components_section_gallery_bentos',
-    fields: ['title', 'subtitle'],
-  },
-  {
-    table: 'components_section_heroes',
-    fields: ['subtitle', 'title', 'intro'],
-  },
   {
     table: 'components_shared_specs',
     fields: ['label', 'value'],

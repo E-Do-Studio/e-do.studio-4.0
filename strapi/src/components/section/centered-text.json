@@ -1,7 +1,0 @@
-{
-  "collectionName": "components_section_centered_text",
-  "info": { "displayName": "Section Centered Text", "icon": "layout" },
-  "attributes": {
-    "data": { "type": "json" }
-  }
-}

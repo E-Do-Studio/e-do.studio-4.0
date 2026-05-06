@@ -9,6 +9,11 @@
   "options": {
     "draftAndPublish": true
   },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
   "attributes": {
     "name": {
       "type": "string",
@@ -39,17 +44,6 @@
     },
     "rank": {
       "type": "integer"
-    },
-    "assets": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::gallery-asset.gallery-asset",
-      "mappedBy": "category"
-    }
-  },
-  "pluginOptions": {
-    "i18n": {
-      "localized": true
     }
   }
 }
