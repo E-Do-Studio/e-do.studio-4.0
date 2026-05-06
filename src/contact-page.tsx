@@ -2,10 +2,28 @@ import { useState } from 'react';
 import type { FormEvent, InputHTMLAttributes, TextareaHTMLAttributes } from 'react';
 import { Button, CellLabel, IconArrowRight, PageHeader, SocialIcon, Wordmark, cn } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
+import { useContact, useStudioHours } from './lib/use-strapi';
+import type { ContactInfo, StudioHours as StudioHoursData } from './lib/strapi';
 import type { Lang, ContactFormData, Bilingual } from './types';
 import { usePageContext } from './router';
 import { submitContactForm } from './lib/contact';
 import { common, contact as contactMsg } from './i18n/messages';
+
+const UNAVAILABLE: Bilingual = {
+  fr: 'Contenu temporairement indisponible',
+  en: 'Content temporarily unavailable',
+};
+
+const METRO_COLOR_BY_LINE: Record<string, string> = {
+  '13': 'bg-metro-13 text-black',
+  '14': 'bg-metro-14 text-white',
+};
+
+function parseMetroLabel(label: string): { line: string | null; name: string } {
+  const m = label.match(/^M(?:[ée]tro)?\.?\s*(\d+)\s*[—–-]\s*(.+)$/i);
+  if (m) return { line: m[1], name: m[2].trim() };
+  return { line: null, name: label };
+}
 
 interface Subject extends Bilingual {
   k: string;
@@ -56,34 +74,72 @@ const INITIAL_FORM: ContactFormData = {
 
 interface ContactRailProps {
   lang: Lang;
+  contact: { data: ContactInfo | null; loading: boolean; error: Error | null };
+  hours: { data: StudioHoursData | null; loading: boolean; error: Error | null };
 }
 
-const ContactRail = ({ lang }: ContactRailProps) => (
+const ContactRail = ({ lang, contact, hours }: ContactRailProps) => (
   <aside className="flex flex-col overflow-auto bg-white md:col-start-1 md:row-start-2">
-    <FindUsSection lang={lang} />
-    <HoursSection lang={lang} />
-    <PhoneSection lang={lang} />
+    <FindUsSection lang={lang} contact={contact} />
+    <HoursSection lang={lang} hours={hours} />
+    <PhoneSection lang={lang} contact={contact} />
     <div className="flex-1" />
     <SocialGrid />
   </aside>
 );
 
-const FindUsSection = ({ lang }: { lang: Lang }) => (
-  <section className="border-b border-border p-6">
-    <CellLabel className="mb-5 block">{contactMsg.findUs[lang]}</CellLabel>
-    <div className="text-detail leading-copy font-normal text-muted-foreground">
-      <span className="mb-2 block font-mono text-label uppercase tracking-ui">
-        Parc d'activités Victor&nbsp;Hugo · {contactMsg.bldg[lang]} 6.7
-      </span>
-      69 boulevard Victor Hugo<br />
-      93400 <span className="whitespace-nowrap">Saint-Ouen</span>,<br />France
-    </div>
-    <div className="mt-5 flex flex-col gap-2.5 font-mono text-label leading-relaxed tracking-ui text-muted-foreground">
-      <MetroLine line="13" label="Garibaldi" className="bg-metro-13 text-black" />
-      <MetroLine line="14" label="Mairie de Saint-Ouen" className="bg-metro-14 text-white" />
-    </div>
-  </section>
-);
+interface FindUsSectionProps {
+  lang: Lang;
+  contact: { data: ContactInfo | null; loading: boolean; error: Error | null };
+}
+
+const FindUsSection = ({ lang, contact }: FindUsSectionProps) => {
+  const c = contact.data;
+  const showFallback = !contact.loading && (contact.error || !c);
+  return (
+    <section className="border-b border-border p-6">
+      <CellLabel className="mb-5 block">{contactMsg.findUs[lang]}</CellLabel>
+      {showFallback ? (
+        <UnavailableNote lang={lang} />
+      ) : (
+        <>
+          <div className="text-detail leading-copy font-normal text-muted-foreground">
+            {c?.entries && c.entries.length > 0 && (
+              <span className="mb-2 block font-mono text-label uppercase tracking-ui">
+                {c.entries.map((e, i) => (
+                  <span key={i}>
+                    {i > 0 && ' · '}
+                    {e.label}
+                    {e.address ? ` ${e.address}` : ''}
+                  </span>
+                ))}
+              </span>
+            )}
+            {c?.address.street}<br />
+            {c?.address.postalCode} <span className="whitespace-nowrap">{c?.address.city}</span>
+            {c?.address.country ? <>,<br />{c.address.country}</> : null}
+          </div>
+          {c?.transport && c.transport.length > 0 && (
+            <div className="mt-5 flex flex-col gap-2.5 font-mono text-label leading-relaxed tracking-ui text-muted-foreground">
+              {c.transport.map((t, i) => {
+                const { line, name } = parseMetroLabel(t.label);
+                if (!line) return <div key={i} className="whitespace-nowrap">{t.label}</div>;
+                return (
+                  <MetroLine
+                    key={i}
+                    line={line}
+                    label={name}
+                    className={METRO_COLOR_BY_LINE[line] ?? 'bg-muted text-foreground'}
+                  />
+                );
+              })}
+            </div>
+          )}
+        </>
+      )}
+    </section>
+  );
+};
 
 interface MetroLineProps {
   line: string;
@@ -100,15 +156,28 @@ const MetroLine = ({ line, label, className }: MetroLineProps) => (
   </div>
 );
 
-const HoursSection = ({ lang }: { lang: Lang }) => (
-  <section className="border-b border-border p-6">
-    <CellLabel className="mb-5 block">{contactMsg.hours[lang]}</CellLabel>
-    <div className="flex flex-col gap-3 text-caption">
-      <HoursRow label={contactMsg.monFri[lang]} value="10:00 — 18:00" />
-      <HoursRow label={contactMsg.satSun[lang]} value={common.onRequest[lang]} muted />
-    </div>
-  </section>
-);
+interface HoursSectionProps {
+  lang: Lang;
+  hours: { data: StudioHoursData | null; loading: boolean; error: Error | null };
+}
+
+const HoursSection = ({ lang, hours }: HoursSectionProps) => {
+  const h = hours.data;
+  const showFallback = !hours.loading && (hours.error || !h);
+  return (
+    <section className="border-b border-border p-6">
+      <CellLabel className="mb-5 block">{contactMsg.hours[lang]}</CellLabel>
+      {showFallback ? (
+        <UnavailableNote lang={lang} />
+      ) : (
+        <div className="flex flex-col gap-3 text-caption">
+          <HoursRow label={contactMsg.monFri[lang]} value={h?.weekday[lang] || '—'} />
+          <HoursRow label={contactMsg.satSun[lang]} value={h?.weekend[lang] || common.onRequest[lang]} muted />
+        </div>
+      )}
+    </section>
+  );
+};
 
 interface HoursRowProps {
   label: string;
@@ -123,13 +192,32 @@ const HoursRow = ({ label, value, muted = false }: HoursRowProps) => (
   </div>
 );
 
-const PhoneSection = ({ lang }: { lang: Lang }) => (
-  <section className="p-6">
-    <CellLabel className="mb-5 block">{contactMsg.phone[lang]}</CellLabel>
-    <a href="tel:+33144041149" className="text-caption font-mono tracking-ui text-foreground no-underline">
-      +33 1 44 04 11 49
-    </a>
-  </section>
+interface PhoneSectionProps {
+  lang: Lang;
+  contact: { data: ContactInfo | null; loading: boolean; error: Error | null };
+}
+
+const PhoneSection = ({ lang, contact }: PhoneSectionProps) => {
+  const c = contact.data;
+  const showFallback = !contact.loading && (contact.error || !c);
+  return (
+    <section className="p-6">
+      <CellLabel className="mb-5 block">{contactMsg.phone[lang]}</CellLabel>
+      {showFallback ? (
+        <UnavailableNote lang={lang} />
+      ) : c?.phone ? (
+        <a href={c.phoneHref} className="text-caption font-mono tracking-ui text-foreground no-underline">
+          {c.phone}
+        </a>
+      ) : null}
+    </section>
+  );
+};
+
+const UnavailableNote = ({ lang }: { lang: Lang }) => (
+  <span className="block font-mono text-micro uppercase tracking-meta text-muted-foreground opacity-55">
+    {UNAVAILABLE[lang]} · offline
+  </span>
 );
 
 const SocialGrid = () => (
@@ -330,42 +418,81 @@ const ContactSuccess = ({ lang, setForm, setSent, goto }: ContactSuccessProps) =
   </div>
 );
 
-const ContactRightColumn = ({ lang }: { lang: Lang }) => (
+interface ContactRightColumnProps {
+  lang: Lang;
+  contact: { data: ContactInfo | null; loading: boolean; error: Error | null };
+}
+
+const ContactRightColumn = ({ lang, contact }: ContactRightColumnProps) => (
   <aside className="grid grid-rows-2 gap-px overflow-hidden bg-hairline md:col-start-4 md:row-start-2 min-h-72 md:min-h-0">
-    <ContactMap lang={lang} />
+    <ContactMap lang={lang} contact={contact} />
     <TeamPanel lang={lang} />
   </aside>
 );
 
-const MAPS_EMBED_URL = 'https://www.google.com/maps?q=69+Boulevard+Victor+Hugo,+93400+Saint-Ouen,+France&z=15&output=embed';
-const MAPS_DIRECTIONS_URL = 'https://www.google.com/maps/dir/?api=1&destination=69+Boulevard+Victor+Hugo,+93400+Saint-Ouen,+France';
+function buildMapsEmbedFallback(fullAddress?: string, street?: string, postalCode?: string, city?: string): string {
+  const q = fullAddress || [street, postalCode, city].filter(Boolean).join(', ');
+  return `https://www.google.com/maps?q=${encodeURIComponent(q)}&z=15&output=embed`;
+}
 
-const ContactMap = ({ lang }: { lang: Lang }) => (
-  <section className="relative overflow-hidden bg-edo-warm">
-    <iframe
-      src={MAPS_EMBED_URL}
-      className="absolute inset-0 h-full w-full border-0"
-      loading="lazy"
-      referrerPolicy="no-referrer-when-downgrade"
-      title={contactMsg.mapTitle[lang]}
-    />
+function buildMapsDirections(fullAddress?: string, street?: string, postalCode?: string, city?: string): string {
+  const q = fullAddress || [street, postalCode, city].filter(Boolean).join(', ');
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(q)}`;
+}
 
-    <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-3 bg-white/95 px-3 py-2.5">
-      <div className="min-w-0">
-        <div className="text-detail font-medium tracking-copy-tight text-foreground">69 bd Victor Hugo · Bât. 6.7</div>
-        <div className="font-mono text-label uppercase tracking-caption text-muted-foreground">93400 SAINT-OUEN · M°13 GARIBALDI / M°14 MAIRIE ST-OUEN</div>
-      </div>
-      <a
-        href={MAPS_DIRECTIONS_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="shrink-0 font-mono text-label uppercase tracking-meta text-primary no-underline"
-      >
-        {contactMsg.directions[lang]}
-      </a>
-    </div>
-  </section>
-);
+interface ContactMapProps {
+  lang: Lang;
+  contact: { data: ContactInfo | null; loading: boolean; error: Error | null };
+}
+
+const ContactMap = ({ lang, contact }: ContactMapProps) => {
+  const c = contact.data;
+  const showFallback = !contact.loading && (contact.error || !c);
+  const embedUrl = c?.mapsEmbedUrl
+    || buildMapsEmbedFallback(c?.fullAddress, c?.address.street, c?.address.postalCode, c?.address.city);
+  const directionsUrl = c?.googleMapsUrl
+    || buildMapsDirections(c?.fullAddress, c?.address.street, c?.address.postalCode, c?.address.city);
+  return (
+    <section className="relative overflow-hidden bg-edo-warm">
+      {showFallback ? (
+        <div className="absolute inset-0 flex items-center justify-center p-6">
+          <UnavailableNote lang={lang} />
+        </div>
+      ) : (
+        <iframe
+          src={embedUrl}
+          className="absolute inset-0 h-full w-full border-0"
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          title={contactMsg.mapTitle[lang]}
+        />
+      )}
+
+      {!showFallback && c && (
+        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-3 bg-white/95 px-3 py-2.5">
+          <div className="min-w-0">
+            <div className="text-detail font-medium tracking-copy-tight text-foreground">
+              {c.address.street}
+              {c.entries && c.entries.length > 0 ? ` · ${c.entries.map(e => `${e.label}${e.address ? ' ' + e.address : ''}`).join(' · ')}` : ''}
+            </div>
+            <div className="font-mono text-label uppercase tracking-caption text-muted-foreground">
+              {c.address.postalCode} {c.address.city?.toUpperCase()}
+              {c.transport && c.transport.length > 0 ? ` · ${c.transport.map(t => t.label.toUpperCase()).join(' / ')}` : ''}
+            </div>
+          </div>
+          <a
+            href={directionsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shrink-0 font-mono text-label uppercase tracking-meta text-primary no-underline"
+          >
+            {contactMsg.directions[lang]}
+          </a>
+        </div>
+      )}
+    </section>
+  );
+};
 
 const TeamPanel = ({ lang }: { lang: Lang }) => (
   <section className="flex flex-col gap-3.5 bg-foreground p-6 text-white">
@@ -400,6 +527,8 @@ const TeamMemberRow = ({ member, lang }: TeamMemberRowProps) => (
 const ContactPage = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
   useDocumentMeta('contact', lang);
+  const contact = useContact();
+  const hours = useStudioHours();
   const [form, setForm] = useState<ContactFormData>(INITIAL_FORM);
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
@@ -462,9 +591,9 @@ const ContactPage = () => {
           <span className="font-mono text-label tracking-meta text-foreground">{common.langToggleLabel[lang]}</span>
         </button>
       </div>
-      <ContactRail lang={lang} />
+      <ContactRail lang={lang} contact={contact} hours={hours} />
       <ContactFormPanel lang={lang} form={form} sent={sent} sending={sending} sendError={sendError} setForm={setForm} setSent={setSent} submit={submit} goto={goto} />
-      <ContactRightColumn lang={lang} />
+      <ContactRightColumn lang={lang} contact={contact} />
     </div>
   );
 };
