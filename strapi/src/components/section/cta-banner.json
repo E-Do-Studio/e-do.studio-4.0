@@ -1,7 +1,0 @@
-{
-  "collectionName": "components_section_cta_banner",
-  "info": { "displayName": "Section CTA Banner", "icon": "layout" },
-  "attributes": {
-    "data": { "type": "json" }
-  }
-}

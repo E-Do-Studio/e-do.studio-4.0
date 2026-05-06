@@ -1,7 +1,0 @@
-{
-  "collectionName": "components_section_before_after",
-  "info": { "displayName": "Section Before After", "icon": "layout" },
-  "attributes": {
-    "data": { "type": "json" }
-  }
-}
