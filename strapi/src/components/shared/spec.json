@@ -1,25 +1,30 @@
 {
   "collectionName": "components_shared_specs",
   "info": {
-    "displayName": "Spec",
+    "displayName": "Caractéristique technique",
+    "description": "Paire label / valeur pour décrire une spec technique d'un plateau.",
     "icon": "list"
   },
   "attributes": {
     "label": {
       "type": "string",
+      "maxLength": 80,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Intitulé (ex: « Surface », « Caméra »)."
     },
     "value": {
       "type": "string",
+      "maxLength": 200,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Valeur correspondante (ex: « 240 m² · Cyclo 2 faces 32 m² »)."
     }
   }
 }

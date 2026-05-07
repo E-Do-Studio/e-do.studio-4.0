@@ -4,7 +4,9 @@
   "info": {
     "singularName": "cyclorama",
     "pluralName": "cycloramas",
-    "displayName": "Cyclorama"
+    "displayName": "Plateau · Cyclorama",
+    "description": "Page descriptive du Cyclorama (single type — une seule entrée par locale).",
+    "icon": "earth"
   },
   "options": {
     "draftAndPublish": true
@@ -12,85 +14,108 @@
   "attributes": {
     "title": {
       "type": "string",
+      "minLength": 2,
+      "maxLength": 80,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Titre principal du plateau (ex: « Cyclorama »)."
     },
     "subtitle": {
       "type": "string",
+      "maxLength": 120,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Sous-titre / accroche courte affiché sous le titre."
     },
     "description": {
       "type": "text",
+      "maxLength": 600,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Description du plateau (≤ 600 caractères)."
     },
     "image": {
       "type": "media",
-      "multiple": false
+      "multiple": false,
+      "allowedTypes": ["images"],
+      "description": "Image principale du plateau."
     },
     "specs": {
       "type": "component",
       "component": "shared.spec",
-      "repeatable": true
+      "repeatable": true,
+      "description": "Caractéristiques techniques (label / valeur)."
     },
     "amenities": {
       "type": "component",
       "component": "shared.localized-item",
-      "repeatable": true
+      "repeatable": true,
+      "description": "Cas d'usage / équipements présentés sous forme de liste."
     },
     "pricing": {
       "type": "string",
+      "maxLength": 200,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "ATTENTION : actuellement parsé en regex côté front (`split(' · ')`). À refactorer en composant `pricing-row` (Phase 3). Format actuel : « 5h / € 650 · 10h / € 880 »."
     },
     "comfortText": {
       "type": "text",
+      "maxLength": 600,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Section « Confort » (à fusionner en Phase 3 avec les autres sections texte)."
     },
     "complementaryServices": {
       "type": "text",
+      "maxLength": 600,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Services complémentaires proposés sur le plateau."
     },
     "equipmentRental": {
       "type": "text",
+      "maxLength": 600,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Liste / description du matériel disponible en location."
     },
     "pricingDescription": {
       "type": "text",
+      "maxLength": 600,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Note tarifaire (ex: « Remise en blanc 110 € · Électricité 1,40 €/kWh »)."
     },
     "gallery": {
       "type": "media",
-      "multiple": true
+      "multiple": true,
+      "allowedTypes": ["images"],
+      "description": "Galerie d'images du plateau (15 max recommandé)."
     }
   },
   "pluginOptions": {

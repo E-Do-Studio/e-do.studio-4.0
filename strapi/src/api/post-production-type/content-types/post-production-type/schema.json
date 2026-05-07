@@ -4,7 +4,9 @@
   "info": {
     "singularName": "post-production-type",
     "pluralName": "post-production-types",
-    "displayName": "Post Production Type"
+    "displayName": "Post-prod · Type",
+    "description": "Prestation de post-production (retouche, ghost, détourage, etc.). Ordonnable par drag & drop.",
+    "icon": "scissors"
   },
   "options": {
     "draftAndPublish": true
@@ -12,47 +14,62 @@
   "attributes": {
     "title": {
       "type": "string",
+      "minLength": 2,
+      "maxLength": 80,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Nom de la prestation (ex: « On model », « Ghost »)."
     },
     "slug": {
       "type": "uid",
-      "required": true
+      "targetField": "title",
+      "required": true,
+      "description": "Identifiant URL (auto-généré)."
     },
     "description": {
       "type": "text",
+      "maxLength": 600,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Description de la prestation (accroche éditoriale)."
     },
     "price": {
       "type": "string",
+      "maxLength": 100,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "ATTENTION : actuellement parsé en regex côté front (`parsePriceText`). À refactorer en `pricing-row` (Phase 3). Format : « À partir de 7,90€ », « Sur devis »."
     },
     "includes": {
       "type": "component",
       "component": "shared.localized-item",
-      "repeatable": true
+      "repeatable": true,
+      "description": "Ce qui est inclus dans la prestation (liste à puces)."
     },
     "image": {
       "type": "media",
-      "multiple": false
+      "multiple": false,
+      "allowedTypes": ["images"],
+      "description": "Image illustrative de la prestation."
     },
     "gallery": {
       "type": "media",
-      "multiple": true
+      "multiple": true,
+      "allowedTypes": ["images"],
+      "description": "Galerie d'exemples avant/après."
     },
     "rank": {
-      "type": "integer"
+      "type": "integer",
+      "configurable": false
     }
   },
   "pluginOptions": {

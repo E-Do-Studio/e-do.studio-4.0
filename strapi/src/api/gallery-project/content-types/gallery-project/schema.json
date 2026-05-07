@@ -4,7 +4,9 @@
   "info": {
     "singularName": "gallery-project",
     "pluralName": "gallery-projects",
-    "displayName": "Gallery Project"
+    "displayName": "Galerie · Projet",
+    "description": "Projet shooting affiché dans la galerie publique du site.",
+    "icon": "picture"
   },
   "options": {
     "draftAndPublish": true
@@ -18,33 +20,58 @@
     "title": {
       "type": "string",
       "required": true,
+      "minLength": 2,
+      "maxLength": 120,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Titre du projet (ex: « Campagne SS26 — Saar Paris »)."
     },
-    "slug": { "type": "uid", "targetField": "title", "required": true },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true,
+      "description": "URL du projet (auto-généré). Ne plus modifier après publication."
+    },
     "stage": {
       "type": "string",
+      "maxLength": 60,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Plateau utilisé. À refactorer en relation vers `machine` (Phase 3) — actuellement saisi en texte libre, valeurs attendues : `live`, `eclipse`, `horizontal`, `vertical`, `cyclorama`."
     },
-    "year": { "type": "integer" },
-    "rank": { "type": "integer" },
+    "year": {
+      "type": "integer",
+      "min": 2000,
+      "max": 2100,
+      "description": "Année du projet (4 chiffres). KNOWN ISSUE — l'admin Strapi affiche cette valeur formatée FR (« 2 025 »). À migrer en string regex `^\\d{4}$` via `scripts/migrate-year-to-string.mjs` (Phase 2 manuelle avec backup DB)."
+    },
+    "rank": {
+      "type": "integer",
+      "configurable": false
+    },
     "category": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "api::gallery-category.gallery-category"
+      "target": "api::gallery-category.gallery-category",
+      "description": "Catégorie principale du projet."
     },
     "brand": {
       "type": "relation",
       "relation": "manyToOne",
-      "target": "api::gallery-brand.gallery-brand"
+      "target": "api::gallery-brand.gallery-brand",
+      "description": "Marque cliente du projet."
     },
-    "images": { "type": "media", "multiple": true, "allowedTypes": ["images"] }
+    "images": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": ["images"],
+      "description": "Galerie d'images du projet (15 max recommandé). L'image 1 est utilisée comme couverture par défaut."
+    }
   }
 }

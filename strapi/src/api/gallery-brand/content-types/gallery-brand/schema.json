@@ -4,7 +4,9 @@
   "info": {
     "singularName": "gallery-brand",
     "pluralName": "gallery-brands",
-    "displayName": "Gallery Brand"
+    "displayName": "Galerie · Marque",
+    "description": "Marque cliente affichée dans la galerie et le marquee de la home.",
+    "icon": "tag"
   },
   "options": {
     "draftAndPublish": true
@@ -18,18 +20,29 @@
     "name": {
       "type": "string",
       "required": true,
+      "minLength": 1,
+      "maxLength": 80,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Nom de la marque tel qu'affiché côté site. Localisé uniquement si la marque utilise un nom différent en EN."
     },
-    "url": { "type": "string" },
+    "url": {
+      "type": "string",
+      "regex": "^https?://.+",
+      "description": "Site web de la marque (https:// recommandé)."
+    },
     "logo": {
       "type": "media",
       "multiple": false,
-      "allowedTypes": ["images"]
+      "allowedTypes": ["images"],
+      "description": "Logo de la marque (SVG ou PNG transparent recommandé)."
     },
-    "rank": { "type": "integer" }
+    "rank": {
+      "type": "integer",
+      "configurable": false
+    }
   }
 }

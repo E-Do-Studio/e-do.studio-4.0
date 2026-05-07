@@ -12,6 +12,7 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Plugin =>
   },
   upload: {
     config: {
+      sizeLimit: env.int('UPLOAD_SIZE_LIMIT_BYTES', 50 * 1024 * 1024),
       provider: '@strapi/provider-upload-aws-s3',
       providerOptions: {
         baseUrl: env('CF_PUBLIC_URL'),
