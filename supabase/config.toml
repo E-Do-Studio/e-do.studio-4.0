@@ -5,3 +5,17 @@ major_version = 15
 [api]
 enabled = true
 port = 54321
+
+# Edge functions invoked from the public booking form / unauthenticated
+# callers. They self-validate via service-role + booking ID, so JWT
+# verification at the gateway must stay off — otherwise the frontend's
+# anonymous fetches 401 silently and no emails are sent.
+
+[functions.send-email]
+verify_jwt = false
+
+[functions.ical]
+verify_jwt = false
+
+[functions.calendar-sync]
+verify_jwt = false
