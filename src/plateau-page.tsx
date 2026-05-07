@@ -67,8 +67,9 @@ const PlateauVisual = ({ kind }: { kind: string }) => {
 const PlateauPage = ({ slug }: { slug: string }) => {
   const { lang, setLang, openMenu, goto } = usePageContext();
   const metaKey = slug === 'cyclorama' ? 'cyclorama' : `plateau-${slug}`;
-  useDocumentMeta(metaKey, lang);
   const { data: plateaux, loading } = usePlateaux();
+  const seoOverride = plateaux?.[slug]?.seo?.[lang];
+  useDocumentMeta(metaKey, lang, seoOverride);
   if (loading || !plateaux) return <div className="flex items-center justify-center h-full bg-white"><span className="text-muted-foreground text-caption animate-pulse">{common.loading[lang]}</span></div>;
   const p = plateaux[slug] || plateaux.cyclorama;
   const order = ['live','eclipse','horizontal','vertical','cyclorama'];

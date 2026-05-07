@@ -130,18 +130,43 @@ const META: Record<string, Record<Lang, PageMeta>> = {
   },
 };
 
-export function useDocumentMeta(page: string, lang: Lang) {
+export interface SeoOverride {
+  title?: string;
+  description?: string;
+  imageUrl?: string;
+  noIndex?: boolean;
+}
+
+/**
+ * Priority for each meta field (first non-empty wins):
+ *   1. Strapi `override` (per-page seo component, e.g. machine.seo)
+ *   2. Hardcoded META[page] (per-route defaults)
+ *   3. site-setting.defaultSeoTitle / defaultSeoDescription / defaultSeoImage
+ *   4. META.home (final fallback)
+ */
+export function useDocumentMeta(page: string, lang: Lang, override?: SeoOverride) {
   const { data: defaults } = useSiteDefaults();
-  const seoTitle = defaults?.seoTitle?.[lang] || '';
-  const seoDescription = defaults?.seoDescription?.[lang] || '';
-  const seoImageUrl = defaults?.seoImageUrl;
+  const defaultTitle = defaults?.seoTitle?.[lang] || '';
+  const defaultDescription = defaults?.seoDescription?.[lang] || '';
+  const defaultImageUrl = defaults?.seoImageUrl;
+  const overrideTitle = override?.title;
+  const overrideDescription = override?.description;
+  const overrideImage = override?.imageUrl;
+  const overrideNoIndex = override?.noIndex;
 
   useEffect(() => {
     const pageMeta = META[page]?.[lang];
-    const fallbackTitle = seoTitle || META.home[lang].title;
-    const fallbackDescription = seoDescription || META.home[lang].description;
-    const title = pageMeta?.title ?? fallbackTitle;
-    const description = pageMeta?.description ?? fallbackDescription;
+    const title =
+      overrideTitle ||
+      pageMeta?.title ||
+      defaultTitle ||
+      META.home[lang].title;
+    const description =
+      overrideDescription ||
+      pageMeta?.description ||
+      defaultDescription ||
+      META.home[lang].description;
+    const imageUrl = overrideImage || defaultImageUrl;
 
     document.title = title;
 
@@ -154,13 +179,26 @@ export function useDocumentMeta(page: string, lang: Lang) {
     const ogDesc = document.querySelector('meta[property="og:description"]');
     if (ogDesc) ogDesc.setAttribute('content', description);
 
-    if (seoImageUrl) {
+    if (imageUrl) {
       const ogImage = document.querySelector('meta[property="og:image"]');
-      if (ogImage) ogImage.setAttribute('content', seoImageUrl);
+      if (ogImage) ogImage.setAttribute('content', imageUrl);
       const twitterImage = document.querySelector('meta[name="twitter:image"]');
-      if (twitterImage) twitterImage.setAttribute('content', seoImageUrl);
+      if (twitterImage) twitterImage.setAttribute('content', imageUrl);
+    }
+
+    // Toggle <meta name="robots"> when the Strapi seo override asks for noIndex.
+    let robots = document.querySelector('meta[name="robots"]');
+    if (overrideNoIndex) {
+      if (!robots) {
+        robots = document.createElement('meta');
+        robots.setAttribute('name', 'robots');
+        document.head.appendChild(robots);
+      }
+      robots.setAttribute('content', 'noindex, nofollow');
+    } else if (robots && robots.getAttribute('content')?.includes('noindex')) {
+      robots.setAttribute('content', 'index, follow');
     }
 
     document.documentElement.lang = lang === 'en' ? 'en' : 'fr';
-  }, [page, lang, seoTitle, seoDescription, seoImageUrl]);
+  }, [page, lang, overrideTitle, overrideDescription, overrideImage, overrideNoIndex, defaultTitle, defaultDescription, defaultImageUrl]);
 }
