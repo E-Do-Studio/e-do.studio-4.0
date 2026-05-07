@@ -51,10 +51,11 @@
       "description": "Plateau utilisé pour ce projet. Liste fermée pour éviter les valeurs invalides (« Cyclo », « cyclorama  » avec espace, etc.). Remplace progressivement `stage`."
     },
     "year": {
-      "type": "integer",
-      "min": 2000,
-      "max": 2100,
-      "description": "Année du projet (4 chiffres). KNOWN ISSUE — l'admin Strapi affiche cette valeur formatée FR (« 2 025 »). À migrer en string regex `^\\d{4}$` via `scripts/migrate-year-to-string.mjs` (Phase 2 manuelle avec backup DB)."
+      "type": "string",
+      "regex": "^\\d{4}$",
+      "minLength": 4,
+      "maxLength": 4,
+      "description": "Année du projet (4 chiffres, ex: « 2026 »). Convertie depuis integer par la migration `2026.05.07T10.10.00.gallery-project-year-int-to-varchar.js` qui tourne au boot."
     },
     "rank": {
       "type": "integer",
