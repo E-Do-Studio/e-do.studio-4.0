@@ -73,7 +73,7 @@
           "localized": true
         }
       },
-      "description": "Texte d'accroche du call-to-action (optionnel). Naming snake_case à harmoniser en Phase 3."
+      "description": "DEPRECATED — utiliser `ctaText` (camelCase). Ce champ sera supprimé en Phase 5 après migration des données."
     },
     "cta_label": {
       "type": "string",
@@ -83,12 +83,37 @@
           "localized": true
         }
       },
-      "description": "Libellé du bouton CTA (ex: « Réserver », « En savoir plus »)."
+      "description": "DEPRECATED — utiliser `ctaLabel`."
     },
     "cta_url": {
       "type": "string",
       "regex": "^(https?://|/).+",
-      "description": "URL cible du CTA. Doit commencer par http(s):// ou /."
+      "description": "DEPRECATED — utiliser `ctaUrl`."
+    },
+    "ctaText": {
+      "type": "string",
+      "maxLength": 200,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "description": "Texte d'accroche du call-to-action (optionnel). Remplace `cta_text` (snake_case)."
+    },
+    "ctaLabel": {
+      "type": "string",
+      "maxLength": 60,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "description": "Libellé du bouton CTA (ex: « Réserver », « En savoir plus »). Remplace `cta_label`."
+    },
+    "ctaUrl": {
+      "type": "string",
+      "regex": "^(https?://|/).+",
+      "description": "URL cible du CTA. Doit commencer par http(s):// ou /. Remplace `cta_url`."
     },
     "seo_title": {
       "type": "string",
@@ -98,7 +123,7 @@
           "localized": true
         }
       },
-      "description": "Titre SEO (≤ 60 caractères). Si vide, le titre principal est utilisé."
+      "description": "DEPRECATED — utiliser le composant `seo` (shared.seo-meta) ou les champs camelCase."
     },
     "seo_description": {
       "type": "text",
@@ -108,13 +133,13 @@
           "localized": true
         }
       },
-      "description": "Meta-description SEO (≤ 160 caractères). Si vide, l'excerpt est utilisé."
+      "description": "DEPRECATED — utiliser le composant `seo`."
     },
     "seo_image": {
       "type": "media",
       "multiple": false,
       "allowedTypes": ["images"],
-      "description": "Image pour les partages sociaux (1200×630). Si vide, la coverImage est utilisée."
+      "description": "DEPRECATED — utiliser le composant `seo`."
     },
     "seo": {
       "type": "component",
