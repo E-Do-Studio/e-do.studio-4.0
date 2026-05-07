@@ -1,0 +1,40 @@
+{
+  "collectionName": "components_shared_closure_periods",
+  "info": {
+    "displayName": "Fermeture exceptionnelle",
+    "description": "Période de fermeture du studio (vacances, jours fériés étendus, etc.). Affichée en encart sur la page contact.",
+    "icon": "calendar"
+  },
+  "attributes": {
+    "label": {
+      "type": "string",
+      "maxLength": 120,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "description": "Libellé de la fermeture (ex: « Fêtes de fin d'année »)."
+    },
+    "startsAt": {
+      "type": "date",
+      "required": true,
+      "description": "Premier jour de fermeture (inclus)."
+    },
+    "endsAt": {
+      "type": "date",
+      "required": true,
+      "description": "Dernier jour de fermeture (inclus)."
+    },
+    "note": {
+      "type": "text",
+      "maxLength": 240,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "description": "Précision facultative (ex: « Reprise sur rendez-vous le 03/01 »)."
+    }
+  }
+}

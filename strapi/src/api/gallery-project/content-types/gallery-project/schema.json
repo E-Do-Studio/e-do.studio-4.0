@@ -72,6 +72,12 @@
       "multiple": true,
       "allowedTypes": ["images"],
       "description": "Galerie d'images du projet (15 max recommandé). L'image 1 est utilisée comme couverture par défaut."
+    },
+    "seo": {
+      "type": "component",
+      "component": "shared.seo-meta",
+      "repeatable": false,
+      "description": "Métadonnées SEO de la fiche projet (par locale)."
     }
   }
 }

@@ -122,6 +122,12 @@
       "multiple": true,
       "allowedTypes": ["images"],
       "description": "Galerie d'images du plateau (15 max recommandé)."
+    },
+    "seo": {
+      "type": "component",
+      "component": "shared.seo-meta",
+      "repeatable": false,
+      "description": "Métadonnées SEO de la page Cyclorama. Si vides, fallback sur le titre/description/image principale."
     }
   },
   "pluginOptions": {
