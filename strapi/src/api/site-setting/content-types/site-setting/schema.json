@@ -77,6 +77,12 @@
       "maxLength": 200,
       "description": "DEPRECATED — calculable depuis `street`, `city`, `postalCode`, `country`. À supprimer en Phase 3."
     },
+    "address": {
+      "type": "component",
+      "component": "shared.postal-address",
+      "repeatable": false,
+      "description": "Adresse postale structurée. Remplace progressivement `street`/`city`/`postalCode`/`country`/`fullAddress`. Tant que vide, le front continue de lire les champs plats."
+    },
     "googleMapsUrl": {
       "type": "string",
       "regex": "^https://(www\\.)?google\\.[a-z.]+/maps.+",

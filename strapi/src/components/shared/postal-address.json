@@ -1,0 +1,52 @@
+{
+  "collectionName": "components_shared_postal_addresses",
+  "info": {
+    "displayName": "Adresse postale",
+    "description": "Adresse postale structurée. Remplace les champs plats `street`/`city`/`postalCode`/`country` de site-setting (l'ancien champ `fullAddress` devient calculable à la volée).",
+    "icon": "mapPin"
+  },
+  "attributes": {
+    "street": {
+      "type": "string",
+      "required": true,
+      "maxLength": 120,
+      "description": "Numéro et nom de rue (ex: « 69 boulevard Victor Hugo »)."
+    },
+    "complement": {
+      "type": "string",
+      "maxLength": 120,
+      "description": "Complément d'adresse facultatif (ex: « Bât. 6.7, 2e étage »)."
+    },
+    "city": {
+      "type": "string",
+      "required": true,
+      "maxLength": 60,
+      "description": "Ville."
+    },
+    "postalCode": {
+      "type": "string",
+      "required": true,
+      "regex": "^\\d{4,10}$",
+      "maxLength": 10,
+      "description": "Code postal (4 à 10 chiffres)."
+    },
+    "country": {
+      "type": "enumeration",
+      "enum": ["FR", "BE", "CH", "LU", "MC", "DE", "ES", "IT", "GB", "US", "OTHER"],
+      "default": "FR",
+      "description": "Pays au format ISO 3166-1 alpha-2 (FR, BE, CH…). « OTHER » pour les pays non listés."
+    },
+    "latitude": {
+      "type": "float",
+      "min": -90,
+      "max": 90,
+      "description": "Latitude GPS facultative (utilisée pour les liens Maps)."
+    },
+    "longitude": {
+      "type": "float",
+      "min": -180,
+      "max": 180,
+      "description": "Longitude GPS facultative."
+    }
+  }
+}
