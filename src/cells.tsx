@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import type { FormEvent } from 'react';
 import { CellLabel, CellTitle, IconArrowRight, IconPlay, IconMenu, Wordmark, LangSwitch, cn } from './ui';
-import { useMachines, useBrands } from './lib/use-strapi';
+import { useMachines, useBrands, useContact } from './lib/use-strapi';
 import type { Lang, MachineInfo } from './types';
 import { common, cells as cellsMsg, assistant as assistantMsg } from './i18n/messages';
 
@@ -236,32 +236,43 @@ interface ContactCellProps {
   lang: Lang;
 }
 
-const ContactCell = ({ lang }: ContactCellProps) => (
-  <div className="flex h-full flex-col bg-white">
-    <div className="flex flex-1 flex-col justify-between p-4">
-      <CellLabel>Contact</CellLabel>
-      <div>
-        <a href="tel:+33144041149" className="block py-1.5 text-caption text-muted-foreground no-underline">+33 1 44 04 11 49</a>
-        <a href="mailto:contact@e-do.studio" className="block py-1.5 text-caption text-muted-foreground no-underline">contact@e-do.studio</a>
-        <span className="block py-1.5 text-caption text-muted-foreground">69 bd Victor Hugo · Bât. 6.7<br />93400 Saint-Ouen</span>
+const ContactCell = ({ lang }: ContactCellProps) => {
+  const { data: contact } = useContact();
+  return (
+    <div className="flex h-full flex-col bg-white">
+      <div className="flex flex-1 flex-col justify-between p-4">
+        <CellLabel>Contact</CellLabel>
+        <div>
+          {contact?.phone && (
+            <a href={contact.phoneHref || `tel:${contact.phone.replace(/\s/g, '')}`} className="block py-1.5 text-caption text-muted-foreground no-underline">{contact.phone}</a>
+          )}
+          {contact?.email && (
+            <a href={contact.emailHref} className="block py-1.5 text-caption text-muted-foreground no-underline">{contact.email}</a>
+          )}
+          {contact?.address?.street && (
+            <span className="block py-1.5 text-caption text-muted-foreground">
+              {contact.address.street}<br />{contact.address.zip}
+            </span>
+          )}
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-px border-t border-foreground bg-black">
+        {[
+          { label: common.contactUs[lang], href: '/contact' },
+          { label: common.legal[lang], href: '/legal' },
+        ].map((link, i) => (
+          <a
+            key={i}
+            href={link.href}
+            className="group bg-white px-3 py-3 text-left text-caption text-muted-foreground transition-colors duration-150 hover:bg-muted"
+          >
+            {link.label}
+          </a>
+        ))}
       </div>
     </div>
-    <div className="grid grid-cols-2 gap-px border-t border-foreground bg-black">
-      {[
-        { label: common.contactUs[lang], href: '/contact' },
-        { label: common.legal[lang], href: '/legal' },
-      ].map((link, i) => (
-        <a
-          key={i}
-          href={link.href}
-          className="group bg-white px-3 py-3 text-left text-caption text-muted-foreground transition-colors duration-150 hover:bg-muted"
-        >
-          {link.label}
-        </a>
-      ))}
-    </div>
-  </div>
-);
+  );
+};
 
 const chatWelcome: Record<string, string> = {
   fr: "Bonjour ! Je peux vous renseigner sur nos services, le cyclorama, la post-production ou un devis.",

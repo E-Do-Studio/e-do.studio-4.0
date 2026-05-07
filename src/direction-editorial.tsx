@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { CellLabel, IconArrowRight, IconPlay, PageHeader, SocialIcon, VideoLoop, cn } from './ui';
 import { MarqueeCell } from './cells';
 import { AssistantChat } from './assistant-chat';
-import { useSocialLinks } from './lib/use-strapi';
+import { useSocialLinks, useGalleryCategories, useMachines, useContact } from './lib/use-strapi';
 import { useDocumentMeta } from './lib/use-document-meta';
 import type { Lang } from './types';
 import { usePageContext } from './router';
@@ -70,21 +70,18 @@ const DirectionA = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
   useDocumentMeta('home', lang);
   const { data: socialLinks } = useSocialLinks();
+  const { data: galleryCategories } = useGalleryCategories();
+  const { data: machines } = useMachines();
+  const { data: contact } = useContact();
   const [ecomMode, setEcomMode] = useState<'type' | 'machine'>('type');
-  const categories = [
-    { k: 'pap', fr: 'Prêt-à-porter', en: 'Ready-to-wear' },
-    { k: 'accessoires', fr: 'Accessoires', en: 'Accessories' },
-    { k: 'eyewear', fr: 'Eyewear', en: 'Eyewear' },
-    { k: 'bijoux', fr: 'Bijoux', en: 'Jewelry' },
-    { k: 'cosmetique', fr: 'Cosmétique', en: 'Cosmetics' },
-    { k: 'food', fr: 'Food & Spiritueux', en: 'Food & Spirits' },
-  ];
-  const ecomMachines: MachineRowItem[] = [
-    { slug: 'live', fr: { t: 'Live', sub: 'Shooting porté' }, en: { t: 'Live', sub: 'On-model shooting' } },
-    { slug: 'eclipse', fr: { t: 'Eclipse', sub: 'Chaussures & accessoires' }, en: { t: 'Eclipse', sub: 'Shoes & accessories' } },
-    { slug: 'horizontal', fr: { t: 'Horizontal', sub: 'Packshots à plat' }, en: { t: 'Horizontal', sub: 'Flat packshots' } },
-    { slug: 'vertical', fr: { t: 'Vertical', sub: 'Mannequin ghost' }, en: { t: 'Vertical', sub: 'Ghost mannequin' } },
-  ];
+  const categories = galleryCategories ?? [];
+  const ecomMachines: MachineRowItem[] = (machines ?? [])
+    .filter((m) => m.slug !== 'cyclorama')
+    .map((m) => ({
+      slug: m.slug,
+      fr: { t: m.fr.t, sub: m.fr.sub },
+      en: { t: m.en.t, sub: m.en.sub },
+    }));
 
   return (
     /* Mobile: 2-col grid, vertical scroll. Desktop (md+): 12-col bento, fixed viewport */
@@ -100,7 +97,9 @@ const DirectionA = () => {
         onLogoClick={() => goto('home')}
         onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
         actions={[
-          { id: 'phone', label: '01 44 04 11 49', href: 'tel:+33144041149', showArrow: false, className: 'hidden sm:flex' },
+          ...(contact?.phone
+            ? [{ id: 'phone', label: contact.phone.replace(/^\+33\s?/, '0'), href: contact.phoneHref || `tel:${contact.phone.replace(/\s/g, '')}`, showArrow: false, className: 'hidden sm:flex' }]
+            : []),
           { id: 'contact', label: common.contactUs[lang], onClick: () => goto('contact'), className: 'hidden md:flex' },
           { id: 'legal', label: 'Legal', onClick: () => goto('legal'), showArrow: false, className: 'hidden md:flex' },
           { id: 'etouch', label: 'Etouch', href: 'https://etouch.e-do.studio/', target: '_blank', rel: 'noopener noreferrer', variant: 'dark', showArrow: false, className: 'hidden sm:flex' },

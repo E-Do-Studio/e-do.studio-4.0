@@ -398,254 +398,95 @@ const MACHINE_LABELS: Record<string, { fr: string; en: string }> = {
   live: { fr: 'Diffusion live', en: 'Live broadcast' },
 };
 
-// ─── Fallback plateau data (used when Strapi content types unavailable) ─────
-
-const FALLBACK_PLATEAUX: Record<string, PlateauSpec> = {
-  cyclorama: {
-    num: '01', name: 'Cyclorama', slug: 'cyclorama',
-    tagline: { fr: 'Production libre', en: 'Free production' },
-    desc: {
-      fr: "Cyclo 2 faces de 30 m² pour photo et vidéo sur fond blanc infini. À la journée ou à la semaine, en production libre ou avec notre équipe.",
-      en: "30 m² 2-sided cyclorama for photo and video on an infinite white background. Daily or weekly, as a free-production rental or crewed.",
-    },
-    specs: [
-      { k: { fr: 'Surface', en: 'Surface' }, v: { fr: '240 m² · Cyclo 2 faces 32 m²', en: '240 m² · 2-sided cyclo 32 m²' } },
-      { k: { fr: 'Dimensions', en: 'Dimensions' }, v: { fr: '6,3m L x 5,2m l x 5m H', en: '6.3m L × 5.2m W × 5m H' } },
-      { k: { fr: 'Éclairage naturel', en: 'Natural light' }, v: { fr: 'Skydomes occultable', en: 'Blackout skydomes' } },
-      { k: { fr: 'Accès', en: 'Access' }, v: { fr: 'Quai de livraison 3,5m L × 4,5m H', en: 'Loading dock 3.5m L × 4.5m H' } },
-      { k: { fr: 'Extérieur', en: 'Exterior' }, v: { fr: 'Accès direct, parking sur place', en: 'Direct access, on-site parking' } },
-      { k: { fr: 'Électricité', en: 'Electricity' }, v: { fr: '1 prise Marechal 63A triphasée · 15 prises 16A', en: '1 Marechal 63A 3-phase · 15 × 16A outlets' } },
-      { k: { fr: 'Connectivité & son', en: 'Connectivity & sound' }, v: { fr: 'Wi-Fi très haut débit · Sound system intégré', en: 'High-speed Wi-Fi · Integrated sound system' } },
-      { k: { fr: 'Maquillage', en: 'Make-up' }, v: { fr: '2 postes maquillage équipés', en: '2 equipped make-up stations' } },
-      { k: { fr: 'Habillage', en: 'Dressing' }, v: { fr: "2 cabines d'essayage", en: '2 fitting rooms' } },
-      { k: { fr: 'Cuisine', en: 'Kitchen' }, v: { fr: 'Entièrement équipée', en: 'Fully equipped' } },
-    ],
-    uses: [
-      { fr: 'Campagne & éditorial', en: 'Campaign & editorial' },
-      { fr: 'Film publicitaire', en: 'Advertising film' },
-      { fr: 'Packshot & still life', en: 'Packshot & still life' },
-    ],
-    rates: [
-      { k: { fr: '5h', en: '5 hours' }, v: '€ 650' },
-      { k: { fr: '10h', en: '10 hours' }, v: '€ 880' },
-      { k: { fr: '10h éditorial', en: '10 hours editorial' }, v: { fr: 'Sur demande', en: 'On request' } },
-    ],
-    ratesNote: { fr: 'Remise en blanc 110 € · Électricité 1,40 €/kWh', en: 'Repaint 110 € · Electricity 1.40 €/kWh' },
-    visual: 'cyc',
-  },
-  horizontal: {
-    num: '02', name: 'Horizontal', slug: 'horizontal',
-    tagline: { fr: 'Packshots à plat', en: 'Flat packshots' },
-    desc: {
-      fr: "L'Horizontal est conçue pour les packshots à plat : flat lays précis et cohérents, adaptés aux vêtements, accessoires ou compositions produits.",
-      en: "The Horizontal is built for flat packshots — precise, consistent flat lays for apparel, accessories and product compositions.",
-    },
-    specs: [
-      { k: { fr: 'Caméra', en: 'Camera' }, v: { fr: 'Canon EOS R · 24–105 mm motorisé', en: 'Canon EOS R · 24–105 mm motorized' } },
-      { k: { fr: 'Pilotage', en: 'Control' }, v: { fr: 'iPad · application intuitive', en: 'iPad · intuitive app' } },
-      { k: { fr: 'Éclairage', en: 'Lighting' }, v: { fr: 'LED High-CRI continue', en: 'High-CRI LED continuous' } },
-      { k: { fr: 'Détourage automatique', en: 'Auto clipping' }, v: { fr: 'AutoAlpha™', en: 'AutoAlpha™' } },
-      { k: { fr: 'Formats', en: 'Formats' }, v: { fr: 'JPG · PNG · TIFF · RAW', en: 'JPG · PNG · TIFF · RAW' } },
-    ],
-    uses: [
-      { fr: 'Prêt-à-porter à plat', en: 'Flat-laid ready-to-wear' },
-      { fr: 'Compositions produits', en: 'Product compositions' },
-      { fr: 'Détourage automatique', en: 'Automatic clipping' },
-    ],
-    rates: [
-      { k: { fr: '1 heure', en: '1 hour' }, v: '€ 120' },
-      { k: { fr: 'Demi-journée', en: 'Half day' }, v: '€ 410' },
-      { k: { fr: 'Journée', en: 'Full day' }, v: '€ 740' },
-    ],
-    visual: 'horizontal',
-  },
-  vertical: {
-    num: '03', name: 'Vertical', slug: 'vertical',
-    tagline: { fr: 'Mannequin ghost', en: 'Ghost mannequin' },
-    desc: {
-      fr: "La Vertical est pensée pour les packshots textiles, particulièrement efficace pour le ghost, le piqué et les prises de vue e-commerce standardisées.",
-      en: "The Vertical is built for textile packshots — particularly effective for ghost, hanging and standardized e-commerce shots.",
-    },
-    specs: [
-      { k: { fr: 'Caméra', en: 'Camera' }, v: { fr: 'Canon EOS R · 70–200 mm motorisé', en: 'Canon EOS R · 70–200 mm motorized' } },
-      { k: { fr: 'Pilotage', en: 'Control' }, v: { fr: 'iPad · application intuitive', en: 'iPad · intuitive app' } },
-      { k: { fr: 'Éclairage', en: 'Lighting' }, v: { fr: 'LED High-CRI continue', en: 'High-CRI LED continuous' } },
-      { k: { fr: 'Détourage automatique', en: 'Auto clipping' }, v: { fr: 'AutoAlpha™', en: 'AutoAlpha™' } },
-      { k: { fr: 'Formats', en: 'Formats' }, v: { fr: 'JPG · PNG · TIFF · RAW', en: 'JPG · PNG · TIFF · RAW' } },
-    ],
-    uses: [
-      { fr: 'Ghost', en: 'Ghost' },
-      { fr: 'Piqué', en: 'Piqué' },
-      { fr: 'Détourage automatique', en: 'Automatic clipping' },
-    ],
-    rates: [
-      { k: { fr: '1 heure', en: '1 hour' }, v: '€ 120' },
-      { k: { fr: 'Demi-journée', en: 'Half day' }, v: '€ 410' },
-      { k: { fr: 'Journée', en: 'Full day' }, v: '€ 740' },
-    ],
-    visual: 'vertical',
-  },
-  eclipse: {
-    num: '04', name: 'Eclipse', slug: 'eclipse',
-    tagline: { fr: 'Photo & vidéo 360°', en: 'Photo & video 360°' },
-    desc: {
-      fr: "L'Eclipse est conçue pour les produits petits et moyens : chaussures, sacs, accessoires, objets design ou beauté, avec plateau tournant intégré pour le 360°.",
-      en: "The Eclipse is built for small and medium products — shoes, bags, accessories, design and beauty — with an integrated turntable for 360° shots.",
-    },
-    specs: [
-      { k: { fr: 'Caméra', en: 'Camera' }, v: { fr: 'Canon EOS R · 24–105 mm motorisé', en: 'Canon EOS R · 24–105 mm motorized' } },
-      { k: { fr: 'Pilotage', en: 'Control' }, v: { fr: 'iPad · application intuitive', en: 'iPad · intuitive app' } },
-      { k: { fr: 'Motorisation', en: 'Motion' }, v: { fr: '4 axes · hauteur · inclinaison · zoom · rotation 360°', en: '4 axes · height · tilt · zoom · 360° rotation' } },
-      { k: { fr: 'Éclairage', en: 'Lighting' }, v: { fr: 'LED High-CRI continue', en: 'High-CRI LED continuous' } },
-      { k: { fr: 'Formats', en: 'Formats' }, v: { fr: 'JPG · PNG · TIFF · RAW · MP4 · MOV', en: 'JPG · PNG · TIFF · RAW · MP4 · MOV' } },
-    ],
-    uses: [
-      { fr: 'Photo & vidéo e-commerce', en: 'E-commerce photo & video' },
-      { fr: 'Still life', en: 'Still life' },
-      { fr: 'Accessoires, chaussures & beauté', en: 'Accessories, footwear & beauty' },
-    ],
-    rates: [
-      { k: { fr: '1 heure', en: '1 hour' }, v: '€ 160' },
-      { k: { fr: 'Demi-journée', en: 'Half day' }, v: '€ 560' },
-      { k: { fr: 'Journée', en: 'Full day' }, v: '€ 990' },
-    ],
-    visual: 'eclipse',
-  },
-  live: {
-    num: '05', name: 'Live', slug: 'live',
-    tagline: { fr: 'Shooting porté', en: 'On-model shooting' },
-    desc: {
-      fr: "La Live est notre solution dédiée au shooting sur modèle. Elle produit un contenu e-commerce cohérent, rapide et reproductible d'une session à l'autre.",
-      en: "The Live is our dedicated on-model shooting solution — consistent e-commerce content, fast to produce and easy to reproduce across sessions.",
-    },
-    specs: [
-      { k: { fr: 'Caméra', en: 'Camera' }, v: { fr: 'Canon EOS R · 24–105 mm motorisé', en: 'Canon EOS R · 24–105 mm motorized' } },
-      { k: { fr: 'Pilotage', en: 'Control' }, v: { fr: 'iPad · application intuitive', en: 'iPad · intuitive app' } },
-      { k: { fr: 'Motorisation', en: 'Motion' }, v: { fr: '3 axes · hauteur · inclinaison · zoom', en: '3 axes · height · tilt · zoom' } },
-      { k: { fr: 'Éclairage', en: 'Lighting' }, v: { fr: 'LED High-CRI continue', en: 'High-CRI LED continuous' } },
-      { k: { fr: 'Formats', en: 'Formats' }, v: { fr: 'JPG · PNG · TIFF · RAW · MP4 · MOV', en: 'JPG · PNG · TIFF · RAW · MP4 · MOV' } },
-    ],
-    uses: [
-      { fr: 'Shooting porté', en: 'On-model shooting' },
-      { fr: 'Photo & vidéo e-commerce', en: 'E-commerce photo & video' },
-      { fr: 'Lookbooks & linesheets', en: 'Lookbooks & linesheets' },
-    ],
-    rates: [
-      { k: { fr: '1 heure', en: '1 hour' }, v: '€ 185' },
-      { k: { fr: 'Demi-journée', en: 'Half day' }, v: '€ 620' },
-      { k: { fr: 'Journée', en: 'Full day' }, v: '€ 1 120' },
-    ],
-    visual: 'live',
-  },
-};
-
-const FALLBACK_MACHINES: MachineInfo[] = [
-  { slug: 'cyclorama', fr: { t: 'Cyclorama', sub: 'Production libre', label: '30 m² — Broncolor' }, en: { t: 'Cyclorama', sub: 'Free production', label: '30 m² — Broncolor' } },
-  { slug: 'horizontal', fr: { t: 'Horizontal', sub: 'Packshots à plat', label: 'Packshot horizontal' }, en: { t: 'Horizontal', sub: 'Flat packshots', label: 'Horizontal packshot' } },
-  { slug: 'vertical', fr: { t: 'Vertical', sub: 'Mannequin ghost', label: 'Pleine hauteur' }, en: { t: 'Vertical', sub: 'Ghost mannequin', label: 'Full height' } },
-  { slug: 'eclipse', fr: { t: 'Eclipse', sub: 'Chaussures et accessoires', label: 'Éclipse 360°' }, en: { t: 'Eclipse', sub: 'Shoes & accessories', label: 'Eclipse 360°' } },
-  { slug: 'live', fr: { t: 'Live', sub: 'Shooting porté', label: 'Diffusion live' }, en: { t: 'Live', sub: 'On-model shooting', label: 'Live broadcast' } },
-];
-
 // ─── Data fetchers ──────────────────────────────────────────────────────────
 
 export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
-  try {
-    const [machinesBI, cycloBI] = await Promise.all([
-      fetchStrapiBilingual<{ data: StrapiMachine[] }>('machines', { 'populate': 'specs,pricingRows,seo,seo.image', 'sort': 'rank:asc' }),
-      fetchStrapiBilingual<{ data: StrapiCyclorama }>('cyclorama', { 'populate': 'specs,amenities,pricingRows,seo,seo.image' }),
-    ]);
+  const [machinesBI, cycloBI] = await Promise.all([
+    fetchStrapiBilingual<{ data: StrapiMachine[] }>('machines', { 'populate': 'specs,pricingRows,seo,seo.image', 'sort': 'rank:asc' }),
+    fetchStrapiBilingual<{ data: StrapiCyclorama }>('cyclorama', { 'populate': 'specs,amenities,pricingRows,seo,seo.image' }),
+  ]);
 
-    const result: Record<string, PlateauSpec> = {};
+  const result: Record<string, PlateauSpec> = {};
 
-    const cycFr = cycloBI.fr.data;
-    const cycEn = cycloBI.en.data;
-    if (cycFr) {
-      const cycRows = cycFr.pricingRows ?? [];
-      const cycRowsEn = cycEn?.pricingRows ?? [];
-      const rates = cycRows.length > 0
-        ? pricingRowsToRates(cycRows, cycRowsEn)
-        : parsePricingToRates(cycFr.pricing, cycEn?.pricing ?? cycFr.pricing);
-      result.cyclorama = {
-        num: '01',
-        name: 'Cyclorama',
-        slug: 'cyclorama',
-        tagline: { fr: cycFr.subtitle, en: cycEn?.subtitle ?? cycFr.subtitle },
-        desc: { fr: cycFr.description, en: cycEn?.description ?? cycFr.description },
-        specs: mergeSpecs(cycFr.specs ?? [], cycEn?.specs ?? []),
-        uses: mergeLocalizedItems(cycFr.amenities ?? [], cycEn?.amenities ?? []),
-        rates,
-        ratesNote: cycFr.pricingDescription ? { fr: cycFr.pricingDescription, en: cycEn?.pricingDescription ?? cycFr.pricingDescription } : undefined,
-        visual: 'cyc',
-        seo: buildSeo(cycFr.seo, cycEn?.seo),
-      };
-    }
-
-    const machinesFr = machinesBI.fr.data;
-    const machinesEn = machinesBI.en.data;
-    machinesFr.forEach((mFr, i) => {
-      const mEn = machinesEn.find(e => e.slug === mFr.slug) ?? mFr;
-      const rows = mFr.pricingRows ?? [];
-      const rowsEn = mEn.pricingRows ?? [];
-      const rates = rows.length > 0
-        ? pricingRowsToRates(rows, rowsEn)
-        : parsePricingToRates(mFr.pricing, mEn.pricing);
-      result[mFr.slug] = {
-        num: String(i + 2).padStart(2, '0'),
-        name: mFr.title,
-        slug: mFr.slug,
-        tagline: { fr: mFr.subtitle, en: mEn.subtitle },
-        desc: { fr: mFr.description, en: mEn.description },
-        specs: mergeSpecs(mFr.specs ?? [], mEn.specs ?? []),
-        uses: MACHINE_USES[mFr.slug] ?? [],
-        rates,
-        visual: mFr.slug,
-        seo: buildSeo(mFr.seo, mEn.seo),
-      };
-    });
-
-    if (Object.keys(result).length > 0) return result;
-  } catch {
-    // Strapi machine/cyclorama content types not available yet
+  const cycFr = cycloBI.fr.data;
+  const cycEn = cycloBI.en.data;
+  if (cycFr) {
+    const cycRows = cycFr.pricingRows ?? [];
+    const cycRowsEn = cycEn?.pricingRows ?? [];
+    const rates = cycRows.length > 0
+      ? pricingRowsToRates(cycRows, cycRowsEn)
+      : parsePricingToRates(cycFr.pricing, cycEn?.pricing ?? cycFr.pricing);
+    result.cyclorama = {
+      num: '01',
+      name: 'Cyclorama',
+      slug: 'cyclorama',
+      tagline: { fr: cycFr.subtitle, en: cycEn?.subtitle ?? cycFr.subtitle },
+      desc: { fr: cycFr.description, en: cycEn?.description ?? cycFr.description },
+      specs: mergeSpecs(cycFr.specs ?? [], cycEn?.specs ?? []),
+      uses: mergeLocalizedItems(cycFr.amenities ?? [], cycEn?.amenities ?? []),
+      rates,
+      ratesNote: cycFr.pricingDescription ? { fr: cycFr.pricingDescription, en: cycEn?.pricingDescription ?? cycFr.pricingDescription } : undefined,
+      visual: 'cyc',
+      seo: buildSeo(cycFr.seo, cycEn?.seo),
+    };
   }
-  return FALLBACK_PLATEAUX;
+
+  const machinesFr = machinesBI.fr.data;
+  const machinesEn = machinesBI.en.data;
+  machinesFr.forEach((mFr, i) => {
+    const mEn = machinesEn.find(e => e.slug === mFr.slug) ?? mFr;
+    const rows = mFr.pricingRows ?? [];
+    const rowsEn = mEn.pricingRows ?? [];
+    const rates = rows.length > 0
+      ? pricingRowsToRates(rows, rowsEn)
+      : parsePricingToRates(mFr.pricing, mEn.pricing);
+    result[mFr.slug] = {
+      num: String(i + 2).padStart(2, '0'),
+      name: mFr.title,
+      slug: mFr.slug,
+      tagline: { fr: mFr.subtitle, en: mEn.subtitle },
+      desc: { fr: mFr.description, en: mEn.description },
+      specs: mergeSpecs(mFr.specs ?? [], mEn.specs ?? []),
+      uses: MACHINE_USES[mFr.slug] ?? [],
+      rates,
+      visual: mFr.slug,
+      seo: buildSeo(mFr.seo, mEn.seo),
+    };
+  });
+
+  return result;
 }
 
 export async function fetchMachines(): Promise<MachineInfo[]> {
-  try {
-    const [machinesBI, cycloBI] = await Promise.all([
-      fetchStrapiBilingual<{ data: StrapiMachine[] }>('machines', { 'sort': 'rank:asc' }),
-      fetchStrapiBilingual<{ data: StrapiCyclorama }>('cyclorama'),
-    ]);
+  const [machinesBI, cycloBI] = await Promise.all([
+    fetchStrapiBilingual<{ data: StrapiMachine[] }>('machines', { 'sort': 'rank:asc' }),
+    fetchStrapiBilingual<{ data: StrapiCyclorama }>('cyclorama'),
+  ]);
 
-    const cycFr = cycloBI.fr.data;
-    const cycEn = cycloBI.en.data;
-    const list: MachineInfo[] = [];
+  const cycFr = cycloBI.fr.data;
+  const cycEn = cycloBI.en.data;
+  const list: MachineInfo[] = [];
 
-    if (cycFr) {
-      list.push({
-        slug: 'cyclorama',
-        fr: { t: cycFr.title || 'Cyclorama', sub: cycFr.subtitle, label: MACHINE_LABELS.cyclorama?.fr },
-        en: { t: cycEn?.title || 'Cyclorama', sub: cycEn?.subtitle ?? cycFr.subtitle, label: MACHINE_LABELS.cyclorama?.en },
-      });
-    }
-
-    const machinesFr = machinesBI.fr.data;
-    const machinesEn = machinesBI.en.data;
-    for (const mFr of machinesFr) {
-      const mEn = machinesEn.find(e => e.slug === mFr.slug) ?? mFr;
-      list.push({
-        slug: mFr.slug,
-        fr: { t: mFr.title, sub: mFr.subtitle, label: MACHINE_LABELS[mFr.slug]?.fr },
-        en: { t: mEn.title, sub: mEn.subtitle, label: MACHINE_LABELS[mFr.slug]?.en },
-      });
-    }
-
-    if (list.length > 0) return list;
-  } catch {
-    // Strapi machine/cyclorama content types not available yet
+  if (cycFr) {
+    list.push({
+      slug: 'cyclorama',
+      fr: { t: cycFr.title || 'Cyclorama', sub: cycFr.subtitle, label: MACHINE_LABELS.cyclorama?.fr },
+      en: { t: cycEn?.title || 'Cyclorama', sub: cycEn?.subtitle ?? cycFr.subtitle, label: MACHINE_LABELS.cyclorama?.en },
+    });
   }
-  return FALLBACK_MACHINES;
+
+  const machinesFr = machinesBI.fr.data;
+  const machinesEn = machinesBI.en.data;
+  for (const mFr of machinesFr) {
+    const mEn = machinesEn.find(e => e.slug === mFr.slug) ?? mFr;
+    list.push({
+      slug: mFr.slug,
+      fr: { t: mFr.title, sub: mFr.subtitle, label: MACHINE_LABELS[mFr.slug]?.fr },
+      en: { t: mEn.title, sub: mEn.subtitle, label: MACHINE_LABELS[mFr.slug]?.en },
+    });
+  }
+
+  return list;
 }
 
 function priceFromRow(row: StrapiPricingRow): PPPrice {
@@ -926,46 +767,37 @@ export interface SiteBusinessInfo {
   closures: ClosurePeriod[];
 }
 
-const FALLBACK_BUSINESS_INFO: SiteBusinessInfo = {
-  currency: 'EUR',
-  closures: [],
-};
-
 export async function fetchSiteBusinessInfo(): Promise<SiteBusinessInfo> {
-  try {
-    const resBI = await fetchStrapiBilingual<{ data: StrapiSiteSettings }>(
-      'site-setting',
-      { populate: 'closures' },
-    );
-    const fr = resBI.fr.data;
-    const en = resBI.en.data;
-    const closuresFr = fr.closures ?? [];
-    const closuresEn = en?.closures ?? [];
-    const closures: ClosurePeriod[] = closuresFr.map((c, i) => {
-      const cEn = closuresEn[i] ?? c;
-      return {
-        startsAt: c.startsAt,
-        endsAt: c.endsAt,
-        label: c.label || cEn?.label
-          ? { fr: c.label ?? '', en: cEn?.label ?? c.label ?? '' }
-          : undefined,
-        note: c.note || cEn?.note
-          ? { fr: c.note ?? '', en: cEn?.note ?? c.note ?? '' }
-          : undefined,
-      };
-    });
+  const resBI = await fetchStrapiBilingual<{ data: StrapiSiteSettings }>(
+    'site-setting',
+    { populate: 'closures' },
+  );
+  const fr = resBI.fr.data;
+  const en = resBI.en.data;
+  const closuresFr = fr.closures ?? [];
+  const closuresEn = en?.closures ?? [];
+  const closures: ClosurePeriod[] = closuresFr.map((c, i) => {
+    const cEn = closuresEn[i] ?? c;
     return {
-      legalName: fr.legalName,
-      siret: fr.siret,
-      vatNumber: fr.vatNumber,
-      currency: fr.currency ?? 'EUR',
-      siteUrl: fr.siteUrl,
-      contactEmail: fr.contactEmail,
-      closures,
+      startsAt: c.startsAt,
+      endsAt: c.endsAt,
+      label: c.label || cEn?.label
+        ? { fr: c.label ?? '', en: cEn?.label ?? c.label ?? '' }
+        : undefined,
+      note: c.note || cEn?.note
+        ? { fr: c.note ?? '', en: cEn?.note ?? c.note ?? '' }
+        : undefined,
     };
-  } catch {
-    return FALLBACK_BUSINESS_INFO;
-  }
+  });
+  return {
+    legalName: fr.legalName,
+    siret: fr.siret,
+    vatNumber: fr.vatNumber,
+    currency: fr.currency ?? 'EUR',
+    siteUrl: fr.siteUrl,
+    contactEmail: fr.contactEmail,
+    closures,
+  };
 }
 
 export interface SiteDefaults {
@@ -1038,59 +870,46 @@ export interface LegalDocumentMeta {
   updated: string;
 }
 
-const FALLBACK_LEGAL_DOCUMENTS: LegalDocumentMeta[] = [
-  { k: 'mentions', fr: 'Mentions légales', en: 'Legal notice', updated: '12.2024' },
-  { k: 'cgv', fr: 'Conditions de vente', en: 'Terms of sale', updated: '05.12.2024' },
-  { k: 'cgu', fr: "Conditions d'utilisation", en: 'Terms of use', updated: '05.12.2024' },
-  { k: 'privacy', fr: 'Confidentialité', en: 'Privacy policy', updated: '12.2024' },
-  { k: 'cookies', fr: 'Cookies', en: 'Cookies', updated: '12.2024' },
-];
+const LEGAL_DOCUMENT_LABELS: Record<LegalDocumentKey, { fr: string; en: string }> = {
+  mentions: { fr: 'Mentions légales', en: 'Legal notice' },
+  cgv: { fr: 'Conditions de vente', en: 'Terms of sale' },
+  cgu: { fr: "Conditions d'utilisation", en: 'Terms of use' },
+  privacy: { fr: 'Confidentialité', en: 'Privacy policy' },
+  cookies: { fr: 'Cookies', en: 'Cookies' },
+};
+
+const LEGAL_DOCUMENT_ORDER: LegalDocumentKey[] = ['mentions', 'cgv', 'cgu', 'privacy', 'cookies'];
 
 function formatLastUpdated(iso?: string): string {
   if (!iso) return '';
-  // Display as MM.YYYY for compactness, matching the existing hardcoded format.
+  // Display as MM.YYYY for compactness.
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
   return `${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`;
 }
 
 export async function fetchLegalDocuments(): Promise<LegalDocumentMeta[]> {
-  try {
-    const resBI = await fetchStrapiBilingual<{ data: StrapiLegalSection[] }>('legal-sections', {
-      'sort': 'rank:asc',
-      'pagination[pageSize]': '200',
-    });
-    const frSections = resBI.fr.data ?? [];
-    const enSections = resBI.en.data ?? [];
-    if (frSections.length === 0) return FALLBACK_LEGAL_DOCUMENTS;
+  const resBI = await fetchStrapiBilingual<{ data: StrapiLegalSection[] }>('legal-sections', {
+    'sort': 'rank:asc',
+    'pagination[pageSize]': '200',
+  });
+  const frSections = resBI.fr.data ?? [];
 
-    // Group by documentKey and pick the most recent lastUpdatedAt for the badge.
-    const byDoc = new Map<LegalDocumentKey, { titles: { fr: string; en: string }; updatedIso: string }>();
-    for (const s of frSections) {
-      const en = enSections.find((e) => e.id === s.id) ?? s;
-      const existing = byDoc.get(s.documentKey);
-      const updatedIso = s.lastUpdatedAt ?? existing?.updatedIso ?? '';
-      const newer = !existing?.updatedIso || (s.lastUpdatedAt && s.lastUpdatedAt > existing.updatedIso);
-      byDoc.set(s.documentKey, {
-        titles: existing?.titles ?? { fr: s.title, en: en.title },
-        updatedIso: newer ? (s.lastUpdatedAt ?? existing?.updatedIso ?? '') : (existing?.updatedIso ?? ''),
-      });
+  // Pick the most recent lastUpdatedAt per document.
+  const updatedByDoc = new Map<LegalDocumentKey, string>();
+  for (const s of frSections) {
+    const existing = updatedByDoc.get(s.documentKey);
+    if (!existing || (s.lastUpdatedAt && s.lastUpdatedAt > existing)) {
+      updatedByDoc.set(s.documentKey, s.lastUpdatedAt ?? existing ?? '');
     }
-
-    return FALLBACK_LEGAL_DOCUMENTS.map((doc) => {
-      const found = byDoc.get(doc.k);
-      if (!found) return doc;
-      const formatted = formatLastUpdated(found.updatedIso) || doc.updated;
-      return {
-        k: doc.k,
-        fr: found.titles.fr || doc.fr,
-        en: found.titles.en || doc.en,
-        updated: formatted,
-      };
-    });
-  } catch {
-    return FALLBACK_LEGAL_DOCUMENTS;
   }
+
+  return LEGAL_DOCUMENT_ORDER.map((k) => ({
+    k,
+    fr: LEGAL_DOCUMENT_LABELS[k].fr,
+    en: LEGAL_DOCUMENT_LABELS[k].en,
+    updated: formatLastUpdated(updatedByDoc.get(k)),
+  }));
 }
 
 export interface ContactSubject {
@@ -1107,29 +926,17 @@ interface StrapiContactSubject {
   rank?: number;
 }
 
-const FALLBACK_CONTACT_SUBJECTS: ContactSubject[] = [
-  { k: 'general', fr: 'Question générale', en: 'General enquiry' },
-  { k: 'reserver', fr: 'Réserver un plateau', en: 'Book a stage' },
-  { k: 'ecom', fr: 'Production e-commerce', en: 'E-commerce production' },
-  { k: 'visite', fr: 'Visite du studio', en: 'Studio visit' },
-];
-
 export async function fetchContactSubjects(): Promise<ContactSubject[]> {
-  try {
-    const resBI = await fetchStrapiBilingual<{ data: StrapiContactSubject[] }>('contact-subjects', {
-      'sort': 'rank:asc',
-      'pagination[pageSize]': '50',
-    });
-    const frSubjects = resBI.fr.data ?? [];
-    const enSubjects = resBI.en.data ?? [];
-    if (frSubjects.length === 0) return FALLBACK_CONTACT_SUBJECTS;
-    return frSubjects.map((sFr) => {
-      const sEn = enSubjects.find((e) => e.key === sFr.key) ?? sFr;
-      return { k: sFr.key, fr: sFr.name, en: sEn.name };
-    });
-  } catch {
-    return FALLBACK_CONTACT_SUBJECTS;
-  }
+  const resBI = await fetchStrapiBilingual<{ data: StrapiContactSubject[] }>('contact-subjects', {
+    'sort': 'rank:asc',
+    'pagination[pageSize]': '50',
+  });
+  const frSubjects = resBI.fr.data ?? [];
+  const enSubjects = resBI.en.data ?? [];
+  return frSubjects.map((sFr) => {
+    const sEn = enSubjects.find((e) => e.key === sFr.key) ?? sFr;
+    return { k: sFr.key, fr: sFr.name, en: sEn.name };
+  });
 }
 
 export interface TeamMember {
@@ -1150,38 +957,25 @@ interface StrapiTeamMember {
   rank?: number;
 }
 
-const FALLBACK_TEAM_MEMBERS: TeamMember[] = [
-  { id: 1, name: { fr: 'Thomas Guedj', en: 'Thomas Guedj' }, role: { fr: 'Direction & administration', en: 'Director & administration' }, email: null, emailHref: null },
-  { id: 2, name: { fr: 'Benoît Cougny', en: 'Benoît Cougny' }, role: { fr: 'Planification & production', en: 'Planning & production' }, email: null, emailHref: null },
-  { id: 3, name: { fr: 'Phan Vo', en: 'Phan Vo' }, role: { fr: 'Image & post-production', en: 'Image & post-production' }, email: null, emailHref: null },
-  { id: 4, name: { fr: 'Théo Daguier', en: 'Théo Daguier' }, role: { fr: 'Support technique', en: 'Technical support' }, email: null, emailHref: null },
-  { id: 5, name: { fr: 'Service général', en: 'General enquiries' }, role: { fr: 'Accueil & informations', en: 'Reception & information' }, email: 'contact@e-do.studio', emailHref: 'mailto:contact@e-do.studio' },
-];
-
 export async function fetchTeamMembers(): Promise<TeamMember[]> {
-  try {
-    const resBI = await fetchStrapiBilingual<{ data: StrapiTeamMember[] }>('team-members', {
-      'populate': 'photo',
-      'sort': 'rank:asc',
-      'pagination[pageSize]': '50',
-    });
-    const frMembers = resBI.fr.data ?? [];
-    const enMembers = resBI.en.data ?? [];
-    if (frMembers.length === 0) return FALLBACK_TEAM_MEMBERS;
-    return frMembers.map((mFr) => {
-      const mEn = enMembers.find((e) => e.id === mFr.id) ?? mFr;
-      return {
-        id: mFr.id,
-        name: { fr: mFr.name, en: mEn.name },
-        role: { fr: mFr.role, en: mEn.role },
-        email: mFr.email ?? null,
-        emailHref: mFr.email ? `mailto:${mFr.email}` : null,
-        photoUrl: resolveStrapiMediaUrl(mFr.photo),
-      };
-    });
-  } catch {
-    return FALLBACK_TEAM_MEMBERS;
-  }
+  const resBI = await fetchStrapiBilingual<{ data: StrapiTeamMember[] }>('team-members', {
+    'populate': 'photo',
+    'sort': 'rank:asc',
+    'pagination[pageSize]': '50',
+  });
+  const frMembers = resBI.fr.data ?? [];
+  const enMembers = resBI.en.data ?? [];
+  return frMembers.map((mFr) => {
+    const mEn = enMembers.find((e) => e.id === mFr.id) ?? mFr;
+    return {
+      id: mFr.id,
+      name: { fr: mFr.name, en: mEn.name },
+      role: { fr: mFr.role, en: mEn.role },
+      email: mFr.email ?? null,
+      emailHref: mFr.email ? `mailto:${mFr.email}` : null,
+      photoUrl: resolveStrapiMediaUrl(mFr.photo),
+    };
+  });
 }
 
 export async function fetchSiteDefaults(): Promise<SiteDefaults> {
@@ -1221,81 +1015,37 @@ export interface GalleryCategory {
   en: string;
 }
 
-const FALLBACK_GALLERY_CATEGORIES: GalleryCategory[] = [
-  { k: 'pap', fr: 'Prêt-à-porter', en: 'Ready-to-wear' },
-  { k: 'accessoires', fr: 'Accessoires', en: 'Accessories' },
-  { k: 'eyewear', fr: 'Eyewear', en: 'Eyewear' },
-  { k: 'bijoux', fr: 'Bijoux', en: 'Jewelry' },
-  { k: 'cosmetique', fr: 'Cosmétique', en: 'Cosmetics' },
-  { k: 'food', fr: 'Food & Spiritueux', en: 'Food & Spirits' },
-];
-
-const FALLBACK_GALLERY_PROJECTS: GalleryProject[] = [
-  { id: 1, brand: 'Maison Ortho', slug: 'maison-ortho-2026', cat: 'pap', plateau: 'cyclorama', year: '2026', tone: 'mono', imageUrls: [] },
-  { id: 2, brand: 'Le Monde Béryl', slug: 'le-monde-beryl-2026', cat: 'accessoires', plateau: 'horizontal', year: '2026', tone: 'dark', imageUrls: [] },
-  { id: 3, brand: 'Atelier Soie', slug: 'atelier-soie-2026', cat: 'pap', plateau: 'vertical', year: '2026', tone: 'warm', imageUrls: [] },
-  { id: 4, brand: 'Kôji', slug: 'koji-2025', cat: 'eyewear', plateau: 'eclipse', year: '2025', tone: 'mono', imageUrls: [] },
-  { id: 5, brand: 'Rue Saint-Honoré', slug: 'rue-saint-honore-2025', cat: 'cosmetique', plateau: 'horizontal', year: '2025', tone: 'dark', imageUrls: [] },
-  { id: 6, brand: 'Ganymède', slug: 'ganymede-2025', cat: 'bijoux', plateau: 'eclipse', year: '2025', tone: 'warm', imageUrls: [] },
-  { id: 7, brand: 'Moa Studio', slug: 'moa-studio-2026', cat: 'pap', plateau: 'live', year: '2026', tone: 'mono', imageUrls: [] },
-  { id: 8, brand: 'Maison Margin', slug: 'maison-margin-2025', cat: 'pap', plateau: 'vertical', year: '2025', tone: 'dark', imageUrls: [] },
-  { id: 9, brand: 'Toby Ombré', slug: 'toby-ombre-2026', cat: 'food', plateau: 'horizontal', year: '2026', tone: 'warm', imageUrls: [] },
-  { id: 10, brand: 'Noir Étoilé', slug: 'noir-etoile-2025', cat: 'cosmetique', plateau: 'cyclorama', year: '2025', tone: 'mono', imageUrls: [] },
-  { id: 11, brand: 'Orbite', slug: 'orbite-2025', cat: 'eyewear', plateau: 'eclipse', year: '2025', tone: 'dark', imageUrls: [] },
-  { id: 12, brand: 'Studio 11', slug: 'studio-11-2026', cat: 'accessoires', plateau: 'horizontal', year: '2026', tone: 'warm', imageUrls: [] },
-  { id: 13, brand: 'Parure', slug: 'parure-2026', cat: 'bijoux', plateau: 'eclipse', year: '2026', tone: 'mono', imageUrls: [] },
-  { id: 14, brand: 'Rue Cadet', slug: 'rue-cadet-2025', cat: 'pap', plateau: 'cyclorama', year: '2025', tone: 'dark', imageUrls: [] },
-  { id: 15, brand: 'Atelier Bois', slug: 'atelier-bois-2025', cat: 'food', plateau: 'horizontal', year: '2025', tone: 'warm', imageUrls: [] },
-  { id: 16, brand: 'Maison Ardent', slug: 'maison-ardent-2026', cat: 'pap', plateau: 'vertical', year: '2026', tone: 'mono', imageUrls: [] },
-  { id: 17, brand: 'Saar Paris', slug: 'saar-paris-2026', cat: 'accessoires', plateau: 'eclipse', year: '2026', tone: 'dark', imageUrls: [] },
-  { id: 18, brand: 'Solène', slug: 'solene-2025', cat: 'bijoux', plateau: 'cyclorama', year: '2025', tone: 'warm', imageUrls: [] },
-];
-
 function slugToTitle(slug: string): string {
   return slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
 export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
-  try {
-    const res = await fetchStrapi<{ data: StrapiGalleryProject[] }>('gallery-projects', {
-      'populate': 'category,brand,images',
-      'sort': 'rank:asc',
-      'pagination[pageSize]': '100',
-    });
+  const res = await fetchStrapi<{ data: StrapiGalleryProject[] }>('gallery-projects', {
+    'populate': 'category,brand,images',
+    'sort': 'rank:asc',
+    'pagination[pageSize]': '100',
+  });
 
-    if (res.data.length > 0) {
-      return res.data.map((p, i) => ({
-        id: p.id,
-        brand: p.brand?.name ?? p.title ?? slugToTitle(p.slug),
-        slug: p.slug,
-        cat: p.category?.slug ?? 'other',
-        plateau: p.stage ?? '',
-        year: String(p.year),
-        tone: TONES[i % 3],
-        imageUrls: (p.images ?? []).map(img => resolveStrapiMediaUrl(img)).filter((u): u is string => !!u),
-      }));
-    }
-  } catch {
-    // Strapi gallery-project content type not available yet
-  }
-  return FALLBACK_GALLERY_PROJECTS;
+  return res.data.map((p, i) => ({
+    id: p.id,
+    brand: p.brand?.name ?? p.title ?? slugToTitle(p.slug),
+    slug: p.slug,
+    cat: p.category?.slug ?? 'other',
+    plateau: p.stage ?? '',
+    year: String(p.year),
+    tone: TONES[i % 3],
+    imageUrls: (p.images ?? []).map(img => resolveStrapiMediaUrl(img)).filter((u): u is string => !!u),
+  }));
 }
 
 export async function fetchGalleryCategories(): Promise<GalleryCategory[]> {
-  try {
-    const resBI = await fetchStrapiBilingual<{ data: StrapiGalleryCategory[] }>('gallery-categories', {
-      'sort': 'rank:asc',
-    });
-    const frCats = resBI.fr.data;
-    const enCats = resBI.en.data;
-    if (frCats.length > 0) {
-      return frCats.map(cFr => {
-        const cEn = enCats.find(e => e.slug === cFr.slug) ?? cFr;
-        return { k: cFr.slug, fr: cFr.name, en: cEn.name };
-      });
-    }
-  } catch {
-    // Strapi gallery-category content type not available yet
-  }
-  return FALLBACK_GALLERY_CATEGORIES;
+  const resBI = await fetchStrapiBilingual<{ data: StrapiGalleryCategory[] }>('gallery-categories', {
+    'sort': 'rank:asc',
+  });
+  const frCats = resBI.fr.data;
+  const enCats = resBI.en.data;
+  return frCats.map(cFr => {
+    const cEn = enCats.find(e => e.slug === cFr.slug) ?? cFr;
+    return { k: cFr.slug, fr: cFr.name, en: cEn.name };
+  });
 }

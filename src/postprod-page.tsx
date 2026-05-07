@@ -3,7 +3,7 @@ import { Button, CellLabel, IconArrowRight, PageHeader, Wordmark } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
 import { usePostProdTypes } from './lib/use-strapi';
 import type { PPCat as StrapiPPCat } from './lib/strapi';
-import type { Bilingual, Lang } from './types';
+import type { Bilingual } from './types';
 import { usePageContext } from './router';
 import { common, postprod as postprodMsg } from './i18n/messages';
 
@@ -29,127 +29,6 @@ interface PPCat {
   featured?: boolean;
 }
 
-const FALLBACK_PP_CATS: PPCat[] = [
-  {
-    k:'on-model', medium:'photo',
-    fr:'On model', en:'On model',
-    tagline:{fr:'Shoot porté sur mannequin',en:'On-model shoot'},
-    price:{amount:'7,90€', unit:{fr:'',en:''}, from:true},
-    note:{
-      fr:"Retouche peau, maquillage, cheveux et nettoyage textile.",
-      en:'Skin, make-up, hair retouch and fabric cleanup.',
-    },
-    features:{
-      fr:['Détourage','Changement de fond','Nettoyage peau','Étalonnage couleur','Nettoyage textile','Harmonisation silhouette'],
-      en:['Cutout','Background change','Skin cleanup','Color grading','Fabric cleanup','Silhouette harmonization'],
-    },
-    formats:['JPG','TIFF','PSD'],
-    samples:['warm-a','warm-b','warm-c','warm-d','warm-e','warm-b'],
-    brands:['BRAND A','BRAND B','BRAND C','BRAND D','BRAND E','BRAND F'],
-  },
-  {
-    k:'ghost', medium:'photo',
-    fr:'Ghost', en:'Ghost',
-    tagline:{fr:'Mannequin invisible, effet porté',en:'Invisible mannequin, worn look'},
-    price:{amount:'5,40€', unit:{fr:'',en:''}, from:true},
-    note:{
-      fr:"Assemblage avant / arrière, disparition du mannequin, volume naturel. Doublures, cols ouverts et superpositions gérés.",
-      en:'Front / back assembly, mannequin removal, natural volume. Linings, open collars and layering handled.',
-    },
-    features:{
-      fr:['Détourage','Changement de fond','Disparition mannequin','Étalonnage couleur','Nettoyage textile','Revolumisation et harmonisation du vêtement'],
-      en:['Cutout','Background change','Mannequin removal','Color grading','Fabric cleanup','Garment revolumizing & harmonization'],
-    },
-    formats:['JPG','PNG','TIFF','PSD'],
-    samples:['mono-a','mono-b','mono-c','mono-d','mono-e','mono-a'],
-    brands:['BRAND A','BRAND B','BRAND C','BRAND D','BRAND E','BRAND F'],
-  },
-  {
-    k:'a-plat', medium:'photo',
-    fr:'Flat', en:'Flat',
-    tagline:{fr:'Posé à plat, vue zénithale',en:'Laid flat, top view'},
-    price:{amount:'5,40€', unit:{fr:'',en:''}, from:true},
-    note:{
-      fr:"Mise à plat stylée, découpe clean, ombre maîtrisée. Pour e-shop et éditorial.",
-      en:'Styled flat lay, clean cutout, controlled shadow. For e-shop and editorial.',
-    },
-    features:{
-      fr:['Détourage','Changement de fond','Nettoyage textile','Étalonnage couleur','Revolumisation et harmonisation du vêtement'],
-      en:['Cutout','Background change','Fabric cleanup','Color grading','Garment revolumizing & harmonization'],
-    },
-    formats:['JPG','PNG','TIFF'],
-    samples:['mono-b','mono-c','mono-d','mono-a','mono-e','mono-c'],
-    brands:['BRAND A','BRAND B','BRAND C','BRAND D','BRAND E','BRAND F'],
-  },
-  {
-    k:'accessoires', medium:'photo',
-    fr:'Accessoires', en:'Accessories',
-    tagline:{fr:'Maroquinerie · bijoux · souliers · cosmétique · eyewear · food & spiritueux',en:'Leather · jewelry · shoes · cosmetics · eyewear · food & spirits'},
-    price:{amount:'5,40€', unit:{fr:'',en:''}, from:true},
-    note:{
-      fr:"Traitement matières, cuirs, métaux, pierres. Détail et texture préservés.",
-      en:'Materials, leather, metal, stones. Detail and texture preserved.',
-    },
-    features:{
-      fr:['Détourage','Changement de fond','Nettoyage','Étalonnage couleur','Travail des matières et reflets','Revolumisation et harmonie des lignes','Mise en valeur des détails et textures'],
-      en:['Cutout','Background change','Cleanup','Color grading','Materials & reflections work','Revolumizing & line harmonization','Detail & texture enhancement'],
-    },
-    formats:['JPG','TIFF','PSD'],
-    samples:['warm-c','warm-d','warm-a','warm-e','warm-b','warm-d'],
-    brands:['BRAND A','BRAND B','BRAND C','BRAND D','BRAND E','BRAND F'],
-  },
-  {
-    k:'pique', medium:'photo',
-    fr:'Piqué', en:'Pinned',
-    tagline:{fr:'Épinglé sur panneau vertical',en:'Pinned on vertical board'},
-    price:{amount:'7,90€', unit:{fr:'',en:''}, from:true},
-    note:{
-      fr:"Pièce présentée sur mousse ou épingles, nettoyage complet des fixations et remise en forme.",
-      en:'Garment on foam or pins, full removal of fixings and reshaping.',
-    },
-    features:{
-      fr:['Détourage','Changement de fond','Nettoyage épingles & mousse','Étalonnage couleur','Nettoyage textile','Revolumisation et harmonisation du vêtement'],
-      en:['Cutout','Background change','Pin & foam cleanup','Color grading','Fabric cleanup','Garment revolumizing & harmonization'],
-    },
-    formats:['JPG','TIFF','PSD'],
-    samples:['mono-c','mono-a','mono-e','mono-d','mono-b','mono-a'],
-    brands:['BRAND A','BRAND B','BRAND C','BRAND D','BRAND E','BRAND F'],
-  },
-  {
-    k:'high-end', medium:'photo',
-    fr:'High end', en:'High end',
-    tagline:{fr:'Campagne · éditorial · still life',en:'Campaign · editorial · still life'},
-    price:{kind:'quote'},
-    note:{
-      fr:"Retouche haute couture : dodge & burn HD, compositing, matte-painting, pièce unique.",
-      en:'High-couture retouch: HD dodge & burn, compositing, matte-painting, one-of-a-kind.',
-    },
-    features:{
-      fr:['Retouche sur mesure'],
-      en:['Bespoke retouching'],
-    },
-    formats:['TIFF','PSD','EXR'],
-    samples:['dark-a','dark-b','dark-c','dark-d','dark-e','dark-b'],
-    brands:['BRAND A','BRAND B','BRAND C','BRAND D','BRAND E','BRAND F'],
-  },
-  {
-    k:'video', medium:'video',
-    fr:'Vidéo', en:'Video',
-    tagline:{fr:'Campagne · lookbook vidéo · contenu réseaux sociaux',en:'Campaign · video lookbook · social media content'},
-    price:{kind:'quote'},
-    note:{
-      fr:"Post-production vidéo de A à Z : détourage, montage, étalonnage, motion design. Formats e-com, social, campagne et film de marque.",
-      en:'Full video post-production: cutout, editing, color grading, motion design. E-com, social, campaign and brand film formats.',
-    },
-    features:{
-      fr:['Détourage & montage','Étalonnage couleur','Motion design & titrages','Export multi-formats'],
-      en:['Cutout & editing','Color grading','Motion design & titles','Multi-format export'],
-    },
-    formats:['MP4','MOV','ProRes','DNxHR'],
-    samples:['mono-v-a','warm-v-c','dark-v-b','warm-v-d','mono-v-c','dark-v-d'],
-    brands:['BRAND A','BRAND B','BRAND C','BRAND D','BRAND E','BRAND F'],
-  },
-];
 
 interface PaletteColors {
   bg: string;
@@ -208,19 +87,6 @@ const SampleImage = ({ seed, label, medium }: SampleImageProps) => {
   );
 };
 
-const POSTPROD_UNAVAILABLE: Bilingual = {
-  fr: 'Contenu temporairement indisponible',
-  en: 'Content temporarily unavailable',
-};
-
-const PostprodOfflineNote = ({ lang }: { lang: Lang }) => (
-  <div className="flex-none w-full bg-muted px-4 py-2 border-b border-border md:border-b-0 md:border-r-0">
-    <span className="block font-mono text-micro uppercase tracking-meta text-muted-foreground opacity-65">
-      {POSTPROD_UNAVAILABLE[lang]} · offline
-    </span>
-  </div>
-);
-
 const SAMPLE_CYCLE = ['warm-a','warm-b','warm-c','warm-d','warm-e','warm-b'];
 
 function fillSamples(samples: string[]): string[] {
@@ -249,11 +115,8 @@ const PostprodPage = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
   useDocumentMeta('postprod', lang);
   const ppQuery = usePostProdTypes();
-  const offline = !ppQuery.loading && (!!ppQuery.error || !ppQuery.data || ppQuery.data.length === 0);
-  const cats: PPCat[] = ppQuery.data && ppQuery.data.length > 0
-    ? adaptStrapiCats(ppQuery.data)
-    : FALLBACK_PP_CATS;
-  const [k, setK] = useState<string>(cats[0]?.k ?? FALLBACK_PP_CATS[0].k);
+  const cats: PPCat[] = ppQuery.data ? adaptStrapiCats(ppQuery.data) : [];
+  const [k, setK] = useState<string>('');
   useEffect(() => {
     if (!cats.find(c => c.k === k) && cats[0]) setK(cats[0].k);
   }, [cats, k]);
@@ -263,6 +126,22 @@ const PostprodPage = () => {
   const fgCls = dark ? 'text-white' : 'text-foreground';
   const mutedCls = dark ? 'text-white/62' : 'text-muted-foreground';
   const lineCls = dark ? 'border-white/18' : 'border-border';
+
+  if (!cat) {
+    return (
+      <div className="edo-page-enter grid w-full place-items-center bg-white p-12">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <CellLabel className="text-primary">Post-production</CellLabel>
+          <p className="m-0 text-detail text-muted-foreground max-w-md">
+            {ppQuery.loading
+              ? common.loading[lang]
+              : (lang === 'fr' ? 'Aucune catégorie configurée. Renseignez vos types de post-production dans Strapi.' : 'No categories configured. Add post-production types in Strapi.')}
+          </p>
+          <Button onClick={()=>goto('home')} variant="default">{lang==='fr'?'Retour accueil':'Back home'}</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     /* Mobile: single-column scrollable. Desktop (md+): sidebar + workspace */
@@ -312,7 +191,6 @@ const PostprodPage = () => {
 
       {/* Sidebar: horizontal tab scroll on mobile, vertical list on desktop */}
       <aside className="bg-white flex flex-row overflow-x-auto scrollbar-thin md:col-start-1 md:row-start-2 md:flex-col md:overflow-x-hidden md:overflow-y-auto">
-        {offline && <PostprodOfflineNote lang={lang} />}
         {cats.map((c,idx)=>{
           const active = k===c.k;
           const isLast = idx===cats.length-1;
