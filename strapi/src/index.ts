@@ -65,6 +65,73 @@ function subscribeAltTextLifecycle(strapi: Core.Strapi) {
   });
 }
 
+/**
+ * Ensure the i18n plugin has the locales the website needs (FR, EN) and that
+ * `fr` is the default. Strapi 5 only seeds one locale on first install (the
+ * one returned by detect-locale, which often defaults to `en`). The audit
+ * I13 flagged that prod was running with `en` as the only locale despite
+ * every content-type being localized FR/EN — editors can't create FR
+ * entries until the locale exists.
+ */
+async function ensureLocales(strapi: Core.Strapi) {
+  const i18nPlugin = strapi.plugin('i18n');
+  if (!i18nPlugin) {
+    strapi.log.warn('[bootstrap] i18n plugin not loaded; skipping locale sync.');
+    return;
+  }
+  const localesService = i18nPlugin.service('locales') as
+    | undefined
+    | {
+        find: () => Promise<Array<{ id: number; code: string; name: string; isDefault: boolean }>>;
+        create: (data: { code: string; name: string; isDefault?: boolean }) => Promise<unknown>;
+        setDefaultLocale: (data: { code: string }) => Promise<unknown>;
+      };
+  if (!localesService?.find) {
+    strapi.log.warn('[bootstrap] i18n locales service unavailable; skipping locale sync.');
+    return;
+  }
+
+  const desired = [
+    { code: 'fr', name: 'French (fr)', shouldBeDefault: true },
+    { code: 'en', name: 'English (en)' },
+  ];
+
+  let existing: Array<{ code: string; isDefault: boolean }> = [];
+  try {
+    existing = await localesService.find();
+  } catch (err) {
+    strapi.log.warn(`[bootstrap] Could not list locales: ${(err as Error).message}`);
+    return;
+  }
+
+  for (const want of desired) {
+    if (existing.some((l) => l.code === want.code)) continue;
+    try {
+      await localesService.create({
+        code: want.code,
+        name: want.name,
+        isDefault: !!want.shouldBeDefault,
+      });
+      strapi.log.info(`[bootstrap] Created locale ${want.code}.`);
+    } catch (err) {
+      strapi.log.warn(`[bootstrap] Could not create locale ${want.code}: ${(err as Error).message}`);
+    }
+  }
+
+  // Re-read to make sure the default is correct even if FR already existed
+  // but wasn't flagged default.
+  try {
+    const after = await localesService.find();
+    const fr = after.find((l) => l.code === 'fr');
+    if (fr && !fr.isDefault) {
+      await localesService.setDefaultLocale({ code: 'fr' });
+      strapi.log.info('[bootstrap] Set fr as the default locale.');
+    }
+  } catch (err) {
+    strapi.log.warn(`[bootstrap] Could not enforce fr as default locale: ${(err as Error).message}`);
+  }
+}
+
 async function ensurePublicReadPermissions(strapi: Core.Strapi) {
   const publicRole = await strapi
     .query('plugin::users-permissions.role')
@@ -109,6 +176,7 @@ export default {
   },
 
   async bootstrap({ strapi }: { strapi: Core.Strapi }) {
+    await ensureLocales(strapi);
     await ensurePublicReadPermissions(strapi);
 
     for (const uid of ORDERABLE_CONTENT_TYPES) {
