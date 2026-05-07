@@ -940,8 +940,46 @@ interface StrapiLegalSection {
   documentKey: LegalDocumentKey;
   slug: string;
   title: string;
+  body?: unknown;
   lastUpdatedAt?: string;
   rank?: number;
+}
+
+export interface LegalSectionContent {
+  slug: string;
+  title: Bilingual;
+  body: Bilingual<BlockNode[]>;
+  lastUpdatedAt?: string;
+}
+
+export type LegalSectionsByDocument = Partial<Record<LegalDocumentKey, LegalSectionContent[]>>;
+
+export async function fetchLegalSectionsByDocument(): Promise<LegalSectionsByDocument> {
+  try {
+    const resBI = await fetchStrapiBilingual<{ data: StrapiLegalSection[] }>('legal-sections', {
+      'sort': 'rank:asc',
+      'pagination[pageSize]': '200',
+    });
+    const frSections = resBI.fr.data ?? [];
+    const enSections = resBI.en.data ?? [];
+    const enById = new Map(enSections.map((s) => [s.id, s]));
+    const grouped: LegalSectionsByDocument = {};
+    for (const s of frSections) {
+      const en = enById.get(s.id) ?? s;
+      const bodyFr = (Array.isArray(s.body) ? s.body : []) as BlockNode[];
+      const bodyEn = (Array.isArray(en.body) ? en.body : bodyFr) as BlockNode[];
+      const list = grouped[s.documentKey] ?? (grouped[s.documentKey] = []);
+      list.push({
+        slug: s.slug,
+        title: { fr: s.title, en: en.title },
+        body: { fr: bodyFr, en: bodyEn },
+        lastUpdatedAt: s.lastUpdatedAt,
+      });
+    }
+    return grouped;
+  } catch {
+    return {};
+  }
 }
 
 export interface LegalDocumentMeta {
