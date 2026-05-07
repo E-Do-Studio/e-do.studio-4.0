@@ -63,7 +63,16 @@
           "localized": true
         }
       },
-      "description": "Contenu principal de l'article. À migrer en `blocks` lors du refactor Phase 3."
+      "description": "DEPRECATED — utiliser `bodyBlocks` (éditeur structuré Strapi 5). Conservé en fallback tant que la migration n'est pas faite."
+    },
+    "bodyBlocks": {
+      "type": "blocks",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "description": "Contenu principal de l'article (éditeur structuré Strapi 5 — paragraphes, listes, liens, images). Remplace `body` (richtext markdown legacy)."
     },
     "cta_text": {
       "type": "string",
