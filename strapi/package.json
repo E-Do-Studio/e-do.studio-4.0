@@ -19,7 +19,8 @@
     "migrate:hours": "node scripts/migrate-hours-to-component.mjs",
     "migrate:address": "node scripts/migrate-address-to-component.mjs",
     "migrate:blog-camel": "node scripts/migrate-blog-post-snake-to-camel.mjs",
-    "audit:required": "node scripts/audit-required-candidates.mjs"
+    "audit:required": "node scripts/audit-required-candidates.mjs",
+    "seed": "node scripts/seed-content.mjs"
   },
   "dependencies": {
     "@breezertwo/strapi-plugin-drag-drop-content-types": "^5.4.0",
