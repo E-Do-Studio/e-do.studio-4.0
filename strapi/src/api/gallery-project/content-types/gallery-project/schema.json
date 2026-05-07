@@ -43,7 +43,12 @@
           "localized": true
         }
       },
-      "description": "Plateau utilisé. À refactorer en relation vers `machine` (Phase 3) — actuellement saisi en texte libre, valeurs attendues : `live`, `eclipse`, `horizontal`, `vertical`, `cyclorama`."
+      "description": "DEPRECATED — utiliser le champ `stageKey` (enumeration). Ce champ texte libre laissait passer des valeurs invalides ; le front lit désormais `stageKey` en priorité."
+    },
+    "stageKey": {
+      "type": "enumeration",
+      "enum": ["live", "eclipse", "horizontal", "vertical", "cyclorama"],
+      "description": "Plateau utilisé pour ce projet. Liste fermée pour éviter les valeurs invalides (« Cyclo », « cyclorama  » avec espace, etc.). Remplace progressivement `stage`."
     },
     "year": {
       "type": "integer",
