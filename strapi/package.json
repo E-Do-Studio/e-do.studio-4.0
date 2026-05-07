@@ -12,7 +12,15 @@
     "start": "strapi start",
     "strapi": "strapi",
     "upgrade": "npx @strapi/upgrade latest",
-    "upgrade:dry": "npx @strapi/upgrade latest --dry"
+    "upgrade:dry": "npx @strapi/upgrade latest --dry",
+    "migrate:all": "node scripts/run-all-migrations.mjs",
+    "migrate:year": "node scripts/migrate-year-to-string.mjs",
+    "migrate:pricing": "node scripts/migrate-pricing-to-rows.mjs",
+    "migrate:hours": "node scripts/migrate-hours-to-component.mjs",
+    "migrate:address": "node scripts/migrate-address-to-component.mjs",
+    "migrate:blog-camel": "node scripts/migrate-blog-post-snake-to-camel.mjs",
+    "migrate:stage": "node scripts/migrate-stage-to-stagekey.mjs",
+    "audit:required": "node scripts/audit-required-candidates.mjs"
   },
   "dependencies": {
     "@breezertwo/strapi-plugin-drag-drop-content-types": "^5.4.0",
