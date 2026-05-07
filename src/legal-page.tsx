@@ -4,8 +4,8 @@ import { useDocumentMeta } from './lib/use-document-meta';
 import type { Lang, Bilingual } from './types';
 import { usePageContext } from './router';
 import { common, legalPage } from './i18n/messages';
-import { useLegalDocuments } from './lib/use-strapi';
-import type { LegalDocumentMeta } from './lib/strapi';
+import { useLegalDocuments, useSiteBusinessInfo, useContact } from './lib/use-strapi';
+import type { LegalDocumentMeta, SiteBusinessInfo, ContactInfo } from './lib/strapi';
 
 type Section = LegalDocumentMeta;
 
@@ -287,14 +287,54 @@ const Article = ({ n, t, p, lang }: ArticleProps) => (
   </article>
 );
 
+function withBusinessOverrides(content: SectionContent, sec: string, businessInfo: SiteBusinessInfo | null, contact: ContactInfo | null): SectionContent {
+  if (sec !== 'mentions' || !content.blocks) return content;
+  if (!businessInfo && !contact) return content;
+  // Override the "Éditeur du site" block (first block) when CMS business info is available.
+  return {
+    ...content,
+    blocks: content.blocks.map((block, i) => {
+      if (i !== 0 || !block.rows) return block;
+      const rows = block.rows.map((row) => overrideEditeurRow(row, businessInfo, contact));
+      return { ...block, rows };
+    }),
+  };
+}
+
+function overrideEditeurRow(row: BlockRow, businessInfo: SiteBusinessInfo | null, contact: ContactInfo | null): BlockRow {
+  const labelKey = (typeof row.k === 'string' ? row.k : row.k?.fr ?? '').toLowerCase();
+  if (labelKey.includes('raison sociale') && businessInfo?.legalName) {
+    return { ...row, v: businessInfo.legalName };
+  }
+  if (labelKey.includes('rcs') && businessInfo?.siret) {
+    // Build "Bobigny · 891 710 857" from the 14-digit SIRET (first 9 = SIREN, then 5 NIC).
+    const siren = businessInfo.siret.slice(0, 9).replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
+    const existing = typeof row.v === 'string' ? row.v : row.v.fr;
+    const tribunal = existing.split(/\s*[·•]\s*/)[0] ?? '';
+    return { ...row, v: tribunal ? `${tribunal} · ${siren}` : siren };
+  }
+  if (labelKey.includes('tva') && businessInfo?.vatNumber) {
+    return { ...row, v: businessInfo.vatNumber };
+  }
+  if (labelKey.includes('siège') && contact?.fullAddress) {
+    return { ...row, v: contact.fullAddress };
+  }
+  if ((labelKey.includes('e-mail') || labelKey === 'email') && contact?.email) {
+    return { ...row, v: contact.email };
+  }
+  return row;
+}
+
 const LegalPage = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
   useDocumentMeta('legal', lang);
   const [sec, setSec] = useState('mentions');
   const { data: legalDocs } = useLegalDocuments();
+  const { data: businessInfo } = useSiteBusinessInfo();
+  const { data: contact } = useContact();
   const sections: Section[] = legalDocs ?? FALLBACK_LEGAL_SECTIONS;
   const active = sections.find(s=>s.k===sec) || sections[0];
-  const C = CONTENT[sec];
+  const C = withBusinessOverrides(CONTENT[sec], sec, businessInfo, contact);
 
   return (
     <div className="edo-page-enter grid w-full gap-px bg-hairline overflow-y-auto md:grid-cols-contact-shell md:grid-rows-app md:h-full md:overflow-hidden">
