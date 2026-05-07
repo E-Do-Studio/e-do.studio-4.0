@@ -42,7 +42,7 @@ const PUBLIC_PLUGIN_ACTIONS = [
 const STRICT_IMAGE_ALT_TEXT = process.env.STRICT_IMAGE_ALT_TEXT === 'true';
 
 function subscribeAltTextLifecycle(strapi: Core.Strapi) {
-  // @ts-expect-error db.lifecycles is not in the public typings yet
+  // @ts-ignore db.lifecycles is not in the public typings yet
   strapi.db.lifecycles.subscribe({
     models: ['plugin::upload.file'],
     async beforeUpdate(event: any) {
