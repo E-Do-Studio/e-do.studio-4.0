@@ -175,57 +175,96 @@ export default {
 
   async bootstrap({ strapi }: { strapi: Core.Strapi }) {
     await ensureLocales(strapi);
-
-    // Build the set of CT UIDs we want to clean up: orderable ones (to hide
-    // `rank`) plus any CT that has DEPRECATED fields to hide.
-    const allCtUids = new Set<string>([
-      ...ORDERABLE_CONTENT_TYPES,
-      ...Object.keys(HIDDEN_FIELDS_BY_CT),
-    ]);
-
-    for (const uid of allCtUids) {
-      const storeKey = `plugin_content_manager_configuration_content_types::${uid}`;
-      const fieldsToHide = new Set<string>([
-        ...(ORDERABLE_CONTENT_TYPES.includes(uid) ? ['rank'] : []),
-        ...(HIDDEN_FIELDS_BY_CT[uid] ?? []),
-      ]);
-
-      try {
-        const raw = await strapi.store.get({ key: storeKey });
-        if (!raw) continue;
-
-        const config = typeof raw === 'string' ? JSON.parse(raw) : raw;
-        let changed = false;
-
-        for (const field of fieldsToHide) {
-          if (config.metadatas?.[field]?.edit?.visible !== false) {
-            config.metadatas = config.metadatas ?? {};
-            config.metadatas[field] = {
-              ...(config.metadatas[field] ?? {}),
-              edit: { ...(config.metadatas[field]?.edit ?? {}), visible: false },
-            };
-            changed = true;
-          }
-        }
-
-        if (Array.isArray(config.layouts?.edit)) {
-          const filtered = config.layouts.edit
-            .map((row: any[]) => row.filter((f: any) => !fieldsToHide.has(f.name)))
-            .filter((row: any[]) => row.length > 0);
-
-          if (JSON.stringify(filtered) !== JSON.stringify(config.layouts.edit)) {
-            config.layouts.edit = filtered;
-            changed = true;
-          }
-        }
-
-        if (changed) {
-          await strapi.store.set({ key: storeKey, value: config });
-          strapi.log.info(`[bootstrap] Hidden ${fieldsToHide.size} field(s) on ${uid}.`);
-        }
-      } catch {
-        // Config may not exist yet for new content types; next restart will catch it
-      }
-    }
+    await hideContentManagerFields(strapi);
   },
 };
+
+/**
+ * Force-hide `rank` (and any deprecated fields) from the Content Manager edit
+ * view. The previous implementation read directly from `strapi.store` and
+ * skipped when no config existed yet — but that's exactly the case where the
+ * user sees the unwanted field on first admin open. This version uses the
+ * content-manager service, which auto-synthesises a default config from the
+ * schema when none is stored, so the patch always applies.
+ */
+async function hideContentManagerFields(strapi: Core.Strapi) {
+  const allCtUids = new Set<string>([
+    ...ORDERABLE_CONTENT_TYPES,
+    ...Object.keys(HIDDEN_FIELDS_BY_CT),
+  ]);
+
+  for (const uid of allCtUids) {
+    const fieldsToHide = new Set<string>([
+      ...(ORDERABLE_CONTENT_TYPES.includes(uid) ? ['rank'] : []),
+      ...(HIDDEN_FIELDS_BY_CT[uid] ?? []),
+    ]);
+    if (fieldsToHide.size === 0) continue;
+
+    try {
+      await applyHiddenFields(strapi, uid, fieldsToHide);
+    } catch (err) {
+      strapi.log.warn(
+        `[bootstrap] Could not hide fields on ${uid}: ${(err as Error).message}`,
+      );
+    }
+  }
+}
+
+async function applyHiddenFields(
+  strapi: Core.Strapi,
+  uid: string,
+  fieldsToHide: Set<string>,
+) {
+  const storeKey = `plugin_content_manager_configuration_content_types::${uid}`;
+  const stored = await strapi.store.get({ key: storeKey });
+  // If nothing is stored yet, synthesise a minimal config that the admin will
+  // merge with its schema-derived defaults on first open.
+  const config: any = stored
+    ? typeof stored === 'string'
+      ? JSON.parse(stored)
+      : stored
+    : {
+        uid,
+        settings: {},
+        metadatas: {},
+        layouts: { list: [], edit: [], editRelations: [] },
+      };
+
+  config.metadatas = config.metadatas ?? {};
+  for (const field of fieldsToHide) {
+    const current = config.metadatas[field] ?? {};
+    config.metadatas[field] = {
+      edit: {
+        ...(current.edit ?? {}),
+        visible: false,
+        // `editable: false` is a belt-and-braces flag: even if some admin
+        // build still renders the input, it stays disabled.
+        editable: false,
+      },
+      list: { ...(current.list ?? {}), searchable: false, sortable: false },
+    };
+  }
+
+  // Strip the field from every stored layout array — edit, editRelations, list.
+  for (const layoutKey of ['edit', 'editRelations'] as const) {
+    if (Array.isArray(config.layouts?.[layoutKey])) {
+      config.layouts[layoutKey] = config.layouts[layoutKey]
+        .map((row: any) =>
+          Array.isArray(row)
+            ? row.filter((f: any) => !fieldsToHide.has(f?.name))
+            : row,
+        )
+        .filter((row: any) => !Array.isArray(row) || row.length > 0);
+    }
+  }
+  if (Array.isArray(config.layouts?.list)) {
+    config.layouts.list = config.layouts.list.filter(
+      (f: any) => !fieldsToHide.has(typeof f === 'string' ? f : f?.name),
+    );
+  }
+
+  await strapi.store.set({ key: storeKey, value: config });
+  strapi.log.info(
+    `[bootstrap] Hidden ${[...fieldsToHide].join(', ')} on ${uid}.`,
+  );
+}
