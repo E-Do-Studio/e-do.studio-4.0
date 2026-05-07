@@ -820,6 +820,45 @@ export interface SiteDefaults {
   googleAnalyticsId?: string;
 }
 
+export interface ContactSubject {
+  k: string;
+  fr: string;
+  en: string;
+}
+
+interface StrapiContactSubject {
+  id: number;
+  key: string;
+  name: string;
+  description?: string;
+  rank?: number;
+}
+
+const FALLBACK_CONTACT_SUBJECTS: ContactSubject[] = [
+  { k: 'general', fr: 'Question générale', en: 'General enquiry' },
+  { k: 'reserver', fr: 'Réserver un plateau', en: 'Book a stage' },
+  { k: 'ecom', fr: 'Production e-commerce', en: 'E-commerce production' },
+  { k: 'visite', fr: 'Visite du studio', en: 'Studio visit' },
+];
+
+export async function fetchContactSubjects(): Promise<ContactSubject[]> {
+  try {
+    const resBI = await fetchStrapiBilingual<{ data: StrapiContactSubject[] }>('contact-subjects', {
+      'sort': 'rank:asc',
+      'pagination[pageSize]': '50',
+    });
+    const frSubjects = resBI.fr.data ?? [];
+    const enSubjects = resBI.en.data ?? [];
+    if (frSubjects.length === 0) return FALLBACK_CONTACT_SUBJECTS;
+    return frSubjects.map((sFr) => {
+      const sEn = enSubjects.find((e) => e.key === sFr.key) ?? sFr;
+      return { k: sFr.key, fr: sFr.name, en: sEn.name };
+    });
+  } catch {
+    return FALLBACK_CONTACT_SUBJECTS;
+  }
+}
+
 export interface TeamMember {
   id: number;
   name: Bilingual;

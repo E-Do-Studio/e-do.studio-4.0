@@ -1,0 +1,52 @@
+{
+  "kind": "collectionType",
+  "collectionName": "contact_subjects",
+  "info": {
+    "singularName": "contact-subject",
+    "pluralName": "contact-subjects",
+    "displayName": "Contact · Sujet",
+    "description": "Sujet sélectionnable dans le formulaire de contact (« Question générale », « Réserver un plateau », etc.). Ordonnable par drag & drop.",
+    "icon": "envelop"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "key": {
+      "type": "uid",
+      "required": true,
+      "description": "Identifiant technique (ex: « general », « reserver »). Utilisé par le front comme valeur de l'option."
+    },
+    "name": {
+      "type": "string",
+      "required": true,
+      "minLength": 2,
+      "maxLength": 80,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "description": "Libellé affiché dans le sélecteur (ex: « Question générale »)."
+    },
+    "description": {
+      "type": "text",
+      "maxLength": 240,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "description": "Précision facultative affichée sous l'option."
+    },
+    "rank": {
+      "type": "integer",
+      "configurable": false
+    }
+  }
+}
