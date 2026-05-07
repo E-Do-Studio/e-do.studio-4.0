@@ -124,6 +124,16 @@ interface StrapiOpeningHour {
   byAppointment?: boolean;
 }
 
+interface StrapiPostalAddress {
+  street: string;
+  complement?: string | null;
+  city: string;
+  postalCode: string;
+  country?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+}
+
 interface StrapiClosurePeriod {
   label?: string;
   startsAt: string;
@@ -162,6 +172,7 @@ interface StrapiSiteSettings {
   currency?: 'EUR' | 'USD' | 'GBP' | 'CHF';
   contactEmail?: string;
   closures?: StrapiClosurePeriod[];
+  address?: StrapiPostalAddress;
 }
 
 interface StrapiGalleryBrand {
@@ -737,27 +748,41 @@ export interface ContactInfo {
   etouch: string;
 }
 
+function composeFullAddress(addr: StrapiPostalAddress): string {
+  const parts = [addr.street, addr.complement, `${addr.postalCode} ${addr.city}`.trim(), addr.country && addr.country !== 'FR' ? addr.country : ''];
+  return parts.filter(Boolean).join(', ');
+}
+
 export async function fetchContact(): Promise<ContactInfo> {
   const resBI = await fetchStrapiBilingual<{ data: StrapiSiteSettings }>(
     'site-setting',
-    { populate: 'transport,entries' },
+    { populate: 'transport,entries,address' },
   );
   const s = resBI.fr.data;
   const sEn = resBI.en.data;
   const phoneHref = s.phoneHref || (s.phone ? `tel:${s.phone.replace(/\s/g, '')}` : '');
+
+  // Prefer the structured `address` component when populated; otherwise fall back to flat fields.
+  const addr = s.address;
+  const street = addr?.street ?? s.street;
+  const city = addr?.city ?? s.city;
+  const postalCode = addr?.postalCode ?? s.postalCode;
+  const country = addr?.country ?? s.country;
+  const fullAddress = addr ? composeFullAddress(addr) : s.fullAddress;
+
   return {
     phone: s.phone,
     phoneHref,
     email: s.email,
     emailHref: s.email ? `mailto:${s.email}` : '',
     address: {
-      street: s.street,
-      zip: `${s.postalCode ?? ''} ${s.city ?? ''}`.trim(),
-      city: s.city,
-      postalCode: s.postalCode,
-      country: s.country,
+      street,
+      zip: `${postalCode ?? ''} ${city ?? ''}`.trim(),
+      city,
+      postalCode,
+      country,
     },
-    fullAddress: s.fullAddress,
+    fullAddress,
     googleMapsUrl: s.googleMapsUrl,
     mapsEmbedUrl: s.mapsEmbedUrl,
     parking: s.parking || sEn?.parking ? { fr: s.parking ?? '', en: sEn?.parking ?? s.parking ?? '' } : undefined,
