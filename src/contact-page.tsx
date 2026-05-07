@@ -2,8 +2,8 @@ import { useState } from 'react';
 import type { FormEvent, InputHTMLAttributes, TextareaHTMLAttributes } from 'react';
 import { Button, CellLabel, IconArrowRight, PageHeader, SocialIcon, Wordmark, cn } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
-import { useContact, useStudioHours, useTeamMembers, useContactSubjects } from './lib/use-strapi';
-import type { ContactInfo, StudioHours as StudioHoursData, TeamMember as StrapiTeamMember, ContactSubject } from './lib/strapi';
+import { useContact, useStudioHours, useTeamMembers, useContactSubjects, useSiteBusinessInfo } from './lib/use-strapi';
+import type { ContactInfo, StudioHours as StudioHoursData, TeamMember as StrapiTeamMember, ContactSubject, ClosurePeriod } from './lib/strapi';
 import type { Lang, ContactFormData, Bilingual } from './types';
 import { usePageContext } from './router';
 import { submitContactForm } from './lib/contact';
@@ -56,15 +56,61 @@ interface ContactRailProps {
   hours: { data: StudioHoursData | null; loading: boolean; error: Error | null };
 }
 
-const ContactRail = ({ lang, contact, hours }: ContactRailProps) => (
+const ContactRail = ({ lang, contact, hours, closures }: ContactRailProps & { closures: ClosurePeriod[] }) => (
   <aside className="flex flex-col overflow-auto bg-white md:col-start-1 md:row-start-2">
     <FindUsSection lang={lang} contact={contact} />
     <HoursSection lang={lang} hours={hours} />
+    <ClosuresSection lang={lang} closures={closures} />
     <PhoneSection lang={lang} contact={contact} />
     <div className="flex-1" />
     <SocialGrid />
   </aside>
 );
+
+interface ClosuresSectionProps {
+  lang: Lang;
+  closures: ClosurePeriod[];
+}
+
+function formatClosureDate(iso: string, lang: Lang): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const locale = lang === 'fr' ? 'fr-FR' : 'en-US';
+  return d.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+const ClosuresSection = ({ lang, closures }: ClosuresSectionProps) => {
+  const today = new Date().toISOString().slice(0, 10);
+  const upcoming = closures
+    .filter((c) => c.endsAt >= today)
+    .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+  if (upcoming.length === 0) return null;
+  return (
+    <section className="border-b border-border p-6">
+      <CellLabel className="mb-5 block">
+        {lang === 'fr' ? 'Fermetures' : 'Closures'}
+      </CellLabel>
+      <div className="flex flex-col gap-3 text-caption">
+        {upcoming.map((c) => (
+          <div key={`${c.startsAt}-${c.endsAt}`} className="flex flex-col gap-0.5">
+            <span className="font-mono tracking-ui">
+              {c.startsAt === c.endsAt
+                ? formatClosureDate(c.startsAt, lang)
+                : `${formatClosureDate(c.startsAt, lang)} → ${formatClosureDate(c.endsAt, lang)}`}
+            </span>
+            {c.label && (
+              <span className="text-muted-foreground">{c.label[lang] || c.label.fr}</span>
+            )}
+            {c.note && (
+              <span className="opacity-55 text-muted-foreground">{c.note[lang] || c.note.fr}</span>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+};
 
 interface FindUsSectionProps {
   lang: Lang;
@@ -514,6 +560,8 @@ const ContactPage = () => {
   const team = teamState.data ?? [];
   const subjectsState = useContactSubjects();
   const subjects = subjectsState.data ?? [];
+  const businessState = useSiteBusinessInfo();
+  const closures = businessState.data?.closures ?? [];
   const [form, setForm] = useState<ContactFormData>(INITIAL_FORM);
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
@@ -576,7 +624,7 @@ const ContactPage = () => {
           <span className="font-mono text-label tracking-meta text-foreground">{common.langToggleLabel[lang]}</span>
         </button>
       </div>
-      <ContactRail lang={lang} contact={contact} hours={hours} />
+      <ContactRail lang={lang} contact={contact} hours={hours} closures={closures} />
       <ContactFormPanel lang={lang} form={form} sent={sent} sending={sending} sendError={sendError} setForm={setForm} setSent={setSent} submit={submit} goto={goto} subjects={subjects} />
       <ContactRightColumn lang={lang} contact={contact} team={team} />
     </div>
