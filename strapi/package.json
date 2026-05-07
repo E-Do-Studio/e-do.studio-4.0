@@ -19,7 +19,6 @@
     "migrate:hours": "node scripts/migrate-hours-to-component.mjs",
     "migrate:address": "node scripts/migrate-address-to-component.mjs",
     "migrate:blog-camel": "node scripts/migrate-blog-post-snake-to-camel.mjs",
-    "migrate:stage": "node scripts/migrate-stage-to-stagekey.mjs",
     "audit:required": "node scripts/audit-required-candidates.mjs"
   },
   "dependencies": {

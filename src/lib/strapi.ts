@@ -215,8 +215,7 @@ interface StrapiGalleryProject {
   id: number;
   title: string;
   slug: string;
-  stage: string;
-  stageKey?: StageKey | null;
+  stage?: StageKey | null;
   year: number | string;
   rank: number;
   category?: StrapiGalleryCategory;
@@ -1270,7 +1269,7 @@ export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
         brand: p.brand?.name ?? p.title ?? slugToTitle(p.slug),
         slug: p.slug,
         cat: p.category?.slug ?? 'other',
-        plateau: p.stageKey ?? p.stage,
+        plateau: p.stage ?? '',
         year: String(p.year),
         tone: TONES[i % 3],
         imageUrls: (p.images ?? []).map(img => resolveStrapiMediaUrl(img)).filter((u): u is string => !!u),

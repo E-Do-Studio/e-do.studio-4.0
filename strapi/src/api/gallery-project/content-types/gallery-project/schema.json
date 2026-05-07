@@ -36,19 +36,9 @@
       "description": "URL du projet (auto-généré). Ne plus modifier après publication."
     },
     "stage": {
-      "type": "string",
-      "maxLength": 60,
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "description": "DEPRECATED — utiliser le champ `stageKey` (enumeration). Ce champ texte libre laissait passer des valeurs invalides ; le front lit désormais `stageKey` en priorité."
-    },
-    "stageKey": {
       "type": "enumeration",
       "enum": ["live", "eclipse", "horizontal", "vertical", "cyclorama"],
-      "description": "Plateau utilisé pour ce projet. Liste fermée pour éviter les valeurs invalides (« Cyclo », « cyclorama  » avec espace, etc.). Remplace progressivement `stage`."
+      "description": "Plateau utilisé pour ce projet. Liste fermée pour éviter les valeurs invalides."
     },
     "year": {
       "type": "string",

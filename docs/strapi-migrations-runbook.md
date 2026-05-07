@@ -1,7 +1,13 @@
 # Strapi Phase 3 migrations — runbook
 
-7 scripts qui migrent les données legacy vers les nouvelles structures
+6 scripts qui migrent les données legacy vers les nouvelles structures
 introduites par les PR #94 → #108. Tous idempotents.
+
+> Note : le script `migrate-stage-to-stagekey.mjs` n'existe plus. La fusion
+> `stage` (string libre) ↔ `stageKey` (enum) a été remplacée par la
+> migration DB `2026.05.07T15.00.00.gallery-project-merge-stage.js`, qui
+> tourne automatiquement au boot Strapi. Aucune action manuelle n'est
+> nécessaire pour le champ stage.
 
 ## Prérequis (à faire UNE fois côté ops)
 
@@ -75,7 +81,6 @@ npm run migrate:pricing
 npm run migrate:hours
 npm run migrate:address
 npm run migrate:blog-camel
-npm run migrate:stage
 npm run audit:required        # read-only, retourne un markdown listant les rows null
 ```
 
@@ -86,7 +91,7 @@ Côté admin Strapi :
 | CT / champ | Vérifier |
 |---|---|
 | `gallery-project` → champ `year` | Plus formaté `2 025`, affiche `2025` brut |
-| `gallery-project` → champ `stageKey` | Peuplé pour chaque projet (live/eclipse/horizontal/vertical/cyclorama) |
+| `gallery-project` → champ `stage` | Peuplé pour chaque projet (live/eclipse/horizontal/vertical/cyclorama) |
 | `machine` / `cyclorama` → `pricingRows` | Liste structurée avec label/amount/kind |
 | `cyclorama` → `pricingRows` | Idem |
 | `post-production-type` → `priceRows` | Idem |
@@ -96,7 +101,7 @@ Côté admin Strapi :
 
 Côté site (https://e-do.studio) :
 
-- `/galerie` : les filtres par plateau marchent (utilise `stageKey` désormais)
+- `/galerie` : les filtres par plateau marchent (utilise l'enum `stage`)
 - `/cyclorama`, `/plateau/*` : tarifs s'affichent (utilise `pricingRows` si peuplé, sinon legacy)
 - `/contact` : adresse complète et horaires affichés (composant `address` + `openingHours` si peuplés)
 
@@ -123,7 +128,6 @@ semaines, ouvrir une PR de cleanup qui :
 - Supprime `hours`, `weekendHours` (remplacés par `openingHours` composant)
 - Supprime `street`, `city`, `postalCode`, `country` (remplacés par `address` composant)
 - Supprime `pricing`, `operatorPricing`, `price` (remplacés par les composants)
-- Supprime `stage` (remplacé par `stageKey`)
 - Supprime `body` (richtext) sur blog-post (remplacé par `bodyBlocks`)
 
 Strapi 5 retire les colonnes en DB lors du schema sync. Backup DB **avant**.

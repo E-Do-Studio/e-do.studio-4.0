@@ -51,7 +51,6 @@ const HIDDEN_FIELDS_BY_CT: Record<string, string[]> = {
   'api::cyclorama.cyclorama': ['pricing'],
   'api::machine.machine': ['pricing', 'operatorPricing'],
   'api::post-production-type.post-production-type': ['price'],
-  'api::gallery-project.gallery-project': ['stage'],
   'api::site-setting.site-setting': [
     'phoneHref',
     'fullAddress',
