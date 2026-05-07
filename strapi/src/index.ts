@@ -34,6 +34,37 @@ const PUBLIC_PLUGIN_ACTIONS = [
 ];
 
 /**
+ * DEPRECATED fields hidden from the Content Manager edit view at boot.
+ * Each entry maps a content-type UID to the list of attribute names that
+ * have been replaced by a structured component or a renamed field, but
+ * cannot be dropped from the schema yet because either the front falls
+ * back to them when the new field is empty, or because the data
+ * migration has not run on prod. Hiding them keeps the editor UX
+ * uncluttered without losing the data.
+ *
+ * Always-hidden globally:
+ *   `rank` — managed by the drag-and-drop plugin, not editable directly.
+ */
+const HIDDEN_FIELDS_BY_CT: Record<string, string[]> = {
+  'api::blog-post.blog-post': ['cta_text', 'cta_label', 'cta_url', 'seo_title', 'seo_description', 'seo_image'],
+  'api::cyclorama.cyclorama': ['pricing'],
+  'api::machine.machine': ['pricing', 'operatorPricing'],
+  'api::post-production-type.post-production-type': ['price'],
+  'api::gallery-project.gallery-project': ['stage'],
+  'api::site-setting.site-setting': [
+    'phoneHref',
+    'fullAddress',
+    'openingHoursSpec',
+    'street',
+    'city',
+    'postalCode',
+    'country',
+    'hours',
+    'weekendHours',
+  ],
+};
+
+/**
  * STRICT_IMAGE_ALT_TEXT: when "true", reject any update to an image upload
  * (mime starts with image/) whose alternativeText is empty. When unset or
  * "false", just warn in logs. Defaults to warn-only so existing data without
@@ -111,8 +142,19 @@ export default {
   async bootstrap({ strapi }: { strapi: Core.Strapi }) {
     await ensurePublicReadPermissions(strapi);
 
-    for (const uid of ORDERABLE_CONTENT_TYPES) {
+    // Build the set of CT UIDs we want to clean up: orderable ones (to hide
+    // `rank`) plus any CT that has DEPRECATED fields to hide.
+    const allCtUids = new Set<string>([
+      ...ORDERABLE_CONTENT_TYPES,
+      ...Object.keys(HIDDEN_FIELDS_BY_CT),
+    ]);
+
+    for (const uid of allCtUids) {
       const storeKey = `plugin_content_manager_configuration_content_types::${uid}`;
+      const fieldsToHide = new Set<string>([
+        ...(ORDERABLE_CONTENT_TYPES.includes(uid) ? ['rank'] : []),
+        ...(HIDDEN_FIELDS_BY_CT[uid] ?? []),
+      ]);
 
       try {
         const raw = await strapi.store.get({ key: storeKey });
@@ -121,18 +163,20 @@ export default {
         const config = typeof raw === 'string' ? JSON.parse(raw) : raw;
         let changed = false;
 
-        if (config.metadatas?.rank?.edit?.visible !== false) {
-          config.metadatas = config.metadatas ?? {};
-          config.metadatas.rank = {
-            ...(config.metadatas.rank ?? {}),
-            edit: { ...(config.metadatas.rank?.edit ?? {}), visible: false },
-          };
-          changed = true;
+        for (const field of fieldsToHide) {
+          if (config.metadatas?.[field]?.edit?.visible !== false) {
+            config.metadatas = config.metadatas ?? {};
+            config.metadatas[field] = {
+              ...(config.metadatas[field] ?? {}),
+              edit: { ...(config.metadatas[field]?.edit ?? {}), visible: false },
+            };
+            changed = true;
+          }
         }
 
         if (Array.isArray(config.layouts?.edit)) {
           const filtered = config.layouts.edit
-            .map((row: any[]) => row.filter((f: any) => f.name !== 'rank'))
+            .map((row: any[]) => row.filter((f: any) => !fieldsToHide.has(f.name)))
             .filter((row: any[]) => row.length > 0);
 
           if (JSON.stringify(filtered) !== JSON.stringify(config.layouts.edit)) {
@@ -143,6 +187,7 @@ export default {
 
         if (changed) {
           await strapi.store.set({ key: storeKey, value: config });
+          strapi.log.info(`[bootstrap] Hidden ${fieldsToHide.size} field(s) on ${uid}.`);
         }
       } catch {
         // Config may not exist yet for new content types; next restart will catch it
