@@ -151,7 +151,7 @@ Ces clés ont **un accès complet au bucket R2 `website`** (lecture, écriture, 
 
 **Action immédiate (à faire AUJOURD'HUI)** :
 1. Révoquer ces clés sur Cloudflare R2 (`Manage R2 API Tokens` → revoke).
-2. Régénérer une nouvelle paire et la mettre **uniquement** dans une variable d'env Vercel/serveur Strapi.
+2. Régénérer une nouvelle paire et la mettre **uniquement** dans une variable d'env du serveur Strapi (jamais dans le repo).
 3. Refacto les deux scripts pour lire `process.env.CF_ACCESS_KEY_ID` / `CF_ACCESS_SECRET`.
 4. Considérer un `git filter-repo` pour purger l'historique (cher mais propre — sinon, accepter qu'elles soient dans le passé et compter sur la rotation).
 5. Audit Cloudflare des accès récents avec ces clés.
