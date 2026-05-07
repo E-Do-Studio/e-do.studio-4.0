@@ -15,6 +15,7 @@ import {
   fetchTeamMembers,
   fetchContactSubjects,
   fetchSiteBusinessInfo,
+  fetchLegalDocuments,
   type PlateauSpec,
   type PPCat,
   type GalleryProject,
@@ -25,6 +26,7 @@ import {
   type TeamMember,
   type ContactSubject,
   type SiteBusinessInfo,
+  type LegalDocumentMeta,
 } from './strapi';
 import type { MachineInfo, DiscoveryPost, DiscoveryCategory, SocialLink } from '../types';
 
@@ -100,4 +102,8 @@ export function useContactSubjects() {
 
 export function useSiteBusinessInfo() {
   return useAsync<SiteBusinessInfo>(fetchSiteBusinessInfo);
+}
+
+export function useLegalDocuments() {
+  return useAsync<LegalDocumentMeta[]>(fetchLegalDocuments);
 }
