@@ -1,0 +1,34 @@
+{
+  "collectionName": "components_shared_opening_hours",
+  "info": {
+    "displayName": "Horaires d'ouverture",
+    "description": "Horaires d'un jour de la semaine — utilisé sur site-setting pour structurer les heures (remplace le format texte legacy `hours` / `weekendHours`).",
+    "icon": "clock"
+  },
+  "attributes": {
+    "dayOfWeek": {
+      "type": "enumeration",
+      "enum": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
+      "required": true,
+      "description": "Jour de la semaine."
+    },
+    "opensAt": {
+      "type": "time",
+      "description": "Heure d'ouverture (format HH:MM:SS)."
+    },
+    "closesAt": {
+      "type": "time",
+      "description": "Heure de fermeture."
+    },
+    "closed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Cocher si le studio est fermé ce jour-là."
+    },
+    "byAppointment": {
+      "type": "boolean",
+      "default": false,
+      "description": "Cocher si ce jour est ouvert uniquement sur rendez-vous."
+    }
+  }
+}

@@ -44,6 +44,13 @@ interface StrapiSpec { label: string; value: string }
 interface StrapiLocalizedItem { text: string }
 interface StrapiSocialLink { platform: string; label: string; url: string }
 
+interface StrapiPricingRow {
+  label: string;
+  amount: number | string | null;
+  kind?: 'unit' | 'package' | 'quote';
+  note?: string | null;
+}
+
 interface StrapiMachine {
   id: number;
   title: string;
@@ -53,6 +60,8 @@ interface StrapiMachine {
   pricing: string;
   operatorPricing: string | null;
   specs?: StrapiSpec[];
+  pricingRows?: StrapiPricingRow[];
+  operatorPricingRows?: StrapiPricingRow[];
 }
 
 interface StrapiCyclorama {
@@ -63,6 +72,7 @@ interface StrapiCyclorama {
   pricingDescription: string;
   specs?: StrapiSpec[];
   amenities?: StrapiLocalizedItem[];
+  pricingRows?: StrapiPricingRow[];
 }
 
 interface StrapiPostProdType {
@@ -72,6 +82,7 @@ interface StrapiPostProdType {
   description: string;
   price: string;
   includes?: StrapiLocalizedItem[];
+  priceRows?: StrapiPricingRow[];
 }
 
 interface StrapiMedia {
@@ -103,6 +114,16 @@ interface StrapiBlogCategory {
 interface StrapiTransportEntry { label: string }
 interface StrapiAddressEntry { label: string; address: string }
 
+type DayOfWeek = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+
+interface StrapiOpeningHour {
+  dayOfWeek: DayOfWeek;
+  opensAt?: string | null;
+  closesAt?: string | null;
+  closed?: boolean;
+  byAppointment?: boolean;
+}
+
 interface StrapiSiteSettings {
   siteTitle?: string;
   siteDescription?: string;
@@ -118,6 +139,7 @@ interface StrapiSiteSettings {
   mapsEmbedUrl?: string;
   hours?: string;
   weekendHours?: string;
+  openingHours?: StrapiOpeningHour[];
   parking?: string;
   transport?: StrapiTransportEntry[];
   entries?: StrapiAddressEntry[];
@@ -228,6 +250,36 @@ function parsePricingToRates(pricingFr: string, pricingEn: string): { k: Bilingu
     } else {
       rates.push({ k: { fr: fr, en: en }, v: '' });
     }
+  }
+  return rates;
+}
+
+function formatRowAmount(row: StrapiPricingRow, fallback: Bilingual): string | Bilingual {
+  if (row.kind === 'quote' || row.amount == null || row.amount === '') {
+    return fallback;
+  }
+  const n = typeof row.amount === 'number' ? row.amount : Number(row.amount);
+  if (Number.isNaN(n)) return String(row.amount);
+  // Display whole euros without decimal, otherwise 2 decimals.
+  const formatted = Number.isInteger(n) ? `€ ${n}` : `€ ${n.toFixed(2)}`;
+  return formatted;
+}
+
+function pricingRowsToRates(
+  frRows: StrapiPricingRow[],
+  enRows: StrapiPricingRow[],
+): { k: Bilingual; v: string | Bilingual }[] {
+  const len = Math.max(frRows.length, enRows.length);
+  const onRequest: Bilingual = { fr: 'Sur demande', en: 'On request' };
+  const rates: { k: Bilingual; v: string | Bilingual }[] = [];
+  for (let i = 0; i < len; i++) {
+    const fr = frRows[i];
+    const en = enRows[i] ?? fr;
+    if (!fr) continue;
+    rates.push({
+      k: { fr: fr.label ?? '', en: en?.label ?? fr.label ?? '' },
+      v: formatRowAmount(fr, onRequest),
+    });
   }
   return rates;
 }
@@ -423,8 +475,8 @@ const FALLBACK_MACHINES: MachineInfo[] = [
 export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
   try {
     const [machinesBI, cycloBI] = await Promise.all([
-      fetchStrapiBilingual<{ data: StrapiMachine[] }>('machines', { 'populate': 'specs', 'sort': 'rank:asc' }),
-      fetchStrapiBilingual<{ data: StrapiCyclorama }>('cyclorama', { 'populate': 'specs,amenities' }),
+      fetchStrapiBilingual<{ data: StrapiMachine[] }>('machines', { 'populate': 'specs,pricingRows', 'sort': 'rank:asc' }),
+      fetchStrapiBilingual<{ data: StrapiCyclorama }>('cyclorama', { 'populate': 'specs,amenities,pricingRows' }),
     ]);
 
     const result: Record<string, PlateauSpec> = {};
@@ -432,6 +484,11 @@ export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
     const cycFr = cycloBI.fr.data;
     const cycEn = cycloBI.en.data;
     if (cycFr) {
+      const cycRows = cycFr.pricingRows ?? [];
+      const cycRowsEn = cycEn?.pricingRows ?? [];
+      const rates = cycRows.length > 0
+        ? pricingRowsToRates(cycRows, cycRowsEn)
+        : parsePricingToRates(cycFr.pricing, cycEn?.pricing ?? cycFr.pricing);
       result.cyclorama = {
         num: '01',
         name: 'Cyclorama',
@@ -440,7 +497,7 @@ export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
         desc: { fr: cycFr.description, en: cycEn?.description ?? cycFr.description },
         specs: mergeSpecs(cycFr.specs ?? [], cycEn?.specs ?? []),
         uses: mergeLocalizedItems(cycFr.amenities ?? [], cycEn?.amenities ?? []),
-        rates: parsePricingToRates(cycFr.pricing, cycEn?.pricing ?? cycFr.pricing),
+        rates,
         ratesNote: cycFr.pricingDescription ? { fr: cycFr.pricingDescription, en: cycEn?.pricingDescription ?? cycFr.pricingDescription } : undefined,
         visual: 'cyc',
       };
@@ -450,6 +507,11 @@ export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
     const machinesEn = machinesBI.en.data;
     machinesFr.forEach((mFr, i) => {
       const mEn = machinesEn.find(e => e.slug === mFr.slug) ?? mFr;
+      const rows = mFr.pricingRows ?? [];
+      const rowsEn = mEn.pricingRows ?? [];
+      const rates = rows.length > 0
+        ? pricingRowsToRates(rows, rowsEn)
+        : parsePricingToRates(mFr.pricing, mEn.pricing);
       result[mFr.slug] = {
         num: String(i + 2).padStart(2, '0'),
         name: mFr.title,
@@ -458,7 +520,7 @@ export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
         desc: { fr: mFr.description, en: mEn.description },
         specs: mergeSpecs(mFr.specs ?? [], mEn.specs ?? []),
         uses: MACHINE_USES[mFr.slug] ?? [],
-        rates: parsePricingToRates(mFr.pricing, mEn.pricing),
+        rates,
         visual: mFr.slug,
       };
     });
@@ -507,9 +569,23 @@ export async function fetchMachines(): Promise<MachineInfo[]> {
   return FALLBACK_MACHINES;
 }
 
+function priceFromRow(row: StrapiPricingRow): PPPrice {
+  if (row.kind === 'quote' || row.amount == null || row.amount === '') {
+    return { kind: 'quote', from: false };
+  }
+  const n = typeof row.amount === 'number' ? row.amount : Number(row.amount);
+  if (Number.isNaN(n)) return { amount: String(row.amount), kind: row.kind ?? 'unit', from: false };
+  const amount = Number.isInteger(n) ? `${n}€` : `${n.toFixed(2).replace('.', ',')}€`;
+  return {
+    amount,
+    kind: row.kind === 'package' ? 'package' : 'unit',
+    from: true,
+  };
+}
+
 export async function fetchPostProdTypes(): Promise<PPCat[]> {
   const resBI = await fetchStrapiBilingual<{ data: StrapiPostProdType[] }>('post-production-types', {
-    'populate': 'includes',
+    'populate': 'includes,priceRows',
     'sort': 'rank:asc',
   });
 
@@ -518,13 +594,15 @@ export async function fetchPostProdTypes(): Promise<PPCat[]> {
 
   return frTypes.map(tFr => {
     const tEn = enTypes.find(e => e.slug === tFr.slug) ?? tFr;
+    const firstRow = tFr.priceRows?.[0];
+    const price = firstRow ? priceFromRow(firstRow) : parsePriceText(tFr.price);
     return {
       k: tFr.slug,
       medium: 'photo',
       fr: tFr.title,
       en: tEn.title,
       tagline: { fr: tFr.description, en: tEn.description },
-      price: parsePriceText(tFr.price),
+      price,
       note: { fr: '', en: '' },
       features: {
         fr: (tFr.includes ?? []).map(i => i.text),
@@ -680,11 +758,58 @@ export interface StudioHours {
   weekend: Bilingual;
 }
 
+const WEEKDAYS: DayOfWeek[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+const WEEKEND: DayOfWeek[] = ['saturday', 'sunday'];
+
+function trimTime(t?: string | null): string {
+  if (!t) return '';
+  const m = String(t).match(/^(\d{2}):(\d{2})/);
+  return m ? `${m[1]}:${m[2]}` : String(t);
+}
+
+function summarizeRange(rows: StrapiOpeningHour[], days: DayOfWeek[], lang: 'fr' | 'en'): string {
+  const matching = rows.filter((r) => days.includes(r.dayOfWeek));
+  const open = matching.filter((r) => !r.closed);
+  if (open.length === 0) {
+    return lang === 'fr' ? 'Fermé' : 'Closed';
+  }
+  const byAppointment = open.every((r) => r.byAppointment);
+  if (byAppointment) {
+    return lang === 'fr' ? 'Sur rendez-vous' : 'By appointment';
+  }
+  // Take the first row's range; if everyone matches, that's the canonical display.
+  // If they differ, fall back to a multi-line summary (caller should switch to legacy).
+  const first = open[0];
+  const allSame = open.every((r) => trimTime(r.opensAt) === trimTime(first.opensAt) && trimTime(r.closesAt) === trimTime(first.closesAt));
+  const opens = trimTime(first.opensAt);
+  const closes = trimTime(first.closesAt);
+  if (!opens || !closes) {
+    return lang === 'fr' ? 'Sur demande' : 'On request';
+  }
+  if (!allSame) {
+    return open
+      .map((r) => `${trimTime(r.opensAt)} — ${trimTime(r.closesAt)}`)
+      .join(' · ');
+  }
+  return `${opens} — ${closes}`;
+}
+
 export async function fetchStudioHours(): Promise<StudioHours> {
-  const resBI = await fetchStrapiBilingual<{ data: StrapiSiteSettings }>('site-setting');
+  const resBI = await fetchStrapiBilingual<{ data: StrapiSiteSettings }>('site-setting', {
+    populate: 'openingHours',
+  });
+  const fr = resBI.fr.data;
+  const en = resBI.en.data;
+  const rowsFr = fr.openingHours ?? [];
+  if (rowsFr.length > 0) {
+    return {
+      weekday: { fr: summarizeRange(rowsFr, WEEKDAYS, 'fr'), en: summarizeRange(rowsFr, WEEKDAYS, 'en') },
+      weekend: { fr: summarizeRange(rowsFr, WEEKEND, 'fr'), en: summarizeRange(rowsFr, WEEKEND, 'en') },
+    };
+  }
   return {
-    weekday: { fr: resBI.fr.data.hours ?? '', en: resBI.en.data.hours ?? '' },
-    weekend: { fr: resBI.fr.data.weekendHours ?? '', en: resBI.en.data.weekendHours ?? '' },
+    weekday: { fr: fr.hours ?? '', en: en?.hours ?? fr.hours ?? '' },
+    weekend: { fr: fr.weekendHours ?? '', en: en?.weekendHours ?? fr.weekendHours ?? '' },
   };
 }
 

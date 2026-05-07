@@ -141,6 +141,12 @@
       },
       "description": "Horaires le week-end (ex: « Sur demande »)."
     },
+    "openingHours": {
+      "type": "component",
+      "component": "shared.opening-hours",
+      "repeatable": true,
+      "description": "Horaires d'ouverture structurés (un item par jour). Remplace progressivement les champs `hours` / `weekendHours`. Tant que vide, le front continue de lire les anciens champs."
+    },
     "openingHoursSpec": {
       "type": "text",
       "description": "DEPRECATED — JSON-LD calculable depuis `hours`/`weekendHours`. À supprimer en Phase 3."
