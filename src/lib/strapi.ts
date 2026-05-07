@@ -52,6 +52,14 @@ interface StrapiPricingRow {
   note?: string | null;
 }
 
+interface StrapiSeoMeta {
+  title?: string;
+  description?: string;
+  image?: StrapiMedia;
+  canonicalUrl?: string;
+  noIndex?: boolean;
+}
+
 interface StrapiMachine {
   id: number;
   title: string;
@@ -63,6 +71,7 @@ interface StrapiMachine {
   specs?: StrapiSpec[];
   pricingRows?: StrapiPricingRow[];
   operatorPricingRows?: StrapiPricingRow[];
+  seo?: StrapiSeoMeta;
 }
 
 interface StrapiCyclorama {
@@ -74,6 +83,7 @@ interface StrapiCyclorama {
   specs?: StrapiSpec[];
   amenities?: StrapiLocalizedItem[];
   pricingRows?: StrapiPricingRow[];
+  seo?: StrapiSeoMeta;
 }
 
 interface StrapiPostProdType {
@@ -84,6 +94,7 @@ interface StrapiPostProdType {
   price: string;
   includes?: StrapiLocalizedItem[];
   priceRows?: StrapiPricingRow[];
+  seo?: StrapiSeoMeta;
 }
 
 interface StrapiMedia {
@@ -207,6 +218,13 @@ interface StrapiGalleryProject {
 
 // ─── PlateauSpec type (local, matches what the frontend expects) ────────────
 
+export interface SeoMeta {
+  title?: string;
+  description?: string;
+  imageUrl?: string;
+  noIndex?: boolean;
+}
+
 export interface PlateauSpec {
   num: string;
   name: string;
@@ -218,6 +236,28 @@ export interface PlateauSpec {
   rates: { k: Bilingual; v: string | Bilingual }[];
   ratesNote?: Bilingual;
   visual: string;
+  seo?: Bilingual<SeoMeta>;
+}
+
+function buildSeo(seoFr: StrapiSeoMeta | undefined, seoEn: StrapiSeoMeta | undefined): Bilingual<SeoMeta> | undefined {
+  const fr = seoFr ?? {};
+  const en = seoEn ?? seoFr ?? {};
+  const hasAny = (s: StrapiSeoMeta) => !!(s.title || s.description || s.image);
+  if (!hasAny(fr) && !hasAny(en)) return undefined;
+  return {
+    fr: {
+      title: fr.title,
+      description: fr.description,
+      imageUrl: resolveStrapiMediaUrl(fr.image),
+      noIndex: fr.noIndex,
+    },
+    en: {
+      title: en.title || fr.title,
+      description: en.description || fr.description,
+      imageUrl: resolveStrapiMediaUrl(en.image) || resolveStrapiMediaUrl(fr.image),
+      noIndex: en.noIndex ?? fr.noIndex,
+    },
+  };
 }
 
 // ─── PPCat type ─────────────────────────────────────────────────────────────
@@ -505,8 +545,8 @@ const FALLBACK_MACHINES: MachineInfo[] = [
 export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
   try {
     const [machinesBI, cycloBI] = await Promise.all([
-      fetchStrapiBilingual<{ data: StrapiMachine[] }>('machines', { 'populate': 'specs,pricingRows', 'sort': 'rank:asc' }),
-      fetchStrapiBilingual<{ data: StrapiCyclorama }>('cyclorama', { 'populate': 'specs,amenities,pricingRows' }),
+      fetchStrapiBilingual<{ data: StrapiMachine[] }>('machines', { 'populate': 'specs,pricingRows,seo,seo.image', 'sort': 'rank:asc' }),
+      fetchStrapiBilingual<{ data: StrapiCyclorama }>('cyclorama', { 'populate': 'specs,amenities,pricingRows,seo,seo.image' }),
     ]);
 
     const result: Record<string, PlateauSpec> = {};
@@ -530,6 +570,7 @@ export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
         rates,
         ratesNote: cycFr.pricingDescription ? { fr: cycFr.pricingDescription, en: cycEn?.pricingDescription ?? cycFr.pricingDescription } : undefined,
         visual: 'cyc',
+        seo: buildSeo(cycFr.seo, cycEn?.seo),
       };
     }
 
@@ -552,6 +593,7 @@ export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
         uses: MACHINE_USES[mFr.slug] ?? [],
         rates,
         visual: mFr.slug,
+        seo: buildSeo(mFr.seo, mEn.seo),
       };
     });
 
