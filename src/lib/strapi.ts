@@ -1,4 +1,5 @@
 import type { Bilingual, MachineInfo, DiscoveryPost, DiscoveryCategory, SocialLink } from '../types';
+import type { BlockNode } from './render-blocks';
 
 const STRAPI_URL = import.meta.env.VITE_STRAPI_URL || 'https://cms.e-do.studio';
 
@@ -100,6 +101,7 @@ interface StrapiBlogPost {
   slug: string;
   excerpt: string;
   body?: string;
+  bodyBlocks?: BlockNode[];
   coverImage?: StrapiMedia;
   publishedAt: string;
   categories?: { id: number; title: string; slug: string }[];
@@ -669,7 +671,7 @@ function resolveStrapiMediaUrl(media?: StrapiMedia): string | undefined {
 
 export async function fetchDiscoveryPosts(): Promise<DiscoveryPost[]> {
   const resBI = await fetchStrapiBilingual<{ data: StrapiBlogPost[] }>('blog-posts', {
-    'populate': 'categories,coverImage',
+    'populate': 'categories,coverImage,bodyBlocks',
     'sort': 'publishedAt:desc',
     'pagination[pageSize]': '50',
   });
@@ -683,6 +685,8 @@ export async function fetchDiscoveryPosts(): Promise<DiscoveryPost[]> {
     const catEn = pEn.categories?.[0];
     const bodyFr = pFr.body ?? '';
     const bodyEn = pEn.body ?? '';
+    const blocksFr = Array.isArray(pFr.bodyBlocks) ? pFr.bodyBlocks : [];
+    const blocksEn = Array.isArray(pEn.bodyBlocks) ? pEn.bodyBlocks : blocksFr;
     const readingTime = estimateReadingTime(bodyFr || bodyEn);
     return {
       id: pFr.id,
@@ -692,6 +696,7 @@ export async function fetchDiscoveryPosts(): Promise<DiscoveryPost[]> {
       title: { fr: pFr.title, en: pEn.title },
       sub: { fr: pFr.excerpt, en: pEn.excerpt },
       body: { fr: bodyFr, en: bodyEn },
+      bodyBlocks: blocksFr.length > 0 || blocksEn.length > 0 ? { fr: blocksFr, en: blocksEn } : undefined,
       date: formatStrapiDate(pFr.publishedAt),
       read: `${readingTime} min`,
       author: 'Studio',
