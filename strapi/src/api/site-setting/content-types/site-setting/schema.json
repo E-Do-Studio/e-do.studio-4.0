@@ -193,6 +193,44 @@
       "type": "string",
       "regex": "^G-[A-Z0-9]{6,20}$",
       "description": "Identifiant Google Analytics 4 (format `G-XXXXXXXXXX`). Optionnel."
+    },
+    "siteUrl": {
+      "type": "string",
+      "regex": "^https?://.+",
+      "description": "URL canonique du site (ex: `https://e-do.studio`). Utilisée pour générer les URLs absolues SEO/sitemap."
+    },
+    "legalName": {
+      "type": "string",
+      "maxLength": 120,
+      "description": "Raison sociale officielle (ex: « E-Do Studio SAS »). Différente de `siteTitle` qui est le nom commercial."
+    },
+    "siret": {
+      "type": "string",
+      "regex": "^\\d{14}$",
+      "maxLength": 14,
+      "description": "Numéro SIRET (14 chiffres). Affiché dans les mentions légales."
+    },
+    "vatNumber": {
+      "type": "string",
+      "regex": "^[A-Z]{2}\\d{9,12}$",
+      "maxLength": 14,
+      "description": "Numéro de TVA intracommunautaire (ex: `FR12345678901`). Affiché dans les mentions légales."
+    },
+    "currency": {
+      "type": "enumeration",
+      "enum": ["EUR", "USD", "GBP", "CHF"],
+      "default": "EUR",
+      "description": "Devise par défaut affichée pour les tarifs."
+    },
+    "contactEmail": {
+      "type": "email",
+      "description": "Destinataire du formulaire de contact. Différent de `email` (contact général affiché côté site) — peut pointer vers une boîte interne."
+    },
+    "closures": {
+      "type": "component",
+      "component": "shared.closure-period",
+      "repeatable": true,
+      "description": "Fermetures exceptionnelles (ex: « Fermé du 23/12 au 02/01 »). Affiché en encart sur la page contact."
     }
   },
   "pluginOptions": {
