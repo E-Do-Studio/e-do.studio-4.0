@@ -2,6 +2,7 @@ import type { Bilingual, MachineInfo, DiscoveryPost, DiscoveryCategory, SocialLi
 import type { BlockNode } from './render-blocks';
 
 const STRAPI_URL = import.meta.env.VITE_STRAPI_URL || 'https://cms.e-do.studio';
+const STRAPI_TOKEN = import.meta.env.VITE_STRAPI_TOKEN || '';
 
 // ─── Generic fetcher ────────────────────────────────────────────────────────
 
@@ -24,7 +25,14 @@ async function fetchStrapi<T>(path: string, params?: Record<string, string>): Pr
   const cached = cache.get(key);
   if (cached && Date.now() - cached.ts < CACHE_TTL) return cached.data as T;
 
-  const res = await fetch(key);
+  // After the users-permissions plugin removal, the public website
+  // authenticates with a read-only API token via VITE_STRAPI_TOKEN.
+  // Without the token the request is anonymous and Strapi will reject
+  // it with 401 once the plugin is gone.
+  const headers: Record<string, string> = {};
+  if (STRAPI_TOKEN) headers.Authorization = `Bearer ${STRAPI_TOKEN}`;
+
+  const res = await fetch(key, { headers });
   if (!res.ok) throw new Error(`Strapi ${path}: ${res.status}`);
   const json = await res.json();
   cache.set(key, { data: json, ts: Date.now() });
