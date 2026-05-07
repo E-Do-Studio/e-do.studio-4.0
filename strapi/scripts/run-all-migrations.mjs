@@ -69,12 +69,6 @@ const TASKS = [
     null,
   ],
   [
-    'migrate-stage-to-stagekey.mjs',
-    'gallery-project.stage (free string) → stageKey enumeration',
-    ['STRAPI_URL', 'STRAPI_TOKEN'],
-    null,
-  ],
-  [
     'audit-required-candidates.mjs',
     'Read-only audit: which fields are safe to flip to required:true',
     ['DATABASE_CLIENT'],
