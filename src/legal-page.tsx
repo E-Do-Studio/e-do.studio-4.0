@@ -4,8 +4,9 @@ import { useDocumentMeta } from './lib/use-document-meta';
 import type { Lang, Bilingual } from './types';
 import { usePageContext } from './router';
 import { common, legalPage } from './i18n/messages';
-import { useLegalDocuments, useSiteBusinessInfo, useContact } from './lib/use-strapi';
-import type { LegalDocumentMeta, SiteBusinessInfo, ContactInfo } from './lib/strapi';
+import { useLegalDocuments, useSiteBusinessInfo, useContact, useLegalSections } from './lib/use-strapi';
+import type { LegalDocumentMeta, SiteBusinessInfo, ContactInfo, LegalSectionContent, LegalDocumentKey } from './lib/strapi';
+import { renderStrapiBlocks } from './lib/render-blocks';
 
 type Section = LegalDocumentMeta;
 
@@ -277,6 +278,24 @@ interface ArticleProps {
   lang: Lang;
 }
 
+interface StrapiSectionsRendererProps {
+  sections: LegalSectionContent[];
+  lang: Lang;
+}
+
+const StrapiSectionsRenderer = ({ sections, lang }: StrapiSectionsRendererProps) => (
+  <>
+    {sections.map((s) => (
+      <section key={s.slug} className="py-6 border-b border-border">
+        <h3 className="mb-3.5 text-tile-title font-medium tracking-headline text-foreground">{s.title[lang]}</h3>
+        <div className="prose prose-sm max-w-3xl text-detail leading-relaxed text-muted-foreground">
+          {renderStrapiBlocks(s.body[lang])}
+        </div>
+      </section>
+    ))}
+  </>
+);
+
 const Article = ({ n, t, p, lang }: ArticleProps) => (
   <article className="grid grid-cols-legal-article gap-5 py-5 border-b border-border">
     <span className="font-mono text-caption tracking-label text-primary pt-1">Art. {n}</span>
@@ -330,11 +349,14 @@ const LegalPage = () => {
   useDocumentMeta('legal', lang);
   const [sec, setSec] = useState('mentions');
   const { data: legalDocs } = useLegalDocuments();
+  const { data: legalSectionsByDoc } = useLegalSections();
   const { data: businessInfo } = useSiteBusinessInfo();
   const { data: contact } = useContact();
   const sections: Section[] = legalDocs ?? FALLBACK_LEGAL_SECTIONS;
   const active = sections.find(s=>s.k===sec) || sections[0];
   const C = withBusinessOverrides(CONTENT[sec], sec, businessInfo, contact);
+  const strapiBody = legalSectionsByDoc?.[sec as LegalDocumentKey]?.filter((s) => s.body[lang]?.length > 0) ?? [];
+  const hasStrapiBody = strapiBody.length > 0;
 
   return (
     <div className="edo-page-enter grid w-full gap-px bg-hairline overflow-y-auto md:grid-cols-contact-shell md:grid-rows-app md:h-full md:overflow-hidden">
@@ -425,9 +447,13 @@ const LegalPage = () => {
 
         <div className="pt-2 px-5 pb-10 max-w-5xl md:px-10">
 
-          {sec==='mentions' && C.blocks?.map((b,i)=><Block key={i} {...b} lang={lang}/>)}
+          {hasStrapiBody && (
+            <StrapiSectionsRenderer sections={strapiBody} lang={lang} />
+          )}
 
-          {(sec==='cgv' || sec==='cgu' || sec==='privacy') && C.articles && (
+          {!hasStrapiBody && sec==='mentions' && C.blocks?.map((b,i)=><Block key={i} {...b} lang={lang}/>)}
+
+          {!hasStrapiBody && (sec==='cgv' || sec==='cgu' || sec==='privacy') && C.articles && (
             <>
               <div className="pt-4 pb-2 border-b border-border flex justify-between font-mono text-label tracking-meta uppercase text-muted-foreground">
                 <span>{C.articles.length} articles</span>
@@ -437,7 +463,7 @@ const LegalPage = () => {
             </>
           )}
 
-          {sec==='cookies' && C.table && (
+          {!hasStrapiBody && sec==='cookies' && C.table && (
             <div className="pt-5 overflow-x-auto">
               <div className="min-w-[600px] grid grid-cols-cookie-table gap-4 py-3 border-b border-foreground font-mono text-label tracking-meta uppercase text-foreground">
                 <span>{legalPage.cookieName[lang]}</span>
