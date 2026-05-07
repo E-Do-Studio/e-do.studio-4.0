@@ -4,20 +4,17 @@ import { useDocumentMeta } from './lib/use-document-meta';
 import type { Lang, Bilingual } from './types';
 import { usePageContext } from './router';
 import { common, legalPage } from './i18n/messages';
+import { useLegalDocuments } from './lib/use-strapi';
+import type { LegalDocumentMeta } from './lib/strapi';
 
-interface Section {
-  k: string;
-  fr: string;
-  en: string;
-  updated: string;
-}
+type Section = LegalDocumentMeta;
 
-const SECTIONS: Section[] = [
-  { k:'mentions', fr:'Mentions légales', en:'Legal notice', updated:'12.2024' },
-  { k:'cgv', fr:'Conditions de vente', en:'Terms of sale', updated:'05.12.2024' },
-  { k:'cgu', fr:"Conditions d'utilisation", en:'Terms of use', updated:'05.12.2024' },
-  { k:'privacy', fr:'Confidentialité', en:'Privacy policy', updated:'12.2024' },
-  { k:'cookies', fr:'Cookies', en:'Cookies', updated:'12.2024' },
+const FALLBACK_LEGAL_SECTIONS: Section[] = [
+  { k: 'mentions', fr: 'Mentions légales', en: 'Legal notice', updated: '12.2024' },
+  { k: 'cgv', fr: 'Conditions de vente', en: 'Terms of sale', updated: '05.12.2024' },
+  { k: 'cgu', fr: "Conditions d'utilisation", en: 'Terms of use', updated: '05.12.2024' },
+  { k: 'privacy', fr: 'Confidentialité', en: 'Privacy policy', updated: '12.2024' },
+  { k: 'cookies', fr: 'Cookies', en: 'Cookies', updated: '12.2024' },
 ];
 
 interface BlockRow {
@@ -294,7 +291,9 @@ const LegalPage = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
   useDocumentMeta('legal', lang);
   const [sec, setSec] = useState('mentions');
-  const active = SECTIONS.find(s=>s.k===sec) || SECTIONS[0];
+  const { data: legalDocs } = useLegalDocuments();
+  const sections: Section[] = legalDocs ?? FALLBACK_LEGAL_SECTIONS;
+  const active = sections.find(s=>s.k===sec) || sections[0];
   const C = CONTENT[sec];
 
   return (
@@ -341,7 +340,7 @@ const LegalPage = () => {
         <div className="px-4 pt-4 pb-2.5 shrink-0">
           <span className="edo-cell-label">{legalPage.contents[lang]}</span>
         </div>
-        {SECTIONS.map((s,i)=>{
+        {sections.map((s,i)=>{
           const isActive = sec===s.k;
           return (
             <button key={s.k} onClick={()=>setSec(s.k)} className={`edo-focus-ring flex-none py-3 px-4 border-0 cursor-pointer text-left flex flex-col gap-0.5 font-inherit transition-all duration-150 ${isActive ? 'bg-muted border-b-2 border-b-primary md:border-b-0 md:border-l-2 md:border-l-primary' : 'bg-transparent border-b-2 border-b-transparent md:border-b-0 md:border-l-2 md:border-l-transparent hover:bg-muted'}`}>
@@ -369,7 +368,7 @@ const LegalPage = () => {
         <div className="bg-white pt-9 px-5 pb-7 border-b border-border grid grid-cols-fluid-auto gap-6 items-end md:px-10">
           <div>
             <span className="edo-cell-label text-primary">
-              {String(SECTIONS.findIndex(s=>s.k===sec)+1).padStart(2,'0')} · {common.legal[lang]}
+              {String(sections.findIndex(s=>s.k===sec)+1).padStart(2,'0')} · {common.legal[lang]}
             </span>
             <h1 className="mt-2.5 mb-3 text-page-title font-light tracking-display leading-none text-foreground">
               {active[lang]}<span className="text-primary">.</span>

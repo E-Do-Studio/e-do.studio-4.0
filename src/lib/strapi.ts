@@ -820,6 +820,86 @@ export interface SiteDefaults {
   googleAnalyticsId?: string;
 }
 
+export type LegalDocumentKey = 'mentions' | 'cgv' | 'cgu' | 'privacy' | 'cookies';
+
+export interface LegalSection {
+  documentKey: LegalDocumentKey;
+  slug: string;
+  title: Bilingual;
+  lastUpdatedAt?: string;
+}
+
+interface StrapiLegalSection {
+  id: number;
+  documentKey: LegalDocumentKey;
+  slug: string;
+  title: string;
+  lastUpdatedAt?: string;
+  rank?: number;
+}
+
+export interface LegalDocumentMeta {
+  k: LegalDocumentKey;
+  fr: string;
+  en: string;
+  updated: string;
+}
+
+const FALLBACK_LEGAL_DOCUMENTS: LegalDocumentMeta[] = [
+  { k: 'mentions', fr: 'Mentions légales', en: 'Legal notice', updated: '12.2024' },
+  { k: 'cgv', fr: 'Conditions de vente', en: 'Terms of sale', updated: '05.12.2024' },
+  { k: 'cgu', fr: "Conditions d'utilisation", en: 'Terms of use', updated: '05.12.2024' },
+  { k: 'privacy', fr: 'Confidentialité', en: 'Privacy policy', updated: '12.2024' },
+  { k: 'cookies', fr: 'Cookies', en: 'Cookies', updated: '12.2024' },
+];
+
+function formatLastUpdated(iso?: string): string {
+  if (!iso) return '';
+  // Display as MM.YYYY for compactness, matching the existing hardcoded format.
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return `${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`;
+}
+
+export async function fetchLegalDocuments(): Promise<LegalDocumentMeta[]> {
+  try {
+    const resBI = await fetchStrapiBilingual<{ data: StrapiLegalSection[] }>('legal-sections', {
+      'sort': 'rank:asc',
+      'pagination[pageSize]': '200',
+    });
+    const frSections = resBI.fr.data ?? [];
+    const enSections = resBI.en.data ?? [];
+    if (frSections.length === 0) return FALLBACK_LEGAL_DOCUMENTS;
+
+    // Group by documentKey and pick the most recent lastUpdatedAt for the badge.
+    const byDoc = new Map<LegalDocumentKey, { titles: { fr: string; en: string }; updatedIso: string }>();
+    for (const s of frSections) {
+      const en = enSections.find((e) => e.id === s.id) ?? s;
+      const existing = byDoc.get(s.documentKey);
+      const updatedIso = s.lastUpdatedAt ?? existing?.updatedIso ?? '';
+      const newer = !existing?.updatedIso || (s.lastUpdatedAt && s.lastUpdatedAt > existing.updatedIso);
+      byDoc.set(s.documentKey, {
+        titles: existing?.titles ?? { fr: s.title, en: en.title },
+        updatedIso: newer ? (s.lastUpdatedAt ?? existing?.updatedIso ?? '') : (existing?.updatedIso ?? ''),
+      });
+    }
+
+    return FALLBACK_LEGAL_DOCUMENTS.map((doc) => {
+      const found = byDoc.get(doc.k);
+      if (!found) return doc;
+      const formatted = formatLastUpdated(found.updatedIso) || doc.updated;
+      return {
+        k: doc.k,
+        fr: found.titles.fr || doc.fr,
+        en: found.titles.en || doc.en,
+        updated: formatted,
+      };
+    });
+  } catch {
+    return FALLBACK_LEGAL_DOCUMENTS;
+  }
+}
+
 export interface ContactSubject {
   k: string;
   fr: string;
