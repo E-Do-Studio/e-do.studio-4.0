@@ -104,6 +104,12 @@
     "rank": {
       "type": "integer",
       "configurable": false
+    },
+    "seo": {
+      "type": "component",
+      "component": "shared.seo-meta",
+      "repeatable": false,
+      "description": "Métadonnées SEO de la page plateau. Si vides, le titre/description et l'image principale sont utilisés en fallback."
     }
   },
   "pluginOptions": {

@@ -115,6 +115,12 @@
       "multiple": false,
       "allowedTypes": ["images"],
       "description": "Image pour les partages sociaux (1200×630). Si vide, la coverImage est utilisée."
+    },
+    "seo": {
+      "type": "component",
+      "component": "shared.seo-meta",
+      "repeatable": false,
+      "description": "Métadonnées SEO mutualisées. Préférer ce champ aux `seo_*` legacy snake_case (à supprimer en Phase 4 après migration des données)."
     }
   },
   "pluginOptions": {

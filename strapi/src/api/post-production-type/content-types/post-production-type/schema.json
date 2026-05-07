@@ -76,6 +76,12 @@
     "rank": {
       "type": "integer",
       "configurable": false
+    },
+    "seo": {
+      "type": "component",
+      "component": "shared.seo-meta",
+      "repeatable": false,
+      "description": "Métadonnées SEO de la page post-production."
     }
   },
   "pluginOptions": {

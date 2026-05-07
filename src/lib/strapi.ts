@@ -124,6 +124,13 @@ interface StrapiOpeningHour {
   byAppointment?: boolean;
 }
 
+interface StrapiClosurePeriod {
+  label?: string;
+  startsAt: string;
+  endsAt: string;
+  note?: string;
+}
+
 interface StrapiSiteSettings {
   siteTitle?: string;
   siteDescription?: string;
@@ -148,6 +155,13 @@ interface StrapiSiteSettings {
   defaultSeoImage?: StrapiMedia;
   googleAnalyticsId?: string;
   socialLinks?: StrapiSocialLink[];
+  siteUrl?: string;
+  legalName?: string;
+  siret?: string;
+  vatNumber?: string;
+  currency?: 'EUR' | 'USD' | 'GBP' | 'CHF';
+  contactEmail?: string;
+  closures?: StrapiClosurePeriod[];
 }
 
 interface StrapiGalleryBrand {
@@ -811,6 +825,65 @@ export async function fetchStudioHours(): Promise<StudioHours> {
     weekday: { fr: fr.hours ?? '', en: en?.hours ?? fr.hours ?? '' },
     weekend: { fr: fr.weekendHours ?? '', en: en?.weekendHours ?? fr.weekendHours ?? '' },
   };
+}
+
+export interface ClosurePeriod {
+  label?: Bilingual;
+  startsAt: string;
+  endsAt: string;
+  note?: Bilingual;
+}
+
+export interface SiteBusinessInfo {
+  legalName?: string;
+  siret?: string;
+  vatNumber?: string;
+  currency: 'EUR' | 'USD' | 'GBP' | 'CHF';
+  siteUrl?: string;
+  contactEmail?: string;
+  closures: ClosurePeriod[];
+}
+
+const FALLBACK_BUSINESS_INFO: SiteBusinessInfo = {
+  currency: 'EUR',
+  closures: [],
+};
+
+export async function fetchSiteBusinessInfo(): Promise<SiteBusinessInfo> {
+  try {
+    const resBI = await fetchStrapiBilingual<{ data: StrapiSiteSettings }>(
+      'site-setting',
+      { populate: 'closures' },
+    );
+    const fr = resBI.fr.data;
+    const en = resBI.en.data;
+    const closuresFr = fr.closures ?? [];
+    const closuresEn = en?.closures ?? [];
+    const closures: ClosurePeriod[] = closuresFr.map((c, i) => {
+      const cEn = closuresEn[i] ?? c;
+      return {
+        startsAt: c.startsAt,
+        endsAt: c.endsAt,
+        label: c.label || cEn?.label
+          ? { fr: c.label ?? '', en: cEn?.label ?? c.label ?? '' }
+          : undefined,
+        note: c.note || cEn?.note
+          ? { fr: c.note ?? '', en: cEn?.note ?? c.note ?? '' }
+          : undefined,
+      };
+    });
+    return {
+      legalName: fr.legalName,
+      siret: fr.siret,
+      vatNumber: fr.vatNumber,
+      currency: fr.currency ?? 'EUR',
+      siteUrl: fr.siteUrl,
+      contactEmail: fr.contactEmail,
+      closures,
+    };
+  } catch {
+    return FALLBACK_BUSINESS_INFO;
+  }
 }
 
 export interface SiteDefaults {

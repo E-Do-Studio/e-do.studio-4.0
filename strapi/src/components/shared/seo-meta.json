@@ -1,0 +1,46 @@
+{
+  "collectionName": "components_shared_seo_meta",
+  "info": {
+    "displayName": "SEO Meta",
+    "description": "Métadonnées SEO mutualisées (title, description, open graph image, noindex). À attacher comme champ `seo` sur tous les content-types publiés.",
+    "icon": "search"
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "maxLength": 60,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "description": "Titre SEO (≤ 60 caractères). Si vide, le titre principal du contenu est utilisé."
+    },
+    "description": {
+      "type": "text",
+      "maxLength": 160,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "description": "Meta-description SEO (≤ 160 caractères)."
+    },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"],
+      "description": "Image Open Graph (1200×630). Si vide, l'image principale du contenu est utilisée."
+    },
+    "canonicalUrl": {
+      "type": "string",
+      "regex": "^https?://.+",
+      "description": "URL canonique (utile pour éviter le duplicate content si la page est exposée sur plusieurs URLs)."
+    },
+    "noIndex": {
+      "type": "boolean",
+      "default": false,
+      "description": "Cocher pour empêcher l'indexation par les moteurs de recherche (ajoute meta robots noindex)."
+    }
+  }
+}
