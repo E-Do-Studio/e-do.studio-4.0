@@ -1,5 +1,23 @@
 import type { Core } from '@strapi/strapi';
 
+// Default origins always allowed in production. Additional origins (preview
+// URLs, self-hosted deploys with random subdomains, etc.) can be appended via
+// the CORS_ORIGINS env var as a comma-separated list, e.g.:
+//   CORS_ORIGINS=http://abc.sslip.io,https://staging.example.com
+// No code change required when the website moves or a new preview URL appears.
+const DEFAULT_ORIGINS = [
+  'https://e-do.studio',
+  'https://www.e-do.studio',
+  'https://cms.e-do.studio',
+];
+
+const EXTRA_ORIGINS = (process.env.CORS_ORIGINS ?? '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+const ALLOWED_ORIGINS = [...DEFAULT_ORIGINS, ...EXTRA_ORIGINS];
+
 const config: Core.Config.Middlewares = [
   'strapi::logger',
   'strapi::errors',
@@ -34,11 +52,7 @@ const config: Core.Config.Middlewares = [
   {
     name: 'strapi::cors',
     config: {
-      origin: [
-        'https://e-do.studio',
-        'https://www.e-do.studio',
-        'https://cms.e-do.studio',
-      ],
+      origin: ALLOWED_ORIGINS,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'],
       headers: ['Content-Type', 'Authorization', 'Origin', 'Accept'],
       keepHeaderOnError: true,
