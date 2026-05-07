@@ -77,6 +77,18 @@
       },
       "description": "Tarification avec opérateur (même format que pricing). Optionnel."
     },
+    "pricingRows": {
+      "type": "component",
+      "component": "shared.pricing-row",
+      "repeatable": true,
+      "description": "Tarification structurée — remplace progressivement le champ `pricing` (texte parsé en regex). Tant que vide, le front continue de lire `pricing`."
+    },
+    "operatorPricingRows": {
+      "type": "component",
+      "component": "shared.pricing-row",
+      "repeatable": true,
+      "description": "Tarification opérateur structurée — remplace progressivement `operatorPricing`."
+    },
     "gallery": {
       "type": "media",
       "multiple": true,

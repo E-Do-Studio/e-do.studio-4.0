@@ -2,8 +2,8 @@ import { useState } from 'react';
 import type { FormEvent, InputHTMLAttributes, TextareaHTMLAttributes } from 'react';
 import { Button, CellLabel, IconArrowRight, PageHeader, SocialIcon, Wordmark, cn } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
-import { useContact, useStudioHours } from './lib/use-strapi';
-import type { ContactInfo, StudioHours as StudioHoursData } from './lib/strapi';
+import { useContact, useStudioHours, useTeamMembers } from './lib/use-strapi';
+import type { ContactInfo, StudioHours as StudioHoursData, TeamMember as StrapiTeamMember } from './lib/strapi';
 import type { Lang, ContactFormData, Bilingual } from './types';
 import { usePageContext } from './router';
 import { submitContactForm } from './lib/contact';
@@ -29,12 +29,6 @@ interface Subject extends Bilingual {
   k: string;
 }
 
-interface TeamMember {
-  name: string | Bilingual;
-  role: Bilingual;
-  mail: string | null;
-}
-
 interface SocialLinkEntry {
   k: string;
   label: string;
@@ -46,14 +40,6 @@ const SUBJECTS: Subject[] = [
   {k:'reserver', fr:'Réserver un plateau', en:'Book a stage'},
   {k:'ecom', fr:'Production e-commerce', en:'E-commerce production'},
   {k:'visite', fr:'Visite du studio', en:'Studio visit'},
-];
-
-const TEAM: TeamMember[] = [
-  {name:'Thomas Guedj', role:{fr:'Direction & administration',en:'Director & administration'}, mail:null},
-  {name:'Benoît Cougny', role:{fr:'Planification & production',en:'Planning & production'}, mail:null},
-  {name:'Phan Vo', role:{fr:'Image & post-production',en:'Image & post-production'}, mail:null},
-  {name:'Théo Daguier', role:{fr:'Support technique',en:'Technical support'}, mail:null},
-  {name:{fr:'Service général',en:'General enquiries'}, role:{fr:'Accueil & informations',en:'Reception & information'}, mail:'contact@e-do.studio'},
 ];
 
 const SOCIAL_LINKS: SocialLinkEntry[] = [
@@ -421,12 +407,13 @@ const ContactSuccess = ({ lang, setForm, setSent, goto }: ContactSuccessProps) =
 interface ContactRightColumnProps {
   lang: Lang;
   contact: { data: ContactInfo | null; loading: boolean; error: Error | null };
+  team: StrapiTeamMember[];
 }
 
-const ContactRightColumn = ({ lang, contact }: ContactRightColumnProps) => (
+const ContactRightColumn = ({ lang, contact, team }: ContactRightColumnProps) => (
   <aside className="grid grid-rows-2 gap-px overflow-hidden bg-hairline md:col-start-4 md:row-start-2 min-h-72 md:min-h-0">
     <ContactMap lang={lang} contact={contact} />
-    <TeamPanel lang={lang} />
+    <TeamPanel lang={lang} members={team} />
   </aside>
 );
 
@@ -494,31 +481,31 @@ const ContactMap = ({ lang, contact }: ContactMapProps) => {
   );
 };
 
-const TeamPanel = ({ lang }: { lang: Lang }) => (
+const TeamPanel = ({ lang, members }: { lang: Lang; members: StrapiTeamMember[] }) => (
   <section className="flex flex-col gap-3.5 bg-foreground p-6 text-white">
     <span className="edo-cell-label text-white/70">{contactMsg.team[lang]}</span>
     <div className="flex flex-col gap-2.5">
-      {TEAM.map((member, index) => (
-        <TeamMemberRow key={index} member={member} lang={lang} />
+      {members.map((member) => (
+        <TeamMemberRow key={member.id} member={member} lang={lang} />
       ))}
     </div>
   </section>
 );
 
 interface TeamMemberRowProps {
-  member: TeamMember;
+  member: StrapiTeamMember;
   lang: Lang;
 }
 
 const TeamMemberRow = ({ member, lang }: TeamMemberRowProps) => (
   <div className="grid grid-cols-fluid-auto gap-2 border-b border-white/10 py-2">
     <div className="flex flex-col gap-0.5">
-      <span className="text-detail tracking-copy-tight text-white">{typeof member.name === 'string' ? member.name : member.name[lang]}</span>
+      <span className="text-detail tracking-copy-tight text-white">{member.name[lang]}</span>
       <span className="font-mono text-micro uppercase tracking-ui text-white/55">{member.role[lang]}</span>
     </div>
-    {member.mail && (
-      <a href={`mailto:${member.mail}`} className="self-center font-mono text-label tracking-caption text-primary no-underline">
-        {member.mail}
+    {member.email && member.emailHref && (
+      <a href={member.emailHref} className="self-center font-mono text-label tracking-caption text-primary no-underline">
+        {member.email}
       </a>
     )}
   </div>
@@ -529,6 +516,8 @@ const ContactPage = () => {
   useDocumentMeta('contact', lang);
   const contact = useContact();
   const hours = useStudioHours();
+  const teamState = useTeamMembers();
+  const team = teamState.data ?? [];
   const [form, setForm] = useState<ContactFormData>(INITIAL_FORM);
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
@@ -593,7 +582,7 @@ const ContactPage = () => {
       </div>
       <ContactRail lang={lang} contact={contact} hours={hours} />
       <ContactFormPanel lang={lang} form={form} sent={sent} sending={sending} sendError={sendError} setForm={setForm} setSent={setSent} submit={submit} goto={goto} />
-      <ContactRightColumn lang={lang} contact={contact} />
+      <ContactRightColumn lang={lang} contact={contact} team={team} />
     </div>
   );
 };

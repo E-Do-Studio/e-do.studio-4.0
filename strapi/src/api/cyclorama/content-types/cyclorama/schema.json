@@ -111,6 +111,12 @@
       },
       "description": "Note tarifaire (ex: « Remise en blanc 110 € · Électricité 1,40 €/kWh »)."
     },
+    "pricingRows": {
+      "type": "component",
+      "component": "shared.pricing-row",
+      "repeatable": true,
+      "description": "Tarification structurée — remplace progressivement le champ `pricing` (texte parsé en regex). Tant que vide, le front continue de lire `pricing`."
+    },
     "gallery": {
       "type": "media",
       "multiple": true,

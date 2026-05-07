@@ -1,0 +1,58 @@
+{
+  "kind": "collectionType",
+  "collectionName": "team_members",
+  "info": {
+    "singularName": "team-member",
+    "pluralName": "team-members",
+    "displayName": "Équipe · Membre",
+    "description": "Membre de l'équipe E-Do Studio affiché sur la page contact. Ordonnable par drag & drop.",
+    "icon": "user"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true,
+      "minLength": 2,
+      "maxLength": 80,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "description": "Nom complet (ex: « Thomas Guedj »). Localisé uniquement si translittération nécessaire."
+    },
+    "role": {
+      "type": "string",
+      "required": true,
+      "maxLength": 120,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "description": "Rôle / fonction (ex: « Direction & administration »)."
+    },
+    "email": {
+      "type": "email",
+      "description": "Email professionnel. Optionnel — si présent, un lien `mailto:` est rendu côté site."
+    },
+    "photo": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"],
+      "description": "Photo (carrée, 400×400 recommandé). Optionnel."
+    },
+    "rank": {
+      "type": "integer",
+      "configurable": false
+    }
+  }
+}
