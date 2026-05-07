@@ -1,0 +1,62 @@
+{
+  "kind": "collectionType",
+  "collectionName": "legal_sections",
+  "info": {
+    "singularName": "legal-section",
+    "pluralName": "legal-sections",
+    "displayName": "Mentions légales · Section",
+    "description": "Section d'une page légale (mentions, CGV, CGU, RGPD, cookies). Une entrée = une rubrique d'un de ces 5 documents légaux.",
+    "icon": "shield"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "documentKey": {
+      "type": "enumeration",
+      "enum": ["mentions", "cgv", "cgu", "privacy", "cookies"],
+      "required": true,
+      "description": "Document légal auquel cette section appartient."
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true,
+      "description": "Identifiant URL de la section (auto-généré depuis le titre)."
+    },
+    "title": {
+      "type": "string",
+      "required": true,
+      "minLength": 2,
+      "maxLength": 160,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "description": "Titre de la section."
+    },
+    "body": {
+      "type": "blocks",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "description": "Contenu de la section (éditeur structuré Strapi 5 — paragraphes, listes, liens)."
+    },
+    "lastUpdatedAt": {
+      "type": "date",
+      "description": "Date de dernière mise à jour juridique. Affichée à côté du titre du document."
+    },
+    "rank": {
+      "type": "integer",
+      "configurable": false
+    }
+  }
+}

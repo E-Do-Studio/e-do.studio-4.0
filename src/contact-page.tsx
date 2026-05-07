@@ -2,8 +2,8 @@ import { useState } from 'react';
 import type { FormEvent, InputHTMLAttributes, TextareaHTMLAttributes } from 'react';
 import { Button, CellLabel, IconArrowRight, PageHeader, SocialIcon, Wordmark, cn } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
-import { useContact, useStudioHours, useTeamMembers } from './lib/use-strapi';
-import type { ContactInfo, StudioHours as StudioHoursData, TeamMember as StrapiTeamMember } from './lib/strapi';
+import { useContact, useStudioHours, useTeamMembers, useContactSubjects } from './lib/use-strapi';
+import type { ContactInfo, StudioHours as StudioHoursData, TeamMember as StrapiTeamMember, ContactSubject } from './lib/strapi';
 import type { Lang, ContactFormData, Bilingual } from './types';
 import { usePageContext } from './router';
 import { submitContactForm } from './lib/contact';
@@ -25,9 +25,7 @@ function parseMetroLabel(label: string): { line: string | null; name: string } {
   return { line: null, name: label };
 }
 
-interface Subject extends Bilingual {
-  k: string;
-}
+type Subject = ContactSubject;
 
 interface SocialLinkEntry {
   k: string;
@@ -35,12 +33,6 @@ interface SocialLinkEntry {
   href: string;
 }
 
-const SUBJECTS: Subject[] = [
-  {k:'general', fr:'Question générale', en:'General enquiry'},
-  {k:'reserver', fr:'Réserver un plateau', en:'Book a stage'},
-  {k:'ecom', fr:'Production e-commerce', en:'E-commerce production'},
-  {k:'visite', fr:'Visite du studio', en:'Studio visit'},
-];
 
 const SOCIAL_LINKS: SocialLinkEntry[] = [
   {k:'instagram',label:'IG',href:'https://www.instagram.com/edostudio/'},
@@ -233,12 +225,13 @@ interface ContactFormPanelProps {
   setSent: (sent: boolean) => void;
   submit: (event: FormEvent) => void;
   goto: (screen: string) => void;
+  subjects: Subject[];
 }
 
-const ContactFormPanel = ({ lang, form, sent, sending, sendError, setForm, setSent, submit, goto }: ContactFormPanelProps) => (
+const ContactFormPanel = ({ lang, form, sent, sending, sendError, setForm, setSent, submit, goto, subjects }: ContactFormPanelProps) => (
   <main className="overflow-hidden bg-white md:col-start-2 md:col-span-2 md:row-start-2">
     {!sent ? (
-      <ContactForm lang={lang} form={form} setForm={setForm} submit={submit} sending={sending} sendError={sendError} />
+      <ContactForm lang={lang} form={form} setForm={setForm} submit={submit} sending={sending} sendError={sendError} subjects={subjects} />
     ) : (
       <ContactSuccess lang={lang} setForm={setForm} setSent={setSent} goto={goto} />
     )}
@@ -252,9 +245,10 @@ interface ContactFormProps {
   submit: (event: FormEvent) => void;
   sending: boolean;
   sendError: string | null;
+  subjects: Subject[];
 }
 
-const ContactForm = ({ lang, form, setForm, submit, sending, sendError }: ContactFormProps) => (
+const ContactForm = ({ lang, form, setForm, submit, sending, sendError, subjects }: ContactFormProps) => (
   <form
     onSubmit={submit}
     className="grid h-full grid-cols-2 grid-rows-contact-form gap-px bg-border"
@@ -266,7 +260,7 @@ const ContactForm = ({ lang, form, setForm, submit, sending, sendError }: Contac
       </h1>
     </div>
 
-    {SUBJECTS.map((subject, index) => (
+    {subjects.slice(0, 4).map((subject, index) => (
       <SubjectButton
         key={subject.k}
         subject={subject}
@@ -518,6 +512,8 @@ const ContactPage = () => {
   const hours = useStudioHours();
   const teamState = useTeamMembers();
   const team = teamState.data ?? [];
+  const subjectsState = useContactSubjects();
+  const subjects = subjectsState.data ?? [];
   const [form, setForm] = useState<ContactFormData>(INITIAL_FORM);
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
@@ -581,7 +577,7 @@ const ContactPage = () => {
         </button>
       </div>
       <ContactRail lang={lang} contact={contact} hours={hours} />
-      <ContactFormPanel lang={lang} form={form} sent={sent} sending={sending} sendError={sendError} setForm={setForm} setSent={setSent} submit={submit} goto={goto} />
+      <ContactFormPanel lang={lang} form={form} sent={sent} sending={sending} sendError={sendError} setForm={setForm} setSent={setSent} submit={submit} goto={goto} subjects={subjects} />
       <ContactRightColumn lang={lang} contact={contact} team={team} />
     </div>
   );
