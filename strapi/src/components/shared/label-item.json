@@ -1,10 +1,15 @@
 {
   "collectionName": "components_shared_label_items",
   "info": {
-    "displayName": "Label Item",
+    "displayName": "Étiquette",
+    "description": "Étiquette texte simple. Utilisé pour les lignes de transport sur le site-setting.",
     "icon": "tag"
   },
   "attributes": {
-    "label": { "type": "string" }
+    "label": {
+      "type": "string",
+      "maxLength": 100,
+      "description": "Texte de l'étiquette (ex: « Métro 13 — Garibaldi »)."
+    }
   }
 }

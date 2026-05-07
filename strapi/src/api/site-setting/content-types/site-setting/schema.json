@@ -4,7 +4,9 @@
   "info": {
     "singularName": "site-setting",
     "pluralName": "site-settings",
-    "displayName": "Site Settings"
+    "displayName": "Réglages du site",
+    "description": "Configuration globale du site : identité, contact, adresse, horaires, SEO par défaut, réseaux sociaux.",
+    "icon": "cog"
   },
   "options": {
     "draftAndPublish": false
@@ -12,129 +14,179 @@
   "attributes": {
     "siteTitle": {
       "type": "string",
+      "maxLength": 60,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Nom officiel du site (utilisé dans les balises meta)."
     },
     "siteDescription": {
       "type": "text",
+      "maxLength": 160,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Description par défaut du site (utilisée si aucune meta description spécifique n'est définie)."
     },
     "logo": {
       "type": "media",
-      "multiple": false
+      "multiple": false,
+      "allowedTypes": ["images"],
+      "description": "Logo principal (SVG recommandé)."
     },
     "phone": {
-      "type": "string"
+      "type": "string",
+      "regex": "^\\+?[0-9 ]{6,20}$",
+      "description": "Numéro de téléphone affiché (ex: « +33 1 44 04 11 49 »)."
     },
     "phoneHref": {
-      "type": "string"
+      "type": "string",
+      "description": "DEPRECATED — calculé côté front depuis `phone`. À supprimer en Phase 3 (lifecycle de migration)."
     },
     "email": {
-      "type": "string"
+      "type": "email",
+      "description": "Email de contact général (validé par Strapi)."
     },
     "street": {
-      "type": "string"
+      "type": "string",
+      "maxLength": 120,
+      "description": "Numéro et nom de rue."
     },
     "city": {
-      "type": "string"
+      "type": "string",
+      "maxLength": 60,
+      "description": "Ville."
     },
     "postalCode": {
-      "type": "string"
+      "type": "string",
+      "regex": "^\\d{4,10}$",
+      "maxLength": 10,
+      "description": "Code postal."
     },
     "country": {
-      "type": "string"
+      "type": "string",
+      "maxLength": 60,
+      "description": "Pays. À passer en enumeration ISO 3166 en Phase 3."
     },
     "fullAddress": {
-      "type": "string"
+      "type": "string",
+      "maxLength": 200,
+      "description": "DEPRECATED — calculable depuis `street`, `city`, `postalCode`, `country`. À supprimer en Phase 3."
     },
     "googleMapsUrl": {
-      "type": "string"
+      "type": "string",
+      "regex": "^https://(www\\.)?google\\.[a-z.]+/maps.+",
+      "description": "URL Google Maps publique (ouvre dans un nouvel onglet)."
     },
     "mapsEmbedUrl": {
-      "type": "string"
+      "type": "string",
+      "regex": "^https://www\\.google\\.com/maps/embed\\?.+",
+      "description": "URL d'iframe Google Maps Embed. Validé pour éviter une injection arbitraire (rendu en <iframe>)."
     },
     "latitude": {
-      "type": "float"
+      "type": "float",
+      "min": -90,
+      "max": 90,
+      "description": "Coordonnée GPS (latitude)."
     },
     "longitude": {
-      "type": "float"
+      "type": "float",
+      "min": -180,
+      "max": 180,
+      "description": "Coordonnée GPS (longitude)."
     },
     "transport": {
       "type": "component",
       "component": "shared.label-item",
-      "repeatable": true
+      "repeatable": true,
+      "description": "Lignes de transport à proximité (ex: « Métro 13 - Garibaldi »). À refactorer en composant structuré (Phase 3)."
     },
     "parking": {
       "type": "text",
+      "maxLength": 300,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Information sur le stationnement (texte libre)."
     },
     "entries": {
       "type": "component",
       "component": "shared.address-entry",
-      "repeatable": true
+      "repeatable": true,
+      "description": "Entrées du bâtiment (label + adresse précise)."
     },
     "hours": {
       "type": "string",
+      "maxLength": 60,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Horaires en semaine (ex: « 10:00 — 18:00 »). À refactorer en composant `opening-hours` structuré (Phase 3)."
     },
     "weekendHours": {
       "type": "string",
+      "maxLength": 60,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Horaires le week-end (ex: « Sur demande »)."
     },
     "openingHoursSpec": {
-      "type": "text"
+      "type": "text",
+      "description": "DEPRECATED — JSON-LD calculable depuis `hours`/`weekendHours`. À supprimer en Phase 3."
     },
     "socialLinks": {
       "type": "component",
       "component": "shared.social-link",
-      "repeatable": true
+      "repeatable": true,
+      "description": "Liens vers les réseaux sociaux (Instagram, LinkedIn, etc.)."
     },
     "bentoKeywords": {
       "type": "component",
       "component": "shared.bento-keyword",
-      "repeatable": true
+      "repeatable": true,
+      "description": "Mots-clés affichés dans le bento de la home (label + machine + image)."
     },
     "defaultSeoTitle": {
       "type": "string",
+      "maxLength": 60,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Titre SEO par défaut (≤ 60 caractères)."
     },
     "defaultSeoDescription": {
       "type": "text",
+      "maxLength": 160,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Meta-description SEO par défaut (≤ 160 caractères)."
     },
     "defaultSeoImage": {
       "type": "media",
-      "multiple": false
+      "multiple": false,
+      "allowedTypes": ["images"],
+      "description": "Image Open Graph par défaut (1200×630)."
     },
     "googleAnalyticsId": {
-      "type": "string"
+      "type": "string",
+      "regex": "^G-[A-Z0-9]{6,20}$",
+      "description": "Identifiant Google Analytics 4 (format `G-XXXXXXXXXX`). Optionnel."
     }
   },
   "pluginOptions": {

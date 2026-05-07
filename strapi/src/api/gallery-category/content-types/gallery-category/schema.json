@@ -4,7 +4,9 @@
   "info": {
     "singularName": "gallery-category",
     "pluralName": "gallery-categories",
-    "displayName": "Gallery Category"
+    "displayName": "Galerie · Catégorie",
+    "description": "Catégorie de projet affichée comme filtre dans la galerie (Prêt-à-porter, Bijoux, etc.).",
+    "icon": "layer"
   },
   "options": {
     "draftAndPublish": true
@@ -18,15 +20,20 @@
     "name": {
       "type": "string",
       "required": true,
+      "minLength": 2,
+      "maxLength": 60,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Nom de la catégorie côté site (ex: « Prêt-à-porter »)."
     },
     "slug": {
       "type": "uid",
-      "required": true
+      "targetField": "name",
+      "required": true,
+      "description": "Identifiant URL (auto-généré). Utilisé par le front comme clé de filtre."
     },
     "group": {
       "type": "enumeration",
@@ -40,10 +47,12 @@
         "packshot",
         "cyclorama",
         "post-prod"
-      ]
+      ],
+      "description": "DEPRECATED — couplage incorrect catégorie/plateau. À supprimer ou remplacer par une relation vers `machine` (Phase 3). Aujourd'hui jamais lu côté front."
     },
     "rank": {
-      "type": "integer"
+      "type": "integer",
+      "configurable": false
     }
   }
 }

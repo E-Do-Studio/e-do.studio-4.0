@@ -1,17 +1,20 @@
 {
   "collectionName": "components_shared_localized_items",
   "info": {
-    "displayName": "Localized Item",
+    "displayName": "Item de liste",
+    "description": "Texte court utilisé dans une liste à puces (cas d'usage, fonctionnalité, etc.). À renommer `shared.bullet` en Phase 3.",
     "icon": "globe"
   },
   "attributes": {
     "text": {
       "type": "string",
+      "maxLength": 200,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Texte de la puce."
     }
   }
 }

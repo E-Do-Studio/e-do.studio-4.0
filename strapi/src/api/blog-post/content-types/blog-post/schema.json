@@ -4,7 +4,9 @@
   "info": {
     "singularName": "blog-post",
     "pluralName": "blog-posts",
-    "displayName": "Blog Post"
+    "displayName": "Blog · Article",
+    "description": "Article de la section Discovery du site (blog public).",
+    "icon": "newspaper"
   },
   "options": {
     "draftAndPublish": true
@@ -12,36 +14,47 @@
   "attributes": {
     "title": {
       "type": "string",
+      "minLength": 5,
+      "maxLength": 120,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Titre de l'article (5–120 caractères)."
     },
     "slug": {
       "type": "uid",
-      "required": true
+      "targetField": "title",
+      "required": true,
+      "description": "URL de l'article (auto-généré). Ne plus modifier après publication."
     },
     "publishedAt": {
-      "type": "datetime"
+      "type": "datetime",
+      "description": "Date de publication éditoriale. KNOWN ISSUE — shadow le champ système Strapi (draftAndPublish). À renommer en `articleDate` lors du refactor Phase 3."
     },
     "categories": {
       "type": "relation",
       "relation": "manyToMany",
       "target": "api::blog-category.blog-category",
-      "inversedBy": "posts"
+      "inversedBy": "posts",
+      "description": "Catégorie(s) associées à l'article."
     },
     "coverImage": {
       "type": "media",
-      "multiple": false
+      "multiple": false,
+      "allowedTypes": ["images"],
+      "description": "Image de couverture (1200×800 recommandé). Penser à renseigner l'alt text."
     },
     "excerpt": {
       "type": "text",
+      "maxLength": 300,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Chapeau / résumé court de l'article (≤ 300 caractères)."
     },
     "body": {
       "type": "richtext",
@@ -49,46 +62,59 @@
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Contenu principal de l'article. À migrer en `blocks` lors du refactor Phase 3."
     },
     "cta_text": {
       "type": "string",
+      "maxLength": 200,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Texte d'accroche du call-to-action (optionnel). Naming snake_case à harmoniser en Phase 3."
     },
     "cta_label": {
       "type": "string",
+      "maxLength": 60,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Libellé du bouton CTA (ex: « Réserver », « En savoir plus »)."
     },
     "cta_url": {
-      "type": "string"
+      "type": "string",
+      "regex": "^(https?://|/).+",
+      "description": "URL cible du CTA. Doit commencer par http(s):// ou /."
     },
     "seo_title": {
       "type": "string",
+      "maxLength": 60,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Titre SEO (≤ 60 caractères). Si vide, le titre principal est utilisé."
     },
     "seo_description": {
       "type": "text",
+      "maxLength": 160,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Meta-description SEO (≤ 160 caractères). Si vide, l'excerpt est utilisé."
     },
     "seo_image": {
       "type": "media",
-      "multiple": false
+      "multiple": false,
+      "allowedTypes": ["images"],
+      "description": "Image pour les partages sociaux (1200×630). Si vide, la coverImage est utilisée."
     }
   },
   "pluginOptions": {

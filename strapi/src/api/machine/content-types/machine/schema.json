@@ -4,7 +4,9 @@
   "info": {
     "singularName": "machine",
     "pluralName": "machines",
-    "displayName": "Machine"
+    "displayName": "Plateau · Machine",
+    "description": "Machine / plateau de shooting (Live, Eclipse, Horizontal, Vertical…). Ordonnable par drag & drop dans la liste.",
+    "icon": "cube"
   },
   "options": {
     "draftAndPublish": true
@@ -12,64 +14,84 @@
   "attributes": {
     "title": {
       "type": "string",
-      "required": true
+      "required": true,
+      "minLength": 2,
+      "maxLength": 80,
+      "description": "Nom de la machine (ex: « Eclipse »). Non localisé : les noms sont identiques FR/EN."
     },
     "slug": {
       "type": "uid",
       "targetField": "title",
-      "required": true
+      "required": true,
+      "description": "Identifiant URL (auto-généré). Utilisé par le front dans les routes /plateau/{slug}."
     },
     "subtitle": {
       "type": "string",
+      "maxLength": 120,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Accroche courte affichée sous le titre."
     },
     "description": {
       "type": "text",
+      "maxLength": 600,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Description de la machine (≤ 600 caractères)."
     },
     "image": {
       "type": "media",
-      "multiple": false
+      "multiple": false,
+      "allowedTypes": ["images"],
+      "description": "Image principale de la machine."
     },
     "specs": {
       "type": "component",
       "component": "shared.spec",
-      "repeatable": true
+      "repeatable": true,
+      "description": "Caractéristiques techniques (label / valeur)."
     },
     "pricing": {
       "type": "string",
+      "maxLength": 200,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "ATTENTION : actuellement parsé en regex côté front (`split(' · ')`). À refactorer en composant `pricing-row` (Phase 3). Format : « 1 heure / € 120 · Demi-journée / € 410 »."
     },
     "operatorPricing": {
       "type": "string",
+      "maxLength": 200,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Tarification avec opérateur (même format que pricing). Optionnel."
     },
     "gallery": {
       "type": "media",
-      "multiple": true
+      "multiple": true,
+      "allowedTypes": ["images"],
+      "description": "Galerie d'images de la machine."
     },
     "video": {
       "type": "media",
-      "multiple": false
+      "multiple": false,
+      "allowedTypes": ["videos"],
+      "description": "Vidéo de présentation (mp4 recommandé)."
     },
     "rank": {
-      "type": "integer"
+      "type": "integer",
+      "configurable": false
     }
   },
   "pluginOptions": {

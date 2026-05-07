@@ -1,12 +1,36 @@
 {
   "collectionName": "components_shared_social_links",
   "info": {
-    "displayName": "Social Link",
+    "displayName": "Lien social",
+    "description": "Lien vers un réseau social. Le `platform` doit correspondre à une icône supportée côté front.",
     "icon": "link"
   },
   "attributes": {
-    "platform": { "type": "string" },
-    "label": { "type": "string" },
-    "url": { "type": "string" }
+    "platform": {
+      "type": "enumeration",
+      "enum": [
+        "instagram",
+        "linkedin",
+        "facebook",
+        "tiktok",
+        "youtube",
+        "vimeo",
+        "pinterest",
+        "twitter",
+        "x",
+        "behance"
+      ],
+      "description": "Plateforme — choisir dans la liste pour assurer le rendu d'icône côté site."
+    },
+    "label": {
+      "type": "string",
+      "maxLength": 30,
+      "description": "Libellé court affiché à côté de l'icône (ex: « IG », « LI »)."
+    },
+    "url": {
+      "type": "string",
+      "regex": "^https?://.+",
+      "description": "URL complète du profil (https:// recommandé)."
+    }
   }
 }

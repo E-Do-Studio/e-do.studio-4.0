@@ -1,11 +1,20 @@
 {
   "collectionName": "components_shared_address_entries",
   "info": {
-    "displayName": "Address Entry",
+    "displayName": "Entrée d'adresse",
+    "description": "Entrée du bâtiment : libellé court + précision d'adresse.",
     "icon": "mapPin"
   },
   "attributes": {
-    "label": { "type": "string" },
-    "address": { "type": "string" }
+    "label": {
+      "type": "string",
+      "maxLength": 60,
+      "description": "Libellé court (ex: « Bât. 6.7 »)."
+    },
+    "address": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "Précision d'adresse (ex: « 2e étage, porte gauche »)."
+    }
   }
 }

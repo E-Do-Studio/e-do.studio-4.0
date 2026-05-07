@@ -4,7 +4,9 @@
   "info": {
     "singularName": "blog-category",
     "pluralName": "blog-categories",
-    "displayName": "Blog Category"
+    "displayName": "Blog · Catégorie",
+    "description": "Catégorie utilisée pour classer les articles du blog (Discovery).",
+    "icon": "folder"
   },
   "options": {
     "draftAndPublish": true
@@ -12,23 +14,30 @@
   "attributes": {
     "title": {
       "type": "string",
+      "minLength": 2,
+      "maxLength": 60,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Nom de la catégorie tel qu'affiché côté site (ex: « Tendances »)."
     },
     "slug": {
       "type": "uid",
-      "required": true
+      "targetField": "title",
+      "required": true,
+      "description": "URL de la catégorie (auto-généré depuis le titre). Ne plus modifier après publication."
     },
     "description": {
       "type": "text",
+      "maxLength": 300,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "description": "Texte court d'introduction (≤ 300 car). Optionnel."
     },
     "posts": {
       "type": "relation",

@@ -1,20 +1,32 @@
 {
   "collectionName": "components_shared_bento_keywords",
   "info": {
-    "displayName": "Bento Keyword",
+    "displayName": "Mot-clé bento (home)",
+    "description": "Mot-clé affiché dans la grille bento de la home, lié à une machine et une image.",
     "icon": "key"
   },
   "attributes": {
-    "label": { "type": "string" },
+    "label": {
+      "type": "string",
+      "maxLength": 60,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "description": "Texte du mot-clé affiché côté site (localisé)."
+    },
     "machine": {
       "type": "relation",
       "relation": "oneToOne",
-      "target": "api::machine.machine"
+      "target": "api::machine.machine",
+      "description": "Machine associée (clic = navigation vers la page plateau correspondante)."
     },
     "image": {
       "type": "media",
       "multiple": false,
-      "allowedTypes": ["images"]
+      "allowedTypes": ["images"],
+      "description": "Image illustrative du mot-clé."
     }
   }
 }
