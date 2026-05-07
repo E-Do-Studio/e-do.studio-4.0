@@ -49,6 +49,12 @@
       },
       "description": "ATTENTION : actuellement parsé en regex côté front (`parsePriceText`). À refactorer en `pricing-row` (Phase 3). Format : « À partir de 7,90€ », « Sur devis »."
     },
+    "priceRows": {
+      "type": "component",
+      "component": "shared.pricing-row",
+      "repeatable": true,
+      "description": "Tarification structurée — remplace progressivement le champ `price`. Tant que vide, le front continue de lire `price`."
+    },
     "includes": {
       "type": "component",
       "component": "shared.localized-item",

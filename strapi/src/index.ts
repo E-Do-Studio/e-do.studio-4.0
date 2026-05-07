@@ -6,6 +6,7 @@ const ORDERABLE_CONTENT_TYPES = [
   'api::gallery-project.gallery-project',
   'api::machine.machine',
   'api::post-production-type.post-production-type',
+  'api::team-member.team-member',
 ];
 
 const PUBLIC_COLLECTION_TYPES = [
@@ -16,6 +17,7 @@ const PUBLIC_COLLECTION_TYPES = [
   'api::gallery-project.gallery-project',
   'api::machine.machine',
   'api::post-production-type.post-production-type',
+  'api::team-member.team-member',
 ];
 
 const PUBLIC_SINGLE_TYPES = [

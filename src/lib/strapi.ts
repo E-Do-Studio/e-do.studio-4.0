@@ -695,6 +695,58 @@ export interface SiteDefaults {
   googleAnalyticsId?: string;
 }
 
+export interface TeamMember {
+  id: number;
+  name: Bilingual;
+  role: Bilingual;
+  email: string | null;
+  emailHref: string | null;
+  photoUrl?: string;
+}
+
+interface StrapiTeamMember {
+  id: number;
+  name: string;
+  role: string;
+  email: string | null;
+  photo?: StrapiMedia;
+  rank?: number;
+}
+
+const FALLBACK_TEAM_MEMBERS: TeamMember[] = [
+  { id: 1, name: { fr: 'Thomas Guedj', en: 'Thomas Guedj' }, role: { fr: 'Direction & administration', en: 'Director & administration' }, email: null, emailHref: null },
+  { id: 2, name: { fr: 'Benoît Cougny', en: 'Benoît Cougny' }, role: { fr: 'Planification & production', en: 'Planning & production' }, email: null, emailHref: null },
+  { id: 3, name: { fr: 'Phan Vo', en: 'Phan Vo' }, role: { fr: 'Image & post-production', en: 'Image & post-production' }, email: null, emailHref: null },
+  { id: 4, name: { fr: 'Théo Daguier', en: 'Théo Daguier' }, role: { fr: 'Support technique', en: 'Technical support' }, email: null, emailHref: null },
+  { id: 5, name: { fr: 'Service général', en: 'General enquiries' }, role: { fr: 'Accueil & informations', en: 'Reception & information' }, email: 'contact@e-do.studio', emailHref: 'mailto:contact@e-do.studio' },
+];
+
+export async function fetchTeamMembers(): Promise<TeamMember[]> {
+  try {
+    const resBI = await fetchStrapiBilingual<{ data: StrapiTeamMember[] }>('team-members', {
+      'populate': 'photo',
+      'sort': 'rank:asc',
+      'pagination[pageSize]': '50',
+    });
+    const frMembers = resBI.fr.data ?? [];
+    const enMembers = resBI.en.data ?? [];
+    if (frMembers.length === 0) return FALLBACK_TEAM_MEMBERS;
+    return frMembers.map((mFr) => {
+      const mEn = enMembers.find((e) => e.id === mFr.id) ?? mFr;
+      return {
+        id: mFr.id,
+        name: { fr: mFr.name, en: mEn.name },
+        role: { fr: mFr.role, en: mEn.role },
+        email: mFr.email ?? null,
+        emailHref: mFr.email ? `mailto:${mFr.email}` : null,
+        photoUrl: resolveStrapiMediaUrl(mFr.photo),
+      };
+    });
+  } catch {
+    return FALLBACK_TEAM_MEMBERS;
+  }
+}
+
 export async function fetchSiteDefaults(): Promise<SiteDefaults> {
   const resBI = await fetchStrapiBilingual<{ data: StrapiSiteSettings }>(
     'site-setting',

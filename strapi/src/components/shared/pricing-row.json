@@ -1,0 +1,42 @@
+{
+  "collectionName": "components_shared_pricing_rows",
+  "info": {
+    "displayName": "Tarif",
+    "description": "Une ligne de tarification structurée. Remplace le format texte parsé en regex côté front (ex: « 5h / € 650 · 10h / € 880 »).",
+    "icon": "currency"
+  },
+  "attributes": {
+    "label": {
+      "type": "string",
+      "required": true,
+      "maxLength": 80,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "description": "Libellé de la ligne tarifaire (ex: « 1 heure », « Demi-journée », « À partir de »)."
+    },
+    "amount": {
+      "type": "decimal",
+      "min": 0,
+      "description": "Montant en euros (ex: 650.00). Laisser vide si `kind` = quote (« Sur devis »)."
+    },
+    "kind": {
+      "type": "enumeration",
+      "enum": ["unit", "package", "quote"],
+      "default": "unit",
+      "description": "Nature de la ligne : `unit` (prix unitaire), `package` (forfait), `quote` (sur devis)."
+    },
+    "note": {
+      "type": "string",
+      "maxLength": 200,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "description": "Précision facultative (ex: « min 10 personnes », « hors options »)."
+    }
+  }
+}

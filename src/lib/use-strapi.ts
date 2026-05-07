@@ -12,6 +12,7 @@ import {
   fetchSiteDefaults,
   fetchGalleryProjects,
   fetchGalleryCategories,
+  fetchTeamMembers,
   type PlateauSpec,
   type PPCat,
   type GalleryProject,
@@ -19,6 +20,7 @@ import {
   type ContactInfo,
   type StudioHours,
   type SiteDefaults,
+  type TeamMember,
 } from './strapi';
 import type { MachineInfo, DiscoveryPost, DiscoveryCategory, SocialLink } from '../types';
 
@@ -82,4 +84,8 @@ export function useGalleryProjects() {
 
 export function useGalleryCategories() {
   return useAsync<GalleryCategory[]>(fetchGalleryCategories);
+}
+
+export function useTeamMembers() {
+  return useAsync<TeamMember[]>(fetchTeamMembers);
 }
