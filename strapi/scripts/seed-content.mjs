@@ -34,7 +34,39 @@ async function api(path, opts = {}) {
     const text = await res.text();
     throw new Error(`${opts.method || 'GET'} /api/${path} → ${res.status}: ${text}`);
   }
-  return res.json();
+  // Some endpoints (e.g. publish actions) may return 200/204 with no body.
+  const contentType = res.headers.get('content-type') ?? '';
+  if (!contentType.includes('application/json')) return null;
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+// Strapi 5 has Draft & Publish enabled on every CT. POST/PUT to /api/{plural}
+// updates the DRAFT version; the public REST GET only serves PUBLISHED entries
+// (status=published is the default). Without an explicit publish step, every
+// seeded entry is invisible to the website. publishDoc calls the dedicated
+// publish action to promote draft → published per locale.
+async function publishDoc(path, locale) {
+  try {
+    await api(`${path}/actions/publish?locale=${locale}`, { method: 'POST' });
+  } catch (err) {
+    // If already published with no draft changes, Strapi may 400. Don't fail
+    // the whole seed for that — log and continue.
+    const msg = err.message ?? String(err);
+    if (!/already|nothing to publish/i.test(msg)) {
+      console.warn(`    ⚠️  publish failed for ${path} (${locale}): ${msg}`);
+    }
+  }
+}
+
+async function publishCollectionDoc(collection, documentId) {
+  await publishDoc(`${collection}/${documentId}`, 'fr');
+  await publishDoc(`${collection}/${documentId}`, 'en');
+}
+
+async function publishSingle(singleType) {
+  await publishDoc(singleType, 'fr');
+  await publishDoc(singleType, 'en');
 }
 
 async function findBySlug(collection, slug) {
@@ -54,8 +86,9 @@ async function findByTitle(collection, title) {
 
 async function upsertCollection(collection, slug, frData, enData) {
   const existing = await findBySlug(collection, slug);
+  let docId;
   if (existing) {
-    const docId = existing.documentId;
+    docId = existing.documentId;
     await api(`${collection}/${docId}?locale=fr`, {
       method: 'PUT',
       body: JSON.stringify({ data: frData }),
@@ -65,26 +98,27 @@ async function upsertCollection(collection, slug, frData, enData) {
       body: JSON.stringify({ data: enData }),
     });
     console.log(`  ✓ updated ${collection}/${slug}`);
-    return docId;
   } else {
     const created = await api(collection, {
       method: 'POST',
       body: JSON.stringify({ data: { ...frData, locale: 'fr' } }),
     });
-    const docId = created.data.documentId;
+    docId = created.data.documentId;
     await api(`${collection}/${docId}?locale=en`, {
       method: 'PUT',
       body: JSON.stringify({ data: enData }),
     });
     console.log(`  + created ${collection}/${slug}`);
-    return docId;
   }
+  await publishCollectionDoc(collection, docId);
+  return docId;
 }
 
 async function upsertByName(collection, name, frData, enData) {
   const existing = await findByName(collection, name);
+  let docId;
   if (existing) {
-    const docId = existing.documentId;
+    docId = existing.documentId;
     await api(`${collection}/${docId}?locale=fr`, {
       method: 'PUT',
       body: JSON.stringify({ data: frData }),
@@ -96,13 +130,12 @@ async function upsertByName(collection, name, frData, enData) {
       });
     }
     console.log(`  ✓ updated ${collection}/${name}`);
-    return docId;
   } else {
     const created = await api(collection, {
       method: 'POST',
       body: JSON.stringify({ data: { ...frData, locale: 'fr' } }),
     });
-    const docId = created.data.documentId;
+    docId = created.data.documentId;
     if (enData) {
       await api(`${collection}/${docId}?locale=en`, {
         method: 'PUT',
@@ -110,8 +143,10 @@ async function upsertByName(collection, name, frData, enData) {
       });
     }
     console.log(`  + created ${collection}/${name}`);
-    return docId;
   }
+  await publishDoc(`${collection}/${docId}`, 'fr');
+  if (enData) await publishDoc(`${collection}/${docId}`, 'en');
+  return docId;
 }
 
 async function upsertSingle(singleType, frData, enData) {
@@ -133,6 +168,7 @@ async function upsertSingle(singleType, frData, enData) {
     });
     console.log(`  + created ${singleType}`);
   }
+  await publishSingle(singleType);
 }
 
 // ─── 1. Cyclorama (single type) ────────────────────────────────────────────
@@ -819,8 +855,9 @@ async function findLegalBySlug(slug) {
 
 async function upsertLegalSection(slug, frData, enData) {
   const existing = await findLegalBySlug(slug);
+  let docId;
   if (existing) {
-    const docId = existing.documentId;
+    docId = existing.documentId;
     await api(`legal-sections/${docId}?locale=fr`, {
       method: 'PUT',
       body: JSON.stringify({ data: frData }),
@@ -830,20 +867,20 @@ async function upsertLegalSection(slug, frData, enData) {
       body: JSON.stringify({ data: enData }),
     });
     console.log(`  ✓ updated legal-sections/${slug}`);
-    return docId;
   } else {
     const created = await api('legal-sections', {
       method: 'POST',
       body: JSON.stringify({ data: { ...frData, slug, locale: 'fr' } }),
     });
-    const docId = created.data.documentId;
+    docId = created.data.documentId;
     await api(`legal-sections/${docId}?locale=en`, {
       method: 'PUT',
       body: JSON.stringify({ data: enData }),
     });
     console.log(`  + created legal-sections/${slug}`);
-    return docId;
   }
+  await publishCollectionDoc('legal-sections', docId);
+  return docId;
 }
 
 async function seedLegalSections() {
@@ -1276,8 +1313,9 @@ async function findContactSubjectByKey(key) {
 
 async function upsertContactSubject(key, frData, enData) {
   const existing = await findContactSubjectByKey(key);
+  let docId;
   if (existing) {
-    const docId = existing.documentId;
+    docId = existing.documentId;
     await api(`contact-subjects/${docId}?locale=fr`, {
       method: 'PUT',
       body: JSON.stringify({ data: frData }),
@@ -1287,20 +1325,20 @@ async function upsertContactSubject(key, frData, enData) {
       body: JSON.stringify({ data: enData }),
     });
     console.log(`  ✓ updated contact-subjects/${key}`);
-    return docId;
   } else {
     const created = await api('contact-subjects', {
       method: 'POST',
       body: JSON.stringify({ data: { ...frData, key, locale: 'fr' } }),
     });
-    const docId = created.data.documentId;
+    docId = created.data.documentId;
     await api(`contact-subjects/${docId}?locale=en`, {
       method: 'PUT',
       body: JSON.stringify({ data: enData }),
     });
     console.log(`  + created contact-subjects/${key}`);
-    return docId;
   }
+  await publishCollectionDoc('contact-subjects', docId);
+  return docId;
 }
 
 async function seedContactSubjects() {
@@ -1368,6 +1406,7 @@ async function seedBlogPosts() {
         method: 'PUT',
         body: JSON.stringify({ data: { body: placeholderEn } }),
       });
+      await publishCollectionDoc('blog-posts', post.documentId);
       updated++;
       console.log(`  ✓ added placeholder body to blog-posts/${post.slug}`);
     }
