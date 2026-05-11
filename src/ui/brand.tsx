@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { Lang } from '../types';
 import { IconGlobe } from './icons';
-import logoFull from '../../brand/logo-full.png';
-import logoMark from '../../brand/logo-mark.png';
+import logoFull from '../../brand/logo-full.webp';
+import logoMark from '../../brand/logo-mark.webp';
 import { common } from '../i18n/messages';
 
 interface WordmarkProps {
