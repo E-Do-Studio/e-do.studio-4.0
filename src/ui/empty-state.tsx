@@ -1,6 +1,8 @@
 import type { HTMLAttributes, ReactNode } from 'react';
 import { cn } from './cn';
 
+type EmptyStateSize = 'default' | 'compact' | 'page';
+
 interface EmptyStateAction {
   label: string;
   onClick: () => void;
@@ -10,22 +12,30 @@ interface EmptyStateProps extends HTMLAttributes<HTMLDivElement> {
   label: string;
   description?: ReactNode;
   action?: EmptyStateAction;
-  /** Smaller padding, no min-height — for use inside narrow cells/lists */
-  compact?: boolean;
+  size?: EmptyStateSize;
 }
+
+const sizeMap: Record<EmptyStateSize, string> = {
+  /** Smaller padding, no min-height — for use inside narrow cells/lists */
+  compact: 'px-cell py-8',
+  /** Standard block-level empty state */
+  default: 'min-h-96 px-6 py-20',
+  /** Full viewport — mirrors Loader `page` variant for route-level emptiness */
+  page: 'min-h-screen px-6 py-20',
+};
 
 const EmptyState = ({
   label,
   description,
   action,
-  compact = false,
+  size = 'default',
   className,
   ...props
 }: EmptyStateProps) => (
   <div
     className={cn(
-      'flex flex-col items-center justify-center gap-2.5 bg-background text-center text-muted-foreground',
-      compact ? 'px-cell py-8' : 'min-h-96 px-6 py-20',
+      'flex w-full flex-col items-center justify-center gap-2.5 bg-background text-center text-muted-foreground',
+      sizeMap[size],
       className,
     )}
     {...props}
@@ -47,4 +57,4 @@ const EmptyState = ({
 );
 
 export { EmptyState };
-export type { EmptyStateProps, EmptyStateAction };
+export type { EmptyStateProps, EmptyStateAction, EmptyStateSize };

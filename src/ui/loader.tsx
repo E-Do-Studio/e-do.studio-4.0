@@ -14,7 +14,7 @@ interface LoaderProps extends HTMLAttributes<HTMLDivElement> {
 const sizeMap: Record<LoaderSize, string> = {
   inline: 'inline-flex items-center gap-2',
   block: 'flex w-full items-center justify-center gap-2.5 py-12',
-  page: 'flex h-full w-full items-center justify-center gap-2.5 bg-background',
+  page: 'flex min-h-screen w-full items-center justify-center gap-2.5 bg-background',
 };
 
 const Loader = ({ lang = 'fr', size = 'block', label, className, ...props }: LoaderProps) => {

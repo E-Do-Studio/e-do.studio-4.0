@@ -143,20 +143,15 @@ const PostprodPage = () => {
 
   if (!cat) {
     if (ppQuery.loading) {
-      return (
-        <div className="edo-page-enter grid w-full place-items-center bg-background p-12">
-          <Loader lang={lang} size="block" />
-        </div>
-      );
+      return <Loader lang={lang} size="page" />;
     }
     return (
-      <div className="edo-page-enter grid w-full place-items-center bg-background p-12">
-        <EmptyState
-          label="Post-production"
-          description={lang === 'fr' ? 'Aucune catégorie configurée. Renseignez vos types de post-production dans Strapi.' : 'No categories configured. Add post-production types in Strapi.'}
-          action={{ label: lang === 'fr' ? 'Retour accueil' : 'Back home', onClick: () => goto('home') }}
-        />
-      </div>
+      <EmptyState
+        size="page"
+        label="Post-production"
+        description={lang === 'fr' ? 'Aucune catégorie configurée. Renseignez vos types de post-production dans Strapi.' : 'No categories configured. Add post-production types in Strapi.'}
+        action={{ label: lang === 'fr' ? 'Retour accueil' : 'Back home', onClick: () => goto('home') }}
+      />
     );
   }
 

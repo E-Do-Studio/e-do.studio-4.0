@@ -40,4 +40,4 @@ export { Loader } from './loader';
 export type { LoaderProps, LoaderSize } from './loader';
 
 export { EmptyState } from './empty-state';
-export type { EmptyStateProps, EmptyStateAction } from './empty-state';
+export type { EmptyStateProps, EmptyStateAction, EmptyStateSize } from './empty-state';
