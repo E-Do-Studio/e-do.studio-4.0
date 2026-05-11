@@ -23,8 +23,8 @@ export const ArticleOverlay: React.FC<ArticleOverlayProps> = ({ post, lang, onCl
   );
 
   return (
-    <div className="fixed inset-0 z-50 grid grid-rows-page gap-px overflow-hidden bg-black">
-      <div className="row-start-1 flex gap-px bg-black">
+    <div className="fixed inset-0 z-50 grid grid-rows-page gap-px overflow-hidden bg-edo-pure-black">
+      <div className="row-start-1 flex gap-px bg-edo-pure-black">
         <button onClick={onClose} className="edo-focus-ring flex flex-none cursor-pointer items-center gap-2.5 border-0 bg-white px-4 text-foreground transition-colors hover:bg-muted md:px-cell-lg">
           <span className="inline-block rotate-180"><ArrowIcon width="14" height="14" /></span>
           <span className="hidden font-mono text-caption uppercase tracking-label text-foreground sm:inline">
@@ -42,8 +42,8 @@ export const ArticleOverlay: React.FC<ArticleOverlayProps> = ({ post, lang, onCl
         </button>
       </div>
 
-      <div className="row-start-2 grid min-h-0 grid-cols-1 gap-px overflow-y-auto bg-black md:grid-cols-overlay md:overflow-hidden">
-        <div className="relative min-h-64 bg-black md:min-h-0">
+      <div className="row-start-2 grid min-h-0 grid-cols-1 gap-px overflow-y-auto bg-edo-pure-black md:grid-cols-overlay md:overflow-hidden">
+        <div className="relative min-h-64 bg-foreground md:min-h-0">
           {post.coverUrl ? (
             <img src={post.coverUrl} alt={post.title[lang]} className="absolute inset-0 h-full w-full object-cover" />
           ) : (

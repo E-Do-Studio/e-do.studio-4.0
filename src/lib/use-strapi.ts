@@ -17,6 +17,7 @@ import {
   fetchSiteBusinessInfo,
   fetchLegalDocuments,
   fetchLegalSectionsByDocument,
+  fetchHomeHero,
   type PlateauSpec,
   type PPCat,
   type GalleryProject,
@@ -29,6 +30,7 @@ import {
   type SiteBusinessInfo,
   type LegalDocumentMeta,
   type LegalSectionsByDocument,
+  type HomeHero,
 } from './strapi';
 import type { MachineInfo, DiscoveryPost, DiscoveryCategory, SocialLink } from '../types';
 
@@ -112,4 +114,8 @@ export function useLegalDocuments() {
 
 export function useLegalSections() {
   return useAsync<LegalSectionsByDocument>(fetchLegalSectionsByDocument);
+}
+
+export function useHomeHero() {
+  return useAsync<HomeHero | null>(fetchHomeHero);
 }

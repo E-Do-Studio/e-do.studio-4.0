@@ -4,6 +4,8 @@ type B = Bilingual;
 
 export const common = {
   loading: { fr: 'Chargement…', en: 'Loading…' } as B,
+  menu: { fr: 'Menu', en: 'Menu' } as B,
+  close: { fr: 'Fermer', en: 'Close' } as B,
   langToggleLabel: { fr: 'EN', en: 'FR' } as B,
   book: { fr: 'Réserver', en: 'Book' } as B,
   bookNow: { fr: 'Réserver', en: 'Book now' } as B,
@@ -155,6 +157,10 @@ export const assistant = {
   errorFallback: {
     fr: "Désolé, je n'ai pas pu traiter votre demande. Contactez-nous directement à contact@e-do.studio.",
     en: "Sorry, I couldn't process your request. Contact us directly at contact@e-do.studio.",
+  } as B,
+  rateLimited: {
+    fr: 'Trop de messages, réessayez dans quelques minutes ou contactez-nous à contact@e-do.studio.',
+    en: 'Too many messages, please try again in a few minutes or email us at contact@e-do.studio.',
   } as B,
   promptQuote: {
     fr: 'Un {devis} ? Une {visite} ? Une question sur la {post-production} ?',

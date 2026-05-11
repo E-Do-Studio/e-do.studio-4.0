@@ -69,6 +69,12 @@ const TASKS = [
     null,
   ],
   [
+    'backfill-gallery-brands-from-titles.mjs',
+    'gallery-project.title → gallery-brand entries + project.brand link',
+    ['STRAPI_URL', 'STRAPI_TOKEN'],
+    null,
+  ],
+  [
     'audit-required-candidates.mjs',
     'Read-only audit: which fields are safe to flip to required:true',
     ['DATABASE_CLIENT'],

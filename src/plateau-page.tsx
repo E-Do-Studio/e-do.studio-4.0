@@ -1,4 +1,5 @@
-import { IconArrowRight, CellLabel, PageHeader, Wordmark } from './ui';
+import { useParams } from '@tanstack/react-router';
+import { IconArrowRight, CellLabel, PageHeader, Wordmark, Loader } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
 import { usePageContext } from './router';
 import { usePlateaux } from './lib/use-strapi';
@@ -70,13 +71,13 @@ const PlateauPage = ({ slug }: { slug: string }) => {
   const { data: plateaux, loading } = usePlateaux();
   const seoOverride = plateaux?.[slug]?.seo?.[lang];
   useDocumentMeta(metaKey, lang, seoOverride);
-  if (loading || !plateaux) return <div className="flex items-center justify-center h-full bg-white"><span className="text-muted-foreground text-caption animate-pulse">{common.loading[lang]}</span></div>;
+  if (loading || !plateaux) return <Loader lang={lang} size="page" />;
   const p = plateaux[slug] || plateaux.cyclorama;
   const order = ['live','eclipse','horizontal','vertical','cyclorama'];
 
   return (
     /* Mobile: single-column stacked, scrollable. Desktop (md+): 4-column bento */
-    <div className="edo-page-enter grid w-full gap-px bg-black overflow-y-auto md:h-full md:grid-cols-plateau md:grid-rows-plateau md:overflow-hidden">
+    <div className="edo-page-enter grid w-full gap-px bg-edo-pure-black overflow-y-auto md:h-full md:grid-cols-plateau md:grid-rows-plateau md:overflow-hidden">
 
       {/* Mobile header (single row, hidden on desktop) */}
       <PageHeader
@@ -209,4 +210,11 @@ const PlateauPage = ({ slug }: { slug: string }) => {
   );
 };
 
-export { PlateauPage };
+const CycloramaPage = () => <PlateauPage slug="cyclorama" />;
+
+const PlateauSlugPage = () => {
+  const { slug } = useParams({ strict: false }) as { slug: string };
+  return <PlateauPage key={slug} slug={slug} />;
+};
+
+export { PlateauPage, CycloramaPage, PlateauSlugPage };

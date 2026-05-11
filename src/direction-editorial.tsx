@@ -1,14 +1,14 @@
-import { useQueryState, parseAsStringLiteral } from 'nuqs';
+import { lazy, Suspense } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { CellLabel, IconArrowRight, IconPlay, PageHeader, SocialIcon, VideoLoop, cn } from './ui';
+import { useQueryState, parseAsStringEnum } from 'nuqs';
+import { CellLabel, IconArrowRight, PageHeader, SocialIcon, VideoLoop, cn } from './ui';
 import { MarqueeCell } from './cells';
-import { AssistantChat } from './assistant-chat';
-import { useSocialLinks, useGalleryCategories, useMachines, useContact } from './lib/use-strapi';
+
+const AssistantChat = lazy(() => import('./assistant-chat'));
+import { useSocialLinks, useGalleryCategories, useMachines, useContact, useHomeHero } from './lib/use-strapi';
 import { useDocumentMeta } from './lib/use-document-meta';
 import type { Lang } from './types';
 import { usePageContext } from './router';
-import galleryHero from '../assets/gallery-hero.jpg';
-import showreelPreview from '../assets/showreel-preview.png';
 import { common, home as homeMsg } from './i18n/messages';
 
 interface CatIconProps {
@@ -72,16 +72,26 @@ type EcomView = (typeof ECOM_VIEWS)[number];
 
 const DirectionA = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
+  const navigate = useNavigate();
   useDocumentMeta('home', lang);
   const navigate = useNavigate();
   const { data: socialLinks } = useSocialLinks();
   const { data: galleryCategories } = useGalleryCategories();
   const { data: machines } = useMachines();
   const { data: contact } = useContact();
-  const [ecomMode, setEcomMode] = useQueryState<EcomView>(
-    'view',
-    parseAsStringLiteral(ECOM_VIEWS).withDefault('categorie').withOptions({ clearOnDefault: true }),
-  );
+  const { data: homeHero, loading: homeHeroLoading, error: homeHeroError } = useHomeHero();
+  // Only commit to a fallback once we know Strapi returned nothing — avoids the
+  // brief flash of the static poster on first paint while the CMS request is
+  // still in flight.
+  const heroResolved = !homeHeroLoading;
+  const heroCmsVideo = homeHero?.videoUrl;
+  const heroCmsPoster = homeHero?.posterUrl;
+  const heroUseFallback = heroResolved && !heroCmsVideo && !heroCmsPoster;
+  const heroVideo = heroCmsVideo ?? (heroUseFallback ? '/videos/showreel.mp4' : undefined);
+  const heroPoster = heroCmsPoster ?? (heroUseFallback ? '/showreel-preview.webp' : undefined);
+  const heroHasCmsPoster = !!heroCmsPoster;
+  const heroShowStaticPicture = heroUseFallback || (!!homeHeroError && !heroCmsPoster);
+  const [ecomMode, setEcomMode] = useState<'type' | 'machine'>('type');
   const categories = galleryCategories ?? [];
   const ecomMachines: MachineRowItem[] = (machines ?? [])
     .filter((m) => m.slug !== 'cyclorama')
@@ -93,7 +103,7 @@ const DirectionA = () => {
 
   return (
     /* Mobile: 2-col grid, vertical scroll. Desktop (md+): 12-col bento, fixed viewport */
-    <div className="edo-page-enter grid w-full grid-cols-2 gap-px bg-black overflow-y-auto md:h-full md:grid-cols-12 md:grid-rows-home md:overflow-hidden">
+    <div className="edo-page-enter grid w-full grid-cols-2 gap-px bg-edo-pure-black overflow-y-auto md:h-full md:grid-cols-12 md:grid-rows-home md:overflow-hidden">
       <h1 className="sr-only">E-Do Studio — {homeMsg.srTitle[lang]}</h1>
 
       {/* ── Row 1: Header ── */}
@@ -129,10 +139,10 @@ const DirectionA = () => {
               className="pointer-events-none absolute top-1 bottom-1 w-toggle-half bg-foreground transition-all duration-300"
               style={{ left: ecomMode === 'categorie' ? 3 : 'calc(50% + 1.5px)' }}
             />
-            {([
-              { v: 'categorie' as const, fr: 'Par catégorie', en: 'By category' },
-              { v: 'machine' as const, fr: 'Par machine', en: 'By machine' },
-            ]).map(o => {
+            {[
+              { v: 'categorie', fr: 'Par catégorie', en: 'By category' },
+              { v: 'machine', fr: 'Par machine', en: 'By machine' },
+            ].map(o => {
               const active = ecomMode === o.v;
               return (
                 <span
@@ -158,9 +168,7 @@ const DirectionA = () => {
               {categories.map((c) => (
                 <button
                   key={c.k}
-                  onClick={() =>
-                    navigate({ to: `/${lang}/galerie?cat=${encodeURIComponent(c.k)}` })
-                  }
+                  onClick={() => navigate({ to: `/${lang}/galerie`, search: { cat: c.k } })}
                   className="edo-focus-ring group flex aspect-square min-w-0 cursor-pointer flex-col justify-between border-0 border-t border-l border-border bg-white px-3 py-3 text-left text-foreground transition-colors duration-150 hover:bg-muted"
                 >
                   <CatIcon kind={c.k} size={20} />
@@ -198,15 +206,28 @@ const DirectionA = () => {
       {/* ── Rows 2-3 right: Gallery hero ── */}
       <button
         onClick={() => goto('gallery')}
-        className="edo-focus-ring group col-span-2 min-h-48 flex flex-col items-stretch justify-end border-0 bg-edo-dark p-6 text-white transition-all duration-150 hover:brightness-75 md:col-start-7 md:col-end-13 md:row-start-2 md:row-end-4"
-        style={{
-          backgroundImage: `linear-gradient(180deg, rgba(0,0,0,.25) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0) 55%, rgba(0,0,0,.65) 100%), url(${galleryHero})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
+        aria-label={common.gallery[lang]}
+        className="edo-focus-ring group relative col-span-2 min-h-48 flex flex-col items-stretch justify-end overflow-hidden border-0 bg-edo-dark p-6 text-white transition-all duration-150 hover:brightness-75 md:col-start-7 md:col-end-13 md:row-start-2 md:row-end-4"
       >
-        <div className="flex-1" />
-        <div className="flex w-full items-end justify-between gap-4">
+        <picture>
+          <source srcSet="/gallery-hero.avif" type="image/avif" />
+          <source srcSet="/gallery-hero.webp" type="image/webp" />
+          <img
+            src="/gallery-hero.jpg"
+            alt=""
+            width={1280}
+            height={986}
+            fetchPriority="high"
+            decoding="async"
+            className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+          />
+        </picture>
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.25)_0%,rgba(0,0,0,0)_30%,rgba(0,0,0,0)_55%,rgba(0,0,0,.65)_100%)]"
+        />
+        <div className="relative flex-1" />
+        <div className="relative flex w-full items-end justify-between gap-4">
           <div className="min-w-0">
             <div className="text-hero font-light tracking-display leading-solid text-white transition-transform duration-300 group-hover:scale-102">
               {common.gallery[lang]}
@@ -226,11 +247,34 @@ const DirectionA = () => {
           onClick={() => goto('gallery')}
           className="edo-focus-ring group relative flex h-full w-full cursor-pointer items-center justify-center overflow-hidden border-0 bg-edo-dark p-0 text-left transition-all duration-150 hover:brightness-75"
         >
-          <VideoLoop
-            src="/videos/showreel.mp4"
-            poster={showreelPreview}
-            className="absolute inset-0 h-full w-full"
-          />
+          {heroHasCmsPoster ? (
+            <img
+              src={heroPoster}
+              alt={homeHero?.posterAlt ?? ''}
+              fetchPriority="high"
+              decoding="async"
+              className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+            />
+          ) : heroShowStaticPicture ? (
+            <picture>
+              <source srcSet="/showreel-preview.avif" type="image/avif" />
+              <source srcSet="/showreel-preview.webp" type="image/webp" />
+              <img
+                src="/showreel-preview.webp"
+                alt=""
+                fetchPriority="high"
+                decoding="async"
+                className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+              />
+            </picture>
+          ) : null}
+          {heroVideo && (
+            <VideoLoop
+              src={heroVideo}
+              poster={heroPoster}
+              className="absolute inset-0 h-full w-full"
+            />
+          )}
           <div className="absolute inset-0 bg-home-media-gradient" />
         </button>
       </div>
@@ -265,7 +309,7 @@ const DirectionA = () => {
         className="edo-focus-ring group col-span-2 h-20 flex cursor-pointer items-center justify-between gap-3 border-0 bg-primary px-5 py-3 text-left text-white transition-colors duration-150 hover:bg-foreground hover:text-white sm:col-span-1 md:col-start-7 md:col-end-10 md:row-start-4 md:h-21"
       >
         <div className="flex min-w-0 flex-col gap-1 transition-transform duration-150 group-hover:scale-102">
-          <span className="font-mono text-label uppercase tracking-label text-white/75">
+          <span className="font-mono text-label uppercase tracking-label text-white">
             {homeMsg.requestQuoteOr[lang]}
           </span>
           <span className="text-tile-title font-normal tracking-headline leading-tight text-white">
@@ -322,10 +366,19 @@ const DirectionA = () => {
       </button>
 
       {/* ── Rows 4-5 far right: Assistant chat ── */}
-      <AssistantChat
-        lang={lang}
-        className="col-span-2 min-h-52 md:col-start-10 md:col-end-13 md:row-start-4 md:row-end-6 md:min-h-0"
-      />
+      <Suspense
+        fallback={
+          <div
+            aria-hidden
+            className="col-span-2 min-h-52 bg-white md:col-start-10 md:col-end-13 md:row-start-4 md:row-end-6 md:min-h-0"
+          />
+        }
+      >
+        <AssistantChat
+          lang={lang}
+          className="col-span-2 min-h-52 md:col-start-10 md:col-end-13 md:row-start-4 md:row-end-6 md:min-h-0"
+        />
+      </Suspense>
 
       {/* ── Row 6: Social links (wrapped to 4-col grid) ── */}
       <div className="col-span-2 grid grid-cols-4 h-11 gap-px md:col-start-1 md:col-end-5 md:row-start-6">
