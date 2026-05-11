@@ -185,7 +185,7 @@ const AssistantInput = ({ input, setInput, loading, lang, onSend, inputRef }: As
       event.preventDefault();
       onSend(input);
     }}
-    className="mt-auto flex shrink-0 items-center gap-2.5 border-t border-foreground pt-2.5"
+    className="mt-auto flex shrink-0 items-center gap-2.5 border-t border-foreground pt-2.5 transition-colors focus-within:border-primary"
   >
     <input
       ref={inputRef}
@@ -194,12 +194,12 @@ const AssistantInput = ({ input, setInput, loading, lang, onSend, inputRef }: As
       disabled={loading}
       maxLength={MAX_INPUT_CHARS}
       placeholder={assistantMsg.placeholder[lang]}
-      className="edo-focus-ring min-w-0 flex-1 border-0 bg-transparent font-sans text-detail text-foreground opacity-100 placeholder:text-muted-foreground placeholder:transition-colors disabled:opacity-50 group-hover:placeholder:text-primary"
+      className="min-w-0 flex-1 border-0 bg-transparent font-sans text-detail text-foreground caret-primary opacity-100 outline-none placeholder:text-muted-foreground placeholder:transition-colors disabled:opacity-50 group-hover:placeholder:text-primary"
     />
     <button
       type="submit"
       disabled={loading || !input.trim()}
-      className="edo-focus-ring flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-primary opacity-100 transition-opacity disabled:cursor-default disabled:opacity-30"
+      className="edo-focus-ring flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-primary opacity-100 transition-opacity hover:bg-foreground/5 disabled:cursor-default disabled:opacity-30 disabled:hover:bg-transparent"
     >
       <IconArrowRight width="16" height="16" />
     </button>
