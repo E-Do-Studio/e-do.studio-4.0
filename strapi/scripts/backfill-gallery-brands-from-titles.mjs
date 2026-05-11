@@ -98,8 +98,14 @@ async function fetchAll(collection, locale, extra = '') {
 }
 
 async function publishDoc(collection, documentId, locale) {
+  // Promote the current draft to published. The `POST /<plural>/<id>/actions/publish`
+  // route used by older Strapi 5 builds returns 405 on this CMS — `PUT ?status=published`
+  // with an empty data body keeps the draft fields intact and just sets `publishedAt`.
   try {
-    await api(`${collection}/${documentId}/actions/publish?locale=${locale}`, { method: 'POST' });
+    await api(`${collection}/${documentId}?locale=${locale}&status=published`, {
+      method: 'PUT',
+      body: JSON.stringify({ data: {} }),
+    });
   } catch (err) {
     const msg = err.message ?? String(err);
     if (!/already|nothing to publish/i.test(msg)) {
