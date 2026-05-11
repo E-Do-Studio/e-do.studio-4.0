@@ -143,12 +143,11 @@ const PostprodPage = () => {
 
   if (!cat) {
     if (ppQuery.loading) {
-      return <Loader lang={lang} size="page" className="edo-page-enter" />;
+      return <Loader lang={lang} size="page" />;
     }
     return (
       <EmptyState
         size="page"
-        className="edo-page-enter"
         label="Post-production"
         description={lang === 'fr' ? 'Aucune catégorie configurée. Renseignez vos types de post-production dans Strapi.' : 'No categories configured. Add post-production types in Strapi.'}
         action={{ label: lang === 'fr' ? 'Retour accueil' : 'Back home', onClick: () => goto('home') }}

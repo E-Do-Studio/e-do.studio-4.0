@@ -994,7 +994,7 @@ const Step0Configurator = ({ lang, global, setGlobal, sessions, setSessions, act
 
 const MultiPlateauStep = ({ lang, plateaus, perPlateau, setPerPlateau, fallback, renderOne, topBanner }: AnyProps) => {
   const list = plateaus && plateaus.length > 0 ? plateaus : [];
-  if (list.length === 0) { return <EmptyState compact label={bookingMsg.noStageSelected[lang]} />; }
+  if (list.length === 0) { return <EmptyState size="compact" label={bookingMsg.noStageSelected[lang]} />; }
   const setOne = (k, patch) => { setPerPlateau(prev => ({...prev, [k]: {...(prev[k] || {}), ...patch}})); };
   return (
     <div>

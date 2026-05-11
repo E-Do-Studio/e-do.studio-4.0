@@ -61,7 +61,7 @@ export const MorePostsCard: React.FC<MorePostsCardProps> = ({ posts, lang, onOpe
         ))}
 
         {filteredPosts.length === 0 && (
-          <EmptyState compact label={discoveryPage.noPosts[lang]} />
+          <EmptyState size="compact" label={discoveryPage.noPosts[lang]} />
         )}
       </div>
     </section>
