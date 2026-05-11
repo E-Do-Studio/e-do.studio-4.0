@@ -3,6 +3,8 @@ import type { CSSProperties } from "react";
 import { useQueryStates, parseAsString } from "nuqs";
 import { usePageContext } from "./router";
 import { useDocumentMeta } from "./lib/use-document-meta";
+import { useStructuredData } from "./lib/use-structured-data";
+import { buildGalleryCollectionSchema, buildBreadcrumbSchema } from "./lib/structured-data";
 import { useGalleryProjects, useGalleryCategories } from "./lib/use-strapi";
 import type { GalleryProject } from "./lib/strapi";
 import type { Lang } from "./types";
@@ -587,6 +589,16 @@ const GalleryPageV3 = () => {
 
   const projects = strapiProjects ?? [];
   const categories = strapiCategories ?? [];
+  useStructuredData('gallery', [
+    buildGalleryCollectionSchema(projects, categories, lang, '/galerie'),
+    buildBreadcrumbSchema(
+      [
+        { name: lang === 'fr' ? 'Accueil' : 'Home', pathname: '' },
+        { name: common.gallery[lang], pathname: '/galerie' },
+      ],
+      lang,
+    ),
+  ]);
 
   const plateauOptions = useMemo(() => {
     const slugs = new Set(projects.map((p) => p.plateau));

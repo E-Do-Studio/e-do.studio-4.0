@@ -6,6 +6,8 @@ import { ArticleMeta, ArrowIcon } from './shared';
 import { renderMarkdown } from '../lib/render-markdown';
 import { renderStrapiBlocks, type BlockNode } from '../lib/render-blocks';
 import { discoveryPage } from '../i18n/messages';
+import { useStructuredData } from '../lib/use-structured-data';
+import { buildBlogPostingSchema } from '../lib/structured-data';
 
 interface ArticleOverlayProps {
   post: DiscoveryPost;
@@ -21,6 +23,9 @@ export const ArticleOverlay: React.FC<ArticleOverlayProps> = ({ post, lang, onCl
     () => (useBlocks ? '' : renderMarkdown(post.body[lang])),
     [post.body, lang, useBlocks],
   );
+  useStructuredData(`article-${post.id}`, [
+    buildBlogPostingSchema(post, lang, '/discovery'),
+  ]);
 
   return (
     <div className="fixed inset-0 z-50 grid grid-rows-page gap-px overflow-hidden bg-edo-pure-black">

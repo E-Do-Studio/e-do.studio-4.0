@@ -1,6 +1,8 @@
 import { useParams } from '@tanstack/react-router';
 import { IconArrowRight, CellLabel, PageHeader, Wordmark, Loader, PlateauMediaCarousel } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
+import { useStructuredData } from './lib/use-structured-data';
+import { buildPlateauServiceSchema, buildBreadcrumbSchema } from './lib/structured-data';
 import { usePageContext } from './router';
 import { usePlateaux } from './lib/use-strapi';
 import { common, plateau as plateauMsg } from './i18n/messages';
@@ -71,6 +73,21 @@ const PlateauPage = ({ slug }: { slug: string }) => {
   const { data: plateaux, loading } = usePlateaux();
   const seoOverride = plateaux?.[slug]?.seo?.[lang];
   useDocumentMeta(metaKey, lang, seoOverride);
+  const pathname = slug === 'cyclorama' ? '/cyclorama' : `/plateau/${slug}`;
+  const plateauForSchema = plateaux?.[slug];
+  useStructuredData(`plateau-${slug}`, [
+    plateauForSchema
+      ? buildPlateauServiceSchema({ plateau: plateauForSchema, slug, lang, pathname })
+      : null,
+    buildBreadcrumbSchema(
+      [
+        { name: lang === 'fr' ? 'Accueil' : 'Home', pathname: '' },
+        { name: common.stages[lang], pathname },
+        { name: plateauForSchema?.name || slug, pathname },
+      ],
+      lang,
+    ),
+  ]);
   if (loading || !plateaux) return <Loader lang={lang} size="page" />;
   const p = plateaux[slug] || plateaux.cyclorama;
   const order = ['live','eclipse','horizontal','vertical','cyclorama'];
