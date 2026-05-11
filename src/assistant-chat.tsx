@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { IconArrowRight, cn } from './ui';
 import type { Lang, ChatMessage } from './types';
 import { assistant as assistantMsg } from './i18n/messages';
@@ -133,6 +134,46 @@ interface ChatBubbleProps {
   content: string;
 }
 
+const isSafeHref = (href: unknown): href is string =>
+  typeof href === 'string' && /^(https?:|mailto:)/i.test(href);
+
+const assistantMarkdownComponents = {
+  p: ({ children }: { children?: React.ReactNode }) => (
+    <p className="m-0 mb-1.5 last:mb-0">{children}</p>
+  ),
+  strong: ({ children }: { children?: React.ReactNode }) => (
+    <strong className="font-semibold">{children}</strong>
+  ),
+  em: ({ children }: { children?: React.ReactNode }) => (
+    <em className="italic">{children}</em>
+  ),
+  ul: ({ children }: { children?: React.ReactNode }) => (
+    <ul className="m-0 mb-1.5 list-disc pl-4 last:mb-0">{children}</ul>
+  ),
+  ol: ({ children }: { children?: React.ReactNode }) => (
+    <ol className="m-0 mb-1.5 list-decimal pl-4 last:mb-0">{children}</ol>
+  ),
+  li: ({ children }: { children?: React.ReactNode }) => (
+    <li className="mb-0.5">{children}</li>
+  ),
+  a: ({ href, children }: { href?: string; children?: React.ReactNode }) => {
+    if (!isSafeHref(href)) return <>{children}</>;
+    const isMail = href.toLowerCase().startsWith('mailto:');
+    return (
+      <a
+        href={href}
+        target={isMail ? '_self' : '_blank'}
+        rel={isMail ? undefined : 'noopener noreferrer'}
+        className="underline underline-offset-2 hover:text-primary"
+      >
+        {children}
+      </a>
+    );
+  },
+};
+
+const ALLOWED_MARKDOWN_ELEMENTS = ['p', 'strong', 'em', 'a', 'ul', 'ol', 'li', 'br'];
+
 const ChatBubble = ({ role, content }: ChatBubbleProps) => {
   const isUser = role === 'user';
 
@@ -140,8 +181,10 @@ const ChatBubble = ({ role, content }: ChatBubbleProps) => {
     <div className={cn('flex', isUser ? 'justify-end' : 'justify-start')}>
       <div
         className={cn(
-          'max-w-message whitespace-pre-wrap break-words text-caption leading-normal tracking-copy-tight',
-          isUser ? 'bg-foreground px-3 py-2 text-white' : 'bg-transparent py-1 text-foreground'
+          'max-w-message break-words text-caption leading-normal tracking-copy-tight',
+          isUser
+            ? 'bg-foreground px-3 py-2 text-white whitespace-pre-wrap'
+            : 'bg-transparent py-1 text-foreground'
         )}
       >
         {!isUser && (
@@ -149,7 +192,17 @@ const ChatBubble = ({ role, content }: ChatBubbleProps) => {
             E-DO
           </div>
         )}
-        {content}
+        {isUser ? (
+          content
+        ) : (
+          <ReactMarkdown
+            allowedElements={ALLOWED_MARKDOWN_ELEMENTS}
+            unwrapDisallowed
+            components={assistantMarkdownComponents}
+          >
+            {content}
+          </ReactMarkdown>
+        )}
       </div>
     </div>
   );
