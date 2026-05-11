@@ -63,11 +63,32 @@ const NavItemLink = ({ item, index, onClose, navigate }: NavItemLinkProps) => (
       onClose();
       navigate({ to: item.href });
     }}
-    className="edo-focus-ring relative flex min-h-18 cursor-pointer flex-col justify-between border-b border-foreground p-4 no-underline transition-colors hover:bg-muted"
+    className="edo-focus-ring relative flex min-h-13 cursor-pointer flex-col justify-between gap-1 border-b border-foreground px-4 py-2.5 no-underline transition-colors hover:bg-muted"
   >
     <CellLabel>{String(index + 1).padStart(2, "0")}</CellLabel>
-    <span className="mt-auto text-tile-title font-light text-foreground">
+    <span className="mt-auto text-cell font-light text-foreground">
       {item.label}
+    </span>
+  </a>
+);
+
+interface NavExternalLinkProps {
+  href: string;
+  label: string;
+  index: number;
+}
+
+const NavExternalLink = ({ href, label, index }: NavExternalLinkProps) => (
+  <a
+    href={href}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="edo-focus-ring relative flex min-h-13 cursor-pointer flex-col justify-between gap-1 border-b border-foreground px-4 py-2.5 no-underline transition-colors hover:bg-muted"
+  >
+    <CellLabel>{String(index + 1).padStart(2, "0")}</CellLabel>
+    <span className="mt-auto flex items-baseline gap-1.5 text-cell font-light text-foreground">
+      {label}
+      <span aria-hidden="true" className="font-mono text-micro tracking-meta text-muted-foreground">↗</span>
     </span>
   </a>
 );
@@ -163,6 +184,11 @@ const NavMenu = ({ lang, isOpen, onClose, setLang }: NavMenuProps) => {
           {nav.items[lang].map((item, index) => (
             <NavItemLink key={item.href} item={item} index={index} onClose={onClose} navigate={navigate} />
           ))}
+          <NavExternalLink
+            href="https://etouch.e-do.studio"
+            label="Etouch"
+            index={nav.items[lang].length}
+          />
           <SocialGrid links={socialLinks ?? []} />
         </nav>
 

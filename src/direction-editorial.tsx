@@ -1,7 +1,7 @@
 import { lazy, Suspense, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useQueryState, parseAsStringEnum } from 'nuqs';
-import { CellLabel, IconArrowRight, PageHeader, SocialIcon, VideoLoop, cn } from './ui';
+import { CellLabel, IconArrowRight, IconChat, IconX, PageHeader, SocialIcon, VideoLoop, cn } from './ui';
 import { MarqueeCell } from './cells';
 
 const AssistantChat = lazy(() => import('./assistant-chat'));
@@ -9,7 +9,7 @@ import { useSocialLinks, useGalleryCategories, useMachines, useContact, useHomeH
 import { useDocumentMeta } from './lib/use-document-meta';
 import type { Lang } from './types';
 import { usePageContext } from './router';
-import { common, home as homeMsg } from './i18n/messages';
+import { cells as cellsMsg, common, contact as contactMsg, home as homeMsg } from './i18n/messages';
 
 interface CatIconProps {
   kind: string;
@@ -91,6 +91,7 @@ const DirectionA = () => {
   const heroHasCmsPoster = !!heroCmsPoster;
   const heroShowStaticPicture = heroUseFallback || (!!homeHeroError && !heroCmsPoster);
   const [ecomMode, setEcomMode] = useState<EcomView>('categorie');
+  const [chatOpen, setChatOpen] = useState(false);
   const categories = galleryCategories ?? [];
   const ecomMachines: MachineRowItem[] = (machines ?? [])
     .filter((m) => m.slug !== 'cyclorama')
@@ -108,7 +109,8 @@ const DirectionA = () => {
       {/* ── Row 1: Header ── */}
       <PageHeader
         lang={lang}
-        title={homeMsg.monSatHours[lang]}
+        title={contactMsg.hours[lang]}
+        subtitle={homeMsg.monSatHours[lang]}
         className="col-span-2 h-14 md:col-start-1 md:col-span-12 md:row-start-1 md:h-full"
         onMenuClick={openMenu}
         onLogoClick={() => goto('home')}
@@ -241,7 +243,7 @@ const DirectionA = () => {
       </button>
 
       {/* ── Row 4 left: Video / showreel ── */}
-      <div className="col-span-1 min-h-36 flex overflow-hidden bg-black md:col-start-1 md:col-end-4 md:row-start-4 md:min-h-0">
+      <div className="col-span-2 min-h-56 flex overflow-hidden bg-black md:col-span-3 md:col-start-1 md:col-end-4 md:row-start-4 md:min-h-0">
         <button
           onClick={() => goto('gallery')}
           className="edo-focus-ring group relative flex h-full w-full cursor-pointer items-center justify-center overflow-hidden border-0 bg-edo-dark p-0 text-left transition-all duration-150 hover:brightness-75"
@@ -281,7 +283,7 @@ const DirectionA = () => {
       {/* ── Rows 4-5 middle: Cyclorama ── */}
       <button
         onClick={() => goto('cyclorama')}
-        className="edo-focus-ring group col-span-1 min-h-36 flex cursor-pointer flex-col justify-between border-0 bg-white p-5 text-left text-foreground transition-colors duration-150 hover:bg-muted md:col-start-4 md:col-end-7 md:row-start-4 md:row-end-6 md:min-h-0"
+        className="edo-focus-ring group col-span-2 min-h-32 flex cursor-pointer flex-col justify-between border-0 bg-white p-5 text-left text-foreground transition-colors duration-150 hover:bg-muted md:col-span-3 md:col-start-4 md:col-end-7 md:row-start-4 md:row-end-6 md:min-h-0"
       >
         <CellLabel>Espace</CellLabel>
         <div className="flex items-end justify-between gap-3">
@@ -305,7 +307,7 @@ const DirectionA = () => {
       {/* ── Row 4 right: Book CTA ── */}
       <button
         onClick={() => goto('book')}
-        className="edo-focus-ring group col-span-2 h-20 flex cursor-pointer items-center justify-between gap-3 border-0 bg-primary px-5 py-3 text-left text-white transition-colors duration-150 hover:bg-foreground hover:text-white sm:col-span-1 md:col-start-7 md:col-end-10 md:row-start-4 md:h-21"
+        className="edo-focus-ring group col-span-2 h-20 flex cursor-pointer items-center justify-between gap-3 border-0 bg-primary px-5 py-3 text-left text-white transition-colors duration-150 hover:bg-foreground hover:text-white md:col-start-7 md:col-end-10 md:row-start-4 md:h-21"
       >
         <div className="flex min-w-0 flex-col gap-1 transition-transform duration-150 group-hover:scale-102">
           <span className="font-mono text-label uppercase tracking-label text-white">
@@ -323,7 +325,7 @@ const DirectionA = () => {
       {/* ── Row 5 left: Discovery CTA ── */}
       <button
         onClick={() => goto('discovery')}
-        className="edo-focus-ring group relative col-span-2 h-20 flex cursor-pointer items-center justify-between gap-3 border-0 bg-foreground px-4 py-3 text-left text-white transition-all duration-150 hover:brightness-110 sm:col-span-1 md:col-start-1 md:col-end-4 md:row-start-5 md:h-21"
+        className="edo-focus-ring group relative col-span-1 h-20 flex cursor-pointer items-center justify-between gap-3 border-0 bg-foreground px-4 py-3 text-left text-white transition-all duration-150 hover:brightness-110 md:col-start-1 md:col-end-4 md:row-start-5 md:h-21"
       >
         <svg viewBox="0 0 200 84" preserveAspectRatio="none" className="absolute inset-0 h-full w-full opacity-20">
           {[...Array(7)].map((_, i) => (<line key={'h' + i} x1="0" y1={i * 14} x2="200" y2={i * 14} stroke="currentColor" strokeWidth="0.3" />))}
@@ -345,7 +347,7 @@ const DirectionA = () => {
       {/* ── Rows 4-5 right: Post-production ── */}
       <button
         onClick={() => goto('postprod')}
-        className="edo-focus-ring group col-span-2 h-20 flex cursor-pointer flex-col justify-between border-0 bg-white p-5 text-left text-foreground transition-colors duration-150 hover:bg-muted sm:col-span-1 md:col-start-7 md:col-end-10 md:row-start-4 md:row-end-6 md:mt-home-offset md:h-home-offset"
+        className="edo-focus-ring group col-span-1 h-20 flex cursor-pointer flex-col justify-between border-0 bg-white p-5 text-left text-foreground transition-colors duration-150 hover:bg-muted md:col-start-7 md:col-end-10 md:row-start-4 md:row-end-6 md:mt-home-offset md:h-home-offset"
       >
         <CellLabel>Service</CellLabel>
         <div className="flex items-end justify-between gap-2.5">
@@ -364,18 +366,18 @@ const DirectionA = () => {
         </div>
       </button>
 
-      {/* ── Rows 4-5 far right: Assistant chat ── */}
+      {/* ── Rows 4-5 far right: Assistant chat (desktop only; mobile uses FAB) ── */}
       <Suspense
         fallback={
           <div
             aria-hidden
-            className="col-span-2 min-h-52 bg-white md:col-start-10 md:col-end-13 md:row-start-4 md:row-end-6 md:min-h-0"
+            className="hidden bg-white md:flex md:col-start-10 md:col-end-13 md:row-start-4 md:row-end-6 md:min-h-0"
           />
         }
       >
         <AssistantChat
           lang={lang}
-          className="col-span-2 min-h-52 md:col-start-10 md:col-end-13 md:row-start-4 md:row-end-6 md:min-h-0"
+          className="hidden md:flex md:col-start-10 md:col-end-13 md:row-start-4 md:row-end-6 md:min-h-0"
         />
       </Suspense>
 
@@ -398,6 +400,45 @@ const DirectionA = () => {
       {/* ── Row 6: Marquee ── */}
       <div className="col-span-2 h-11 flex items-center overflow-hidden bg-white min-w-0 md:col-start-5 md:col-end-13 md:row-start-6">
         <MarqueeCell size={20} />
+      </div>
+
+      {/* ── Mobile chat FAB + sheet ── */}
+      <button
+        type="button"
+        onClick={() => setChatOpen(true)}
+        aria-label={cellsMsg.assistant[lang]}
+        className="edo-focus-ring fixed bottom-4 right-4 z-overlay flex h-14 w-14 cursor-pointer items-center justify-center border border-foreground bg-primary text-white shadow-lg transition-transform duration-150 hover:scale-105 md:hidden"
+      >
+        <IconChat width="22" height="22" />
+      </button>
+
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={cellsMsg.assistant[lang]}
+        aria-hidden={chatOpen ? undefined : true}
+        {...({ inert: chatOpen ? undefined : '' } as Record<string, unknown>)}
+        className={cn(
+          'fixed inset-0 z-sheet flex flex-col bg-white transition-opacity duration-200 md:hidden',
+          chatOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0',
+        )}
+      >
+        <div className="flex shrink-0 items-center justify-between border-b border-foreground px-4 py-3">
+          <CellLabel>{cellsMsg.assistant[lang]}</CellLabel>
+          <button
+            type="button"
+            onClick={() => setChatOpen(false)}
+            aria-label={common.close[lang]}
+            className="edo-focus-ring flex h-10 w-10 cursor-pointer items-center justify-center border-0 bg-transparent text-foreground transition-colors hover:bg-muted"
+          >
+            <IconX width="20" height="20" />
+          </button>
+        </div>
+        <div className="flex min-h-0 flex-1 flex-col">
+          <Suspense fallback={<div aria-hidden className="flex-1 bg-white" />}>
+            {chatOpen && <AssistantChat lang={lang} className="h-full w-full" />}
+          </Suspense>
+        </div>
       </div>
 
     </div>
