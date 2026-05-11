@@ -79,6 +79,7 @@ interface StrapiMachine {
   specs?: StrapiSpec[];
   pricingRows?: StrapiPricingRow[];
   operatorPricingRows?: StrapiPricingRow[];
+  media?: StrapiMediaItem[];
   seo?: StrapiSeoMeta;
 }
 
@@ -91,6 +92,7 @@ interface StrapiCyclorama {
   specs?: StrapiSpec[];
   amenities?: StrapiLocalizedItem[];
   pricingRows?: StrapiPricingRow[];
+  media?: StrapiMediaItem[];
   seo?: StrapiSeoMeta;
 }
 
@@ -114,6 +116,14 @@ interface StrapiMedia {
     small?: { url: string };
     thumbnail?: { url: string };
   };
+}
+
+interface StrapiMediaItem {
+  kind: 'image' | 'video';
+  image?: StrapiMedia | null;
+  video?: StrapiMedia | null;
+  poster?: StrapiMedia | null;
+  alt?: string | null;
 }
 
 interface StrapiBlogPost {
@@ -234,6 +244,10 @@ export interface SeoMeta {
   noIndex?: boolean;
 }
 
+export type MediaItem =
+  | { kind: 'image'; url: string; alt: Bilingual }
+  | { kind: 'video'; url: string; poster?: string; alt: Bilingual };
+
 export interface PlateauSpec {
   num: string;
   name: string;
@@ -245,6 +259,7 @@ export interface PlateauSpec {
   rates: { k: Bilingual; v: string | Bilingual }[];
   ratesNote?: Bilingual;
   visual: string;
+  media: MediaItem[];
   seo?: Bilingual<SeoMeta>;
 }
 
@@ -312,6 +327,32 @@ function mergeLocalizedItems(frItems: StrapiLocalizedItem[], enItems: StrapiLoca
     fr: frItems[i]?.text ?? '',
     en: enItems[i]?.text ?? '',
   }));
+}
+
+function mergeMediaItems(frItems: StrapiMediaItem[] | undefined, enItems: StrapiMediaItem[] | undefined): MediaItem[] {
+  const fr = frItems ?? [];
+  const en = enItems ?? [];
+  // The media component itself is non-localized in Strapi, but `alt` IS localized
+  // at the entry level — so FR/EN come in as parallel arrays of the same length.
+  // Merge by index; the FR entry is the source of truth for kind/url/poster.
+  const out: MediaItem[] = [];
+  for (let i = 0; i < fr.length; i++) {
+    const f = fr[i];
+    const e = en[i] ?? f;
+    const altFr = f.alt ?? '';
+    const altEn = e.alt ?? altFr;
+    const alt: Bilingual = { fr: altFr, en: altEn };
+    if (f.kind === 'video') {
+      const url = resolveRawMediaUrl(f.video);
+      if (!url) continue;
+      out.push({ kind: 'video', url, poster: resolveRawMediaUrl(f.poster), alt });
+    } else {
+      const url = resolveStrapiMediaUrl(f.image);
+      if (!url) continue;
+      out.push({ kind: 'image', url, alt });
+    }
+  }
+  return out;
 }
 
 function parsePricingToRates(pricingFr: string, pricingEn: string): { k: Bilingual; v: string }[] {
@@ -404,8 +445,8 @@ const MACHINE_LABELS: Record<string, { fr: string; en: string }> = {
 
 export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
   const [machinesBI, cycloBI] = await Promise.all([
-    fetchStrapiBilingual<{ data: StrapiMachine[] }>('machines', { 'populate': 'specs,pricingRows,seo,seo.image', 'sort': 'rank:asc' }),
-    fetchStrapiBilingual<{ data: StrapiCyclorama }>('cyclorama', { 'populate': 'specs,amenities,pricingRows,seo,seo.image' }),
+    fetchStrapiBilingual<{ data: StrapiMachine[] }>('machines', { 'populate': 'specs,pricingRows,seo,seo.image,media,media.image,media.video,media.poster', 'sort': 'rank:asc' }),
+    fetchStrapiBilingual<{ data: StrapiCyclorama }>('cyclorama', { 'populate': 'specs,amenities,pricingRows,seo,seo.image,media,media.image,media.video,media.poster' }),
   ]);
 
   const result: Record<string, PlateauSpec> = {};
@@ -429,6 +470,7 @@ export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
       rates,
       ratesNote: cycFr.pricingDescription ? { fr: cycFr.pricingDescription, en: cycEn?.pricingDescription ?? cycFr.pricingDescription } : undefined,
       visual: 'cyc',
+      media: mergeMediaItems(cycFr.media, cycEn?.media),
       seo: buildSeo(cycFr.seo, cycEn?.seo),
     };
   }
@@ -452,6 +494,7 @@ export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
       uses: MACHINE_USES[mFr.slug] ?? [],
       rates,
       visual: mFr.slug,
+      media: mergeMediaItems(mFr.media, mEn.media),
       seo: buildSeo(mFr.seo, mEn.seo),
     };
   });
@@ -554,7 +597,7 @@ function estimateReadingTime(text: string): number {
   return Math.max(1, Math.round(words / 200));
 }
 
-function resolveStrapiMediaUrl(media?: StrapiMedia): string | undefined {
+function resolveStrapiMediaUrl(media?: StrapiMedia | null): string | undefined {
   if (!media?.url) return undefined;
   const path = media.formats?.medium?.url ?? media.url;
   if (path.startsWith('http')) return path;
