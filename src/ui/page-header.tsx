@@ -97,7 +97,7 @@ const PageHeader = ({
   onLogoClick,
   onLangToggle,
 }: PageHeaderProps) => (
-  <header className={cn('sticky top-0 z-10 flex min-w-0 gap-px bg-foreground', className)}>
+  <header className={cn('sticky top-0 z-10 flex min-w-0 gap-px bg-foreground shadow-[0_1px_0_0_var(--color-foreground)]', className)}>
     <div className="flex h-full flex-none basis-44 gap-px bg-foreground md:basis-nav">
       <button
         onClick={onMenuClick}
