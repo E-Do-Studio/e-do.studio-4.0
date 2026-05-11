@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import type { CSSProperties } from "react";
+import { useQueryStates, parseAsString } from "nuqs";
 import { usePageContext } from "./router";
 import { useDocumentMeta } from "./lib/use-document-meta";
 import { useGalleryProjects, useGalleryCategories } from "./lib/use-strapi";
@@ -342,8 +343,16 @@ const ProjectCoverFallback = ({ project, seed }: { project: GalleryProject; seed
 const GalleryPageV3 = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
   useDocumentMeta('gallery', lang);
-  const [cat, setCat] = useState("all");
-  const [plateau, setPlateau] = useState("all");
+  const [{ cat, plateau }, setFilters] = useQueryStates(
+    {
+      cat: parseAsString.withDefault("all"),
+      plateau: parseAsString.withDefault("all"),
+    },
+    { history: "push", clearOnDefault: true },
+  );
+  const setCat = (c: string) => setFilters({ cat: c === "all" ? null : c });
+  const setPlateau = (p: string) =>
+    setFilters({ plateau: p === "all" ? null : p });
 
   const { data: strapiProjects, loading: projectsLoading } = useGalleryProjects();
   const { data: strapiCategories } = useGalleryCategories();
@@ -380,8 +389,7 @@ const GalleryPageV3 = () => {
   );
 
   const resetFilters = () => {
-    setCat("all");
-    setPlateau("all");
+    setFilters({ cat: null, plateau: null });
   };
 
   return (

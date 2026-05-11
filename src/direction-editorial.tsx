@@ -1,4 +1,6 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense } from 'react';
+import { useNavigate } from '@tanstack/react-router';
+import { useQueryState, parseAsStringEnum } from 'nuqs';
 import { CellLabel, IconArrowRight, PageHeader, SocialIcon, VideoLoop, cn } from './ui';
 import { MarqueeCell } from './cells';
 
@@ -67,6 +69,7 @@ const MachineRow = ({ idx, m, lang, onClick, isLast }: MachineRowProps) => (
 
 const DirectionA = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
+  const navigate = useNavigate();
   useDocumentMeta('home', lang);
   const { data: socialLinks } = useSocialLinks();
   const { data: galleryCategories } = useGalleryCategories();
@@ -124,16 +127,16 @@ const DirectionA = () => {
             {homeMsg.ecommShooting[lang]}
           </h2>
           <button
-            onClick={() => setEcomMode(ecomMode === 'type' ? 'machine' : 'type')}
+            onClick={() => setEcomMode(ecomMode === 'categorie' ? 'machine' : 'categorie')}
             aria-label={homeMsg.toggleMode[lang]}
             className="edo-focus-ring relative grid grid-cols-2 gap-1 border border-foreground bg-white p-1 font-mono flex-shrink-0"
           >
             <span
               className="pointer-events-none absolute top-1 bottom-1 w-toggle-half bg-foreground transition-all duration-300"
-              style={{ left: ecomMode === 'type' ? 3 : 'calc(50% + 1.5px)' }}
+              style={{ left: ecomMode === 'categorie' ? 3 : 'calc(50% + 1.5px)' }}
             />
             {[
-              { v: 'type', fr: 'Par catégorie', en: 'By category' },
+              { v: 'categorie', fr: 'Par catégorie', en: 'By category' },
               { v: 'machine', fr: 'Par machine', en: 'By machine' },
             ].map(o => {
               const active = ecomMode === o.v;
@@ -156,12 +159,12 @@ const DirectionA = () => {
         </div>
 
         <div className="flex flex-1 min-h-0 overflow-hidden bg-white">
-          {ecomMode === 'type' ? (
+          {ecomMode === 'categorie' ? (
             <div className="grid flex-1 grid-cols-3 content-end gap-px bg-white md:grid-cols-6">
-              {categories.map((c, i) => (
+              {categories.map((c) => (
                 <button
                   key={c.k}
-                  onClick={() => goto('gallery')}
+                  onClick={() => navigate({ to: `/${lang}/galerie`, search: { cat: c.k } })}
                   className="edo-focus-ring group flex aspect-square min-w-0 cursor-pointer flex-col justify-between border-0 border-t border-l border-border bg-white px-3 py-3 text-left text-foreground transition-colors duration-150 hover:bg-muted"
                 >
                   <CatIcon kind={c.k} size={20} />
