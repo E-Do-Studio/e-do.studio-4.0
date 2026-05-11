@@ -149,12 +149,12 @@
   /* ---------- brand palette tokens --------------------------- */
   --color-edo-white: var(--edo-white);
   --color-edo-black: var(--edo-black);
-  /* Bento grid empty / surround color — kept named "pure-black" for backward
-     compatibility with existing utility class references, but mapped to white
-     so empty page space reads as white per brand direction (EDO-65). The 1px
-     true-black --border token below is still used for explicit hairline
-     strokes when a divider is needed. */
-  --color-edo-pure-black: var(--edo-white);
+  /* Hairline color for bento grid gap-px dividers. Stays true black so the
+     1px gaps between cells render as visible Swiss-style separators (EDO-79).
+     Pages where short content used to letterbox onto this backdrop (e.g. the
+     gallery scrollable list) wrap their content in `bg-white` so empty space
+     still reads white per EDO-66. */
+  --color-edo-pure-black: var(--edo-pure-black);
   --color-edo-dark: oklch(0.13 0 0);
   --color-edo-ink: var(--edo-black);
   --color-edo-gray-50: var(--edo-gray-50);
