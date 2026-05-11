@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useQueryState, parseAsStringLiteral } from 'nuqs';
+import { useNavigate } from '@tanstack/react-router';
 import { CellLabel, IconArrowRight, IconPlay, PageHeader, SocialIcon, VideoLoop, cn } from './ui';
 import { MarqueeCell } from './cells';
 import { AssistantChat } from './assistant-chat';
@@ -66,14 +67,21 @@ const MachineRow = ({ idx, m, lang, onClick, isLast }: MachineRowProps) => (
   </button>
 );
 
+const ECOM_VIEWS = ['categorie', 'machine'] as const;
+type EcomView = (typeof ECOM_VIEWS)[number];
+
 const DirectionA = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
   useDocumentMeta('home', lang);
+  const navigate = useNavigate();
   const { data: socialLinks } = useSocialLinks();
   const { data: galleryCategories } = useGalleryCategories();
   const { data: machines } = useMachines();
   const { data: contact } = useContact();
-  const [ecomMode, setEcomMode] = useState<'type' | 'machine'>('type');
+  const [ecomMode, setEcomMode] = useQueryState<EcomView>(
+    'view',
+    parseAsStringLiteral(ECOM_VIEWS).withDefault('categorie').withOptions({ clearOnDefault: true }),
+  );
   const categories = galleryCategories ?? [];
   const ecomMachines: MachineRowItem[] = (machines ?? [])
     .filter((m) => m.slug !== 'cyclorama')
@@ -113,18 +121,18 @@ const DirectionA = () => {
             {homeMsg.ecommShooting[lang]}
           </h2>
           <button
-            onClick={() => setEcomMode(ecomMode === 'type' ? 'machine' : 'type')}
+            onClick={() => setEcomMode(ecomMode === 'categorie' ? 'machine' : 'categorie')}
             aria-label={homeMsg.toggleMode[lang]}
             className="edo-focus-ring relative grid grid-cols-2 gap-1 border border-foreground bg-white p-1 font-mono flex-shrink-0"
           >
             <span
               className="pointer-events-none absolute top-1 bottom-1 w-toggle-half bg-foreground transition-all duration-300"
-              style={{ left: ecomMode === 'type' ? 3 : 'calc(50% + 1.5px)' }}
+              style={{ left: ecomMode === 'categorie' ? 3 : 'calc(50% + 1.5px)' }}
             />
-            {[
-              { v: 'type', fr: 'Par catégorie', en: 'By category' },
-              { v: 'machine', fr: 'Par machine', en: 'By machine' },
-            ].map(o => {
+            {([
+              { v: 'categorie' as const, fr: 'Par catégorie', en: 'By category' },
+              { v: 'machine' as const, fr: 'Par machine', en: 'By machine' },
+            ]).map(o => {
               const active = ecomMode === o.v;
               return (
                 <span
@@ -145,12 +153,14 @@ const DirectionA = () => {
         </div>
 
         <div className="flex flex-1 min-h-0 overflow-hidden bg-white">
-          {ecomMode === 'type' ? (
+          {ecomMode === 'categorie' ? (
             <div className="grid flex-1 grid-cols-3 content-end gap-px bg-white md:grid-cols-6">
-              {categories.map((c, i) => (
+              {categories.map((c) => (
                 <button
                   key={c.k}
-                  onClick={() => goto('gallery')}
+                  onClick={() =>
+                    navigate({ to: `/${lang}/galerie?cat=${encodeURIComponent(c.k)}` })
+                  }
                   className="edo-focus-ring group flex aspect-square min-w-0 cursor-pointer flex-col justify-between border-0 border-t border-l border-border bg-white px-3 py-3 text-left text-foreground transition-colors duration-150 hover:bg-muted"
                 >
                   <CatIcon kind={c.k} size={20} />
