@@ -77,7 +77,7 @@ const PlateauPage = ({ slug }: { slug: string }) => {
 
   return (
     /* Mobile: single-column stacked, scrollable. Desktop (md+): 4-column bento */
-    <div className="edo-page-enter grid w-full gap-px bg-edo-pure-black overflow-y-auto md:h-full md:grid-cols-plateau md:grid-rows-plateau md:overflow-hidden">
+    <div className="edo-page-enter grid w-full gap-px bg-edo-pure-black md:h-full md:grid-cols-plateau md:grid-rows-plateau md:overflow-hidden">
 
       {/* Mobile header (single row, hidden on desktop) */}
       <PageHeader

@@ -621,7 +621,7 @@ const GalleryPageV3 = () => {
   };
 
   return (
-    <div className="edo-page-enter grid w-full gap-px bg-edo-pure-black overflow-y-auto md:h-full md:grid-cols-gallery-full md:grid-rows-page md:overflow-hidden">
+    <div className="edo-page-enter grid w-full gap-px bg-edo-pure-black md:h-full md:grid-cols-gallery-full md:grid-rows-page md:overflow-hidden">
 
       <PageHeader
         lang={lang}
