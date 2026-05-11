@@ -6,19 +6,13 @@ import {
   useRouterState,
   useNavigate,
   redirect,
+  lazyRouteComponent,
 } from '@tanstack/react-router';
 import { createContext, useContext, useState } from 'react';
 import type { Lang } from './types';
 import { NavMenu } from './nav-menu';
 import { useGoogleAnalytics } from './lib/use-google-analytics';
 import { DirectionA } from './direction-editorial';
-import { PlateauPage } from './plateau-page';
-import { DiscoveryVariants } from './discovery-pages';
-import { PostprodPage } from './postprod-page';
-import { GalleryPageV3 } from './gallery-page';
-import { ContactPage } from './contact-page';
-import { BookPageV2 } from './book-page';
-import { LegalPage } from './legal-page';
 
 const VALID_LANGS: Lang[] = ['fr', 'en'];
 const DEFAULT_LANG: Lang = 'fr';
@@ -137,58 +131,55 @@ const homeRoute = createRoute({
 const cycloramaRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/cyclorama',
-  component: () => <PlateauPage slug="cyclorama" />,
+  component: lazyRouteComponent(() => import('./plateau-page'), 'CycloramaPage'),
 });
 
 const plateauRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/plateau/$slug',
-  component: () => {
-    const params = plateauRoute.useParams();
-    return <PlateauPage key={params.slug} slug={params.slug} />;
-  },
+  component: lazyRouteComponent(() => import('./plateau-page'), 'PlateauSlugPage'),
 });
 
 const discoveryRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/discovery',
-  component: DiscoveryVariants,
+  component: lazyRouteComponent(() => import('./discovery-pages'), 'DiscoveryVariants'),
 });
 
 const postprodRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/post-production',
-  component: PostprodPage,
+  component: lazyRouteComponent(() => import('./postprod-page'), 'PostprodPage'),
 });
 
 const galleryRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/galerie',
-  component: GalleryPageV3,
+  component: lazyRouteComponent(() => import('./gallery-page'), 'GalleryPageV3'),
 });
 
 const contactRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/contact',
-  component: ContactPage,
+  component: lazyRouteComponent(() => import('./contact-page'), 'ContactPage'),
 });
 
 const bookFrRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/reserver',
-  component: BookPageV2,
+  component: lazyRouteComponent(() => import('./book-page'), 'BookPageV2'),
 });
 
 const bookEnRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/book',
-  component: BookPageV2,
+  component: lazyRouteComponent(() => import('./book-page'), 'BookPageV2'),
 });
 
 const legalRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/legal',
-  component: LegalPage,
+  component: lazyRouteComponent(() => import('./legal-page'), 'LegalPage'),
 });
 
 const routeTree = rootRoute.addChildren([
