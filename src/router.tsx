@@ -11,6 +11,7 @@ import {
 import { createContext, useContext, useState } from 'react';
 import type { Lang } from './types';
 import { NavMenu } from './nav-menu';
+import { CookieBanner } from './cookie-banner';
 import { useGoogleAnalytics } from './lib/use-google-analytics';
 import { DirectionA } from './direction-editorial';
 import { Loader } from './ui';
@@ -105,6 +106,7 @@ function LangLayout() {
         isOpen={menuOpen}
         onClose={() => setMenuOpen(false)}
       />
+      <CookieBanner lang={lang} onLegalClick={() => goto('legal')} />
     </PageContext.Provider>
   );
 }

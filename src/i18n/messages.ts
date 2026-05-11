@@ -128,6 +128,18 @@ export const legalPage = {
   print: { fr: 'Imprimer', en: 'Print' } as B,
 };
 
+export const cookieBanner = {
+  title: { fr: 'Cookies', en: 'Cookies' } as B,
+  body: {
+    fr: "Nous utilisons des cookies pour mesurer l'audience du site. Vous pouvez accepter ou refuser. En savoir plus :",
+    en: 'We use cookies to measure site audience. You can accept or refuse. Learn more:',
+  } as B,
+  accept: { fr: 'Accepter', en: 'Accept' } as B,
+  reject: { fr: 'Refuser', en: 'Refuse' } as B,
+  legalLink: { fr: 'politique cookies', en: 'cookie policy' } as B,
+  ariaLabel: { fr: 'Bandeau de consentement aux cookies', en: 'Cookie consent banner' } as B,
+};
+
 export const cells = {
   about: { fr: 'À propos', en: 'About' } as B,
   aboutBody: {

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useSiteDefaults } from './use-strapi';
+import { useCookieConsent } from './use-cookie-consent';
 
 declare global {
   interface Window {
@@ -13,10 +14,12 @@ const INLINE_ID = 'edo-ga-inline';
 
 export function useGoogleAnalytics() {
   const { data } = useSiteDefaults();
+  const { consent } = useCookieConsent();
   const gaId = data?.googleAnalyticsId?.trim();
 
   useEffect(() => {
     if (!gaId) return;
+    if (consent !== 'accepted') return;
     if (document.getElementById(SCRIPT_ID)) return;
 
     const script = document.createElement('script');
@@ -29,5 +32,5 @@ export function useGoogleAnalytics() {
     inline.id = INLINE_ID;
     inline.text = `window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}window.gtag=gtag;gtag('js', new Date());gtag('config', ${JSON.stringify(gaId)});`;
     document.head.appendChild(inline);
-  }, [gaId]);
+  }, [gaId, consent]);
 }
