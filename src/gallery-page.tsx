@@ -5,7 +5,7 @@ import { useDocumentMeta } from "./lib/use-document-meta";
 import { useGalleryProjects, useGalleryCategories } from "./lib/use-strapi";
 import type { GalleryProject } from "./lib/strapi";
 import type { Lang } from "./types";
-import { Button, PageHeader, IconArrowRight, CellLabel, Wordmark } from "./ui";
+import { EmptyState, Loader, PageHeader, IconArrowRight, CellLabel, Wordmark } from "./ui";
 import { cn } from "./ui/cn";
 import { common, galleryPage } from "./i18n/messages";
 
@@ -212,12 +212,16 @@ const GalleryContent = ({
   resetFilters,
   loading,
 }: GalleryContentProps) => (
-  <div className="min-h-0 overflow-y-auto bg-black">
-    <div className="flex flex-col gap-px bg-black">
+  <div className="min-h-0 overflow-y-auto bg-edo-pure-black">
+    <div className="flex flex-col gap-px bg-edo-pure-black">
       {loading ? (
-        <GalleryLoadingState />
+        <Loader lang={lang} size="block" className="bg-background py-24" />
       ) : filtered.length === 0 ? (
-        <GalleryEmptyState lang={lang} onReset={resetFilters} />
+        <EmptyState
+          label={galleryPage.noResults[lang]}
+          description={galleryPage.tryAnotherFilter[lang]}
+          action={{ label: common.reset[lang], onClick: resetFilters }}
+        />
       ) : (
         filtered.map((project) => (
           <ProjectRow
@@ -230,46 +234,8 @@ const GalleryContent = ({
   </div>
 );
 
-const GalleryLoadingState = () => (
-  <div className="flex flex-col gap-px">
-    {[0, 1, 2].map((i) => (
-      <div key={i} className="grid gap-px bg-black grid-cols-2 md:grid-cols-gallery-row">
-        <div className="bg-white animate-pulse h-80" />
-        <div className="bg-muted animate-pulse h-80" />
-        <div className="bg-muted animate-pulse h-80" />
-        <div className="bg-muted animate-pulse h-80 hidden md:block" />
-      </div>
-    ))}
-  </div>
-);
-
-const GalleryEmptyState = ({
-  lang,
-  onReset,
-}: {
-  lang: Lang;
-  onReset: () => void;
-}) => (
-  <div className="flex min-h-96 flex-col items-center justify-center gap-2.5 bg-white px-6 py-20 text-muted-foreground">
-    <span className="edo-cell-label">
-      {galleryPage.noResults[lang]}
-    </span>
-    <span className="text-detail">
-      {galleryPage.tryAnotherFilter[lang]}
-    </span>
-    <Button
-      variant="outline"
-      size="sm"
-      onClick={onReset}
-      className="mt-2.5"
-    >
-      {common.reset[lang]}
-    </Button>
-  </div>
-);
-
 const ProjectRow = ({ project, style }: { project: GalleryProject; style?: CSSProperties }) => (
-  <div className="edo-list-row grid gap-px bg-black grid-cols-2 md:grid-cols-gallery-row" style={style}>
+  <div className="edo-list-row grid gap-px bg-edo-pure-black grid-cols-2 md:grid-cols-gallery-row" style={style}>
     <ProjectLabel project={project} />
     {[0, 1, 2].map((imageIndex) => (
       <ProjectImage
@@ -413,7 +379,7 @@ const GalleryPageV3 = () => {
   };
 
   return (
-    <div className="edo-page-enter grid w-full gap-px bg-black overflow-y-auto md:h-full md:grid-cols-gallery-full md:grid-rows-page md:overflow-hidden">
+    <div className="edo-page-enter grid w-full gap-px bg-edo-pure-black overflow-y-auto md:h-full md:grid-cols-gallery-full md:grid-rows-page md:overflow-hidden">
 
       <PageHeader
         lang={lang}
@@ -457,7 +423,7 @@ const GalleryPageV3 = () => {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-px bg-black md:col-span-full md:row-start-2 md:min-h-0 md:overflow-hidden md:grid-cols-gallery-shell">
+      <div className="grid grid-cols-1 gap-px bg-edo-pure-black md:col-span-full md:row-start-2 md:min-h-0 md:overflow-hidden md:grid-cols-gallery-shell">
         <div className="bg-white overflow-x-auto md:overflow-x-hidden md:overflow-y-auto">
           <div className="flex flex-row md:flex-col min-w-max md:min-w-0">
             <GalleryFilters

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, CellLabel, IconArrowRight, PageHeader, Wordmark } from './ui';
+import { Button, CellLabel, EmptyState, IconArrowRight, Loader, PageHeader, Wordmark } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
 import { usePostProdTypes } from './lib/use-strapi';
 import type { PPCat as StrapiPPCat } from './lib/strapi';
@@ -128,24 +128,27 @@ const PostprodPage = () => {
   const lineCls = dark ? 'border-white/18' : 'border-border';
 
   if (!cat) {
-    return (
-      <div className="edo-page-enter grid w-full place-items-center bg-white p-12">
-        <div className="flex flex-col items-center gap-3 text-center">
-          <CellLabel className="text-primary">Post-production</CellLabel>
-          <p className="m-0 text-detail text-muted-foreground max-w-md">
-            {ppQuery.loading
-              ? common.loading[lang]
-              : (lang === 'fr' ? 'Aucune catégorie configurée. Renseignez vos types de post-production dans Strapi.' : 'No categories configured. Add post-production types in Strapi.')}
-          </p>
-          <Button onClick={()=>goto('home')} variant="default">{lang==='fr'?'Retour accueil':'Back home'}</Button>
+    if (ppQuery.loading) {
+      return (
+        <div className="edo-page-enter grid w-full place-items-center bg-background p-12">
+          <Loader lang={lang} size="block" />
         </div>
+      );
+    }
+    return (
+      <div className="edo-page-enter grid w-full place-items-center bg-background p-12">
+        <EmptyState
+          label="Post-production"
+          description={lang === 'fr' ? 'Aucune catégorie configurée. Renseignez vos types de post-production dans Strapi.' : 'No categories configured. Add post-production types in Strapi.'}
+          action={{ label: lang === 'fr' ? 'Retour accueil' : 'Back home', onClick: () => goto('home') }}
+        />
       </div>
     );
   }
 
   return (
     /* Mobile: single-column scrollable. Desktop (md+): sidebar + workspace */
-    <div className="edo-page-enter grid w-full gap-px bg-black overflow-y-auto md:h-full md:grid-cols-plateau md:grid-rows-app md:overflow-hidden">
+    <div className="edo-page-enter grid w-full gap-px bg-edo-pure-black overflow-y-auto md:h-full md:grid-cols-plateau md:grid-rows-app md:overflow-hidden">
 
       {/* Mobile header */}
       <PageHeader
