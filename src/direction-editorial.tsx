@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { CellLabel, IconArrowRight, IconPlay, PageHeader, SocialIcon, VideoLoop, cn } from './ui';
 import { MarqueeCell } from './cells';
-import { AssistantChat } from './assistant-chat';
+
+const AssistantChat = lazy(() => import('./assistant-chat'));
 import { useSocialLinks, useGalleryCategories, useMachines, useContact } from './lib/use-strapi';
 import { useDocumentMeta } from './lib/use-document-meta';
 import type { Lang } from './types';
@@ -321,10 +322,19 @@ const DirectionA = () => {
       </button>
 
       {/* ── Rows 4-5 far right: Assistant chat ── */}
-      <AssistantChat
-        lang={lang}
-        className="col-span-2 min-h-52 md:col-start-10 md:col-end-13 md:row-start-4 md:row-end-6 md:min-h-0"
-      />
+      <Suspense
+        fallback={
+          <div
+            aria-hidden
+            className="col-span-2 min-h-52 bg-white md:col-start-10 md:col-end-13 md:row-start-4 md:row-end-6 md:min-h-0"
+          />
+        }
+      >
+        <AssistantChat
+          lang={lang}
+          className="col-span-2 min-h-52 md:col-start-10 md:col-end-13 md:row-start-4 md:row-end-6 md:min-h-0"
+        />
+      </Suspense>
 
       {/* ── Row 6: Social links (wrapped to 4-col grid) ── */}
       <div className="col-span-2 grid grid-cols-4 h-11 gap-px md:col-start-1 md:col-end-5 md:row-start-6">

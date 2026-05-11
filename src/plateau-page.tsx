@@ -1,3 +1,4 @@
+import { useParams } from '@tanstack/react-router';
 import { IconArrowRight, CellLabel, PageHeader, Wordmark } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
 import { usePageContext } from './router';
@@ -209,4 +210,11 @@ const PlateauPage = ({ slug }: { slug: string }) => {
   );
 };
 
-export { PlateauPage };
+const CycloramaPage = () => <PlateauPage slug="cyclorama" />;
+
+const PlateauSlugPage = () => {
+  const { slug } = useParams({ strict: false }) as { slug: string };
+  return <PlateauPage key={slug} slug={slug} />;
+};
+
+export { PlateauPage, CycloramaPage, PlateauSlugPage };
