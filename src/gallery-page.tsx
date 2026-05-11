@@ -340,6 +340,8 @@ const ProjectCoverFallback = ({ project, seed }: { project: GalleryProject; seed
   );
 };
 
+const filterParser = parseAsString.withDefault("all").withOptions({ clearOnDefault: true });
+
 const GalleryPageV3 = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
   useDocumentMeta('gallery', lang);

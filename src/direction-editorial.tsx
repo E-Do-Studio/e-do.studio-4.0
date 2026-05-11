@@ -67,10 +67,14 @@ const MachineRow = ({ idx, m, lang, onClick, isLast }: MachineRowProps) => (
   </button>
 );
 
+const ECOM_VIEWS = ['categorie', 'machine'] as const;
+type EcomView = (typeof ECOM_VIEWS)[number];
+
 const DirectionA = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
   const navigate = useNavigate();
   useDocumentMeta('home', lang);
+  const navigate = useNavigate();
   const { data: socialLinks } = useSocialLinks();
   const { data: galleryCategories } = useGalleryCategories();
   const { data: machines } = useMachines();
