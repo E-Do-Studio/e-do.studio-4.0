@@ -7,6 +7,7 @@ import { useGalleryProjects, useGalleryCategories } from "./lib/use-strapi";
 import type { GalleryProject } from "./lib/strapi";
 import type { Lang } from "./types";
 import { EmptyState, Loader, PageHeader, IconArrowRight, CellLabel, Wordmark } from "./ui";
+import { Chip } from "./ui/chip";
 import { cn } from "./ui/cn";
 import { common, galleryPage } from "./i18n/messages";
 
@@ -150,6 +151,102 @@ const GalleryFilters = ({
         </button>
       )}
     </aside>
+  );
+};
+
+const MobileFilterStrip = ({
+  lang,
+  cat,
+  plateau,
+  setCat,
+  setPlateau,
+  categories,
+  plateauOptions,
+  catToPlateaux,
+  plateauToCats,
+}: Omit<GalleryFiltersProps, "projects">) => {
+  const hasFilters = cat !== "all" || plateau !== "all";
+  const chipClass =
+    "shrink-0 min-h-10 px-2.5 py-1.5 text-label tracking-caption";
+
+  return (
+    <div
+      className="flex items-center gap-1.5 overflow-x-auto overflow-y-hidden border-b border-border bg-white px-3 py-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:hidden"
+      role="toolbar"
+      aria-label={galleryPage.categories[lang]}
+    >
+      <span className="shrink-0 pr-0.5 font-mono text-micro uppercase tracking-label text-muted-foreground">
+        {galleryPage.categories[lang]}
+      </span>
+      <Chip
+        active={cat === "all"}
+        onClick={() => setCat("all")}
+        className={chipClass}
+      >
+        {common.all[lang]}
+      </Chip>
+      {categories.map((category) => {
+        const dimmed =
+          plateau !== "all" &&
+          !(plateauToCats[plateau] ?? []).includes(category.k);
+        return (
+          <Chip
+            key={category.k}
+            active={cat === category.k}
+            onClick={() => {
+              if (dimmed) setPlateau("all");
+              setCat(category.k);
+            }}
+            className={cn(chipClass, dimmed && "opacity-40")}
+          >
+            {category[lang]}
+          </Chip>
+        );
+      })}
+
+      <span className="shrink-0 mx-1 h-5 w-px bg-border" aria-hidden />
+
+      <span className="shrink-0 pr-0.5 font-mono text-micro uppercase tracking-label text-muted-foreground">
+        {common.stages[lang]}
+      </span>
+      <Chip
+        active={plateau === "all"}
+        onClick={() => setPlateau("all")}
+        className={chipClass}
+      >
+        {common.all[lang]}
+      </Chip>
+      {plateauOptions.map((option) => {
+        const dimmed =
+          cat !== "all" && !(catToPlateaux[cat] ?? []).includes(option.k);
+        return (
+          <Chip
+            key={option.k}
+            active={plateau === option.k}
+            onClick={() => {
+              if (dimmed) setCat("all");
+              setPlateau(option.k);
+            }}
+            className={cn(chipClass, dimmed && "opacity-40")}
+          >
+            {option[lang]}
+          </Chip>
+        );
+      })}
+
+      {hasFilters && (
+        <button
+          onClick={() => {
+            setCat("all");
+            setPlateau("all");
+          }}
+          className="edo-focus-ring shrink-0 cursor-pointer border border-border bg-white px-2.5 py-1.5 font-mono text-label uppercase tracking-caption text-foreground transition-colors hover:bg-muted"
+          aria-label={common.reset[lang]}
+        >
+          ↺ {common.reset[lang]}
+        </button>
+      )}
+    </div>
   );
 };
 
@@ -435,21 +532,30 @@ const GalleryPageV3 = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-px bg-edo-pure-black md:col-span-full md:row-start-2 md:min-h-0 md:overflow-hidden md:grid-cols-gallery-shell">
-        <div className="bg-white overflow-x-auto md:overflow-x-hidden md:overflow-y-auto">
-          <div className="flex flex-row md:flex-col min-w-max md:min-w-0">
-            <GalleryFilters
-              lang={lang}
-              cat={cat}
-              plateau={plateau}
-              setCat={setCat}
-              setPlateau={setPlateau}
-              categories={categories}
-              plateauOptions={plateauOptions}
-              projects={projects}
-              catToPlateaux={catToPlateaux}
-              plateauToCats={plateauToCats}
-            />
-          </div>
+        <MobileFilterStrip
+          lang={lang}
+          cat={cat}
+          plateau={plateau}
+          setCat={setCat}
+          setPlateau={setPlateau}
+          categories={categories}
+          plateauOptions={plateauOptions}
+          catToPlateaux={catToPlateaux}
+          plateauToCats={plateauToCats}
+        />
+        <div className="hidden bg-white md:block md:overflow-y-auto">
+          <GalleryFilters
+            lang={lang}
+            cat={cat}
+            plateau={plateau}
+            setCat={setCat}
+            setPlateau={setPlateau}
+            categories={categories}
+            plateauOptions={plateauOptions}
+            projects={projects}
+            catToPlateaux={catToPlateaux}
+            plateauToCats={plateauToCats}
+          />
         </div>
         <GalleryContent
           lang={lang}
