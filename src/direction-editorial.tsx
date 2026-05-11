@@ -7,7 +7,6 @@ import { useDocumentMeta } from './lib/use-document-meta';
 import type { Lang } from './types';
 import { usePageContext } from './router';
 import galleryHero from '../assets/gallery-hero.jpg';
-import showreelPreview from '../assets/showreel-preview.png';
 import { common, home as homeMsg } from './i18n/messages';
 
 interface CatIconProps {
@@ -216,9 +215,19 @@ const DirectionA = () => {
           onClick={() => goto('gallery')}
           className="edo-focus-ring group relative flex h-full w-full cursor-pointer items-center justify-center overflow-hidden border-0 bg-edo-dark p-0 text-left transition-all duration-150 hover:brightness-75"
         >
+          <picture>
+            <source srcSet="/showreel-preview.avif" type="image/avif" />
+            <source srcSet="/showreel-preview.webp" type="image/webp" />
+            <img
+              src="/showreel-preview.webp"
+              alt=""
+              fetchPriority="high"
+              decoding="async"
+              className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+            />
+          </picture>
           <VideoLoop
             src="/videos/showreel.mp4"
-            poster={showreelPreview}
             className="absolute inset-0 h-full w-full"
           />
           <div className="absolute inset-0 bg-home-media-gradient" />
