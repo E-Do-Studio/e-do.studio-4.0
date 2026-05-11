@@ -297,6 +297,140 @@ const FilterCell = ({
   </button>
 );
 
+const MobileFilterCell = ({
+  label,
+  active,
+  onClick,
+  count,
+  dimmed,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+  count: number;
+  dimmed?: boolean;
+}) => (
+  <button
+    onClick={onClick}
+    className={cn(
+      "edo-focus-ring flex h-12 shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap border-0 border-r border-b-2 border-r-border px-3.5 text-detail tracking-copy-tight text-foreground transition-colors",
+      active
+        ? "border-b-primary bg-muted font-medium"
+        : "border-b-transparent bg-white font-normal hover:bg-muted",
+      dimmed && "opacity-30",
+    )}
+  >
+    <span>{label}</span>
+    {count != null && (
+      <span
+        className={cn(
+          "font-mono text-label tracking-caption",
+          active ? "text-primary" : "text-muted-foreground",
+        )}
+      >
+        {count}
+      </span>
+    )}
+  </button>
+);
+
+const MobileFilterGroupLabel = ({ label }: { label: string }) => (
+  <span className="flex h-12 shrink-0 items-center border-r border-border bg-white px-3.5 font-mono text-micro uppercase tracking-label text-muted-foreground">
+    {label}
+  </span>
+);
+
+const GalleryFiltersMobile = ({
+  lang,
+  cat,
+  plateau,
+  setCat,
+  setPlateau,
+  categories,
+  plateauOptions,
+  projects,
+  catToPlateaux,
+  plateauToCats,
+}: GalleryFiltersProps) => {
+  const countCat = (key: string) =>
+    key === "all"
+      ? projects.length
+      : projects.filter((p) => p.cat === key).length;
+  const countPlateau = (key: string) =>
+    key === "all"
+      ? projects.length
+      : projects.filter((p) => p.plateau === key).length;
+  const hasFilters = cat !== "all" || plateau !== "all";
+
+  return (
+    <div className="overflow-x-auto bg-white md:hidden">
+      <div className="flex h-12 min-w-max items-stretch">
+        <MobileFilterGroupLabel label={galleryPage.categories[lang]} />
+        <MobileFilterCell
+          label={common.all[lang]}
+          active={cat === "all"}
+          count={countCat("all")}
+          onClick={() => setCat("all")}
+        />
+        {categories.map((category) => {
+          const dimmed =
+            plateau !== "all" &&
+            !(plateauToCats[plateau] ?? []).includes(category.k);
+          return (
+            <MobileFilterCell
+              key={category.k}
+              label={category[lang]}
+              active={cat === category.k}
+              count={countCat(category.k)}
+              dimmed={dimmed}
+              onClick={() => {
+                if (dimmed) setPlateau("all");
+                setCat(category.k);
+              }}
+            />
+          );
+        })}
+        <MobileFilterGroupLabel label={common.stages[lang]} />
+        <MobileFilterCell
+          label={common.all[lang]}
+          active={plateau === "all"}
+          count={countPlateau("all")}
+          onClick={() => setPlateau("all")}
+        />
+        {plateauOptions.map((option) => {
+          const dimmed =
+            cat !== "all" &&
+            !(catToPlateaux[cat] ?? []).includes(option.k);
+          return (
+            <MobileFilterCell
+              key={option.k}
+              label={option[lang]}
+              active={plateau === option.k}
+              count={countPlateau(option.k)}
+              dimmed={dimmed}
+              onClick={() => {
+                if (dimmed) setCat("all");
+                setPlateau(option.k);
+              }}
+            />
+          );
+        })}
+        {hasFilters && (
+          <button
+            onClick={() => {
+              setCat("all");
+              setPlateau("all");
+            }}
+            className="edo-focus-ring flex h-12 shrink-0 cursor-pointer items-center whitespace-nowrap border-0 border-l border-border bg-white px-3.5 font-mono text-label uppercase tracking-label text-primary transition-colors hover:bg-muted"
+          >
+            ↺ {common.reset[lang]}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
+
 interface GalleryContentProps {
   lang: Lang;
   filtered: GalleryProject[];
