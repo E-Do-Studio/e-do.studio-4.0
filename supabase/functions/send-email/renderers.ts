@@ -149,7 +149,6 @@ function emailWrap(subtitle: string, reference: string | null, body: string): st
     <tr>
       <td style="padding:18px 32px;background:${C_BLACK};">
         <span style="font-family:${FONT_MONO};font-size:10px;line-height:1.6;letter-spacing:0.2em;text-transform:uppercase;color:${C_WHITE};">
-          E-Do Studio &nbsp;·&nbsp;
           <a href="${SITE_URL}" style="color:${C_WHITE};text-decoration:none;">e-do.studio</a>
           &nbsp;·&nbsp;
           <a href="mailto:${STUDIO_EMAIL}" style="color:${C_WHITE};text-decoration:none;">${STUDIO_EMAIL}</a>
