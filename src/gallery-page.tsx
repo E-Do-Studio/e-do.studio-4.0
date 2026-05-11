@@ -237,16 +237,13 @@ const GalleryContent = ({
 );
 
 const ProjectRow = ({ project, lang, style }: { project: GalleryProject; lang: Lang; style?: CSSProperties }) => (
-  <div className="edo-list-row grid gap-px bg-edo-pure-black grid-cols-2 md:grid-cols-gallery-row" style={style}>
+  <div className="edo-list-row grid gap-px bg-edo-pure-black grid-cols-gallery-row-mobile md:grid-cols-gallery-row" style={style}>
     <ProjectLabel project={project} lang={lang} />
     {[0, 1, 2].map((imageIndex) => (
       <ProjectImage
         key={imageIndex}
         project={project}
         imageIndex={imageIndex}
-        // Mobile only fits 2 cells per row (label + one image). Hide image[1] and image[2]
-        // below md so the grid never leaves an empty cell that exposes the black backdrop.
-        hidden={imageIndex !== 0}
       />
     ))}
   </div>
@@ -260,7 +257,7 @@ const ProjectLabel = ({ project, lang }: { project: GalleryProject; lang: Lang }
         {plateauLabel}
       </span>
       <div className="flex min-h-0 flex-1 items-center justify-center py-2 edo-writing-vertical rotate-180">
-        <span className="whitespace-nowrap text-tile-large font-medium leading-none tracking-headline text-foreground">
+        <span className="whitespace-nowrap text-detail md:text-tile-large font-medium leading-none tracking-headline text-foreground">
           {project.brand}
         </span>
       </div>
@@ -274,16 +271,14 @@ const ProjectLabel = ({ project, lang }: { project: GalleryProject; lang: Lang }
 const ProjectImage = ({
   project,
   imageIndex,
-  hidden,
 }: {
   project: GalleryProject;
   imageIndex: number;
-  hidden?: boolean;
 }) => {
   const imageUrl = project.imageUrls[imageIndex];
 
   return (
-    <div className={`relative aspect-portrait overflow-hidden bg-white ${hidden ? 'hidden md:block' : ''}`}>
+    <div className="relative aspect-portrait overflow-hidden bg-white">
       {imageUrl ? (
         <img
           src={imageUrl}

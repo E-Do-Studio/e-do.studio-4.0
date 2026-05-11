@@ -293,6 +293,10 @@
   grid-template-columns: 80px repeat(3, minmax(0, 1fr));
 }
 
+@utility grid-cols-gallery-row-mobile {
+  grid-template-columns: 48px repeat(3, minmax(0, 1fr));
+}
+
 @utility grid-cols-overlay {
   grid-template-columns: 1.1fr 1fr;
 }
