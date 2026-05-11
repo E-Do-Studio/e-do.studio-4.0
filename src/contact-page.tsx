@@ -91,10 +91,10 @@ const ClosuresSection = ({ lang, closures }: ClosuresSectionProps) => {
       <CellLabel className="mb-5 block">
         {lang === 'fr' ? 'Fermetures' : 'Closures'}
       </CellLabel>
-      <div className="flex flex-col gap-3 text-caption">
+      <div className="flex flex-col gap-3 text-detail leading-copy">
         {upcoming.map((c) => (
           <div key={`${c.startsAt}-${c.endsAt}`} className="flex flex-col gap-0.5">
-            <span className="font-mono tracking-ui">
+            <span className="font-mono tracking-ui break-words">
               {c.startsAt === c.endsAt
                 ? formatClosureDate(c.startsAt, lang)
                 : `${formatClosureDate(c.startsAt, lang)} → ${formatClosureDate(c.endsAt, lang)}`}
@@ -127,27 +127,27 @@ const FindUsSection = ({ lang, contact }: FindUsSectionProps) => {
         <UnavailableNote lang={lang} />
       ) : (
         <>
+          {c?.entries && c.entries.length > 0 && (
+            <div className="mb-3 font-mono text-caption uppercase tracking-ui text-muted-foreground break-words">
+              {c.entries.map((e, i) => (
+                <span key={i}>
+                  {i > 0 && ' · '}
+                  {e.label}
+                  {e.address ? ` ${e.address}` : ''}
+                </span>
+              ))}
+            </div>
+          )}
           <div className="text-detail leading-copy font-normal text-muted-foreground">
-            {c?.entries && c.entries.length > 0 && (
-              <span className="mb-2 block font-mono text-label uppercase tracking-ui">
-                {c.entries.map((e, i) => (
-                  <span key={i}>
-                    {i > 0 && ' · '}
-                    {e.label}
-                    {e.address ? ` ${e.address}` : ''}
-                  </span>
-                ))}
-              </span>
-            )}
             {c?.address.street}<br />
             {c?.address.postalCode} <span className="whitespace-nowrap">{c?.address.city}</span>
             {c?.address.country ? <>,<br />{c.address.country}</> : null}
           </div>
           {c?.transport && c.transport.length > 0 && (
-            <div className="mt-5 flex flex-col gap-2.5 font-mono text-label leading-relaxed tracking-ui text-muted-foreground">
+            <div className="mt-4 flex flex-col gap-2.5 text-detail leading-copy text-muted-foreground">
               {c.transport.map((t, i) => {
                 const { line, name } = parseMetroLabel(t.label);
-                if (!line) return <div key={i} className="whitespace-nowrap">{t.label}</div>;
+                if (!line) return <div key={i} className="break-words">{t.label}</div>;
                 return (
                   <MetroLine
                     key={i}
@@ -172,11 +172,11 @@ interface MetroLineProps {
 }
 
 const MetroLine = ({ line, label, className }: MetroLineProps) => (
-  <div className="flex items-center gap-2 whitespace-nowrap">
-    <span className={cn('inline-flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full text-label font-bold tracking-normal', className)}>
+  <div className="flex items-start gap-2">
+    <span className={cn('mt-0.5 inline-flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full font-mono text-label font-bold tracking-normal', className)}>
       {line}
     </span>
-    {label}
+    <span className="min-w-0 break-words">{label}</span>
   </div>
 );
 
@@ -194,7 +194,7 @@ const HoursSection = ({ lang, hours }: HoursSectionProps) => {
       {showFallback ? (
         <UnavailableNote lang={lang} />
       ) : (
-        <div className="flex flex-col gap-3 text-caption">
+        <div className="flex flex-col gap-3 text-detail leading-copy">
           <HoursRow label={contactMsg.monFri[lang]} value={h?.weekday[lang] || '—'} />
           <HoursRow label={contactMsg.satSun[lang]} value={h?.weekend[lang] || common.onRequest[lang]} muted />
         </div>
@@ -212,7 +212,7 @@ interface HoursRowProps {
 const HoursRow = ({ label, value, muted = false }: HoursRowProps) => (
   <div className="flex flex-col gap-0.5">
     <span className={cn('text-muted-foreground', muted && 'opacity-55')}>{label}</span>
-    <span className={cn('font-mono tracking-ui', muted && 'text-muted-foreground')}>{value}</span>
+    <span className={cn('font-mono tracking-ui break-words', muted && 'text-muted-foreground')}>{value}</span>
   </div>
 );
 
@@ -230,7 +230,7 @@ const PhoneSection = ({ lang, contact }: PhoneSectionProps) => {
       {showFallback ? (
         <UnavailableNote lang={lang} />
       ) : c?.phone ? (
-        <a href={c.phoneHref} className="text-caption font-mono tracking-ui text-foreground no-underline">
+        <a href={c.phoneHref} className="text-detail font-mono tracking-ui text-foreground no-underline break-words">
           {c.phone}
         </a>
       ) : null}
