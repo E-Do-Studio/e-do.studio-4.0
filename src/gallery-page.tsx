@@ -173,7 +173,7 @@ const MobileFilterStrip = ({
 
   return (
     <div
-      className="flex items-center gap-1.5 overflow-x-auto overflow-y-hidden border-b border-border bg-white px-3 py-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:hidden"
+      className="sticky top-14 z-30 flex items-center gap-1.5 overflow-x-auto overflow-y-hidden border-b border-border bg-white px-3 py-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:hidden"
       role="toolbar"
       aria-label={galleryPage.categories[lang]}
     >
