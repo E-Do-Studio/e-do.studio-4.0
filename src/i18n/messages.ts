@@ -29,7 +29,7 @@ export const nav = {
   items: {
     fr: [
       { label: 'Accueil', href: '/fr' },
-      { label: 'Cyclorama', href: '/fr/cyclorama' },
+      { label: 'Plateaux', href: '/fr/plateau/live' },
       { label: 'Galerie', href: '/fr/galerie' },
       { label: 'Discovery', href: '/fr/discovery' },
       { label: 'Post-production', href: '/fr/post-production' },
@@ -38,7 +38,7 @@ export const nav = {
     ],
     en: [
       { label: 'Home', href: '/en' },
-      { label: 'Cyclorama', href: '/en/cyclorama' },
+      { label: 'Stages', href: '/en/plateau/live' },
       { label: 'Gallery', href: '/en/galerie' },
       { label: 'Discovery', href: '/en/discovery' },
       { label: 'Post-production', href: '/en/post-production' },
