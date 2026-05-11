@@ -4,6 +4,7 @@ import { ArticleMeta, CellBadge } from './shared';
 import { DiscoveryCover } from './discovery-cover';
 import { FilterChips } from './filter-chips';
 import { cn } from '../ui/cn';
+import { EmptyState } from '../ui';
 import { cellBase, labelBase } from './styles';
 import { discoveryPage } from '../i18n/messages';
 
@@ -60,9 +61,7 @@ export const MorePostsCard: React.FC<MorePostsCardProps> = ({ posts, lang, onOpe
         ))}
 
         {filteredPosts.length === 0 && (
-          <div className="px-cell py-8 text-center font-mono text-caption uppercase tracking-ui text-muted-foreground">
-            {discoveryPage.noPosts[lang]}
-          </div>
+          <EmptyState compact label={discoveryPage.noPosts[lang]} />
         )}
       </div>
     </section>
