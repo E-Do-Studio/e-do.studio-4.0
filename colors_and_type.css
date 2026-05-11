@@ -511,7 +511,8 @@
   }
 
   .edo-focus-ring:focus-visible {
-    box-shadow: 0 0 0 2px var(--ring);
+    outline: 1.5px solid var(--ring);
+    outline-offset: 2px;
   }
 
   .edo-toggle {
