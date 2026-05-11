@@ -33,6 +33,9 @@ export type { SocialIconProps } from './social-icon';
 export { VideoLoop } from './video-loop';
 export type { VideoLoopProps } from './video-loop';
 
+export { PlateauMediaCarousel } from './plateau-media-carousel';
+export type { PlateauMediaCarouselProps } from './plateau-media-carousel';
+
 export { Loader } from './loader';
 export type { LoaderProps, LoaderSize } from './loader';
 
