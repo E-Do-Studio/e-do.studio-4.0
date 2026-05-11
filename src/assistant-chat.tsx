@@ -2,44 +2,41 @@ import React, { useEffect, useRef, useState } from 'react';
 import { IconArrowRight, cn } from './ui';
 import type { Lang, ChatMessage } from './types';
 import { assistant as assistantMsg } from './i18n/messages';
+import { supabase } from './lib/supabase';
 
-declare global {
-  interface Window {
-    claude?: {
-      complete: (opts: { messages: Array<{ role: string; content: string }> }) => Promise<string>;
-    };
-  }
-}
-
-const SYSTEM_PROMPT = `Tu es l'assistant virtuel d'E-DO Studio, un studio photo/vidéo à Saint-Ouen (69 boulevard Victor Hugo, Bâtiment 6.7, Parc d'activités Victor Hugo, 93400 Saint-Ouen · M° Garibaldi L13 ou Mairie de Saint-Ouen L14).
-Tu renseignes sur : tarifs (plateaux à partir de 450€/jour, cyclorama 650€/jour, post-production sur devis), disponibilités, visite du studio, services (5 plateaux, cyclorama 30m², post-production photo & vidéo, location de machines e-commerce automatisées).
-Ton ton : pro, concis, chaleureux. Utilise "vous". Maximum 3-4 phrases par réponse. Propose toujours de contacter l'équipe (contact@e-do.studio · +33 1 44 04 11 49) pour un devis personnalisé ou une visite.
-Réponds TOUJOURS dans la langue du dernier message de l'utilisateur (français ou anglais).`;
+const MAX_INPUT_CHARS = 1500;
 
 const getQuickReplies = (lang: Lang) => lang === 'fr'
   ? ['Tarifs cyclo', 'Dispos semaine prochaine', 'Livraison post-prod', 'Visite studio']
   : ['Cyclo rates', 'Next-week availability', 'Post-prod delivery', 'Studio tour'];
 
-interface SendAssistantMessageOpts {
-  text: string;
-  messages: ChatMessage[];
+type ChatError = 'rate_limited' | 'other';
+
+interface ChatResponse {
+  reply?: string;
+  error?: string;
 }
 
-const sendAssistantMessage = async ({ text, messages }: SendAssistantMessageOpts): Promise<string> => {
-  if (!window.claude?.complete) {
-    throw new Error('Claude assistant is unavailable');
+const sendAssistantMessage = async (
+  messages: ChatMessage[],
+  lang: Lang,
+): Promise<{ reply: string } | { error: ChatError }> => {
+  const { data, error } = await supabase.functions.invoke<ChatResponse>('chat', {
+    body: { messages, lang },
+  });
+
+  if (error) {
+    // supabase-js exposes the HTTP status on FunctionsHttpError via context.response
+    const ctx = (error as unknown as { context?: { response?: Response } }).context;
+    const status = ctx?.response?.status;
+    if (status === 429) return { error: 'rate_limited' };
+    // Some payloads return 200 with { error } — covered below.
+    return { error: 'other' };
   }
 
-  return window.claude.complete({
-    messages: [
-      { role: 'user', content: `${SYSTEM_PROMPT}\n\n---\n\n${text}` }
-    ].concat(
-      messages.slice(1).map((message) => ({
-        role: message.role,
-        content: message.content,
-      }))
-    ),
-  });
+  if (data?.error === 'rate_limited') return { error: 'rate_limited' };
+  if (!data?.reply) return { error: 'other' };
+  return { reply: data.reply };
 };
 
 interface AssistantHeaderProps {
@@ -49,7 +46,7 @@ interface AssistantHeaderProps {
   onReset: () => void;
 }
 
-const AssistantHeader = ({ lang, mode, loading, onReset }: AssistantHeaderProps) => (
+const AssistantHeader = ({ lang: _lang, mode, loading, onReset }: AssistantHeaderProps) => (
   <div className="flex shrink-0 items-center justify-between">
     <div className="flex items-center gap-2">
       <span className="edo-cell-label">Assistant</span>
@@ -193,8 +190,9 @@ const AssistantInput = ({ input, setInput, loading, lang, onSend, inputRef }: As
     <input
       ref={inputRef}
       value={input}
-      onChange={(event) => setInput(event.target.value)}
+      onChange={(event) => setInput(event.target.value.slice(0, MAX_INPUT_CHARS))}
       disabled={loading}
+      maxLength={MAX_INPUT_CHARS}
       placeholder={assistantMsg.placeholder[lang]}
       className="edo-focus-ring min-w-0 flex-1 border-0 bg-transparent font-sans text-detail text-foreground opacity-100 placeholder:text-muted-foreground placeholder:transition-colors disabled:opacity-50 group-hover:placeholder:text-primary"
     />
@@ -229,7 +227,7 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
   }, [messages, loading]);
 
   const send = async (text: string) => {
-    const trimmed = (text || '').trim();
+    const trimmed = (text || '').trim().slice(0, MAX_INPUT_CHARS);
     if (!trimmed || loading) return;
 
     const nextMessages: ChatMessage[] = [...messages, { role: 'user', content: trimmed }];
@@ -239,8 +237,18 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
     setLoading(true);
 
     try {
-      const reply = await sendAssistantMessage({ text: trimmed, messages: nextMessages });
-      setMessages((currentMessages) => [...currentMessages, { role: 'assistant', content: reply }]);
+      const result = await sendAssistantMessage(nextMessages, lang);
+      if ('reply' in result) {
+        setMessages((currentMessages) => [...currentMessages, { role: 'assistant', content: result.reply }]);
+      } else {
+        const fallback = result.error === 'rate_limited'
+          ? assistantMsg.rateLimited[lang]
+          : assistantMsg.errorFallback[lang];
+        setMessages((currentMessages) => [...currentMessages, {
+          role: 'assistant',
+          content: fallback,
+        }]);
+      }
     } catch (_error) {
       setMessages((currentMessages) => [...currentMessages, {
         role: 'assistant',
