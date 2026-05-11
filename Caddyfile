@@ -5,16 +5,31 @@
     @root path /
     redir @root /fr 302
 
+    # Vite-hashed bundles — content-addressed, safe for long-lived immutable cache.
     @hashed path /assets/*
     header @hashed Cache-Control "public, max-age=31536000, immutable"
 
+    # Stable-name static assets (fonts, brand images, posters, favicons).
+    @static path /fonts/* /*.woff2 /*.woff /*.ttf /*.otf /*.avif /*.webp /*.jpg /*.jpeg /*.png /*.svg /*.ico /*.mp4 /*.webm
+    header @static Cache-Control "public, max-age=31536000, immutable"
+    header @static Access-Control-Allow-Origin "*"
+
     @html path /index.html /
-    header @html Cache-Control "no-cache"
+    header @html Cache-Control "no-cache, must-revalidate"
 
     header {
+        # Lighthouse "Best Practices" + standard hardening.
+        Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
         X-Content-Type-Options nosniff
         Referrer-Policy strict-origin-when-cross-origin
-        Permissions-Policy "camera=(), microphone=(), geolocation=()"
+        Permissions-Policy "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+        Cross-Origin-Opener-Policy same-origin
+        X-Frame-Options DENY
+        # CSP allows the Strapi CMS, Supabase Edge Function, and Google Analytics; everything
+        # else is locked down. 'unsafe-inline' on style-src is required for Tailwind v4 runtime
+        # CSS variables. The single inline <script> on index.html is JSON-LD (type=application/ld+json),
+        # not executable, so script-src can stay strict.
+        Content-Security-Policy "default-src 'self'; script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://cms.e-do.studio https://www.google-analytics.com; media-src 'self' https://cms.e-do.studio; connect-src 'self' https://cms.e-do.studio https://*.supabase.co https://www.google-analytics.com https://region1.google-analytics.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
         -Server
     }
 

@@ -4,6 +4,8 @@ type B = Bilingual;
 
 export const common = {
   loading: { fr: 'Chargement…', en: 'Loading…' } as B,
+  menu: { fr: 'Menu', en: 'Menu' } as B,
+  close: { fr: 'Fermer', en: 'Close' } as B,
   langToggleLabel: { fr: 'EN', en: 'FR' } as B,
   book: { fr: 'Réserver', en: 'Book' } as B,
   bookNow: { fr: 'Réserver', en: 'Book now' } as B,

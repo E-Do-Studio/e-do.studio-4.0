@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState } from 'react';
-import { CellLabel, IconArrowRight, IconPlay, PageHeader, SocialIcon, VideoLoop, cn } from './ui';
+import { CellLabel, IconArrowRight, PageHeader, SocialIcon, VideoLoop, cn } from './ui';
 import { MarqueeCell } from './cells';
 
 const AssistantChat = lazy(() => import('./assistant-chat'));
@@ -7,7 +7,6 @@ import { useSocialLinks, useGalleryCategories, useMachines, useContact } from '.
 import { useDocumentMeta } from './lib/use-document-meta';
 import type { Lang } from './types';
 import { usePageContext } from './router';
-import galleryHero from '../assets/gallery-hero.jpg';
 import { common, home as homeMsg } from './i18n/messages';
 
 interface CatIconProps {
@@ -188,15 +187,28 @@ const DirectionA = () => {
       {/* ── Rows 2-3 right: Gallery hero ── */}
       <button
         onClick={() => goto('gallery')}
-        className="edo-focus-ring group col-span-2 min-h-48 flex flex-col items-stretch justify-end border-0 bg-edo-dark p-6 text-white transition-all duration-150 hover:brightness-75 md:col-start-7 md:col-end-13 md:row-start-2 md:row-end-4"
-        style={{
-          backgroundImage: `linear-gradient(180deg, rgba(0,0,0,.25) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0) 55%, rgba(0,0,0,.65) 100%), url(${galleryHero})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
+        aria-label={common.gallery[lang]}
+        className="edo-focus-ring group relative col-span-2 min-h-48 flex flex-col items-stretch justify-end overflow-hidden border-0 bg-edo-dark p-6 text-white transition-all duration-150 hover:brightness-75 md:col-start-7 md:col-end-13 md:row-start-2 md:row-end-4"
       >
-        <div className="flex-1" />
-        <div className="flex w-full items-end justify-between gap-4">
+        <picture>
+          <source srcSet="/gallery-hero.avif" type="image/avif" />
+          <source srcSet="/gallery-hero.webp" type="image/webp" />
+          <img
+            src="/gallery-hero.jpg"
+            alt=""
+            width={1280}
+            height={986}
+            fetchPriority="high"
+            decoding="async"
+            className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+          />
+        </picture>
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.25)_0%,rgba(0,0,0,0)_30%,rgba(0,0,0,0)_55%,rgba(0,0,0,.65)_100%)]"
+        />
+        <div className="relative flex-1" />
+        <div className="relative flex w-full items-end justify-between gap-4">
           <div className="min-w-0">
             <div className="text-hero font-light tracking-display leading-solid text-white transition-transform duration-300 group-hover:scale-102">
               {common.gallery[lang]}
@@ -265,7 +277,7 @@ const DirectionA = () => {
         className="edo-focus-ring group col-span-2 h-20 flex cursor-pointer items-center justify-between gap-3 border-0 bg-primary px-5 py-3 text-left text-white transition-colors duration-150 hover:bg-foreground hover:text-white sm:col-span-1 md:col-start-7 md:col-end-10 md:row-start-4 md:h-21"
       >
         <div className="flex min-w-0 flex-col gap-1 transition-transform duration-150 group-hover:scale-102">
-          <span className="font-mono text-label uppercase tracking-label text-white/75">
+          <span className="font-mono text-label uppercase tracking-label text-white">
             {homeMsg.requestQuoteOr[lang]}
           </span>
           <span className="text-tile-title font-normal tracking-headline leading-tight text-white">
