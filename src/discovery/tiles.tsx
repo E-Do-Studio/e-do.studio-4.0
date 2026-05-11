@@ -134,7 +134,7 @@ interface BookBackstageStackProps {
 }
 
 export const BookBackstageStack: React.FC<BookBackstageStackProps> = ({ lang, goto, className }) => (
-  <div className={cn(cellBase, 'order-7 flex min-h-104 flex-col gap-px bg-black lg:min-h-0', className)}>
+  <div className={cn(cellBase, 'order-7 flex min-h-104 flex-col gap-px bg-white lg:min-h-0', className)}>
     <BookCtaTile lang={lang} goto={goto} />
     <VisualTile tone="warm" seed={9} label={discoveryPage.behindScenes[lang]} className="order-none flex-1" />
   </div>

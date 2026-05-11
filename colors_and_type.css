@@ -149,7 +149,12 @@
   /* ---------- brand palette tokens --------------------------- */
   --color-edo-white: var(--edo-white);
   --color-edo-black: var(--edo-black);
-  --color-edo-pure-black: var(--edo-pure-black);
+  /* Bento grid empty / surround color — kept named "pure-black" for backward
+     compatibility with existing utility class references, but mapped to white
+     so empty page space reads as white per brand direction (EDO-65). The 1px
+     true-black --border token below is still used for explicit hairline
+     strokes when a divider is needed. */
+  --color-edo-pure-black: var(--edo-white);
   --color-edo-dark: oklch(0.13 0 0);
   --color-edo-ink: var(--edo-black);
   --color-edo-gray-50: var(--edo-gray-50);
