@@ -1,5 +1,5 @@
 import { useParams } from '@tanstack/react-router';
-import { IconArrowRight, CellLabel, PageHeader, Wordmark, Loader } from './ui';
+import { IconArrowRight, CellLabel, PageHeader, Wordmark, Loader, PlateauMediaCarousel } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
 import { usePageContext } from './router';
 import { usePlateaux } from './lib/use-strapi';
@@ -143,7 +143,7 @@ const PlateauPage = ({ slug }: { slug: string }) => {
 
       {/* Visual diagram */}
       <div className="relative overflow-hidden flex items-center justify-center bg-gradient-to-b from-edo-cream to-edo-sand min-h-56 md:col-start-2 md:col-span-2 md:row-start-2 md:row-span-3 md:min-h-0">
-        <PlateauVisual kind={p.visual}/>
+        <PlateauMediaCarousel media={p.media} fallback={<PlateauVisual kind={p.visual}/>} lang={lang} />
       </div>
 
       {/* Name + tagline */}
