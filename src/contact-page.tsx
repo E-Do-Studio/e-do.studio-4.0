@@ -594,7 +594,7 @@ const ContactPage = () => {
   };
 
   return (
-    <div className="edo-page-enter grid w-full gap-px overflow-y-auto bg-hairline md:h-full md:grid-cols-plateau md:grid-rows-page md:overflow-hidden">
+    <div className="edo-page-enter grid w-full gap-px bg-hairline md:h-full md:grid-cols-plateau md:grid-rows-page md:overflow-hidden">
       {/* Mobile header */}
       <PageHeader
         lang={lang}

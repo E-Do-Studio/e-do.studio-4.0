@@ -675,7 +675,7 @@ const BookPageV2 = () => {
   }
 
   return (
-    <div className="edo-page-enter grid w-full gap-px bg-edo-pure-black overflow-y-auto md:h-full md:overflow-hidden md:grid-cols-book md:grid-rows-app">
+    <div className="edo-page-enter grid w-full gap-px bg-edo-pure-black md:h-full md:overflow-hidden md:grid-cols-book md:grid-rows-app">
 
       {/* Mobile header */}
       <PageHeader
@@ -1278,7 +1278,7 @@ const Confirmation = ({ lang, openMenu, goto, setLang, plateau, selected, arriva
   })();
   const navBtnCls = "edo-focus-ring bg-white border border-border cursor-pointer font-mono text-caption tracking-meta uppercase text-foreground px-5 h-control inline-flex items-center gap-2 transition-all duration-150 hover:scale-102 hover:border-foreground";
   const navBtnPrimaryCls = "edo-focus-ring bg-foreground border-0 cursor-pointer text-white font-mono text-caption tracking-meta uppercase px-cell-lg h-control inline-flex items-center gap-2 transition-all duration-150 hover:scale-102 hover:bg-foreground hover:text-white";
-  return (<div className="grid w-full gap-px bg-edo-pure-black overflow-y-auto md:h-full md:grid-cols-app md:grid-rows-app md:overflow-hidden">
+  return (<div className="grid w-full gap-px bg-edo-pure-black md:h-full md:grid-cols-app md:grid-rows-app md:overflow-hidden">
     <PageHeader
       lang={lang}
       title={lang==='fr'?'Réservation':'Booking'}
