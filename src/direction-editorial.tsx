@@ -1,14 +1,15 @@
-import { useState } from 'react';
-import { CellLabel, IconArrowRight, IconPlay, PageHeader, SocialIcon, VideoLoop, cn } from './ui';
+import { lazy, Suspense, useState } from 'react';
+import { useNavigate } from '@tanstack/react-router';
+import { useQueryState, parseAsStringEnum } from 'nuqs';
+import { CellLabel, IconArrowRight, IconChat, IconX, PageHeader, SocialIcon, VideoLoop, cn } from './ui';
 import { MarqueeCell } from './cells';
-import { AssistantChat } from './assistant-chat';
-import { useSocialLinks, useGalleryCategories, useMachines, useContact } from './lib/use-strapi';
+
+const AssistantChat = lazy(() => import('./assistant-chat'));
+import { useSocialLinks, useGalleryCategories, useMachines, useContact, useHomeHero } from './lib/use-strapi';
 import { useDocumentMeta } from './lib/use-document-meta';
 import type { Lang } from './types';
 import { usePageContext } from './router';
-import galleryHero from '../assets/gallery-hero.jpg';
-import showreelPreview from '../assets/showreel-preview.png';
-import { common, home as homeMsg } from './i18n/messages';
+import { cells as cellsMsg, common, contact as contactMsg, home as homeMsg } from './i18n/messages';
 
 interface CatIconProps {
   kind: string;
@@ -66,14 +67,31 @@ const MachineRow = ({ idx, m, lang, onClick, isLast }: MachineRowProps) => (
   </button>
 );
 
+const ECOM_VIEWS = ['categorie', 'machine'] as const;
+type EcomView = (typeof ECOM_VIEWS)[number];
+
 const DirectionA = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
+  const navigate = useNavigate();
   useDocumentMeta('home', lang);
   const { data: socialLinks } = useSocialLinks();
   const { data: galleryCategories } = useGalleryCategories();
   const { data: machines } = useMachines();
   const { data: contact } = useContact();
-  const [ecomMode, setEcomMode] = useState<'type' | 'machine'>('type');
+  const { data: homeHero, loading: homeHeroLoading, error: homeHeroError } = useHomeHero();
+  // Only commit to a fallback once we know Strapi returned nothing — avoids the
+  // brief flash of the static poster on first paint while the CMS request is
+  // still in flight.
+  const heroResolved = !homeHeroLoading;
+  const heroCmsVideo = homeHero?.videoUrl;
+  const heroCmsPoster = homeHero?.posterUrl;
+  const heroUseFallback = heroResolved && !heroCmsVideo && !heroCmsPoster;
+  const heroVideo = heroCmsVideo ?? (heroUseFallback ? '/videos/showreel.mp4' : undefined);
+  const heroPoster = heroCmsPoster ?? (heroUseFallback ? '/showreel-preview.webp' : undefined);
+  const heroHasCmsPoster = !!heroCmsPoster;
+  const heroShowStaticPicture = heroUseFallback || (!!homeHeroError && !heroCmsPoster);
+  const [ecomMode, setEcomMode] = useState<EcomView>('categorie');
+  const [chatOpen, setChatOpen] = useState(false);
   const categories = galleryCategories ?? [];
   const ecomMachines: MachineRowItem[] = (machines ?? [])
     .filter((m) => m.slug !== 'cyclorama')
@@ -85,13 +103,14 @@ const DirectionA = () => {
 
   return (
     /* Mobile: 2-col grid, vertical scroll. Desktop (md+): 12-col bento, fixed viewport */
-    <div className="edo-page-enter grid w-full grid-cols-2 gap-px bg-black overflow-y-auto md:h-full md:grid-cols-12 md:grid-rows-home md:overflow-hidden">
+    <div className="edo-page-enter grid w-full grid-cols-2 gap-px bg-edo-pure-black overflow-y-auto md:h-full md:grid-cols-12 md:grid-rows-home md:overflow-hidden">
       <h1 className="sr-only">E-Do Studio — {homeMsg.srTitle[lang]}</h1>
 
       {/* ── Row 1: Header ── */}
       <PageHeader
         lang={lang}
-        title={homeMsg.monSatHours[lang]}
+        title={contactMsg.hours[lang]}
+        subtitle={homeMsg.monSatHours[lang]}
         className="col-span-2 h-14 md:col-start-1 md:col-span-12 md:row-start-1 md:h-full"
         onMenuClick={openMenu}
         onLogoClick={() => goto('home')}
@@ -113,16 +132,16 @@ const DirectionA = () => {
             {homeMsg.ecommShooting[lang]}
           </h2>
           <button
-            onClick={() => setEcomMode(ecomMode === 'type' ? 'machine' : 'type')}
+            onClick={() => setEcomMode(ecomMode === 'categorie' ? 'machine' : 'categorie')}
             aria-label={homeMsg.toggleMode[lang]}
             className="edo-focus-ring relative grid grid-cols-2 gap-1 border border-foreground bg-white p-1 font-mono flex-shrink-0"
           >
             <span
               className="pointer-events-none absolute top-1 bottom-1 w-toggle-half bg-foreground transition-all duration-300"
-              style={{ left: ecomMode === 'type' ? 3 : 'calc(50% + 1.5px)' }}
+              style={{ left: ecomMode === 'categorie' ? 3 : 'calc(50% + 1.5px)' }}
             />
             {[
-              { v: 'type', fr: 'Par catégorie', en: 'By category' },
+              { v: 'categorie', fr: 'Par catégorie', en: 'By category' },
               { v: 'machine', fr: 'Par machine', en: 'By machine' },
             ].map(o => {
               const active = ecomMode === o.v;
@@ -145,12 +164,12 @@ const DirectionA = () => {
         </div>
 
         <div className="flex flex-1 min-h-0 overflow-hidden bg-white">
-          {ecomMode === 'type' ? (
+          {ecomMode === 'categorie' ? (
             <div className="grid flex-1 grid-cols-3 content-end gap-px bg-white md:grid-cols-6">
-              {categories.map((c, i) => (
+              {categories.map((c) => (
                 <button
                   key={c.k}
-                  onClick={() => goto('gallery')}
+                  onClick={() => navigate({ to: `/${lang}/galerie`, search: { cat: c.k } })}
                   className="edo-focus-ring group flex aspect-square min-w-0 cursor-pointer flex-col justify-between border-0 border-t border-l border-border bg-white px-3 py-3 text-left text-foreground transition-colors duration-150 hover:bg-muted"
                 >
                   <CatIcon kind={c.k} size={20} />
@@ -188,15 +207,28 @@ const DirectionA = () => {
       {/* ── Rows 2-3 right: Gallery hero ── */}
       <button
         onClick={() => goto('gallery')}
-        className="edo-focus-ring group col-span-2 min-h-48 flex flex-col items-stretch justify-end border-0 bg-edo-dark p-6 text-white transition-all duration-150 hover:brightness-75 md:col-start-7 md:col-end-13 md:row-start-2 md:row-end-4"
-        style={{
-          backgroundImage: `linear-gradient(180deg, rgba(0,0,0,.25) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0) 55%, rgba(0,0,0,.65) 100%), url(${galleryHero})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
+        aria-label={common.gallery[lang]}
+        className="edo-focus-ring group relative col-span-2 min-h-48 flex flex-col items-stretch justify-end overflow-hidden border-0 bg-edo-dark p-6 text-white transition-all duration-150 hover:brightness-75 md:col-start-7 md:col-end-13 md:row-start-2 md:row-end-4"
       >
-        <div className="flex-1" />
-        <div className="flex w-full items-end justify-between gap-4">
+        <picture>
+          <source srcSet="/gallery-hero.avif" type="image/avif" />
+          <source srcSet="/gallery-hero.webp" type="image/webp" />
+          <img
+            src="/gallery-hero.jpg"
+            alt=""
+            width={1280}
+            height={986}
+            fetchPriority="high"
+            decoding="async"
+            className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+          />
+        </picture>
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.25)_0%,rgba(0,0,0,0)_30%,rgba(0,0,0,0)_55%,rgba(0,0,0,.65)_100%)]"
+        />
+        <div className="relative flex-1" />
+        <div className="relative flex w-full items-end justify-between gap-4">
           <div className="min-w-0">
             <div className="text-hero font-light tracking-display leading-solid text-white transition-transform duration-300 group-hover:scale-102">
               {common.gallery[lang]}
@@ -211,16 +243,39 @@ const DirectionA = () => {
       </button>
 
       {/* ── Row 4 left: Video / showreel ── */}
-      <div className="col-span-1 min-h-36 flex overflow-hidden bg-black md:col-start-1 md:col-end-4 md:row-start-4 md:min-h-0">
+      <div className="col-span-2 min-h-56 flex overflow-hidden bg-black md:col-span-3 md:col-start-1 md:col-end-4 md:row-start-4 md:min-h-0">
         <button
           onClick={() => goto('gallery')}
           className="edo-focus-ring group relative flex h-full w-full cursor-pointer items-center justify-center overflow-hidden border-0 bg-edo-dark p-0 text-left transition-all duration-150 hover:brightness-75"
         >
-          <VideoLoop
-            src="/videos/showreel.mp4"
-            poster={showreelPreview}
-            className="absolute inset-0 h-full w-full"
-          />
+          {heroHasCmsPoster ? (
+            <img
+              src={heroPoster}
+              alt={homeHero?.posterAlt ?? ''}
+              fetchPriority="high"
+              decoding="async"
+              className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+            />
+          ) : heroShowStaticPicture ? (
+            <picture>
+              <source srcSet="/showreel-preview.avif" type="image/avif" />
+              <source srcSet="/showreel-preview.webp" type="image/webp" />
+              <img
+                src="/showreel-preview.webp"
+                alt=""
+                fetchPriority="high"
+                decoding="async"
+                className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+              />
+            </picture>
+          ) : null}
+          {heroVideo && (
+            <VideoLoop
+              src={heroVideo}
+              poster={heroPoster}
+              className="absolute inset-0 h-full w-full"
+            />
+          )}
           <div className="absolute inset-0 bg-home-media-gradient" />
         </button>
       </div>
@@ -228,7 +283,7 @@ const DirectionA = () => {
       {/* ── Rows 4-5 middle: Cyclorama ── */}
       <button
         onClick={() => goto('cyclorama')}
-        className="edo-focus-ring group col-span-1 min-h-36 flex cursor-pointer flex-col justify-between border-0 bg-white p-5 text-left text-foreground transition-colors duration-150 hover:bg-muted md:col-start-4 md:col-end-7 md:row-start-4 md:row-end-6 md:min-h-0"
+        className="edo-focus-ring group col-span-2 min-h-32 flex cursor-pointer flex-col justify-between border-0 bg-white p-5 text-left text-foreground transition-colors duration-150 hover:bg-muted md:col-span-3 md:col-start-4 md:col-end-7 md:row-start-4 md:row-end-6 md:min-h-0"
       >
         <CellLabel>Espace</CellLabel>
         <div className="flex items-end justify-between gap-3">
@@ -252,10 +307,10 @@ const DirectionA = () => {
       {/* ── Row 4 right: Book CTA ── */}
       <button
         onClick={() => goto('book')}
-        className="edo-focus-ring group col-span-2 h-20 flex cursor-pointer items-center justify-between gap-3 border-0 bg-primary px-5 py-3 text-left text-white transition-colors duration-150 hover:bg-foreground hover:text-white sm:col-span-1 md:col-start-7 md:col-end-10 md:row-start-4 md:h-21"
+        className="edo-focus-ring group col-span-2 h-20 flex cursor-pointer items-center justify-between gap-3 border-0 bg-primary px-5 py-3 text-left text-white transition-colors duration-150 hover:bg-foreground hover:text-white md:col-start-7 md:col-end-10 md:row-start-4 md:h-21"
       >
         <div className="flex min-w-0 flex-col gap-1 transition-transform duration-150 group-hover:scale-102">
-          <span className="font-mono text-label uppercase tracking-label text-white/75">
+          <span className="font-mono text-label uppercase tracking-label text-white">
             {homeMsg.requestQuoteOr[lang]}
           </span>
           <span className="text-tile-title font-normal tracking-headline leading-tight text-white">
@@ -270,7 +325,7 @@ const DirectionA = () => {
       {/* ── Row 5 left: Discovery CTA ── */}
       <button
         onClick={() => goto('discovery')}
-        className="edo-focus-ring group relative col-span-2 h-20 flex cursor-pointer items-center justify-between gap-3 border-0 bg-foreground px-4 py-3 text-left text-white transition-all duration-150 hover:brightness-110 sm:col-span-1 md:col-start-1 md:col-end-4 md:row-start-5 md:h-21"
+        className="edo-focus-ring group relative col-span-1 h-20 flex cursor-pointer items-center justify-between gap-3 border-0 bg-foreground px-4 py-3 text-left text-white transition-all duration-150 hover:brightness-110 md:col-start-1 md:col-end-4 md:row-start-5 md:h-21"
       >
         <svg viewBox="0 0 200 84" preserveAspectRatio="none" className="absolute inset-0 h-full w-full opacity-20">
           {[...Array(7)].map((_, i) => (<line key={'h' + i} x1="0" y1={i * 14} x2="200" y2={i * 14} stroke="currentColor" strokeWidth="0.3" />))}
@@ -292,7 +347,7 @@ const DirectionA = () => {
       {/* ── Rows 4-5 right: Post-production ── */}
       <button
         onClick={() => goto('postprod')}
-        className="edo-focus-ring group col-span-2 h-20 flex cursor-pointer flex-col justify-between border-0 bg-white p-5 text-left text-foreground transition-colors duration-150 hover:bg-muted sm:col-span-1 md:col-start-7 md:col-end-10 md:row-start-4 md:row-end-6 md:mt-home-offset md:h-home-offset"
+        className="edo-focus-ring group col-span-1 h-20 flex cursor-pointer flex-col justify-between border-0 bg-white p-5 text-left text-foreground transition-colors duration-150 hover:bg-muted md:col-start-7 md:col-end-10 md:row-start-4 md:row-end-6 md:mt-home-offset md:h-home-offset"
       >
         <CellLabel>Service</CellLabel>
         <div className="flex items-end justify-between gap-2.5">
@@ -311,11 +366,20 @@ const DirectionA = () => {
         </div>
       </button>
 
-      {/* ── Rows 4-5 far right: Assistant chat ── */}
-      <AssistantChat
-        lang={lang}
-        className="col-span-2 min-h-52 md:col-start-10 md:col-end-13 md:row-start-4 md:row-end-6 md:min-h-0"
-      />
+      {/* ── Rows 4-5 far right: Assistant chat (desktop only; mobile uses FAB) ── */}
+      <Suspense
+        fallback={
+          <div
+            aria-hidden
+            className="hidden bg-white md:flex md:col-start-10 md:col-end-13 md:row-start-4 md:row-end-6 md:min-h-0"
+          />
+        }
+      >
+        <AssistantChat
+          lang={lang}
+          className="hidden md:flex md:col-start-10 md:col-end-13 md:row-start-4 md:row-end-6 md:min-h-0"
+        />
+      </Suspense>
 
       {/* ── Row 6: Social links (wrapped to 4-col grid) ── */}
       <div className="col-span-2 grid grid-cols-4 h-11 gap-px md:col-start-1 md:col-end-5 md:row-start-6">
@@ -336,6 +400,45 @@ const DirectionA = () => {
       {/* ── Row 6: Marquee ── */}
       <div className="col-span-2 h-11 flex items-center overflow-hidden bg-white min-w-0 md:col-start-5 md:col-end-13 md:row-start-6">
         <MarqueeCell size={20} />
+      </div>
+
+      {/* ── Mobile chat FAB + sheet ── */}
+      <button
+        type="button"
+        onClick={() => setChatOpen(true)}
+        aria-label={cellsMsg.assistant[lang]}
+        className="edo-focus-ring fixed bottom-4 right-4 z-overlay flex h-14 w-14 cursor-pointer items-center justify-center border border-foreground bg-primary text-white shadow-lg transition-transform duration-150 hover:scale-105 md:hidden"
+      >
+        <IconChat width="22" height="22" />
+      </button>
+
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={cellsMsg.assistant[lang]}
+        aria-hidden={chatOpen ? undefined : true}
+        {...({ inert: chatOpen ? undefined : '' } as Record<string, unknown>)}
+        className={cn(
+          'fixed inset-0 z-sheet flex flex-col bg-white transition-opacity duration-200 md:hidden',
+          chatOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0',
+        )}
+      >
+        <div className="flex shrink-0 items-center justify-between border-b border-foreground px-4 py-3">
+          <CellLabel>{cellsMsg.assistant[lang]}</CellLabel>
+          <button
+            type="button"
+            onClick={() => setChatOpen(false)}
+            aria-label={common.close[lang]}
+            className="edo-focus-ring flex h-10 w-10 cursor-pointer items-center justify-center border-0 bg-transparent text-foreground transition-colors hover:bg-muted"
+          >
+            <IconX width="20" height="20" />
+          </button>
+        </div>
+        <div className="flex min-h-0 flex-1 flex-col">
+          <Suspense fallback={<div aria-hidden className="flex-1 bg-white" />}>
+            {chatOpen && <AssistantChat lang={lang} className="h-full w-full" />}
+          </Suspense>
+        </div>
       </div>
 
     </div>

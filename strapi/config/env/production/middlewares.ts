@@ -60,7 +60,17 @@ const config: Core.Config.Middlewares = [
   },
   'strapi::poweredBy',
   'strapi::query',
-  'strapi::body',
+  {
+    name: 'strapi::body',
+    config: {
+      // See `config/middlewares.ts` for rationale — must stay aligned with the
+      // base config because lodash merges this array by index in Strapi 5, so
+      // any override here replaces the base entry at the same position.
+      formidable: {
+        maxFileSize: 256 * 1024 * 1024,
+      },
+    },
+  },
   'strapi::session',
   'strapi::favicon',
   'strapi::public',

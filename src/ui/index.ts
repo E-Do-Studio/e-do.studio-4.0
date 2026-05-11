@@ -6,7 +6,7 @@ export type { ButtonProps, ButtonSize, ButtonVariant } from './button';
 export { CellLabel, CellTitle, Eyebrow } from './typography';
 export type { CellLabelProps, CellTitleProps, EyebrowProps } from './typography';
 
-export { IconMenu, IconX, IconArrowRight, IconGlobe, IconPlay } from './icons';
+export { IconMenu, IconX, IconArrowRight, IconGlobe, IconPlay, IconChat } from './icons';
 export type { IconProps } from './icons';
 
 export { Wordmark, LangSwitch, Clock } from './brand';
@@ -32,3 +32,12 @@ export type { SocialIconProps } from './social-icon';
 
 export { VideoLoop } from './video-loop';
 export type { VideoLoopProps } from './video-loop';
+
+export { PlateauMediaCarousel } from './plateau-media-carousel';
+export type { PlateauMediaCarouselProps } from './plateau-media-carousel';
+
+export { Loader } from './loader';
+export type { LoaderProps, LoaderSize } from './loader';
+
+export { EmptyState } from './empty-state';
+export type { EmptyStateProps, EmptyStateAction } from './empty-state';

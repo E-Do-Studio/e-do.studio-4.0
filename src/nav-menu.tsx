@@ -17,6 +17,7 @@ interface NavOverlayProps {
 const NavOverlay = ({ isOpen, onClose }: NavOverlayProps) => (
   <div
     onClick={onClose}
+    aria-hidden="true"
     className={cn(
       "fixed inset-0 z-overlay bg-black/40 backdrop-blur-sm transition-opacity duration-300",
       isOpen
@@ -28,19 +29,21 @@ const NavOverlay = ({ isOpen, onClose }: NavOverlayProps) => (
 
 interface NavHeaderProps {
   onClose: () => void;
+  lang: Lang;
 }
 
-const NavHeader = ({ onClose }: NavHeaderProps) => (
+const NavHeader = ({ onClose, lang }: NavHeaderProps) => (
   <div className="grid grid-cols-fluid-auto border-b border-foreground">
     <div className="flex items-center px-4 py-3.5">
       <CellLabel>Navigation</CellLabel>
     </div>
     <button
+      type="button"
       onClick={onClose}
-      aria-label="Close"
+      aria-label={common.close[lang]}
       className="edo-focus-ring flex h-12 w-12 cursor-pointer items-center justify-center border-0 border-l border-foreground bg-white transition-colors hover:bg-muted"
     >
-      <IconX width="20" height="20" />
+      <IconX width="20" height="20" aria-hidden="true" />
     </button>
   </div>
 );
@@ -60,11 +63,32 @@ const NavItemLink = ({ item, index, onClose, navigate }: NavItemLinkProps) => (
       onClose();
       navigate({ to: item.href });
     }}
-    className="edo-focus-ring relative flex min-h-18 cursor-pointer flex-col justify-between border-b border-foreground p-4 no-underline transition-colors hover:bg-muted"
+    className="edo-focus-ring relative flex min-h-13 cursor-pointer flex-col justify-between gap-1 border-b border-foreground px-4 py-2.5 no-underline transition-colors hover:bg-muted"
   >
     <CellLabel>{String(index + 1).padStart(2, "0")}</CellLabel>
-    <span className="mt-auto text-tile-title font-light text-foreground">
+    <span className="mt-auto text-cell font-light text-foreground">
       {item.label}
+    </span>
+  </a>
+);
+
+interface NavExternalLinkProps {
+  href: string;
+  label: string;
+  index: number;
+}
+
+const NavExternalLink = ({ href, label, index }: NavExternalLinkProps) => (
+  <a
+    href={href}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="edo-focus-ring relative flex min-h-13 cursor-pointer flex-col justify-between gap-1 border-b border-foreground px-4 py-2.5 no-underline transition-colors hover:bg-muted"
+  >
+    <CellLabel>{String(index + 1).padStart(2, "0")}</CellLabel>
+    <span className="mt-auto flex items-baseline gap-1.5 text-cell font-light text-foreground">
+      {label}
+      <span aria-hidden="true" className="font-mono text-micro tracking-meta text-muted-foreground">↗</span>
     </span>
   </a>
 );
@@ -144,17 +168,27 @@ const NavMenu = ({ lang, isOpen, onClose, setLang }: NavMenuProps) => {
     <>
       <NavOverlay isOpen={isOpen} onClose={onClose} />
       <aside
+        role="dialog"
+        aria-modal="true"
+        aria-label={common.menu[lang]}
+        aria-hidden={isOpen ? undefined : true}
+        {...({ inert: isOpen ? undefined : '' } as Record<string, unknown>)}
         className={cn(
           "fixed left-0 top-0 z-sheet flex h-full w-72 flex-col border-r border-foreground bg-white transition-transform duration-300 ease-edo-out",
           isOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
-        <NavHeader onClose={onClose} />
+        <NavHeader onClose={onClose} lang={lang} />
 
-        <nav className="flex flex-1 flex-col overflow-y-auto">
+        <nav className="flex flex-1 flex-col overflow-y-auto" aria-label={common.menu[lang]}>
           {nav.items[lang].map((item, index) => (
             <NavItemLink key={item.href} item={item} index={index} onClose={onClose} navigate={navigate} />
           ))}
+          <NavExternalLink
+            href="https://etouch.e-do.studio"
+            label="Etouch"
+            index={nav.items[lang].length}
+          />
           <SocialGrid links={socialLinks ?? []} />
         </nav>
 

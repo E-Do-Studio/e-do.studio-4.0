@@ -6,19 +6,14 @@ import {
   useRouterState,
   useNavigate,
   redirect,
+  lazyRouteComponent,
 } from '@tanstack/react-router';
 import { createContext, useContext, useState } from 'react';
 import type { Lang } from './types';
 import { NavMenu } from './nav-menu';
 import { useGoogleAnalytics } from './lib/use-google-analytics';
 import { DirectionA } from './direction-editorial';
-import { PlateauPage } from './plateau-page';
-import { DiscoveryVariants } from './discovery-pages';
-import { PostprodPage } from './postprod-page';
-import { GalleryPageV3 } from './gallery-page';
-import { ContactPage } from './contact-page';
-import { BookPageV2 } from './book-page';
-import { LegalPage } from './legal-page';
+import { Loader } from './ui';
 
 const VALID_LANGS: Lang[] = ['fr', 'en'];
 const DEFAULT_LANG: Lang = 'fr';
@@ -66,6 +61,13 @@ const SCREEN_TO_PATH: Record<string, (lang: Lang) => string> = {
   book: (l) => `/${l}/${l === 'fr' ? 'reserver' : 'book'}`,
   legal: (l) => `/${l}/legal`,
 };
+
+function RoutePendingFallback() {
+  const pathname = useRouterState({ select: (s) => s.resolvedLocation?.pathname ?? '' });
+  const langSegment = pathname.split('/')[1];
+  const lang: Lang = VALID_LANGS.includes(langSegment as Lang) ? (langSegment as Lang) : DEFAULT_LANG;
+  return <Loader lang={lang} size="page" />;
+}
 
 function LangLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -137,58 +139,55 @@ const homeRoute = createRoute({
 const cycloramaRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/cyclorama',
-  component: () => <PlateauPage slug="cyclorama" />,
+  component: lazyRouteComponent(() => import('./plateau-page'), 'CycloramaPage'),
 });
 
 const plateauRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/plateau/$slug',
-  component: () => {
-    const params = plateauRoute.useParams();
-    return <PlateauPage key={params.slug} slug={params.slug} />;
-  },
+  component: lazyRouteComponent(() => import('./plateau-page'), 'PlateauSlugPage'),
 });
 
 const discoveryRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/discovery',
-  component: DiscoveryVariants,
+  component: lazyRouteComponent(() => import('./discovery-pages'), 'DiscoveryVariants'),
 });
 
 const postprodRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/post-production',
-  component: PostprodPage,
+  component: lazyRouteComponent(() => import('./postprod-page'), 'PostprodPage'),
 });
 
 const galleryRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/galerie',
-  component: GalleryPageV3,
+  component: lazyRouteComponent(() => import('./gallery-page'), 'GalleryPageV3'),
 });
 
 const contactRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/contact',
-  component: ContactPage,
+  component: lazyRouteComponent(() => import('./contact-page'), 'ContactPage'),
 });
 
 const bookFrRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/reserver',
-  component: BookPageV2,
+  component: lazyRouteComponent(() => import('./book-page'), 'BookPageV2'),
 });
 
 const bookEnRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/book',
-  component: BookPageV2,
+  component: lazyRouteComponent(() => import('./book-page'), 'BookPageV2'),
 });
 
 const legalRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/legal',
-  component: LegalPage,
+  component: lazyRouteComponent(() => import('./legal-page'), 'LegalPage'),
 });
 
 const routeTree = rootRoute.addChildren([
@@ -207,7 +206,11 @@ const routeTree = rootRoute.addChildren([
   ]),
 ]);
 
-export const router = createRouter({ routeTree });
+export const router = createRouter({
+  routeTree,
+  defaultPendingComponent: RoutePendingFallback,
+  defaultPendingMs: 0,
+});
 
 declare module '@tanstack/react-router' {
   interface Register {

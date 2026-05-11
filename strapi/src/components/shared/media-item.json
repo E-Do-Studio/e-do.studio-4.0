@@ -1,0 +1,45 @@
+{
+  "collectionName": "components_shared_media_items",
+  "info": {
+    "displayName": "Élément média (image ou vidéo)",
+    "description": "Élément d'un carousel de médias. `kind` détermine si on lit `image` ou `video`. `poster` est un poster optionnel pour les vidéos. `alt` est localisé.",
+    "icon": "picture"
+  },
+  "attributes": {
+    "kind": {
+      "type": "enumeration",
+      "enum": ["image", "video"],
+      "required": true,
+      "default": "image",
+      "description": "Type de média : `image` (lit le champ `image`) ou `video` (lit `video` + `poster`)."
+    },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"],
+      "description": "Image affichée quand kind = image."
+    },
+    "video": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["videos"],
+      "description": "Fichier vidéo lu quand kind = video (mp4/webm recommandé)."
+    },
+    "poster": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"],
+      "description": "Poster facultatif pour les vidéos (affiché avant l'autoplay et pour les utilisateurs en prefers-reduced-motion)."
+    },
+    "alt": {
+      "type": "string",
+      "maxLength": 200,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "description": "Texte alternatif / aria-label du média (localisé FR/EN)."
+    }
+  }
+}

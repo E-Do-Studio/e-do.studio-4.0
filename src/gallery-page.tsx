@@ -1,11 +1,13 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import type { CSSProperties } from "react";
+import { useQueryStates, parseAsString } from "nuqs";
 import { usePageContext } from "./router";
 import { useDocumentMeta } from "./lib/use-document-meta";
 import { useGalleryProjects, useGalleryCategories } from "./lib/use-strapi";
 import type { GalleryProject } from "./lib/strapi";
 import type { Lang } from "./types";
-import { Button, PageHeader, IconArrowRight, CellLabel, Wordmark } from "./ui";
+import { EmptyState, Loader, PageHeader, IconArrowRight, CellLabel, Wordmark } from "./ui";
+import { Chip } from "./ui/chip";
 import { cn } from "./ui/cn";
 import { common, galleryPage } from "./i18n/messages";
 
@@ -149,6 +151,102 @@ const GalleryFilters = ({
         </button>
       )}
     </aside>
+  );
+};
+
+const MobileFilterStrip = ({
+  lang,
+  cat,
+  plateau,
+  setCat,
+  setPlateau,
+  categories,
+  plateauOptions,
+  catToPlateaux,
+  plateauToCats,
+}: Omit<GalleryFiltersProps, "projects">) => {
+  const hasFilters = cat !== "all" || plateau !== "all";
+  const chipClass =
+    "shrink-0 min-h-10 px-2.5 py-1.5 text-label tracking-caption";
+
+  return (
+    <div
+      className="flex items-center gap-1.5 overflow-x-auto overflow-y-hidden border-b border-border bg-white px-3 py-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:hidden"
+      role="toolbar"
+      aria-label={galleryPage.categories[lang]}
+    >
+      <span className="shrink-0 pr-0.5 font-mono text-micro uppercase tracking-label text-muted-foreground">
+        {galleryPage.categories[lang]}
+      </span>
+      <Chip
+        active={cat === "all"}
+        onClick={() => setCat("all")}
+        className={chipClass}
+      >
+        {common.all[lang]}
+      </Chip>
+      {categories.map((category) => {
+        const dimmed =
+          plateau !== "all" &&
+          !(plateauToCats[plateau] ?? []).includes(category.k);
+        return (
+          <Chip
+            key={category.k}
+            active={cat === category.k}
+            onClick={() => {
+              if (dimmed) setPlateau("all");
+              setCat(category.k);
+            }}
+            className={cn(chipClass, dimmed && "opacity-40")}
+          >
+            {category[lang]}
+          </Chip>
+        );
+      })}
+
+      <span className="shrink-0 mx-1 h-5 w-px bg-border" aria-hidden />
+
+      <span className="shrink-0 pr-0.5 font-mono text-micro uppercase tracking-label text-muted-foreground">
+        {common.stages[lang]}
+      </span>
+      <Chip
+        active={plateau === "all"}
+        onClick={() => setPlateau("all")}
+        className={chipClass}
+      >
+        {common.all[lang]}
+      </Chip>
+      {plateauOptions.map((option) => {
+        const dimmed =
+          cat !== "all" && !(catToPlateaux[cat] ?? []).includes(option.k);
+        return (
+          <Chip
+            key={option.k}
+            active={plateau === option.k}
+            onClick={() => {
+              if (dimmed) setCat("all");
+              setPlateau(option.k);
+            }}
+            className={cn(chipClass, dimmed && "opacity-40")}
+          >
+            {option[lang]}
+          </Chip>
+        );
+      })}
+
+      {hasFilters && (
+        <button
+          onClick={() => {
+            setCat("all");
+            setPlateau("all");
+          }}
+          className="edo-focus-ring shrink-0 cursor-pointer border border-border bg-white px-2.5 py-1.5 font-mono text-label uppercase tracking-caption text-foreground transition-colors hover:bg-muted"
+          aria-label={common.reset[lang]}
+        >
+          ↺ {common.reset[lang]}
+        </button>
+      )}
+    </div>
   );
 };
 
@@ -346,17 +444,22 @@ const GalleryContent = ({
   resetFilters,
   loading,
 }: GalleryContentProps) => (
-  <div className="min-h-0 overflow-y-auto bg-black">
-    <div className="flex flex-col gap-px bg-black">
+  <div className="min-h-0 overflow-y-auto bg-edo-pure-black">
+    <div className="flex flex-col gap-px bg-edo-pure-black">
       {loading ? (
-        <GalleryLoadingState />
+        <Loader lang={lang} size="block" className="bg-background py-24" />
       ) : filtered.length === 0 ? (
-        <GalleryEmptyState lang={lang} onReset={resetFilters} />
+        <EmptyState
+          label={galleryPage.noResults[lang]}
+          description={galleryPage.tryAnotherFilter[lang]}
+          action={{ label: common.reset[lang], onClick: resetFilters }}
+        />
       ) : (
         filtered.map((project) => (
           <ProjectRow
             key={project.id}
             project={project}
+            lang={lang}
           />
         ))
       )}
@@ -364,87 +467,49 @@ const GalleryContent = ({
   </div>
 );
 
-const GalleryLoadingState = () => (
-  <div className="flex flex-col gap-px">
-    {[0, 1, 2].map((i) => (
-      <div key={i} className="grid gap-px bg-black grid-cols-2 md:grid-cols-gallery-row">
-        <div className="bg-white animate-pulse h-80" />
-        <div className="bg-muted animate-pulse h-80" />
-        <div className="bg-muted animate-pulse h-80" />
-        <div className="bg-muted animate-pulse h-80 hidden md:block" />
-      </div>
-    ))}
-  </div>
-);
-
-const GalleryEmptyState = ({
-  lang,
-  onReset,
-}: {
-  lang: Lang;
-  onReset: () => void;
-}) => (
-  <div className="flex min-h-96 flex-col items-center justify-center gap-2.5 bg-white px-6 py-20 text-muted-foreground">
-    <span className="edo-cell-label">
-      {galleryPage.noResults[lang]}
-    </span>
-    <span className="text-detail">
-      {galleryPage.tryAnotherFilter[lang]}
-    </span>
-    <Button
-      variant="outline"
-      size="sm"
-      onClick={onReset}
-      className="mt-2.5"
-    >
-      {common.reset[lang]}
-    </Button>
-  </div>
-);
-
-const ProjectRow = ({ project, style }: { project: GalleryProject; style?: CSSProperties }) => (
-  <div className="edo-list-row grid gap-px bg-black grid-cols-2 md:grid-cols-gallery-row" style={style}>
-    <ProjectLabel project={project} />
+const ProjectRow = ({ project, lang, style }: { project: GalleryProject; lang: Lang; style?: CSSProperties }) => (
+  <div className="edo-list-row grid gap-px bg-edo-pure-black grid-cols-gallery-row-mobile md:grid-cols-gallery-row" style={style}>
+    <ProjectLabel project={project} lang={lang} />
     {[0, 1, 2].map((imageIndex) => (
       <ProjectImage
         key={imageIndex}
         project={project}
         imageIndex={imageIndex}
-        hidden={imageIndex === 2}
       />
     ))}
   </div>
 );
 
-const ProjectLabel = ({ project }: { project: GalleryProject }) => (
-  <button className="edo-focus-ring relative flex cursor-pointer flex-col items-center justify-between overflow-hidden border-0 bg-white px-2.5 py-3.5 text-left font-sans">
-    <span className="self-start font-mono text-micro tracking-code text-muted-foreground">
-      {String(project.id).padStart(2, "0")}
-    </span>
-    <div className="flex min-h-0 flex-1 items-center justify-center py-2 edo-writing-vertical rotate-180">
-      <span className="whitespace-nowrap text-tile-large font-medium leading-none tracking-headline text-foreground">
-        {project.brand}
+const ProjectLabel = ({ project, lang }: { project: GalleryProject; lang: Lang }) => {
+  const plateauLabel = PLATEAU_LABELS[project.plateau]?.[lang] ?? project.plateau;
+  return (
+    <button className="edo-focus-ring relative flex cursor-pointer flex-col items-center justify-between overflow-hidden border-0 bg-white px-2.5 py-3.5 text-left font-sans">
+      <span className="max-w-full self-start truncate font-mono text-micro uppercase tracking-code text-muted-foreground">
+        {plateauLabel}
       </span>
-    </div>
-    <span className="self-start font-mono text-micro tracking-code text-muted-foreground">
-      {project.year}
-    </span>
-  </button>
-);
+      <div className="flex min-h-0 flex-1 items-center justify-center py-2 edo-writing-vertical rotate-180">
+        <span className="whitespace-nowrap text-detail md:text-tile-large font-medium leading-none tracking-headline text-foreground">
+          {project.brand}
+        </span>
+      </div>
+      <span className="self-start font-mono text-micro tracking-code text-muted-foreground">
+        {project.year}
+      </span>
+    </button>
+  );
+};
 
 const ProjectImage = ({
   project,
   imageIndex,
-  hidden,
 }: {
   project: GalleryProject;
   imageIndex: number;
-  hidden?: boolean;
 }) => {
   const imageUrl = project.imageUrls[imageIndex];
 
   return (
-    <div className={`relative aspect-portrait overflow-hidden bg-white ${hidden ? 'hidden md:block' : ''}`}>
+    <div className="relative aspect-portrait overflow-hidden bg-white">
       {imageUrl ? (
         <img
           src={imageUrl}
@@ -501,11 +566,21 @@ const ProjectCoverFallback = ({ project, seed }: { project: GalleryProject; seed
   );
 };
 
+const filterParser = parseAsString.withDefault("all").withOptions({ clearOnDefault: true });
+
 const GalleryPageV3 = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
   useDocumentMeta('gallery', lang);
-  const [cat, setCat] = useState("all");
-  const [plateau, setPlateau] = useState("all");
+  const [{ cat, plateau }, setFilters] = useQueryStates(
+    {
+      cat: parseAsString.withDefault("all"),
+      plateau: parseAsString.withDefault("all"),
+    },
+    { history: "push", clearOnDefault: true },
+  );
+  const setCat = (c: string) => setFilters({ cat: c === "all" ? null : c });
+  const setPlateau = (p: string) =>
+    setFilters({ plateau: p === "all" ? null : p });
 
   const { data: strapiProjects, loading: projectsLoading } = useGalleryProjects();
   const { data: strapiCategories } = useGalleryCategories();
@@ -542,12 +617,11 @@ const GalleryPageV3 = () => {
   );
 
   const resetFilters = () => {
-    setCat("all");
-    setPlateau("all");
+    setFilters({ cat: null, plateau: null });
   };
 
   return (
-    <div className="edo-page-enter grid w-full gap-px bg-black overflow-y-auto md:h-full md:grid-cols-gallery-full md:grid-rows-page md:overflow-hidden">
+    <div className="edo-page-enter grid w-full gap-px bg-edo-pure-black overflow-y-auto md:h-full md:grid-cols-gallery-full md:grid-rows-page md:overflow-hidden">
 
       <PageHeader
         lang={lang}
@@ -591,8 +665,8 @@ const GalleryPageV3 = () => {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-px bg-black md:col-span-full md:row-start-2 md:min-h-0 md:overflow-hidden md:grid-cols-gallery-shell">
-        <GalleryFiltersMobile
+      <div className="grid grid-cols-1 gap-px bg-edo-pure-black md:col-span-full md:row-start-2 md:min-h-0 md:overflow-hidden md:grid-cols-gallery-shell">
+        <MobileFilterStrip
           lang={lang}
           cat={cat}
           plateau={plateau}
@@ -600,11 +674,10 @@ const GalleryPageV3 = () => {
           setPlateau={setPlateau}
           categories={categories}
           plateauOptions={plateauOptions}
-          projects={projects}
           catToPlateaux={catToPlateaux}
           plateauToCats={plateauToCats}
         />
-        <div className="hidden bg-white md:block md:overflow-x-hidden md:overflow-y-auto">
+        <div className="hidden bg-white md:block md:overflow-y-auto">
           <GalleryFilters
             lang={lang}
             cat={cat}

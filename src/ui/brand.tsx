@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { Lang } from '../types';
 import { IconGlobe } from './icons';
-import logoFull from '../../brand/logo-full.png';
-import logoMark from '../../brand/logo-mark.png';
+import logoFull from '../../brand/logo-full.webp';
+import logoMark from '../../brand/logo-mark.webp';
 import { common } from '../i18n/messages';
 
 interface WordmarkProps {
@@ -15,13 +15,27 @@ const sizeMap: Record<number, string> = {
   40: 'h-10',
 };
 
-const Wordmark = ({ size = 40, variant = 'full' }: WordmarkProps) => (
-  <img
-    src={variant === 'mark' ? logoMark : logoFull}
-    alt="E-Do Studio"
-    className={`${sizeMap[size] ?? 'h-10'} block w-auto`}
-  />
-);
+// Intrinsic dimensions are required to reserve layout space and avoid CLS.
+const NATURAL: Record<'full' | 'mark', { width: number; height: number }> = {
+  full: { width: 600, height: 228 },
+  mark: { width: 240, height: 240 },
+};
+
+const Wordmark = ({ size = 40, variant = 'full' }: WordmarkProps) => {
+  const { width, height } = NATURAL[variant];
+  return (
+    <img
+      src={variant === 'mark' ? logoMark : logoFull}
+      alt="E-Do Studio"
+      width={width}
+      height={height}
+      decoding="async"
+      // aspect-ratio + object-contain guard against parents that would otherwise stretch the bitmap.
+      style={{ aspectRatio: `${width} / ${height}` }}
+      className={`${sizeMap[size] ?? 'h-10'} block w-auto max-w-full shrink-0 object-contain`}
+    />
+  );
+};
 
 interface LangSwitchProps {
   lang: Lang;

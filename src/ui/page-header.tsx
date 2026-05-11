@@ -98,7 +98,7 @@ const PageHeader = ({
   onLangToggle,
 }: PageHeaderProps) => (
   <header className={cn('sticky top-0 z-10 flex min-w-0 gap-px bg-foreground', className)}>
-    <div className="flex h-full flex-none basis-36 gap-px bg-foreground md:basis-nav">
+    <div className="flex h-full flex-none basis-44 gap-px bg-foreground md:basis-nav">
       <button
         onClick={onMenuClick}
         aria-label="Open menu"
