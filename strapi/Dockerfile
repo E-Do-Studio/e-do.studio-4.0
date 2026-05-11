@@ -11,6 +11,13 @@ RUN npm ci
 # Build
 FROM base AS builder
 WORKDIR /app
+# Strapi 5's admin build runs Vite + esbuild and routinely peaks above
+# the default V8 heap (~1.5 GiB on a 2 GiB container), which Coolify
+# reports only as "Deployment failed" because the Node process is
+# OOM-killed mid-build. Pin the heap below the container ceiling so the
+# build fails loudly instead of silently if it ever does run out.
+ENV NODE_ENV=production
+ENV NODE_OPTIONS=--max-old-space-size=3072
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
