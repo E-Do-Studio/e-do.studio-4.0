@@ -27,6 +27,7 @@ const PUBLIC_COLLECTION_TYPES = [
 const PUBLIC_SINGLE_TYPES = [
   'api::cyclorama.cyclorama',
   'api::site-setting.site-setting',
+  'api::home-hero.home-hero',
 ];
 
 // users-permissions plugin removed (board decision 2026-05-07): the public

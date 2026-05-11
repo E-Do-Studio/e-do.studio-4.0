@@ -3,7 +3,7 @@ import { CellLabel, IconArrowRight, PageHeader, SocialIcon, VideoLoop, cn } from
 import { MarqueeCell } from './cells';
 
 const AssistantChat = lazy(() => import('./assistant-chat'));
-import { useSocialLinks, useGalleryCategories, useMachines, useContact } from './lib/use-strapi';
+import { useSocialLinks, useGalleryCategories, useMachines, useContact, useHomeHero } from './lib/use-strapi';
 import { useDocumentMeta } from './lib/use-document-meta';
 import type { Lang } from './types';
 import { usePageContext } from './router';
@@ -72,6 +72,10 @@ const DirectionA = () => {
   const { data: galleryCategories } = useGalleryCategories();
   const { data: machines } = useMachines();
   const { data: contact } = useContact();
+  const { data: homeHero } = useHomeHero();
+  const heroVideo = homeHero?.videoUrl ?? '/videos/showreel.mp4';
+  const heroPoster = homeHero?.posterUrl ?? '/showreel-preview.webp';
+  const heroHasCmsPoster = !!homeHero?.posterUrl;
   const [ecomMode, setEcomMode] = useState<'type' | 'machine'>('type');
   const categories = galleryCategories ?? [];
   const ecomMachines: MachineRowItem[] = (machines ?? [])
@@ -228,19 +232,30 @@ const DirectionA = () => {
           onClick={() => goto('gallery')}
           className="edo-focus-ring group relative flex h-full w-full cursor-pointer items-center justify-center overflow-hidden border-0 bg-edo-dark p-0 text-left transition-all duration-150 hover:brightness-75"
         >
-          <picture>
-            <source srcSet="/showreel-preview.avif" type="image/avif" />
-            <source srcSet="/showreel-preview.webp" type="image/webp" />
+          {heroHasCmsPoster ? (
             <img
-              src="/showreel-preview.webp"
-              alt=""
+              src={heroPoster}
+              alt={homeHero?.posterAlt ?? ''}
               fetchPriority="high"
               decoding="async"
               className="pointer-events-none absolute inset-0 h-full w-full object-cover"
             />
-          </picture>
+          ) : (
+            <picture>
+              <source srcSet="/showreel-preview.avif" type="image/avif" />
+              <source srcSet="/showreel-preview.webp" type="image/webp" />
+              <img
+                src="/showreel-preview.webp"
+                alt=""
+                fetchPriority="high"
+                decoding="async"
+                className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+              />
+            </picture>
+          )}
           <VideoLoop
-            src="/videos/showreel.mp4"
+            src={heroVideo}
+            poster={heroPoster}
             className="absolute inset-0 h-full w-full"
           />
           <div className="absolute inset-0 bg-home-media-gradient" />

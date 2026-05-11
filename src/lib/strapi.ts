@@ -107,6 +107,8 @@ interface StrapiPostProdType {
 
 interface StrapiMedia {
   url: string;
+  mime?: string;
+  alternativeText?: string | null;
   formats?: {
     medium?: { url: string };
     small?: { url: string };
@@ -557,6 +559,12 @@ function resolveStrapiMediaUrl(media?: StrapiMedia): string | undefined {
   const path = media.formats?.medium?.url ?? media.url;
   if (path.startsWith('http')) return path;
   return `${STRAPI_URL}${path}`;
+}
+
+function resolveRawMediaUrl(media?: StrapiMedia | null): string | undefined {
+  if (!media?.url) return undefined;
+  if (media.url.startsWith('http')) return media.url;
+  return `${STRAPI_URL}${media.url}`;
 }
 
 export async function fetchDiscoveryPosts(): Promise<DiscoveryPost[]> {
@@ -1048,4 +1056,36 @@ export async function fetchGalleryCategories(): Promise<GalleryCategory[]> {
     const cEn = enCats.find(e => e.slug === cFr.slug) ?? cFr;
     return { k: cFr.slug, fr: cFr.name, en: cEn.name };
   });
+}
+
+// ─── Home Hero (showreel) ──────────────────────────────────────────────────
+
+interface StrapiHomeHero {
+  video?: StrapiMedia | null;
+  poster?: StrapiMedia | null;
+  posterAlt?: string | null;
+}
+
+export interface HomeHero {
+  videoUrl?: string;
+  posterUrl?: string;
+  posterAlt?: string;
+}
+
+export async function fetchHomeHero(): Promise<HomeHero | null> {
+  try {
+    const res = await fetchStrapi<{ data: StrapiHomeHero | null }>('home-hero', {
+      'populate': 'video,poster',
+      'locale': 'fr',
+    });
+    const data = res?.data;
+    if (!data) return null;
+    return {
+      videoUrl: resolveRawMediaUrl(data.video),
+      posterUrl: resolveRawMediaUrl(data.poster),
+      posterAlt: data.posterAlt ?? data.poster?.alternativeText ?? undefined,
+    };
+  } catch {
+    return null;
+  }
 }
