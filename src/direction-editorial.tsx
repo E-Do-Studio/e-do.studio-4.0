@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useQueryState, parseAsStringEnum } from 'nuqs';
 import { CellLabel, IconArrowRight, PageHeader, SocialIcon, VideoLoop, cn } from './ui';
@@ -74,7 +74,6 @@ const DirectionA = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
   const navigate = useNavigate();
   useDocumentMeta('home', lang);
-  const navigate = useNavigate();
   const { data: socialLinks } = useSocialLinks();
   const { data: galleryCategories } = useGalleryCategories();
   const { data: machines } = useMachines();
