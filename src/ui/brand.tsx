@@ -15,13 +15,25 @@ const sizeMap: Record<number, string> = {
   40: 'h-10',
 };
 
-const Wordmark = ({ size = 40, variant = 'full' }: WordmarkProps) => (
-  <img
-    src={variant === 'mark' ? logoMark : logoFull}
-    alt="E-Do Studio"
-    className={`${sizeMap[size] ?? 'h-10'} block w-auto`}
-  />
-);
+// Intrinsic dimensions are required to reserve layout space and avoid CLS.
+const NATURAL: Record<'full' | 'mark', { width: number; height: number }> = {
+  full: { width: 600, height: 228 },
+  mark: { width: 240, height: 240 },
+};
+
+const Wordmark = ({ size = 40, variant = 'full' }: WordmarkProps) => {
+  const { width, height } = NATURAL[variant];
+  return (
+    <img
+      src={variant === 'mark' ? logoMark : logoFull}
+      alt="E-Do Studio"
+      width={width}
+      height={height}
+      decoding="async"
+      className={`${sizeMap[size] ?? 'h-10'} block w-auto`}
+    />
+  );
+};
 
 interface LangSwitchProps {
   lang: Lang;

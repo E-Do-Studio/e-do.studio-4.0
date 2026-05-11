@@ -200,5 +200,23 @@ export function useDocumentMeta(page: string, lang: Lang, override?: SeoOverride
     }
 
     document.documentElement.lang = lang === 'en' ? 'en' : 'fr';
+
+    const pageUrl = typeof window === 'undefined'
+      ? `https://e-do.studio/${lang}`
+      : new URL(window.location.pathname + window.location.search, 'https://e-do.studio').toString();
+
+    let canonical = document.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonical);
+    }
+    canonical.setAttribute('href', pageUrl);
+
+    const ogUrl = document.querySelector('meta[property="og:url"]');
+    if (ogUrl) ogUrl.setAttribute('content', pageUrl);
+
+    const ogLocale = document.querySelector('meta[property="og:locale"]');
+    if (ogLocale) ogLocale.setAttribute('content', lang === 'en' ? 'en_US' : 'fr_FR');
   }, [page, lang, overrideTitle, overrideDescription, overrideImage, overrideNoIndex, defaultTitle, defaultDescription, defaultImageUrl]);
 }
