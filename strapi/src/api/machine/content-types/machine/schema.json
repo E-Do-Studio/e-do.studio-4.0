@@ -101,6 +101,12 @@
       "allowedTypes": ["videos"],
       "description": "Vidéo de présentation (mp4 recommandé)."
     },
+    "media": {
+      "type": "component",
+      "component": "shared.media-item",
+      "repeatable": true,
+      "description": "Carousel ordonné de médias (image ou vidéo) pour la page détail. Le front retombe sur le schéma SVG si vide."
+    },
     "rank": {
       "type": "integer",
       "configurable": false

@@ -123,6 +123,12 @@
       "allowedTypes": ["images"],
       "description": "Galerie d'images du plateau (15 max recommandé)."
     },
+    "media": {
+      "type": "component",
+      "component": "shared.media-item",
+      "repeatable": true,
+      "description": "Carousel ordonné de médias (image ou vidéo) pour la page détail. Le front retombe sur le schéma SVG si vide."
+    },
     "seo": {
       "type": "component",
       "component": "shared.seo-meta",
