@@ -227,6 +227,7 @@ const GalleryContent = ({
           <ProjectRow
             key={project.id}
             project={project}
+            lang={lang}
           />
         ))
       )}
@@ -234,9 +235,9 @@ const GalleryContent = ({
   </div>
 );
 
-const ProjectRow = ({ project, style }: { project: GalleryProject; style?: CSSProperties }) => (
+const ProjectRow = ({ project, lang, style }: { project: GalleryProject; lang: Lang; style?: CSSProperties }) => (
   <div className="edo-list-row grid gap-px bg-edo-pure-black grid-cols-2 md:grid-cols-gallery-row" style={style}>
-    <ProjectLabel project={project} />
+    <ProjectLabel project={project} lang={lang} />
     {[0, 1, 2].map((imageIndex) => (
       <ProjectImage
         key={imageIndex}
@@ -248,21 +249,24 @@ const ProjectRow = ({ project, style }: { project: GalleryProject; style?: CSSPr
   </div>
 );
 
-const ProjectLabel = ({ project }: { project: GalleryProject }) => (
-  <button className="edo-focus-ring relative flex cursor-pointer flex-col items-center justify-between overflow-hidden border-0 bg-white px-2.5 py-3.5 text-left font-sans">
-    <span className="self-start font-mono text-micro tracking-code text-muted-foreground">
-      {String(project.id).padStart(2, "0")}
-    </span>
-    <div className="flex min-h-0 flex-1 items-center justify-center py-2 edo-writing-vertical rotate-180">
-      <span className="whitespace-nowrap text-tile-large font-medium leading-none tracking-headline text-foreground">
-        {project.brand}
+const ProjectLabel = ({ project, lang }: { project: GalleryProject; lang: Lang }) => {
+  const plateauLabel = PLATEAU_LABELS[project.plateau]?.[lang] ?? project.plateau;
+  return (
+    <button className="edo-focus-ring relative flex cursor-pointer flex-col items-center justify-between overflow-hidden border-0 bg-white px-2.5 py-3.5 text-left font-sans">
+      <span className="max-w-full self-start truncate font-mono text-micro uppercase tracking-code text-muted-foreground">
+        {plateauLabel}
       </span>
-    </div>
-    <span className="self-start font-mono text-micro tracking-code text-muted-foreground">
-      {project.year}
-    </span>
-  </button>
-);
+      <div className="flex min-h-0 flex-1 items-center justify-center py-2 edo-writing-vertical rotate-180">
+        <span className="whitespace-nowrap text-tile-large font-medium leading-none tracking-headline text-foreground">
+          {project.brand}
+        </span>
+      </div>
+      <span className="self-start font-mono text-micro tracking-code text-muted-foreground">
+        {project.year}
+      </span>
+    </button>
+  );
+};
 
 const ProjectImage = ({
   project,
