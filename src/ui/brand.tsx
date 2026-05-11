@@ -30,7 +30,9 @@ const Wordmark = ({ size = 40, variant = 'full' }: WordmarkProps) => {
       width={width}
       height={height}
       decoding="async"
-      className={`${sizeMap[size] ?? 'h-10'} block w-auto`}
+      // aspect-ratio + object-contain guard against parents that would otherwise stretch the bitmap.
+      style={{ aspectRatio: `${width} / ${height}` }}
+      className={`${sizeMap[size] ?? 'h-10'} block w-auto max-w-full shrink-0 object-contain`}
     />
   );
 };

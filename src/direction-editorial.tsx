@@ -75,14 +75,19 @@ const DirectionA = () => {
   const { data: galleryCategories } = useGalleryCategories();
   const { data: machines } = useMachines();
   const { data: contact } = useContact();
-  const { data: homeHero } = useHomeHero();
-  const heroVideo = homeHero?.videoUrl ?? '/videos/showreel.mp4';
-  const heroPoster = homeHero?.posterUrl ?? '/showreel-preview.webp';
-  const heroHasCmsPoster = !!homeHero?.posterUrl;
-  const [ecomMode, setEcomMode] = useQueryState(
-    'view',
-    parseAsStringEnum(['categorie', 'machine']).withDefault('categorie').withOptions({ clearOnDefault: true }),
-  );
+  const { data: homeHero, loading: homeHeroLoading, error: homeHeroError } = useHomeHero();
+  // Only commit to a fallback once we know Strapi returned nothing — avoids the
+  // brief flash of the static poster on first paint while the CMS request is
+  // still in flight.
+  const heroResolved = !homeHeroLoading;
+  const heroCmsVideo = homeHero?.videoUrl;
+  const heroCmsPoster = homeHero?.posterUrl;
+  const heroUseFallback = heroResolved && !heroCmsVideo && !heroCmsPoster;
+  const heroVideo = heroCmsVideo ?? (heroUseFallback ? '/videos/showreel.mp4' : undefined);
+  const heroPoster = heroCmsPoster ?? (heroUseFallback ? '/showreel-preview.webp' : undefined);
+  const heroHasCmsPoster = !!heroCmsPoster;
+  const heroShowStaticPicture = heroUseFallback || (!!homeHeroError && !heroCmsPoster);
+  const [ecomMode, setEcomMode] = useState<'type' | 'machine'>('type');
   const categories = galleryCategories ?? [];
   const ecomMachines: MachineRowItem[] = (machines ?? [])
     .filter((m) => m.slug !== 'cyclorama')
@@ -246,7 +251,7 @@ const DirectionA = () => {
               decoding="async"
               className="pointer-events-none absolute inset-0 h-full w-full object-cover"
             />
-          ) : (
+          ) : heroShowStaticPicture ? (
             <picture>
               <source srcSet="/showreel-preview.avif" type="image/avif" />
               <source srcSet="/showreel-preview.webp" type="image/webp" />
@@ -258,12 +263,14 @@ const DirectionA = () => {
                 className="pointer-events-none absolute inset-0 h-full w-full object-cover"
               />
             </picture>
+          ) : null}
+          {heroVideo && (
+            <VideoLoop
+              src={heroVideo}
+              poster={heroPoster}
+              className="absolute inset-0 h-full w-full"
+            />
           )}
-          <VideoLoop
-            src={heroVideo}
-            poster={heroPoster}
-            className="absolute inset-0 h-full w-full"
-          />
           <div className="absolute inset-0 bg-home-media-gradient" />
         </button>
       </div>

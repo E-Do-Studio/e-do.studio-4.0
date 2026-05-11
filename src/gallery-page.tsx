@@ -244,7 +244,9 @@ const ProjectRow = ({ project, lang, style }: { project: GalleryProject; lang: L
         key={imageIndex}
         project={project}
         imageIndex={imageIndex}
-        hidden={imageIndex === 2}
+        // Mobile only fits 2 cells per row (label + one image). Hide image[1] and image[2]
+        // below md so the grid never leaves an empty cell that exposes the black backdrop.
+        hidden={imageIndex !== 0}
       />
     ))}
   </div>
