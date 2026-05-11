@@ -444,7 +444,7 @@ const GalleryContent = ({
   resetFilters,
   loading,
 }: GalleryContentProps) => (
-  <div className="min-h-0 overflow-y-auto bg-edo-pure-black">
+  <div className="min-h-0 overflow-y-auto bg-white">
     <div className="flex flex-col gap-px bg-edo-pure-black">
       {loading ? (
         <Loader lang={lang} size="block" className="bg-background py-24" />
