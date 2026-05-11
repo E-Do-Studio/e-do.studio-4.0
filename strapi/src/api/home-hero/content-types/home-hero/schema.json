@@ -15,16 +15,16 @@
     "video": {
       "type": "media",
       "multiple": false,
-      "required": false,
+      "required": true,
       "allowedTypes": ["videos"],
-      "description": "Vidéo en boucle (mp4 recommandé, muet, ~10–30s). Si vide, fallback sur le fichier statique public/videos/showreel.mp4."
+      "description": "Vidéo en boucle (mp4 recommandé, muet, ~10–30s). Le front affiche un fallback statique tant que Strapi renvoie 404/null."
     },
     "poster": {
       "type": "media",
       "multiple": false,
-      "required": false,
+      "required": true,
       "allowedTypes": ["images"],
-      "description": "Image poster affichée avant la lecture de la vidéo. Si vide, fallback sur public/showreel-preview.webp."
+      "description": "Image poster affichée avant la lecture de la vidéo. Le front affiche un fallback statique tant que Strapi renvoie 404/null."
     },
     "posterAlt": {
       "type": "string",
