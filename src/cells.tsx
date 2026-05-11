@@ -124,9 +124,9 @@ interface EcommerceKeywordsCellProps {
 }
 
 const EcommerceKeywordsCell = ({ lang, onOpenService }: EcommerceKeywordsCellProps) => (
-  <div className="grid h-full grid-rows-3 gap-px bg-black">
+  <div className="grid h-full grid-rows-3 gap-px bg-white">
     {[0, 2, 4].map((start, r) => (
-      <div key={r} className="grid grid-cols-2 gap-px bg-black">
+      <div key={r} className="grid grid-cols-2 gap-px bg-white">
         {KW.slice(start, start + 2).map((kw, i) => (
           <ServiceTile
             key={kw.key}
@@ -256,7 +256,7 @@ const ContactCell = ({ lang }: ContactCellProps) => {
           )}
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-px border-t border-foreground bg-black">
+      <div className="grid grid-cols-2 gap-px border-t border-foreground bg-white">
         {[
           { label: common.contactUs[lang], href: '/contact' },
           { label: common.legal[lang], href: '/legal' },
@@ -372,7 +372,7 @@ const GalleryCell = ({ columns = 3, rows = 1, onOpen, seeds = null, palette = 'e
   const actualSeeds = seeds || Array.from({ length: total }, (_, i) => i + 1);
   return (
     <div
-      className="grid h-full gap-px bg-black"
+      className="grid h-full gap-px bg-white"
       style={{ gridTemplateColumns: `repeat(${columns}, 1fr)`, gridTemplateRows: `repeat(${rows}, 1fr)` }}
     >
       {actualSeeds.slice(0, total).map((s, i) => (
@@ -470,8 +470,8 @@ interface BrandStackCellProps {
 }
 
 const BrandStackCell = ({ lang, setLang, onMenu, onLogo, onVideo }: BrandStackCellProps) => (
-  <div className="grid h-full grid-rows-subgrid gap-px bg-black" style={{ gridRow: '1 / -1' }}>
-    <div className="grid grid-cols-brand-stack gap-px bg-black">
+  <div className="grid h-full grid-rows-subgrid gap-px bg-white" style={{ gridRow: '1 / -1' }}>
+    <div className="grid grid-cols-brand-stack gap-px bg-white">
       <button
         onClick={onMenu}
         aria-label="Menu"

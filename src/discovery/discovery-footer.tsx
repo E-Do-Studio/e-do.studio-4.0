@@ -6,7 +6,7 @@ import { SocialIcon } from './social-icon';
 export const DiscoveryFooter: React.FC = () => {
   const { data: socialLinks } = useSocialLinks();
   return (
-  <footer className="row-start-3 grid min-h-0 grid-cols-4 gap-px overflow-hidden bg-black md:grid-cols-12">
+  <footer className="row-start-3 grid min-h-0 grid-cols-4 gap-px overflow-hidden bg-white md:grid-cols-12">
     {(socialLinks ?? []).map((social) => (
       <a
         key={social.k}
