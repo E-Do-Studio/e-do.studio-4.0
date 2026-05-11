@@ -672,96 +672,10 @@ async function seedGalleryCategories() {
   return categoryDocIds;
 }
 
-// ─── 5. Gallery brands ────────────────────────────────────────────────────
-
-async function seedGalleryBrands() {
-  console.log('\n🏢 Seeding Gallery brands…');
-
-  const brands = [
-    'Maison Ortho',
-    'Le Monde Béryl',
-    'Atelier Soie',
-    'Kôji',
-    'Rue Saint-Honoré',
-    'Ganymède',
-    'Moa Studio',
-    'Maison Margin',
-    'Toby Ombré',
-    'Noir Étoilé',
-    'Orbite',
-    'Studio 11',
-    'Parure',
-    'Rue Cadet',
-    'Atelier Bois',
-    'Maison Ardent',
-    'Saar Paris',
-    'Solène',
-  ];
-
-  const brandDocIds = {};
-  for (let i = 0; i < brands.length; i++) {
-    const name = brands[i];
-    const docId = await upsertByName(
-      'gallery-brands',
-      name,
-      { name, rank: i + 1 },
-      { name },
-    );
-    brandDocIds[name] = docId;
-  }
-  return brandDocIds;
-}
-
-// ─── 6. Gallery projects (CREATE with full data) ──────────────────────────
-
-async function seedGalleryProjects(categoryDocIds, brandDocIds) {
-  console.log('\n🖼️  Seeding Gallery projects…');
-
-  const projects = [
-    { slug: 'maison-ortho-2026', title: 'Maison Ortho', brand: 'Maison Ortho', cat: 'pap', stage: 'cyclorama', year: 2026, rank: 1 },
-    { slug: 'le-monde-beryl-2026', title: 'Le Monde Béryl', brand: 'Le Monde Béryl', cat: 'accessoires', stage: 'horizontal', year: 2026, rank: 2 },
-    { slug: 'atelier-soie-2026', title: 'Atelier Soie', brand: 'Atelier Soie', cat: 'pap', stage: 'vertical', year: 2026, rank: 3 },
-    { slug: 'koji-2025', title: 'Kôji', brand: 'Kôji', cat: 'eyewear', stage: 'eclipse', year: 2025, rank: 4 },
-    { slug: 'rue-saint-honore-2025', title: 'Rue Saint-Honoré', brand: 'Rue Saint-Honoré', cat: 'cosmetique', stage: 'horizontal', year: 2025, rank: 5 },
-    { slug: 'ganymede-2025', title: 'Ganymède', brand: 'Ganymède', cat: 'bijoux', stage: 'eclipse', year: 2025, rank: 6 },
-    { slug: 'moa-studio-2026', title: 'Moa Studio', brand: 'Moa Studio', cat: 'pap', stage: 'live', year: 2026, rank: 7 },
-    { slug: 'maison-margin-2025', title: 'Maison Margin', brand: 'Maison Margin', cat: 'pap', stage: 'vertical', year: 2025, rank: 8 },
-    { slug: 'toby-ombre-2026', title: 'Toby Ombré', brand: 'Toby Ombré', cat: 'food', stage: 'horizontal', year: 2026, rank: 9 },
-    { slug: 'noir-etoile-2025', title: 'Noir Étoilé', brand: 'Noir Étoilé', cat: 'cosmetique', stage: 'cyclorama', year: 2025, rank: 10 },
-    { slug: 'orbite-2025', title: 'Orbite', brand: 'Orbite', cat: 'eyewear', stage: 'eclipse', year: 2025, rank: 11 },
-    { slug: 'studio-11-2026', title: 'Studio 11', brand: 'Studio 11', cat: 'accessoires', stage: 'horizontal', year: 2026, rank: 12 },
-    { slug: 'parure-2026', title: 'Parure', brand: 'Parure', cat: 'bijoux', stage: 'eclipse', year: 2026, rank: 13 },
-    { slug: 'rue-cadet-2025', title: 'Rue Cadet', brand: 'Rue Cadet', cat: 'pap', stage: 'cyclorama', year: 2025, rank: 14 },
-    { slug: 'atelier-bois-2025', title: 'Atelier Bois', brand: 'Atelier Bois', cat: 'food', stage: 'horizontal', year: 2025, rank: 15 },
-    { slug: 'maison-ardent-2026', title: 'Maison Ardent', brand: 'Maison Ardent', cat: 'pap', stage: 'vertical', year: 2026, rank: 16 },
-    { slug: 'saar-paris-2026', title: 'Saar Paris', brand: 'Saar Paris', cat: 'accessoires', stage: 'eclipse', year: 2026, rank: 17 },
-    { slug: 'solene-2025', title: 'Solène', brand: 'Solène', cat: 'bijoux', stage: 'cyclorama', year: 2025, rank: 18 },
-  ];
-
-  for (const p of projects) {
-    const frData = {
-      title: p.title,
-      slug: p.slug,
-      stage: p.stage,
-      year: p.year,
-      rank: p.rank,
-    };
-
-    if (categoryDocIds[p.cat]) {
-      frData.category = { documentId: categoryDocIds[p.cat] };
-    }
-    if (brandDocIds[p.brand]) {
-      frData.brand = { documentId: brandDocIds[p.brand] };
-    }
-
-    await upsertCollection(
-      'gallery-projects',
-      p.slug,
-      frData,
-      { title: p.title, stage: p.stage },
-    );
-  }
-}
+// Gallery brands and gallery projects are populated by the studio from the
+// Strapi admin once real shoots are ready to publish. We intentionally do not
+// seed fixture brands/projects — placeholder content would leak to production
+// and the public site already handles an empty gallery gracefully.
 
 // ─── 7. Blog categories ──────────────────────────────────────────────────
 
@@ -1424,9 +1338,7 @@ async function main() {
   await seedCyclorama();
   await seedMachines();
   await seedPostProdTypes();
-  const categoryDocIds = await seedGalleryCategories();
-  const brandDocIds = await seedGalleryBrands();
-  await seedGalleryProjects(categoryDocIds, brandDocIds);
+  await seedGalleryCategories();
   await seedBlogCategories();
   await seedSiteSettings();
   await seedLegalSections();
