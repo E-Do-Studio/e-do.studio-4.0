@@ -90,7 +90,7 @@ const DirectionA = () => {
   const heroPoster = heroCmsPoster ?? (heroUseFallback ? '/showreel-preview.webp' : undefined);
   const heroHasCmsPoster = !!heroCmsPoster;
   const heroShowStaticPicture = heroUseFallback || (!!homeHeroError && !heroCmsPoster);
-  const [ecomMode, setEcomMode] = useState<'type' | 'machine'>('type');
+  const [ecomMode, setEcomMode] = useState<EcomView>('categorie');
   const categories = galleryCategories ?? [];
   const ecomMachines: MachineRowItem[] = (machines ?? [])
     .filter((m) => m.slug !== 'cyclorama')
