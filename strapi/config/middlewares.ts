@@ -45,7 +45,18 @@ const config: Core.Config.Middlewares = [
   },
   'strapi::poweredBy',
   'strapi::query',
-  'strapi::body',
+  {
+    name: 'strapi::body',
+    config: {
+      // Lift the multipart parser ceiling so large media uploads (showreel
+      // mp4 etc.) are not rejected by formidable before reaching the upload
+      // plugin's own `sizeLimit`. Strapi's default is 200 MB; we mirror the
+      // upload plugin's 256 MB cap configured in `config/plugins.ts`.
+      formidable: {
+        maxFileSize: 256 * 1024 * 1024,
+      },
+    },
+  },
   'strapi::session',
   'strapi::favicon',
   'strapi::public',
