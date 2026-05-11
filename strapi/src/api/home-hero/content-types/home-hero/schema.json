@@ -1,0 +1,45 @@
+{
+  "kind": "singleType",
+  "collectionName": "home_heroes",
+  "info": {
+    "singularName": "home-hero",
+    "pluralName": "home-heroes",
+    "displayName": "Home · Showreel",
+    "description": "Vidéo en boucle + image poster affichées dans la cellule showreel de la home.",
+    "icon": "play"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "video": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["videos"],
+      "description": "Vidéo en boucle (mp4 recommandé, muet, ~10–30s). Si vide, fallback sur le fichier statique public/videos/showreel.mp4."
+    },
+    "poster": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": ["images"],
+      "description": "Image poster affichée avant la lecture de la vidéo. Si vide, fallback sur public/showreel-preview.webp."
+    },
+    "posterAlt": {
+      "type": "string",
+      "maxLength": 200,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "description": "Texte alternatif du poster (accessibilité)."
+    }
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  }
+}
