@@ -51,52 +51,39 @@
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"/>
 <link rel="manifest" href="/site.webmanifest"/>
 
-<!-- Structured Data: LocalBusiness -->
+<!--
+  Structured Data: a minimal Organization + WebSite baseline is shipped in the
+  initial HTML so crawlers that skip JS still see who we are. Page-specific
+  JSON-LD (LocalBusiness with full address/hours, Service, BlogPosting, etc.)
+  is injected at runtime by src/lib/use-structured-data.ts.
+-->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "LocalBusiness",
-  "name": "E-Do Studio",
-  "description": "Studio photo et vidéo professionnel à Paris. Location de plateaux, cyclorama et services de post-production.",
-  "url": "https://e-do.studio",
-  "@id": "https://e-do.studio/#organization",
-  "address": {
-    "@type": "PostalAddress",
-    "addressLocality": "Paris",
-    "addressCountry": "FR"
-  },
-  "sameAs": [],
-  "knowsAbout": ["photographie", "vidéo", "post-production", "cyclorama", "studio photo"],
-  "hasOfferCatalog": {
-    "@type": "OfferCatalog",
-    "name": "Services studio",
-    "itemListElement": [
-      {
-        "@type": "Offer",
-        "itemOffered": {
-          "@type": "Service",
-          "name": "Location de cyclorama",
-          "description": "Cyclorama professionnel pour shooting photo et vidéo"
-        }
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://e-do.studio/#organization",
+      "name": "E-Do Studio",
+      "url": "https://e-do.studio",
+      "logo": "https://e-do.studio/brand/logo-full.webp",
+      "description": "Studio photo et vidéo professionnel à Paris. Location de plateaux, cyclorama et services de post-production.",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Paris",
+        "addressCountry": "FR"
       },
-      {
-        "@type": "Offer",
-        "itemOffered": {
-          "@type": "Service",
-          "name": "Plateaux de prise de vue",
-          "description": "Plateaux horizontal, vertical, eclipse et live"
-        }
-      },
-      {
-        "@type": "Offer",
-        "itemOffered": {
-          "@type": "Service",
-          "name": "Post-production",
-          "description": "Services de retouche et post-production photo et vidéo"
-        }
-      }
-    ]
-  }
+      "knowsAbout": ["photographie", "vidéo", "post-production", "cyclorama", "studio photo"]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://e-do.studio/#website",
+      "url": "https://e-do.studio",
+      "name": "E-Do Studio",
+      "inLanguage": "fr-FR",
+      "publisher": { "@id": "https://e-do.studio/#organization" }
+    }
+  ]
 }
 </script>
 

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Button, CellLabel, EmptyState, IconArrowRight, Loader, PageHeader, Wordmark } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
+import { useStructuredData } from './lib/use-structured-data';
+import { buildPostProdServiceSchema, buildBreadcrumbSchema } from './lib/structured-data';
 import { usePostProdTypes } from './lib/use-strapi';
 import type { PPCat as StrapiPPCat } from './lib/strapi';
 import type { Bilingual } from './types';
@@ -116,6 +118,18 @@ const PostprodPage = () => {
   useDocumentMeta('postprod', lang);
   const ppQuery = usePostProdTypes();
   const cats: PPCat[] = ppQuery.data ? adaptStrapiCats(ppQuery.data) : [];
+  useStructuredData('postprod', [
+    ppQuery.data && ppQuery.data.length > 0
+      ? buildPostProdServiceSchema({ cats: ppQuery.data, lang, pathname: '/post-production' })
+      : null,
+    buildBreadcrumbSchema(
+      [
+        { name: lang === 'fr' ? 'Accueil' : 'Home', pathname: '' },
+        { name: lang === 'fr' ? 'Post-production' : 'Post-production', pathname: '/post-production' },
+      ],
+      lang,
+    ),
+  ]);
   const [k, setK] = useState<string>('');
   useEffect(() => {
     if (!cats.find(c => c.k === k) && cats[0]) setK(cats[0].k);

@@ -2,6 +2,8 @@ import React, { useState as useStateBook, useMemo as useMemoBook, useCallback as
 import { usePageContext } from './router';
 import { CellLabel, EmptyState, IconArrowRight, PageHeader, Wordmark } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
+import { useStructuredData } from './lib/use-structured-data';
+import { buildWebPageSchema, buildBreadcrumbSchema } from './lib/structured-data';
 import { MarqueeCell } from './cells';
 import { createBooking } from './lib/bookings';
 import { validateContact, type ContactFormErrors } from './lib/booking-schema';
@@ -351,6 +353,25 @@ const isSessionValid = (s: BookingSession) => {
 const BookPageV2 = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
   useDocumentMeta('book', lang);
+  const bookPathname = lang === 'fr' ? '/reserver' : '/book';
+  useStructuredData('book', [
+    buildWebPageSchema({
+      lang,
+      pathname: bookPathname,
+      name: lang === 'fr' ? 'Réserver — E-Do Studio Paris' : 'Book — E-Do Studio Paris',
+      description:
+        lang === 'fr'
+          ? 'Réservez votre créneau au studio E-Do. Sélectionnez un plateau, une date et configurez votre session.'
+          : 'Book your slot at E-Do Studio. Select a stage, date and configure your session.',
+    }),
+    buildBreadcrumbSchema(
+      [
+        { name: lang === 'fr' ? 'Accueil' : 'Home', pathname: '' },
+        { name: lang === 'fr' ? 'Réserver' : 'Book', pathname: bookPathname },
+      ],
+      lang,
+    ),
+  ]);
   const today = new Date();
   const [draft] = useStateBook(() => loadDraft());
   const [step, setStep] = useStateBook<number>(() => { if (draft) return draft.step; try { if (localStorage.getItem('edo-book-plateau')) return 1; } catch(e){} return 0; });

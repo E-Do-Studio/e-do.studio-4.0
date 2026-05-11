@@ -2,6 +2,8 @@ import { useState } from 'react';
 import type { FormEvent, InputHTMLAttributes, TextareaHTMLAttributes } from 'react';
 import { Button, CellLabel, IconArrowRight, PageHeader, SocialIcon, Wordmark, cn } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
+import { useStructuredData } from './lib/use-structured-data';
+import { buildContactPageSchema, buildBreadcrumbSchema } from './lib/structured-data';
 import { useContact, useStudioHours, useTeamMembers, useContactSubjects, useSiteBusinessInfo } from './lib/use-strapi';
 import type { ContactInfo, StudioHours as StudioHoursData, TeamMember as StrapiTeamMember, ContactSubject, ClosurePeriod } from './lib/strapi';
 import type { Lang, ContactFormData, Bilingual } from './types';
@@ -555,6 +557,16 @@ const ContactPage = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
   useDocumentMeta('contact', lang);
   const contact = useContact();
+  useStructuredData('contact', [
+    buildContactPageSchema(lang, '/contact', contact.data),
+    buildBreadcrumbSchema(
+      [
+        { name: lang === 'fr' ? 'Accueil' : 'Home', pathname: '' },
+        { name: lang === 'fr' ? 'Contact' : 'Contact', pathname: '/contact' },
+      ],
+      lang,
+    ),
+  ]);
   const hours = useStudioHours();
   const teamState = useTeamMembers();
   const team = teamState.data ?? [];

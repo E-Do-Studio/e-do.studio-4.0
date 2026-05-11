@@ -5,8 +5,13 @@ import { CellLabel, IconArrowRight, IconChat, IconX, PageHeader, SocialIcon, Vid
 import { MarqueeCell } from './cells';
 
 const AssistantChat = lazy(() => import('./assistant-chat'));
-import { useSocialLinks, useGalleryCategories, useMachines, useContact, useHomeHero } from './lib/use-strapi';
+import { useSocialLinks, useGalleryCategories, useMachines, useContact, useHomeHero, useStudioHours, useSiteBusinessInfo } from './lib/use-strapi';
 import { useDocumentMeta } from './lib/use-document-meta';
+import { useStructuredData } from './lib/use-structured-data';
+import {
+  buildLocalBusinessSchema,
+  buildWebSiteSchema,
+} from './lib/structured-data';
 import type { Lang } from './types';
 import { usePageContext } from './router';
 import { cells as cellsMsg, common, contact as contactMsg, home as homeMsg } from './i18n/messages';
@@ -78,7 +83,13 @@ const DirectionA = () => {
   const { data: galleryCategories } = useGalleryCategories();
   const { data: machines } = useMachines();
   const { data: contact } = useContact();
+  const { data: studioHours } = useStudioHours();
+  const { data: business } = useSiteBusinessInfo();
   const { data: homeHero, loading: homeHeroLoading, error: homeHeroError } = useHomeHero();
+  useStructuredData('home', [
+    buildLocalBusinessSchema({ lang, contact, hours: studioHours, business, socials: socialLinks }),
+    buildWebSiteSchema(lang),
+  ]);
   // Only commit to a fallback once we know Strapi returned nothing — avoids the
   // brief flash of the static poster on first paint while the CMS request is
   // still in flight.
