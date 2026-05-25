@@ -67,24 +67,17 @@ const DirectionA = () => {
     buildLocalBusinessSchema({ lang, contact, hours: studioHours, business, socials: socialLinks }),
     buildWebSiteSchema(lang),
   ]);
-  // Only commit to a fallback once we know Strapi returned nothing — avoids the
-  // brief flash of the static poster on first paint while the CMS request is
-  // still in flight.
+  // SHOWREEL cell (small video tile): always video, as it was before EDO-176.
+  // The multi-image rotation lives on the GALERIE cell (see below).
   const heroResolved = !homeHeroLoading;
   const heroCmsVideo = homeHero?.videoUrl;
   const heroPosters = homeHero?.posters ?? [];
-  const heroHasCmsPosters = heroPosters.length > 0;
-  // When the editor uploads 2+ posters, the multi-image showreel becomes the
-  // primary content — suppress the video so the crossfade is actually visible
-  // (otherwise the autoplay <video> sits on top with absolute inset-0 and
-  // hides the rotation entirely).
-  const heroUseCrossfadeAsPrimary = heroPosters.length >= 2;
-  const heroUseFallback = heroResolved && !heroCmsVideo && !heroHasCmsPosters;
-  const heroVideo = heroUseCrossfadeAsPrimary
-    ? undefined
-    : (heroCmsVideo ?? (heroUseFallback ? '/videos/showreel.mp4' : undefined));
-  const heroVideoPoster = heroPosters[0]?.url ?? (heroUseFallback ? '/showreel-preview.webp' : undefined);
-  const heroShowStaticPicture = heroUseFallback || (!!homeHeroError && !heroHasCmsPosters);
+  const galleryHasCmsPosters = heroPosters.length > 0;
+  const galleryUseCrossfade = heroPosters.length >= 2;
+  const heroUseFallback = heroResolved && !heroCmsVideo;
+  const heroVideo = heroCmsVideo ?? (heroUseFallback ? '/videos/showreel.mp4' : undefined);
+  const heroVideoPoster = heroUseFallback ? '/showreel-preview.webp' : undefined;
+  const heroShowStaticPicture = heroUseFallback || !!homeHeroError;
   const [chatOpen, setChatOpen] = useState(false);
   // Subtitles for the homepage machine grid are pinned in the codebase so
   // marketing wording stays consistent regardless of Strapi content.
@@ -179,19 +172,31 @@ const DirectionA = () => {
         aria-label={common.gallery[lang]}
         className="edo-focus-ring group relative col-span-2 min-h-48 flex flex-col items-stretch justify-end overflow-hidden border-0 bg-edo-dark p-6 text-white transition-all duration-150 hover:brightness-75 md:col-start-7 md:col-end-13 md:row-start-2 md:row-end-4"
       >
-        <picture>
-          <source srcSet="/gallery-hero.avif" type="image/avif" />
-          <source srcSet="/gallery-hero.webp" type="image/webp" />
+        {galleryUseCrossfade ? (
+          <ImageCrossfade images={heroPosters} priority />
+        ) : galleryHasCmsPosters ? (
           <img
-            src="/gallery-hero.jpg"
-            alt=""
-            width={1280}
-            height={986}
+            src={heroPosters[0].url}
+            alt={heroPosters[0].alt}
             fetchPriority="high"
             decoding="async"
             className="pointer-events-none absolute inset-0 h-full w-full object-cover"
           />
-        </picture>
+        ) : (
+          <picture>
+            <source srcSet="/gallery-hero.avif" type="image/avif" />
+            <source srcSet="/gallery-hero.webp" type="image/webp" />
+            <img
+              src="/gallery-hero.jpg"
+              alt=""
+              width={1280}
+              height={986}
+              fetchPriority="high"
+              decoding="async"
+              className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+            />
+          </picture>
+        )}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.25)_0%,rgba(0,0,0,0)_30%,rgba(0,0,0,0)_55%,rgba(0,0,0,.65)_100%)]"
@@ -217,9 +222,7 @@ const DirectionA = () => {
           onClick={() => goto('gallery')}
           className="edo-focus-ring group relative flex h-full w-full cursor-pointer items-center justify-center overflow-hidden border-0 bg-edo-dark p-0 text-left transition-all duration-150 hover:brightness-75"
         >
-          {heroHasCmsPosters ? (
-            <ImageCrossfade images={heroPosters} priority />
-          ) : heroShowStaticPicture ? (
+          {heroShowStaticPicture ? (
             <picture>
               <source srcSet="/showreel-preview.avif" type="image/avif" />
               <source srcSet="/showreel-preview.webp" type="image/webp" />

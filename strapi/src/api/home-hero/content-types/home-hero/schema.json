@@ -4,8 +4,8 @@
   "info": {
     "singularName": "home-hero",
     "pluralName": "home-heroes",
-    "displayName": "Home · Showreel",
-    "description": "Vidéo en boucle + image(s) poster affichées dans la cellule showreel de la home.",
+    "displayName": "Home · Showreel + Galerie",
+    "description": "Vidéo en boucle de la cellule SHOWREEL + image(s) du grand carré GALERIE sur la home.",
     "icon": "play"
   },
   "options": {
@@ -17,14 +17,14 @@
       "multiple": false,
       "required": false,
       "allowedTypes": ["videos"],
-      "description": "Vidéo en boucle (mp4 recommandé, muet, ~10–30s). Optionnel : si tu uploades ≥ 2 images dans `poster`, la rotation d'images devient le showreel et la vidéo n'est PAS affichée (sinon elle masquerait le fondu)."
+      "description": "Vidéo en boucle de la cellule SHOWREEL (la petite tuile en bas à gauche de la home). mp4 recommandé, muet, ~10–30s."
     },
     "poster": {
       "type": "media",
       "multiple": true,
       "required": false,
       "allowedTypes": ["images"],
-      "description": "Image(s) du showreel. 0 image + vidéo → vidéo seule. 1 image + vidéo → image utilisée comme poster de la vidéo. ≥ 2 images → fondu enchaîné automatique (~5s par image, fondu ~900ms), la vidéo n'est plus affichée. Texte alt lu sur chaque média (champ `alternativeText`)."
+      "description": "Image(s) de la cellule GALERIE (le grand carré à droite de la home). 0 image → image statique par défaut (gallery-hero). 1 image → image fixe issue du CMS. ≥ 2 images → fondu enchaîné automatique (10s par image, fondu ~900ms). Texte alt lu sur chaque média (champ `alternativeText`)."
     }
   },
   "pluginOptions": {
