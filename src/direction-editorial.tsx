@@ -118,14 +118,14 @@ const DirectionA = () => {
 
       {/* ── Rows 2-3 left: E-commerce section ── */}
       <div className="col-span-2 min-h-72 flex flex-col overflow-hidden bg-edo-black md:col-start-1 md:col-end-7 md:row-start-2 md:row-end-4 md:min-h-0">
-        <div className="flex flex-shrink-0 flex-col gap-4 px-5 pt-6 pb-5 md:px-7 md:pt-7 md:pb-6">
-          <h2 className="m-0 text-balance text-page-title font-light tracking-display leading-tight text-white">
+        <div className="flex flex-shrink-0 flex-col gap-3 px-5 pt-6 pb-5 md:px-7 md:pt-7 md:pb-6">
+          <h2 className="m-0 text-balance text-[clamp(1.625rem,3vw,2.5rem)] font-light tracking-display leading-tight text-white">
             {homeMsg.studioHeadlineLead[lang]}{' '}
             <span className="italic text-primary">
               {homeMsg.studioHeadlineAccent[lang]}
             </span>
           </h2>
-          <p className="m-0 max-w-prose text-pretty text-detail leading-relaxed text-edo-gray-200">
+          <p className="m-0 text-balance text-detail leading-snug text-edo-gray-200">
             {homeMsg.studioSubtitleLead[lang]}
             <strong className="font-semibold text-white">
               {homeMsg.studioSubtitleStrong[lang]}
@@ -133,8 +133,8 @@ const DirectionA = () => {
           </p>
         </div>
 
-        <div className="flex flex-1 min-h-0 overflow-hidden border-t border-edo-gray-600 bg-edo-black">
-          <div className="grid flex-1 grid-cols-3 content-end gap-px bg-edo-gray-600 md:grid-cols-4">
+        <div className="flex flex-1 min-h-0 overflow-hidden bg-edo-black">
+          <div className="grid flex-1 grid-cols-3 content-end gap-px bg-edo-black md:grid-cols-4">
             {ecomMachines.map((m, i) => (
               <button
                 key={m.slug}
