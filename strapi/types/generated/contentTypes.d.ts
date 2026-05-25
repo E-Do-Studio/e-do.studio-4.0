@@ -708,9 +708,8 @@ export interface ApiPostProductionTypePostProductionType
     createdBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
       Schema.Attribute.Private;
     description: Schema.Attribute.Text;
-    gallery: Schema.Attribute.Media<undefined, true>;
-    image: Schema.Attribute.Media;
     includes: Schema.Attribute.Component<"shared.localized-item", true>;
+    media: Schema.Attribute.Media<"images" | "videos", true>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       "oneToMany",
