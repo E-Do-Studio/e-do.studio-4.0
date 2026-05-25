@@ -238,7 +238,7 @@ const AssistantInput = ({ input, setInput, loading, lang, onSend, inputRef }: As
       event.preventDefault();
       onSend(input);
     }}
-    className="mt-auto flex shrink-0 items-center gap-2.5 border-t border-foreground pt-2.5 transition-colors focus-within:border-primary"
+    className="mt-auto flex shrink-0 items-center gap-2.5 border-t border-foreground pt-2.5"
   >
     <input
       ref={inputRef}
@@ -252,7 +252,7 @@ const AssistantInput = ({ input, setInput, loading, lang, onSend, inputRef }: As
     <button
       type="submit"
       disabled={loading || !input.trim()}
-      className="edo-focus-ring flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-primary opacity-100 transition-opacity hover:bg-foreground/5 disabled:cursor-default disabled:opacity-30 disabled:hover:bg-transparent"
+      className="edo-focus-ring flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-muted-foreground transition-colors hover:text-foreground disabled:cursor-default disabled:opacity-30 disabled:hover:text-muted-foreground"
     >
       <IconArrowRight width="16" height="16" />
     </button>
