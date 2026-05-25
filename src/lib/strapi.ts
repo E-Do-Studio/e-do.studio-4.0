@@ -1075,15 +1075,12 @@ function resolveGalleryMediaUrl(m: StrapiMedia): string | undefined {
 }
 
 export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
-  // Mono-language fetch: the legacy `shared.media-item` component carried
-  // a localized `alt`, which is the only reason this fetch used to be
-  // bilingual. The unified native `media` field exposes `alternativeText`
-  // (not i18n today — revisit if editorial needs per-locale alt).
+  // The gallery-project content-type is no longer localized (EDO-135) — no
+  // `locale` parameter is needed. `media.alternativeText` is also non-i18n.
   const res = await fetchStrapi<{ data: StrapiGalleryProject[] }>('gallery-projects', {
     'populate': 'category,brand,media',
     'sort': 'createdAt:asc',
     'pagination[pageSize]': '100',
-    'locale': 'fr',
   });
 
   return res.data.map((p, i) => {
