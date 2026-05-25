@@ -12,6 +12,7 @@ import { createContext, useContext, useState } from 'react';
 import type { Lang } from './types';
 import { NavMenu } from './nav-menu';
 import { CookieBanner } from './cookie-banner';
+import { PreviewBanner } from './preview-banner';
 import { useGoogleAnalytics } from './lib/use-google-analytics';
 import { DirectionA } from './direction-editorial';
 
@@ -99,6 +100,7 @@ function LangLayout() {
         onClose={() => setMenuOpen(false)}
       />
       <CookieBanner lang={lang} onLegalClick={() => goto('legal')} />
+      <PreviewBanner lang={lang} />
     </PageContext.Provider>
   );
 }

@@ -1,8 +1,13 @@
 import type { Bilingual, MachineInfo, DiscoveryPost, DiscoveryCategory, SocialLink } from '../types';
 import type { BlockNode } from './render-blocks';
+import { getPreviewState } from './preview-mode';
 
 const STRAPI_URL = import.meta.env.VITE_STRAPI_URL || 'https://cms.e-do.studio';
 const STRAPI_TOKEN = import.meta.env.VITE_STRAPI_TOKEN || '';
+// Optional dedicated token with read-draft permission. Falls back to the
+// public token when not configured (assuming that token also has draft scope
+// in the Strapi role).
+const STRAPI_PREVIEW_TOKEN = import.meta.env.VITE_STRAPI_PREVIEW_TOKEN || '';
 
 // ─── Generic fetcher ────────────────────────────────────────────────────────
 
@@ -21,21 +26,34 @@ async function fetchStrapi<T>(path: string, params?: Record<string, string>): Pr
     });
   }
 
+  const preview = getPreviewState();
+  if (preview.active) {
+    // Strapi 5 selects unpublished entries via `status=draft` (per the
+    // Document Service API). Adding it changes the cache key too, so draft
+    // and published responses never collide.
+    url.searchParams.set('status', preview.status);
+  }
+
   const key = url.toString();
-  const cached = cache.get(key);
-  if (cached && Date.now() - cached.ts < CACHE_TTL) return cached.data as T;
+  // Skip the in-memory cache while previewing so editors see their latest
+  // changes without waiting for the 5-minute TTL.
+  if (!preview.active) {
+    const hit = cache.get(key);
+    if (hit && Date.now() - hit.ts < CACHE_TTL) return hit.data as T;
+  }
 
   // After the users-permissions plugin removal, the public website
   // authenticates with a read-only API token via VITE_STRAPI_TOKEN.
   // Without the token the request is anonymous and Strapi will reject
   // it with 401 once the plugin is gone.
+  const token = preview.active && STRAPI_PREVIEW_TOKEN ? STRAPI_PREVIEW_TOKEN : STRAPI_TOKEN;
   const headers: Record<string, string> = {};
-  if (STRAPI_TOKEN) headers.Authorization = `Bearer ${STRAPI_TOKEN}`;
+  if (token) headers.Authorization = `Bearer ${token}`;
 
   const res = await fetch(key, { headers });
   if (!res.ok) throw new Error(`Strapi ${path}: ${res.status}`);
   const json = await res.json();
-  cache.set(key, { data: json, ts: Date.now() });
+  if (!preview.active) cache.set(key, { data: json, ts: Date.now() });
   return json;
 }
 

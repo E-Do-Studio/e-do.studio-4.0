@@ -33,6 +33,16 @@
         -Server
     }
 
+    # Strapi Preview entry: when the URL carries ?preview=1, allow the CMS
+    # admin to embed the SPA in its preview iframe. The flag is non-secret on
+    # its own — the SPA still validates ?secret=… against VITE_PREVIEW_SECRET
+    # before swapping fetches to draft mode. Subsequent client-side navigation
+    # inside the iframe stays in the same document, so the relaxed framing on
+    # the initial HTML response is enough.
+    @preview query preview=1
+    header @preview -X-Frame-Options
+    header @preview Content-Security-Policy "default-src 'self'; script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://cms.e-do.studio https://www.google-analytics.com; media-src 'self' https://cms.e-do.studio; connect-src 'self' https://cms.e-do.studio https://*.supabase.co https://www.google-analytics.com https://region1.google-analytics.com; frame-ancestors https://cms.e-do.studio; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
+
     try_files {path} /index.html
     file_server
 }
