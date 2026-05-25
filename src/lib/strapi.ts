@@ -79,7 +79,7 @@ interface StrapiMachine {
   specs?: StrapiSpec[];
   pricingRows?: StrapiPricingRow[];
   operatorPricingRows?: StrapiPricingRow[];
-  media?: StrapiMediaItem[];
+  media?: StrapiMedia[];
   seo?: StrapiSeoMeta;
 }
 
@@ -327,6 +327,23 @@ function mergeLocalizedItems(frItems: StrapiLocalizedItem[], enItems: StrapiLoca
   }));
 }
 
+function mediaListToItems(items: StrapiMedia[] | undefined): MediaItem[] {
+  if (!items) return [];
+  const out: MediaItem[] = [];
+  for (const m of items) {
+    const url = resolveStrapiMediaUrl(m);
+    if (!url) continue;
+    const alt: Bilingual = { fr: m.alternativeText ?? '', en: m.alternativeText ?? '' };
+    if (m.mime?.startsWith('video/')) {
+      const rawUrl = resolveRawMediaUrl(m) ?? url;
+      out.push({ kind: 'video', url: rawUrl, alt });
+    } else {
+      out.push({ kind: 'image', url, alt });
+    }
+  }
+  return out;
+}
+
 function mergeMediaItems(frItems: StrapiMediaItem[] | undefined, enItems: StrapiMediaItem[] | undefined): MediaItem[] {
   const fr = frItems ?? [];
   const en = enItems ?? [];
@@ -443,7 +460,7 @@ const MACHINE_LABELS: Record<string, { fr: string; en: string }> = {
 
 export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
   const [machinesBI, cycloBI] = await Promise.all([
-    fetchStrapiBilingual<{ data: StrapiMachine[] }>('machines', { 'populate': 'specs,pricingRows,seo,seo.image,media,media.image,media.video,media.poster', 'sort': 'createdAt:asc' }),
+    fetchStrapiBilingual<{ data: StrapiMachine[] }>('machines', { 'populate': 'specs,pricingRows,seo,seo.image,media', 'sort': 'createdAt:asc' }),
     fetchStrapiBilingual<{ data: StrapiCyclorama }>('cyclorama', { 'populate': 'specs,amenities,pricingRows,seo,seo.image,media,media.image,media.video,media.poster' }),
   ]);
 
@@ -492,7 +509,7 @@ export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
       uses: MACHINE_USES[mFr.slug] ?? [],
       rates,
       visual: mFr.slug,
-      media: mergeMediaItems(mFr.media, mEn.media),
+      media: mediaListToItems(mFr.media),
       seo: buildSeo(mFr.seo, mEn.seo),
     };
   });

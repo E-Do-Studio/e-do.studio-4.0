@@ -37,6 +37,7 @@
     },
     "description": {
       "type": "text",
+      "required": true,
       "maxLength": 600,
       "pluginOptions": {
         "i18n": {
@@ -44,12 +45,6 @@
         }
       },
       "description": "Description de la machine (≤ 600 caractères)."
-    },
-    "image": {
-      "type": "media",
-      "multiple": false,
-      "allowedTypes": ["images"],
-      "description": "Image principale de la machine."
     },
     "specs": {
       "type": "component",
@@ -89,29 +84,18 @@
       "repeatable": true,
       "description": "Tarification opérateur structurée — remplace progressivement `operatorPricing`."
     },
-    "gallery": {
+    "media": {
       "type": "media",
       "multiple": true,
-      "allowedTypes": ["images"],
-      "description": "Galerie d'images de la machine."
-    },
-    "video": {
-      "type": "media",
-      "multiple": false,
-      "allowedTypes": ["videos"],
-      "description": "Vidéo de présentation (mp4 recommandé)."
-    },
-    "media": {
-      "type": "component",
-      "component": "shared.media-item",
-      "repeatable": true,
-      "description": "Carousel ordonné de médias (image ou vidéo) pour la page détail. Le front retombe sur le schéma SVG si vide."
+      "required": true,
+      "allowedTypes": ["images", "videos"],
+      "description": "Médias du plateau (images et/ou vidéos), ordonnés. Le 1er média sert de couverture. Remplace les anciens champs `image` (cover unique), `gallery` (images supplémentaires), `video` (vidéo unique) et le composant `media` (shared.media-item). Migration : `2026.05.25T21.00.00.machine-unify-media.js`."
     },
     "seo": {
       "type": "component",
       "component": "shared.seo-meta",
       "repeatable": false,
-      "description": "Métadonnées SEO de la page plateau. Si vides, le titre/description et l'image principale sont utilisés en fallback."
+      "description": "Métadonnées SEO de la page plateau. Si vides, le titre/description et le premier média sont utilisés en fallback."
     }
   },
   "pluginOptions": {
