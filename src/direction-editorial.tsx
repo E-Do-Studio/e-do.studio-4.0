@@ -74,8 +74,15 @@ const DirectionA = () => {
   const heroCmsVideo = homeHero?.videoUrl;
   const heroPosters = homeHero?.posters ?? [];
   const heroHasCmsPosters = heroPosters.length > 0;
+  // When the editor uploads 2+ posters, the multi-image showreel becomes the
+  // primary content — suppress the video so the crossfade is actually visible
+  // (otherwise the autoplay <video> sits on top with absolute inset-0 and
+  // hides the rotation entirely).
+  const heroUseCrossfadeAsPrimary = heroPosters.length >= 2;
   const heroUseFallback = heroResolved && !heroCmsVideo && !heroHasCmsPosters;
-  const heroVideo = heroCmsVideo ?? (heroUseFallback ? '/videos/showreel.mp4' : undefined);
+  const heroVideo = heroUseCrossfadeAsPrimary
+    ? undefined
+    : (heroCmsVideo ?? (heroUseFallback ? '/videos/showreel.mp4' : undefined));
   const heroVideoPoster = heroPosters[0]?.url ?? (heroUseFallback ? '/showreel-preview.webp' : undefined);
   const heroShowStaticPicture = heroUseFallback || (!!homeHeroError && !heroHasCmsPosters);
   const [chatOpen, setChatOpen] = useState(false);
