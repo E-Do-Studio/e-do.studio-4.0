@@ -40,10 +40,6 @@
       "allowedTypes": ["images"],
       "description": "Logo de la marque (SVG ou PNG transparent recommandé)."
     },
-    "rank": {
-      "type": "integer",
-      "configurable": false
-    },
     "seo": {
       "type": "component",
       "component": "shared.seo-meta",

@@ -7,9 +7,6 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Plugin =>
       defaultLocale: 'fr',
     },
   },
-  'drag-drop-content-types': {
-    enabled: true,
-  },
   upload: {
     config: {
       // 256 MiB by default — large enough for a 1080p MP4 showreel of ~60s.

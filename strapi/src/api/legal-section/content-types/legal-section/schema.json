@@ -53,10 +53,6 @@
     "lastUpdatedAt": {
       "type": "date",
       "description": "Date de dernière mise à jour juridique. Affichée à côté du titre du document."
-    },
-    "rank": {
-      "type": "integer",
-      "configurable": false
     }
   }
 }

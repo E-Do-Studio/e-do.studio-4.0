@@ -107,10 +107,6 @@
       "repeatable": true,
       "description": "Carousel ordonné de médias (image ou vidéo) pour la page détail. Le front retombe sur le schéma SVG si vide."
     },
-    "rank": {
-      "type": "integer",
-      "configurable": false
-    },
     "seo": {
       "type": "component",
       "component": "shared.seo-meta",

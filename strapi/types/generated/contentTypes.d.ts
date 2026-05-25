@@ -563,7 +563,6 @@ export interface ApiGalleryBrandGalleryBrand
       Schema.Attribute.Private;
     logo: Schema.Attribute.Media<"images">;
     name: Schema.Attribute.String & Schema.Attribute.Required;
-    rank: Schema.Attribute.Integer;
     publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
@@ -607,7 +606,6 @@ export interface ApiGalleryCategoryGalleryCategory
     > &
       Schema.Attribute.Private;
     name: Schema.Attribute.String & Schema.Attribute.Required;
-    rank: Schema.Attribute.Integer;
     publishedAt: Schema.Attribute.DateTime;
     slug: Schema.Attribute.UID & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
@@ -646,7 +644,6 @@ export interface ApiGalleryProjectGalleryProject
       "api::gallery-project.gallery-project"
     > &
       Schema.Attribute.Private;
-    rank: Schema.Attribute.Integer;
     publishedAt: Schema.Attribute.DateTime;
     slug: Schema.Attribute.UID<"title"> & Schema.Attribute.Required;
     stage: Schema.Attribute.String;
@@ -682,7 +679,6 @@ export interface ApiMachineMachine extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     operatorPricing: Schema.Attribute.String;
-    rank: Schema.Attribute.Integer;
     pricing: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     slug: Schema.Attribute.UID<"title"> & Schema.Attribute.Required;
@@ -721,7 +717,6 @@ export interface ApiPostProductionTypePostProductionType
       "api::post-production-type.post-production-type"
     > &
       Schema.Attribute.Private;
-    rank: Schema.Attribute.Integer;
     price: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     slug: Schema.Attribute.UID & Schema.Attribute.Required;

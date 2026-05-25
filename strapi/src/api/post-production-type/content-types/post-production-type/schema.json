@@ -73,10 +73,6 @@
       "allowedTypes": ["images"],
       "description": "Galerie d'exemples avant/après."
     },
-    "rank": {
-      "type": "integer",
-      "configurable": false
-    },
     "seo": {
       "type": "component",
       "component": "shared.seo-meta",

@@ -249,7 +249,6 @@ async function seedMachines() {
   const machines = [
     {
       slug: 'horizontal',
-      rank: 2,
       fr: {
         title: 'Horizontal',
         subtitle: 'Packshots à plat',
@@ -281,7 +280,6 @@ async function seedMachines() {
     },
     {
       slug: 'vertical',
-      rank: 3,
       fr: {
         title: 'Vertical',
         subtitle: 'Mannequin ghost',
@@ -313,7 +311,6 @@ async function seedMachines() {
     },
     {
       slug: 'eclipse',
-      rank: 4,
       fr: {
         title: 'Eclipse',
         subtitle: 'Photo & vidéo 360°',
@@ -345,7 +342,6 @@ async function seedMachines() {
     },
     {
       slug: 'live',
-      rank: 5,
       fr: {
         title: 'Live',
         subtitle: 'Shooting porté',
@@ -381,7 +377,7 @@ async function seedMachines() {
     await upsertCollection(
       'machines',
       m.slug,
-      { title: m.fr.title, slug: m.slug, subtitle: m.fr.subtitle, description: m.fr.description, pricing: m.fr.pricing, specs: m.fr.specs, rank: m.rank },
+      { title: m.fr.title, slug: m.slug, subtitle: m.fr.subtitle, description: m.fr.description, pricing: m.fr.pricing, specs: m.fr.specs },
       { title: m.en.title, subtitle: m.en.subtitle, description: m.en.description, pricing: m.en.pricing, specs: m.en.specs },
     );
   }
@@ -397,7 +393,6 @@ async function seedMachines() {
         "Cyclo 2 faces de 30 m² pour photo et vidéo sur fond blanc infini. À la journée ou à la semaine, en production libre ou avec notre équipe.",
       pricing: '650€ / 5h · 880€ / 10h · Sur demande / 10h éditorial',
       operatorPricing: 'Remise en blanc 110 € · Électricité 1,40 €/kWh',
-      rank: 1,
       specs: [
         { label: 'Surface', value: '240 m² · Cyclo 2 faces 32 m²' },
         { label: 'Dimensions', value: '6,3m L × 5,2m l × 5m H' },
@@ -639,7 +634,7 @@ async function seedPostProdTypes() {
     await upsertCollection(
       'post-production-types',
       t.slug,
-      { title: t.fr.title, slug: t.slug, description: t.fr.description, price: t.fr.price, includes: t.fr.includes, rank: i + 1 },
+      { title: t.fr.title, slug: t.slug, description: t.fr.description, price: t.fr.price, includes: t.fr.includes },
       { title: t.en.title, description: t.en.description, price: t.en.price, includes: t.en.includes },
     );
   }
@@ -651,12 +646,12 @@ async function seedGalleryCategories() {
   console.log('\n🏷️  Seeding Gallery categories…');
 
   const cats = [
-    { slug: 'pap', fr: 'Prêt-à-porter', en: 'Ready-to-wear', rank: 1 },
-    { slug: 'accessoires', fr: 'Accessoires', en: 'Accessories', rank: 2 },
-    { slug: 'eyewear', fr: 'Eyewear', en: 'Eyewear', rank: 3 },
-    { slug: 'bijoux', fr: 'Bijoux', en: 'Jewelry', rank: 4 },
-    { slug: 'cosmetique', fr: 'Cosmétique', en: 'Cosmetics', rank: 5 },
-    { slug: 'food', fr: 'Food & Spiritueux', en: 'Food & Spirits', rank: 6 },
+    { slug: 'pap', fr: 'Prêt-à-porter', en: 'Ready-to-wear' },
+    { slug: 'accessoires', fr: 'Accessoires', en: 'Accessories' },
+    { slug: 'eyewear', fr: 'Eyewear', en: 'Eyewear' },
+    { slug: 'bijoux', fr: 'Bijoux', en: 'Jewelry' },
+    { slug: 'cosmetique', fr: 'Cosmétique', en: 'Cosmetics' },
+    { slug: 'food', fr: 'Food & Spiritueux', en: 'Food & Spirits' },
   ];
 
   const categoryDocIds = {};
@@ -664,7 +659,7 @@ async function seedGalleryCategories() {
     const docId = await upsertCollection(
       'gallery-categories',
       cat.slug,
-      { name: cat.fr, slug: cat.slug, rank: cat.rank },
+      { name: cat.fr, slug: cat.slug },
       { name: cat.en },
     );
     categoryDocIds[cat.slug] = docId;
@@ -805,7 +800,6 @@ async function seedLegalSections() {
     {
       slug: 'mentions-intro',
       documentKey: 'mentions',
-      rank: 0,
       lastUpdatedAt: '2024-12-01',
       fr: {
         title: 'Introduction',
@@ -819,7 +813,6 @@ async function seedLegalSections() {
     {
       slug: 'mentions-editeur',
       documentKey: 'mentions',
-      rank: 1,
       lastUpdatedAt: '2024-12-01',
       fr: {
         title: 'Éditeur du site',
@@ -835,7 +828,6 @@ async function seedLegalSections() {
     {
       slug: 'mentions-hebergement',
       documentKey: 'mentions',
-      rank: 2,
       lastUpdatedAt: '2024-12-01',
       fr: {
         title: 'Hébergement',
@@ -851,7 +843,6 @@ async function seedLegalSections() {
     {
       slug: 'mentions-propriete-intellectuelle',
       documentKey: 'mentions',
-      rank: 3,
       lastUpdatedAt: '2024-12-01',
       fr: {
         title: 'Propriété intellectuelle',
@@ -869,7 +860,6 @@ async function seedLegalSections() {
     {
       slug: 'cgv-intro',
       documentKey: 'cgv',
-      rank: 0,
       lastUpdatedAt: '2024-12-05',
       fr: {
         title: 'Introduction',
@@ -970,7 +960,6 @@ async function seedLegalSections() {
     ].map(([n, frT, enT, frP, enP], i) => ({
       slug: `cgv-art-${n}`,
       documentKey: 'cgv',
-      rank: i + 1,
       lastUpdatedAt: '2024-12-05',
       fr: { title: `Art. ${n} — ${frT}`, body: frP },
       en: { title: `Art. ${n} — ${enT}`, body: enP },
@@ -980,7 +969,6 @@ async function seedLegalSections() {
     {
       slug: 'cgu-intro',
       documentKey: 'cgu',
-      rank: 0,
       lastUpdatedAt: '2024-12-05',
       fr: {
         title: 'Introduction',
@@ -1053,7 +1041,6 @@ async function seedLegalSections() {
     ].map(([n, frT, enT, frP, enP], i) => ({
       slug: `cgu-art-${n}`,
       documentKey: 'cgu',
-      rank: i + 1,
       lastUpdatedAt: '2024-12-05',
       fr: { title: `Art. ${n} — ${frT}`, body: frP },
       en: { title: `Art. ${n} — ${enT}`, body: enP },
@@ -1063,7 +1050,6 @@ async function seedLegalSections() {
     {
       slug: 'privacy-intro',
       documentKey: 'privacy',
-      rank: 0,
       lastUpdatedAt: '2024-12-01',
       fr: {
         title: 'Introduction',
@@ -1143,7 +1129,6 @@ async function seedLegalSections() {
     ].map(([n, frT, enT, frP, enP], i) => ({
       slug: `privacy-art-${n}`,
       documentKey: 'privacy',
-      rank: i + 1,
       lastUpdatedAt: '2024-12-01',
       fr: { title: `Art. ${n} — ${frT}`, body: frP },
       en: { title: `Art. ${n} — ${enT}`, body: enP },
@@ -1153,7 +1138,6 @@ async function seedLegalSections() {
     {
       slug: 'cookies-intro',
       documentKey: 'cookies',
-      rank: 0,
       lastUpdatedAt: '2024-12-01',
       fr: {
         title: 'Introduction',
@@ -1169,7 +1153,6 @@ async function seedLegalSections() {
     {
       slug: 'cookies-list',
       documentKey: 'cookies',
-      rank: 1,
       lastUpdatedAt: '2024-12-01',
       fr: {
         title: 'Cookies utilisés',
@@ -1185,7 +1168,6 @@ async function seedLegalSections() {
     {
       slug: 'cookies-consent',
       documentKey: 'cookies',
-      rank: 2,
       lastUpdatedAt: '2024-12-01',
       fr: {
         title: 'Consentement',
@@ -1207,7 +1189,6 @@ async function seedLegalSections() {
         title: s.fr.title,
         body: paragraphsToBlocks(s.fr.body),
         documentKey: s.documentKey,
-        rank: s.rank,
         lastUpdatedAt: s.lastUpdatedAt,
       },
       {
@@ -1265,11 +1246,10 @@ async function seedContactSubjects() {
     { key: 'visite', fr: 'Visite du studio', en: 'Studio visit' },
   ];
 
-  for (let i = 0; i < subjects.length; i++) {
-    const s = subjects[i];
+  for (const s of subjects) {
     await upsertContactSubject(
       s.key,
-      { name: s.fr, rank: i + 1 },
+      { name: s.fr },
       { name: s.en },
     );
   }
@@ -1288,9 +1268,8 @@ async function seedTeamMembers() {
     { name: 'Service général', fr: 'Accueil & informations', en: 'Reception & information', email: 'contact@e-do.studio', enName: 'General enquiries' },
   ];
 
-  for (let i = 0; i < members.length; i++) {
-    const m = members[i];
-    const frData = { name: m.name, role: m.fr, rank: i + 1 };
+  for (const m of members) {
+    const frData = { name: m.name, role: m.fr };
     if (m.email) frData.email = m.email;
     const enData = { name: m.enName ?? m.name, role: m.en };
     await upsertByName('team-members', m.name, frData, enData);

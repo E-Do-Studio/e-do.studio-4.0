@@ -43,10 +43,6 @@
         }
       },
       "description": "Précision facultative affichée sous l'option."
-    },
-    "rank": {
-      "type": "integer",
-      "configurable": false
     }
   }
 }
