@@ -177,8 +177,118 @@ export default {
   async bootstrap({ strapi }: { strapi: Core.Strapi }) {
     await ensureLocales(strapi);
     await hideContentManagerFields(strapi);
+    await ensureGalleryProjectListColumns(strapi);
   },
 };
+
+/**
+ * Make `media` a visible column in the Content Manager list view of
+ * `gallery-project`, inserted right after `slug`. The collection is large (70+
+ * entries) and pure text columns (id / slug / stage / available_in / status)
+ * make it impossible to recognise a project at a glance; Strapi 5 renders a
+ * thumbnail strip for `media` cells natively, so the cheapest fix is to push
+ * the column into the stored list layout and let Strapi render the preview.
+ *
+ * Uses the content-manager `content-types` service when available because it
+ * returns the schema-derived default config merged with whatever is stored —
+ * that way we never overwrite the full list with a config that only has our
+ * column. Falls back to a direct `strapi.store` write for resilience.
+ */
+async function ensureGalleryProjectListColumns(strapi: Core.Strapi) {
+  const uid = 'api::gallery-project.gallery-project';
+  const contentType = strapi.contentType(uid as any);
+  if (!contentType) {
+    strapi.log.warn(`[bootstrap] Content type ${uid} not found; skipping media list column.`);
+    return;
+  }
+
+  try {
+    const ctService = strapi.plugin('content-manager')?.service('content-types') as
+      | undefined
+      | {
+          findConfiguration: (ct: any) => Promise<any>;
+          updateConfiguration: (ct: any, config: any) => Promise<any>;
+        };
+
+    if (ctService?.findConfiguration && ctService?.updateConfiguration) {
+      const configuration = await ctService.findConfiguration(contentType);
+      const next = withMediaListColumn(configuration);
+      if (next) {
+        await ctService.updateConfiguration(contentType, next);
+        strapi.log.info(
+          `[bootstrap] Added media column to ${uid} list view (via content-manager service).`,
+        );
+      }
+      return;
+    }
+  } catch (err) {
+    strapi.log.warn(
+      `[bootstrap] content-manager update failed for ${uid}: ${(err as Error).message}. Falling back to store.`,
+    );
+  }
+
+  try {
+    const storeKey = `plugin_content_manager_configuration_content_types::${uid}`;
+    const stored = await strapi.store.get({ key: storeKey });
+    const baseConfig: any = stored
+      ? typeof stored === 'string'
+        ? JSON.parse(stored)
+        : stored
+      : {
+          uid,
+          settings: {},
+          metadatas: {},
+          layouts: { list: [], edit: [], editRelations: [] },
+        };
+    const next = withMediaListColumn(baseConfig);
+    if (!next) return;
+    await strapi.store.set({ key: storeKey, value: next });
+    strapi.log.info(`[bootstrap] Added media column to ${uid} list view (via store).`);
+  } catch (err) {
+    strapi.log.warn(
+      `[bootstrap] Could not add media column to ${uid}: ${(err as Error).message}`,
+    );
+  }
+}
+
+/**
+ * Return a clone of the configuration with `media` inserted after `slug` in
+ * the list layout, plus list metadata for the column. Returns `null` when
+ * `media` is already present so the caller can skip the write.
+ */
+function withMediaListColumn(configuration: any): any | null {
+  const getName = (entry: any): string | undefined =>
+    typeof entry === 'string' ? entry : entry?.name;
+
+  const next = { ...configuration };
+  next.layouts = { ...(configuration.layouts ?? {}) };
+  const list: any[] = Array.isArray(next.layouts.list) ? [...next.layouts.list] : [];
+
+  if (list.some((f) => getName(f) === 'media')) {
+    return null;
+  }
+
+  const slugIdx = list.findIndex((f) => getName(f) === 'slug');
+  const insertIdx = slugIdx >= 0 ? slugIdx + 1 : Math.min(2, list.length);
+  list.splice(insertIdx, 0, 'media');
+  next.layouts.list = list;
+
+  next.metadatas = { ...(configuration.metadatas ?? {}) };
+  const existingMediaMeta = next.metadatas.media ?? {};
+  next.metadatas.media = {
+    edit: { ...(existingMediaMeta.edit ?? {}) },
+    list: {
+      ...(existingMediaMeta.list ?? {}),
+      label: existingMediaMeta.list?.label ?? 'Aperçu',
+      // Media fields are neither searchable as text nor sortable in any
+      // meaningful way, so disable both to avoid broken UI affordances.
+      searchable: false,
+      sortable: false,
+    },
+  };
+
+  return next;
+}
 
 /**
  * Force-hide `rank` (and any deprecated fields) from the Content Manager edit
