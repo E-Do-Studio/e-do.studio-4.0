@@ -1049,6 +1049,12 @@ export async function fetchSiteDefaults(): Promise<SiteDefaults> {
 
 // ─── Gallery types & fetchers ──────────────────────────────────────────────
 
+export interface GalleryMedia {
+  url: string;
+  mime: string;
+  alt: string;
+}
+
 export interface GalleryProject {
   id: number;
   brand: string;
@@ -1057,7 +1063,7 @@ export interface GalleryProject {
   plateau: string;
   year: string;
   tone: 'mono' | 'dark' | 'warm';
-  media: MediaItem[];
+  media: GalleryMedia[];
 }
 
 export interface GalleryCategory {
@@ -1070,23 +1076,40 @@ function slugToTitle(slug: string): string {
   return slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
+function resolveGalleryMediaUrl(m: StrapiMedia): string | undefined {
+  if (!m.url) return undefined;
+  // Videos must be served as the raw upload; images can use the medium
+  // format when available for lighter payloads at the gallery grid scale.
+  const isVideo = m.mime?.startsWith('video/');
+  const path = isVideo ? m.url : (m.formats?.medium?.url ?? m.url);
+  if (path.startsWith('http')) return path;
+  return `${STRAPI_URL}${path}`;
+}
+
 export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
+  // Mono-language fetch: the legacy `shared.media-item` component carried
+  // a localized `alt`, which is the only reason this fetch used to be
+  // bilingual. The unified native `media` field exposes `alternativeText`
+  // (not i18n today — revisit if editorial needs per-locale alt).
   const res = await fetchStrapi<{ data: StrapiGalleryProject[] }>('gallery-projects', {
     'populate': 'category,brand,media',
     'sort': 'rank:asc',
     'pagination[pageSize]': '100',
+    'locale': 'fr',
   });
 
   return res.data.map((p, i) => {
-    const media: MediaItem[] = (p.media ?? []).flatMap((file): MediaItem[] => {
-      const alt: Bilingual = { fr: file.alternativeText ?? '', en: file.alternativeText ?? '' };
-      if (file.mime?.startsWith('video/')) {
-        const url = resolveRawMediaUrl(file);
-        return url ? [{ kind: 'video', url, alt }] : [];
-      }
-      const url = resolveStrapiMediaUrl(file);
-      return url ? [{ kind: 'image', url, alt }] : [];
-    });
+    const media: GalleryMedia[] = (p.media ?? [])
+      .map((m) => {
+        const url = resolveGalleryMediaUrl(m);
+        if (!url) return null;
+        return {
+          url,
+          mime: m.mime ?? '',
+          alt: m.alternativeText ?? '',
+        };
+      })
+      .filter((m): m is GalleryMedia => m !== null);
     return {
       id: p.id,
       brand: p.brand?.name ?? p.title ?? slugToTitle(p.slug),

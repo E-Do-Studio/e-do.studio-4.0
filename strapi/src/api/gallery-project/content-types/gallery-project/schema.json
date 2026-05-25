@@ -66,8 +66,9 @@
     "media": {
       "type": "media",
       "multiple": true,
+      "required": true,
       "allowedTypes": ["images", "videos"],
-      "description": "Médias du projet (images et vidéos, 15 max recommandé). Le média 1 est utilisé comme couverture par défaut."
+      "description": "Médias du projet : exactement 3 entrées, images ou vidéos (mp4/webm). Validé par lifecycles.ts. Le fichier 1 sert de couverture par défaut. Les migrations 2026.05.25T10.20.00.gallery-project-images-to-media.js et 2026.05.25T10.30.00.gallery-project-unify-media.js renomment les anciens liens `images` vers ce champ."
     }
   }
 }

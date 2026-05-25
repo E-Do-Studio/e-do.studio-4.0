@@ -477,7 +477,6 @@ const ProjectRow = ({ project, lang, style }: { project: GalleryProject; lang: L
         key={imageIndex}
         project={project}
         imageIndex={imageIndex}
-        lang={lang}
       />
     ))}
   </div>
@@ -518,11 +517,9 @@ const ProjectLabel = ({ project, lang }: { project: GalleryProject; lang: Lang }
 const ProjectImage = ({
   project,
   imageIndex,
-  lang,
 }: {
   project: GalleryProject;
   imageIndex: number;
-  lang: Lang;
 }) => {
   const reducedMotion = usePrefersReducedMotion();
   const item = project.media[imageIndex];
@@ -535,26 +532,25 @@ const ProjectImage = ({
     );
   }
 
-  const altText = item.alt[lang] || `${project.brand} — ${imageIndex + 1}`;
+  const altText = item.alt || `${project.brand} — ${imageIndex + 1}`;
+  const isVideo = item.mime.startsWith("video/");
 
-  if (item.kind === "video") {
+  if (isVideo) {
     return (
       <div className="relative aspect-portrait overflow-hidden bg-white">
-        {reducedMotion ? (
-          <ProjectCoverFallback project={project} seed={project.id * 3 + imageIndex} />
-        ) : (
-          <video
-            src={item.url}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="metadata"
-            disablePictureInPicture
-            aria-label={altText}
-            className="absolute inset-0 h-full w-full object-cover pointer-events-none select-none"
-          />
-        )}
+        <video
+          key={item.url}
+          autoPlay={!reducedMotion}
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          disablePictureInPicture
+          aria-label={altText}
+          className="absolute inset-0 h-full w-full object-cover pointer-events-none select-none"
+        >
+          <source src={item.url} type={item.mime} />
+        </video>
       </div>
     );
   }
