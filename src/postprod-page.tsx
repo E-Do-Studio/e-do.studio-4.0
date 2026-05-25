@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useQueryState, parseAsString } from 'nuqs';
-import { Button, CellLabel, EmptyState, IconArrowRight, Loader, PageHeader, Wordmark } from './ui';
+import { Button, CellLabel, EmptyState, IconArrowRight, PageHeader, Wordmark } from './ui';
 import { useDocumentMeta, type SeoOverride } from './lib/use-document-meta';
 import { useStructuredData } from './lib/use-structured-data';
 import { buildPostProdServiceSchema, buildBreadcrumbSchema } from './lib/structured-data';
@@ -206,7 +206,7 @@ const PostprodPage = () => {
 
   if (!cat) {
     if (ppQuery.loading) {
-      return <Loader lang={lang} size="page" />;
+      return null;
     }
     return (
       <EmptyState

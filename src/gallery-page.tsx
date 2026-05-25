@@ -454,20 +454,16 @@ interface GalleryContentProps {
   lang: Lang;
   filtered: GalleryProject[];
   resetFilters: () => void;
-  loading?: boolean;
 }
 
 const GalleryContent = ({
   lang,
   filtered,
   resetFilters,
-  loading,
 }: GalleryContentProps) => (
   <div className="min-h-0 overflow-y-auto bg-white">
     <div className="flex flex-col gap-px bg-edo-pure-black">
-      {loading ? (
-        <Loader lang={lang} size="block" className="bg-background py-24" />
-      ) : filtered.length === 0 ? (
+      {filtered.length === 0 ? (
         <EmptyState
           label={galleryPage.noResults[lang]}
           description={galleryPage.tryAnotherFilter[lang]}
@@ -723,6 +719,10 @@ const GalleryPageV3 = () => {
     setFilters({ cat: null, plateau: null });
   };
 
+  if (projectsLoading) {
+    return <Loader lang={lang} size="page" />;
+  }
+
   return (
     <div className="edo-page-enter grid w-full gap-px bg-edo-pure-black md:h-full md:grid-cols-gallery-full md:grid-rows-page md:overflow-hidden">
 
@@ -798,7 +798,6 @@ const GalleryPageV3 = () => {
           lang={lang}
           filtered={filtered}
           resetFilters={resetFilters}
-          loading={projectsLoading}
         />
       </div>
     </div>
