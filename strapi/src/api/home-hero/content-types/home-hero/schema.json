@@ -15,16 +15,16 @@
     "video": {
       "type": "media",
       "multiple": false,
-      "required": true,
+      "required": false,
       "allowedTypes": ["videos"],
-      "description": "Vidéo en boucle (mp4 recommandé, muet, ~10–30s). Le front affiche un fallback statique tant que Strapi renvoie 404/null."
+      "description": "Vidéo en boucle (mp4 recommandé, muet, ~10–30s). Optionnel : si tu uploades ≥ 2 images dans `poster`, la rotation d'images devient le showreel et la vidéo n'est PAS affichée (sinon elle masquerait le fondu)."
     },
     "poster": {
       "type": "media",
       "multiple": true,
       "required": false,
       "allowedTypes": ["images"],
-      "description": "Image(s) poster affichée(s) avant la lecture de la vidéo. 1 image → image statique. N images → fondu enchaîné automatique (~5s par image, fondu ~900ms). Le texte alternatif est lu sur chaque média (champ `alternativeText` de la médiathèque)."
+      "description": "Image(s) du showreel. 0 image + vidéo → vidéo seule. 1 image + vidéo → image utilisée comme poster de la vidéo. ≥ 2 images → fondu enchaîné automatique (~5s par image, fondu ~900ms), la vidéo n'est plus affichée. Texte alt lu sur chaque média (champ `alternativeText`)."
     }
   },
   "pluginOptions": {
