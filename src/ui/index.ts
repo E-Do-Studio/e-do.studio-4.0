@@ -36,6 +36,9 @@ export type { SocialLinksRowProps } from './social-links-row';
 export { VideoLoop } from './video-loop';
 export type { VideoLoopProps } from './video-loop';
 
+export { ImageCrossfade } from './image-crossfade';
+export type { ImageCrossfadeProps, ImageCrossfadeSlide } from './image-crossfade';
+
 export { PlateauMediaCarousel } from './plateau-media-carousel';
 export type { PlateauMediaCarouselProps } from './plateau-media-carousel';
 
