@@ -116,11 +116,22 @@ const DirectionA = () => {
         ]}
       />
 
-      {/* ── Rows 2-3 left: E-commerce section ── */}
-      <div className="col-span-2 min-h-72 flex flex-col overflow-hidden bg-white md:col-start-1 md:col-end-7 md:row-start-2 md:row-end-4 md:min-h-0">
-        <div className="px-4 pt-6 pb-4">
-          <p className="m-0 whitespace-pre-line text-pretty text-detail leading-relaxed text-foreground">
-            {homeMsg.studioIntro[lang]}
+      {/* ── Rows 2-3 left: E-commerce editorial ── */}
+      <div className="col-span-2 min-h-72 flex flex-col overflow-hidden bg-edo-pure-black md:col-start-1 md:col-end-7 md:row-start-2 md:row-end-4 md:min-h-0">
+        <div className="px-5 pt-8 pb-7 md:px-8 md:pt-10 md:pb-9 lg:px-10 lg:pt-12 lg:pb-10">
+          <h2 className="m-0 text-pretty font-sans font-light tracking-display text-white leading-[1.05] text-[clamp(1.875rem,5.6vw,2.75rem)] md:text-[clamp(2rem,3.4vw,3.25rem)]">
+            {homeMsg.studioHeadline.line1[lang]}
+            <br />
+            {homeMsg.studioHeadline.line2Lead[lang]}{' '}
+            <span className="italic text-primary">
+              {homeMsg.studioHeadline.line2Accent[lang]}
+            </span>
+          </h2>
+          <p className="m-0 mt-4 max-w-[44ch] text-pretty text-detail leading-relaxed text-white/55 md:mt-5">
+            {homeMsg.studioSubtitle.lead[lang]}
+            <span className="font-semibold text-white">
+              {homeMsg.studioSubtitle.accent[lang]}
+            </span>
           </p>
         </div>
 
