@@ -29,7 +29,11 @@
         # else is locked down. 'unsafe-inline' on style-src is required for Tailwind v4 runtime
         # CSS variables. The single inline <script> on index.html is JSON-LD (type=application/ld+json),
         # not executable, so script-src can stay strict.
-        Content-Security-Policy "default-src 'self'; script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://cms.e-do.studio https://www.google-analytics.com; media-src 'self' https://cms.e-do.studio; connect-src 'self' https://cms.e-do.studio https://*.supabase.co https://www.google-analytics.com https://region1.google-analytics.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
+        # Gallery images and videos are stored on Cloudflare R2 (CF_PUBLIC_URL on the Strapi
+        # side) and served directly from the bucket's public URL, so both `img-src` and
+        # `media-src` must whitelist it. Keep this aligned with the Strapi-side CSP in
+        # `strapi/config/env/production/middlewares.ts`.
+        Content-Security-Policy "default-src 'self'; script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://cms.e-do.studio https://pub-9b79de66b20440cdb7e8bae53605296c.r2.dev https://www.google-analytics.com; media-src 'self' https://cms.e-do.studio https://pub-9b79de66b20440cdb7e8bae53605296c.r2.dev; connect-src 'self' https://cms.e-do.studio https://*.supabase.co https://www.google-analytics.com https://region1.google-analytics.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
         -Server
     }
 
