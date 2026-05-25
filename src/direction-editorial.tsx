@@ -133,8 +133,8 @@ const DirectionA = () => {
           </p>
         </div>
 
-        <div className="flex min-h-0 overflow-hidden border-t border-white/18 bg-edo-black">
-          <div className="grid flex-1 grid-cols-3 content-end gap-px bg-white/18 md:grid-cols-4">
+        <div className="flex min-h-0 overflow-hidden border-t border-edo-gray-600 bg-edo-black">
+          <div className="grid flex-1 grid-cols-3 content-end gap-px bg-edo-gray-600 md:grid-cols-4">
             {ecomMachines.map((m, i) => (
               <button
                 key={m.slug}
