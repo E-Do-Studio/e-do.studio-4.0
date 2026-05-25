@@ -182,7 +182,7 @@ const PostprodPage = () => {
 
   return (
     /* Mobile: single-column scrollable. Desktop (md+): sidebar + workspace */
-    <div className="edo-page-enter grid w-full gap-px bg-background md:h-full md:grid-cols-plateau md:grid-rows-app md:overflow-hidden">
+    <div className="edo-page-enter grid w-full gap-px bg-edo-pure-black md:h-full md:grid-cols-plateau md:grid-rows-app md:overflow-hidden">
 
       {/* Mobile header */}
       <PageHeader
