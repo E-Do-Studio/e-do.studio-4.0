@@ -30,6 +30,9 @@ export type { PageHeaderAction, PageHeaderProps } from './page-header';
 export { SocialIcon } from './social-icon';
 export type { SocialIconProps } from './social-icon';
 
+export { SocialLinksRow } from './social-links-row';
+export type { SocialLinksRowProps } from './social-links-row';
+
 export { VideoLoop } from './video-loop';
 export type { VideoLoopProps } from './video-loop';
 

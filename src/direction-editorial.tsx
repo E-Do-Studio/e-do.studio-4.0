@@ -1,7 +1,7 @@
 import { lazy, Suspense, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useQueryState, parseAsStringEnum } from 'nuqs';
-import { CellLabel, IconArrowRight, IconChat, IconX, PageHeader, SocialIcon, VideoLoop, cn } from './ui';
+import { CellLabel, IconArrowRight, IconChat, IconX, PageHeader, SocialLinksRow, VideoLoop, cn } from './ui';
 import { MarqueeCell } from './cells';
 
 const AssistantChat = lazy(() => import('./assistant-chat'));
@@ -398,20 +398,7 @@ const DirectionA = () => {
       </Suspense>
 
       {/* ── Row 6: Social links (wrapped to 4-col grid) ── */}
-      <div className="col-span-2 grid grid-cols-4 h-11 gap-px md:col-start-1 md:col-end-5 md:row-start-6">
-        {(socialLinks ?? []).map((s) => (
-          <a
-            key={s.k}
-            href={s.href}
-            target="_blank"
-            rel="noopener"
-            className="edo-focus-ring group flex items-center justify-between border-0 bg-white px-3 no-underline text-foreground transition-colors duration-150 hover:bg-muted"
-          >
-            <SocialIcon kind={s.k} size={12} />
-            <span className="font-mono text-micro tracking-meta">{s.k === 'instagram' ? 'IG' : s.k === 'linkedin' ? 'LI' : s.k === 'facebook' ? 'FB' : 'TT'}</span>
-          </a>
-        ))}
-      </div>
+      <SocialLinksRow className="col-span-2 md:col-start-1 md:col-end-5 md:row-start-6" />
 
       {/* ── Row 6: Marquee ── */}
       <div className="col-span-2 h-11 flex items-center overflow-hidden bg-white min-w-0 md:col-start-5 md:col-end-13 md:row-start-6">
