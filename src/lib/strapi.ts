@@ -224,8 +224,6 @@ type StageKey = 'live' | 'eclipse' | 'horizontal' | 'vertical' | 'cyclorama';
 
 interface StrapiGalleryProject {
   id: number;
-  title: string;
-  slug: string;
   stage?: StageKey | null;
   year: number | string;
   category?: StrapiGalleryCategory;
@@ -1053,7 +1051,6 @@ export interface GalleryMedia {
 export interface GalleryProject {
   id: number;
   brand: string;
-  slug: string;
   cat: string;
   plateau: string;
   year: string;
@@ -1065,10 +1062,6 @@ export interface GalleryCategory {
   k: string;
   fr: string;
   en: string;
-}
-
-function slugToTitle(slug: string): string {
-  return slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
 function resolveGalleryMediaUrl(m: StrapiMedia): string | undefined {
@@ -1104,8 +1097,7 @@ export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
       .filter((m): m is GalleryMedia => m !== null);
     return {
       id: p.id,
-      brand: p.brand?.name ?? p.title ?? slugToTitle(p.slug),
-      slug: p.slug,
+      brand: p.brand?.name ?? '',
       cat: p.category?.slug ?? 'other',
       plateau: p.stage ?? '',
       year: String(p.year),
