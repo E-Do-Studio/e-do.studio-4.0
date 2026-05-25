@@ -185,11 +185,16 @@ export const home = {
     fr: 'Studio photo et vidéo professionnel à Paris',
     en: 'Professional photo and video studio in Paris',
   } as B,
-  ecommShooting: { fr: 'Shooting e-commerce', en: 'E-commerce shooting' } as B,
-  toggleMode: { fr: 'Basculer mode', en: 'Toggle mode' } as B,
-  byCategory: { fr: 'Par catégorie', en: 'By category' } as B,
-  byMachine: { fr: 'Par machine', en: 'By machine' } as B,
-  smartSolutions: { fr: '4 solutions intelligentes', en: '4 smart solutions' } as B,
+  studioIntro: {
+    fr: 'E-Do Studio est un studio photo et vidéo spécialisé dans la production de contenus e-commerce, basé à Saint-Ouen-sur-Seine.\nDu créateur indépendant aux maisons de luxe, en passant par les univers beauté et lifestyle, nous accompagnons nos clients dans la réalisation de leurs contenus grâce à des outils de dernière génération, pensés pour simplifier les flux de production, réduire les délais et optimiser les budgets.',
+    en: 'E-Do Studio is a photo and video studio specialised in producing e-commerce content, based in Saint-Ouen-sur-Seine.\nFrom independent creators to luxury houses, by way of the beauty and lifestyle worlds, we support our clients in producing their content with next-generation tools designed to simplify production flows, shorten lead times, and optimise budgets.',
+  } as B,
+  machineSubs: {
+    horizontal: { fr: 'Packshot à plat', en: 'Flat packshot' } as B,
+    vertical: { fr: 'Packshot ghost / piqué', en: 'Ghost / pinned packshot' } as B,
+    eclipse: { fr: 'Photo et vidéo objets et access', en: 'Object & accessory photo / video' } as B,
+    live: { fr: 'Photo et vidéo Porté', en: 'On-model photo & video' } as B,
+  } as Record<string, B>,
   freeProductionPhotovideo: {
     fr: 'Production libre · Photo & Vidéo',
     en: 'Free production · Photo & Video',

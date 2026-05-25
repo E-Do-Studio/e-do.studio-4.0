@@ -1,11 +1,9 @@
 import { lazy, Suspense, useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
-import { useQueryState, parseAsStringEnum } from 'nuqs';
 import { CellLabel, IconArrowRight, IconChat, IconX, PageHeader, SocialLinksRow, VideoLoop, cn } from './ui';
 import { MarqueeCell } from './cells';
 
 const AssistantChat = lazy(() => import('./assistant-chat'));
-import { useSocialLinks, useGalleryCategories, useMachines, useContact, useHomeHero, useStudioHours, useSiteBusinessInfo } from './lib/use-strapi';
+import { useSocialLinks, useMachines, useContact, useHomeHero, useStudioHours, useSiteBusinessInfo } from './lib/use-strapi';
 import { useDocumentMeta } from './lib/use-document-meta';
 import { useStructuredData } from './lib/use-structured-data';
 import {
@@ -15,22 +13,6 @@ import {
 import type { Lang } from './types';
 import { usePageContext } from './router';
 import { cells as cellsMsg, common, contact as contactMsg, home as homeMsg } from './i18n/messages';
-
-interface CatIconProps {
-  kind: string;
-  size?: number;
-}
-
-const CatIcon = ({ kind, size = 22 }: CatIconProps) => {
-  const p = { width: size, height: size, fill: 'none', stroke: 'currentColor', strokeWidth: 1.1, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
-  if (kind === 'cosmetique') return (<svg viewBox="0 0 24 24" {...p}><rect x="8" y="10" width="8" height="11" rx="1" /><path d="M10 10V6h4v4M12 3v3" /></svg>);
-  if (kind === 'bijoux') return (<svg viewBox="0 0 24 24" {...p}><path d="M4 10l3-4h10l3 4-8 10z" /><path d="M4 10h16M9 10l3-4 3 4M9 10l3 10M15 10l-3 10" /></svg>);
-  if (kind === 'pap') return (<svg viewBox="0 0 24 24" {...p}><path d="M6 8l3-3h6l3 3 2 2-3 2v9H4v-9L1 10z" transform="translate(1 1)" /></svg>);
-  if (kind === 'accessoires') return (<svg viewBox="0 0 24 24" {...p}><path d="M5 9 L19 9 L18 20 Q18 21 17 21 L7 21 Q6 21 6 20 Z" /><path d="M9 9 V7 Q9 4 12 4 Q15 4 15 7 V9" /></svg>);
-  if (kind === 'food') return (<svg viewBox="0 0 24 24" {...p}><path d="M8 3v6a2 2 0 0 0 2 2h0v10M10 11a2 2 0 0 0 2-2V3M16 3v9c0 1 .5 1.5 1 2v7" /></svg>);
-  if (kind === 'eyewear') return (<svg viewBox="0 0 24 24" {...p}><circle cx="7" cy="14" r="3.5" /><circle cx="17" cy="14" r="3.5" /><path d="M10.5 14h3M3.5 12L6 7h3M20.5 12L18 7h-3" /></svg>);
-  return null;
-};
 
 interface MachineRowItem {
   slug: string;
@@ -72,20 +54,10 @@ const MachineRow = ({ idx, m, lang, onClick, isLast }: MachineRowProps) => (
   </button>
 );
 
-const ECOM_VIEWS = ['categorie', 'machine'] as const;
-type EcomView = (typeof ECOM_VIEWS)[number];
-
-// Persist the toggle in the URL so the browser back button restores it.
-const ecomModeParser = parseAsStringEnum<EcomView>([...ECOM_VIEWS])
-  .withDefault('categorie')
-  .withOptions({ clearOnDefault: true });
-
 const DirectionA = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
-  const navigate = useNavigate();
   useDocumentMeta('home', lang);
   const { data: socialLinks } = useSocialLinks();
-  const { data: galleryCategories } = useGalleryCategories();
   const { data: machines } = useMachines();
   const { data: contact } = useContact();
   const { data: studioHours } = useStudioHours();
@@ -106,16 +78,19 @@ const DirectionA = () => {
   const heroPoster = heroCmsPoster ?? (heroUseFallback ? '/showreel-preview.webp' : undefined);
   const heroHasCmsPoster = !!heroCmsPoster;
   const heroShowStaticPicture = heroUseFallback || (!!homeHeroError && !heroCmsPoster);
-  const [ecomMode, setEcomMode] = useQueryState('mode', ecomModeParser);
   const [chatOpen, setChatOpen] = useState(false);
-  const categories = galleryCategories ?? [];
+  // Subtitles for the homepage machine grid are pinned in the codebase so
+  // marketing wording stays consistent regardless of Strapi content.
   const ecomMachines: MachineRowItem[] = (machines ?? [])
     .filter((m) => m.slug !== 'cyclorama')
-    .map((m) => ({
-      slug: m.slug,
-      fr: { t: m.fr.t, sub: m.fr.sub },
-      en: { t: m.en.t, sub: m.en.sub },
-    }));
+    .map((m) => {
+      const override = homeMsg.machineSubs[m.slug];
+      return {
+        slug: m.slug,
+        fr: { t: m.fr.t, sub: override?.fr ?? m.fr.sub },
+        en: { t: m.en.t, sub: override?.en ?? m.en.sub },
+      };
+    });
 
   return (
     /* Mobile: 2-col grid, vertical scroll. Desktop (md+): 12-col bento, fixed viewport */
@@ -143,85 +118,38 @@ const DirectionA = () => {
 
       {/* ── Rows 2-3 left: E-commerce section ── */}
       <div className="col-span-2 min-h-72 flex flex-col overflow-hidden bg-white md:col-start-1 md:col-end-7 md:row-start-2 md:row-end-4 md:min-h-0">
-        <div className="flex flex-wrap items-center justify-between gap-2 px-4 pt-6">
-          <h2 className="m-0 min-w-0 flex-1 truncate whitespace-nowrap text-page-title font-light tracking-display leading-none text-foreground">
-            {homeMsg.ecommShooting[lang]}
-          </h2>
-          <button
-            onClick={() => setEcomMode(ecomMode === 'categorie' ? 'machine' : 'categorie')}
-            aria-label={homeMsg.toggleMode[lang]}
-            className="edo-focus-ring relative grid grid-cols-2 gap-1 border border-foreground bg-white p-1 font-mono flex-shrink-0"
-          >
-            <span
-              className="pointer-events-none absolute top-1 bottom-1 w-toggle-half bg-foreground transition-all duration-300"
-              style={{ left: ecomMode === 'categorie' ? 3 : 'calc(50% + 1.5px)' }}
-            />
-            {[
-              { v: 'categorie', fr: 'Par catégorie', en: 'By category' },
-              { v: 'machine', fr: 'Par machine', en: 'By machine' },
-            ].map(o => {
-              const active = ecomMode === o.v;
-              return (
-                <span
-                  key={o.v}
-                  className={`relative z-10 whitespace-nowrap px-3 py-2 text-center font-mono text-caption uppercase tracking-meta transition-colors duration-150 ${active ? 'text-white' : 'text-foreground'}`}
-                >
-                  {o[lang]}
-                </span>
-              );
-            })}
-          </button>
-        </div>
-
-        <div className="px-4 pb-3.5">
-          <div className="font-mono text-caption uppercase tracking-ui text-muted-foreground">
-            {homeMsg.smartSolutions[lang]}
-          </div>
+        <div className="px-4 pt-6 pb-4">
+          <p className="m-0 whitespace-pre-line text-pretty text-detail leading-relaxed text-foreground">
+            {homeMsg.studioIntro[lang]}
+          </p>
         </div>
 
         <div className="flex flex-1 min-h-0 overflow-hidden bg-white">
-          {ecomMode === 'categorie' ? (
-            <div className="grid flex-1 grid-cols-3 content-end gap-px bg-white md:grid-cols-6">
-              {categories.map((c) => (
-                <button
-                  key={c.k}
-                  onClick={() => navigate({ to: `/${lang}/galerie`, search: { cat: c.k } })}
-                  className="edo-focus-ring group flex aspect-[4/3] min-w-0 cursor-pointer flex-col justify-between border-0 border-t border-l border-border bg-white px-3 py-3 text-left text-foreground transition-colors duration-150 hover:bg-muted md:aspect-square"
-                >
-                  <CatIcon kind={c.k} size={20} />
-                  <div className="truncate text-caption font-medium tracking-copy-tight leading-snug">
-                    {c[lang]}
-                  </div>
-                </button>
-              ))}
-            </div>
-          ) : (
-            <div className="grid flex-1 grid-cols-3 content-end gap-px bg-white md:grid-cols-4">
-              {ecomMachines.map((m, i) => (
-                <button
-                  key={m.slug}
-                  onClick={() => goto('plateau-' + m.slug)}
-                  className={cn(
-                    'edo-focus-ring group flex aspect-[4/3] min-w-0 cursor-pointer flex-col justify-between border-0 border-t border-l border-border bg-white px-3 py-3 text-left text-foreground transition-colors duration-150 hover:bg-muted md:aspect-square md:px-4 md:py-4',
-                    // 4 items in a 3-col mobile grid would leave the 4th alone
-                    // on row 2; let it span the row to avoid an awkward gap.
-                    i === 3 && 'col-span-3 aspect-auto md:col-span-1 md:aspect-square',
-                  )}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-micro text-muted-foreground tracking-meta">
-                      {String(i + 1).padStart(2, '0')}
-                    </span>
-                    <IconArrowRight className="text-muted-foreground" width="14" height="14" />
-                  </div>
-                  <div>
-                    <div className="truncate text-cell font-medium tracking-headline leading-tight">{m[lang].t}</div>
-                    <div className="truncate mt-1 text-micro font-mono uppercase tracking-caption text-muted-foreground">{m[lang].sub}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
+          <div className="grid flex-1 grid-cols-3 content-end gap-px bg-white md:grid-cols-4">
+            {ecomMachines.map((m, i) => (
+              <button
+                key={m.slug}
+                onClick={() => goto('plateau-' + m.slug)}
+                className={cn(
+                  'edo-focus-ring group flex aspect-[4/3] min-w-0 cursor-pointer flex-col justify-between border-0 border-t border-l border-border bg-white px-3 py-3 text-left text-foreground transition-colors duration-150 hover:bg-muted md:aspect-square md:px-4 md:py-4',
+                  // 4 items in a 3-col mobile grid would leave the 4th alone
+                  // on row 2; let it span the row to avoid an awkward gap.
+                  i === 3 && 'col-span-3 aspect-auto md:col-span-1 md:aspect-square',
+                )}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-micro text-muted-foreground tracking-meta">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <IconArrowRight className="text-muted-foreground" width="14" height="14" />
+                </div>
+                <div>
+                  <div className="truncate text-cell font-medium tracking-headline leading-tight">{m[lang].t}</div>
+                  <div className="truncate mt-1 text-micro font-mono uppercase tracking-caption text-muted-foreground">{m[lang].sub}</div>
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
