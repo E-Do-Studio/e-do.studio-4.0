@@ -133,14 +133,14 @@ const DirectionA = () => {
           </p>
         </div>
 
-        <div className="flex min-h-0 overflow-hidden bg-edo-pure-black">
-          <div className="grid flex-1 grid-cols-3 content-end gap-px bg-edo-pure-black md:grid-cols-4">
+        <div className="flex min-h-0 overflow-hidden border-t border-white/18 bg-edo-black">
+          <div className="grid flex-1 grid-cols-3 content-end gap-px bg-white/18 md:grid-cols-4">
             {ecomMachines.map((m, i) => (
               <button
                 key={m.slug}
                 onClick={() => goto('plateau-' + m.slug)}
                 className={cn(
-                  'edo-focus-ring group flex aspect-[4/3] min-w-0 cursor-pointer flex-col justify-between border-0 border-t border-l border-edo-pure-black bg-edo-black px-3 py-3 text-left text-white transition-colors duration-150 hover:bg-edo-dark md:aspect-square md:px-4 md:py-4',
+                  'edo-focus-ring group flex aspect-[4/3] min-w-0 cursor-pointer flex-col justify-between border-0 bg-edo-black px-3 py-3 text-left text-white transition-colors duration-150 hover:bg-edo-dark md:aspect-square md:px-4 md:py-4',
                   // 4 items in a 3-col mobile grid would leave the 4th alone
                   // on row 2; let it span the row to avoid an awkward gap.
                   i === 3 && 'col-span-3 aspect-auto md:col-span-1 md:aspect-square',
