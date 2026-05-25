@@ -14,6 +14,7 @@
   "attributes": {
     "title": {
       "type": "string",
+      "required": true,
       "minLength": 2,
       "maxLength": 80,
       "pluginOptions": {
@@ -31,6 +32,7 @@
     },
     "description": {
       "type": "text",
+      "required": true,
       "maxLength": 600,
       "pluginOptions": {
         "i18n": {
@@ -64,8 +66,9 @@
     "media": {
       "type": "media",
       "multiple": true,
+      "required": true,
       "allowedTypes": ["images", "videos"],
-      "description": "Médias de démonstration de la prestation : sélection multiple comme pour les projets galerie. Remplace les anciens champs `image` (cover unique) et `gallery` (exemples). Migrations: `2026.05.25T14.00.00.post-production-type-unify-media.js` (rename des liens morph existants vers ce champ)."
+      "description": "Médias de démonstration de la prestation : exactement 6 entrées, images ou vidéos. Validé par lifecycles.ts (refus si nb ≠ 6). Remplace les anciens champs `image` (cover unique) et `gallery` (exemples). Migrations: `2026.05.25T14.00.00.post-production-type-unify-media.js` (rename des liens morph existants vers ce champ)."
     },
     "seo": {
       "type": "component",
