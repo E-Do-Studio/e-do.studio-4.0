@@ -41,7 +41,6 @@ const CANDIDATES = [
   ['gallery_projects', 'brand_id', 'brand', 'major'],
   ['machines', 'title', 'title', 'major'],
   ['machines', 'subtitle', 'subtitle', 'minor'],
-  ['machines', 'image_id', 'image', 'critical'],
   ['post_production_types', 'title', 'title', 'major'],
   ['post_production_types', 'description', 'description', 'major'],
   ['site_settings', 'site_title', 'siteTitle', 'critical'],
