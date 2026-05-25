@@ -75,6 +75,11 @@ const MachineRow = ({ idx, m, lang, onClick, isLast }: MachineRowProps) => (
 const ECOM_VIEWS = ['categorie', 'machine'] as const;
 type EcomView = (typeof ECOM_VIEWS)[number];
 
+// Persist the toggle in the URL so the browser back button restores it.
+const ecomModeParser = parseAsStringEnum<EcomView>([...ECOM_VIEWS])
+  .withDefault('categorie')
+  .withOptions({ clearOnDefault: true });
+
 const DirectionA = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
   const navigate = useNavigate();
@@ -101,7 +106,7 @@ const DirectionA = () => {
   const heroPoster = heroCmsPoster ?? (heroUseFallback ? '/showreel-preview.webp' : undefined);
   const heroHasCmsPoster = !!heroCmsPoster;
   const heroShowStaticPicture = heroUseFallback || (!!homeHeroError && !heroCmsPoster);
-  const [ecomMode, setEcomMode] = useState<EcomView>('categorie');
+  const [ecomMode, setEcomMode] = useQueryState('mode', ecomModeParser);
   const [chatOpen, setChatOpen] = useState(false);
   const categories = galleryCategories ?? [];
   const ecomMachines: MachineRowItem[] = (machines ?? [])
