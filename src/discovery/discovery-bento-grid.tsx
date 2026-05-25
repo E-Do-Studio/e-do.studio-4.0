@@ -3,11 +3,11 @@ import type { Lang } from '../types';
 import type { DiscoveryPost } from '../types';
 
 const AssistantChat = lazy(() => import('../assistant-chat'));
-import { ArticleCard } from './article-card';
+import { ArticleCard, ArticleEmptyCard } from './article-card';
 import { ArticleOverlay } from './article-overlay';
 import { useDiscoveryPosts } from '../lib/use-strapi';
 import { MorePostsCard } from './more-posts-card';
-import { BookBackstageStack, NewsletterCard, QuoteTile, SplitArticleCard, VisualTile } from './tiles';
+import { BookBackstageStack, NewsletterCard, QuoteTile, SplitArticleCard, SplitArticleEmptyCard, VisualTile } from './tiles';
 
 interface DiscoveryBentoGridProps {
   lang: Lang;
@@ -54,11 +54,18 @@ export const DiscoveryBentoGrid: React.FC<DiscoveryBentoGridProps> = ({ lang, go
           className="md:col-span-2 lg:col-start-3 lg:col-span-2 lg:row-start-1 lg:row-span-4 lg:order-none"
         />
 
-        {featuredPost && (
+        {featuredPost ? (
           <ArticleCard
             post={featuredPost}
             lang={lang}
             onOpen={() => setOpenPost(featuredPost)}
+            headline
+            badge={3}
+            className="order-1 md:col-span-4 lg:col-start-5 lg:col-span-4 lg:row-start-1 lg:row-span-3 lg:order-none"
+          />
+        ) : (
+          <ArticleEmptyCard
+            lang={lang}
             headline
             badge={3}
             className="order-1 md:col-span-4 lg:col-start-5 lg:col-span-4 lg:row-start-1 lg:row-span-3 lg:order-none"
@@ -76,11 +83,17 @@ export const DiscoveryBentoGrid: React.FC<DiscoveryBentoGridProps> = ({ lang, go
           className="md:col-span-2 lg:col-start-1 lg:col-span-2 lg:row-start-4 lg:row-span-1 lg:order-none"
         />
 
-        {splitPost && (
+        {splitPost ? (
           <SplitArticleCard
             post={splitPost}
             lang={lang}
             onOpen={() => setOpenPost(splitPost)}
+            badge={6}
+            className="md:col-span-4 lg:col-start-1 lg:col-span-4 lg:row-start-5 lg:row-span-2 lg:order-none"
+          />
+        ) : (
+          <SplitArticleEmptyCard
+            lang={lang}
             badge={6}
             className="md:col-span-4 lg:col-start-1 lg:col-span-4 lg:row-start-5 lg:row-span-2 lg:order-none"
           />

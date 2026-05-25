@@ -5,6 +5,7 @@ import { useEscapeKey } from './hooks';
 import { ArticleMeta, ArrowIcon } from './shared';
 import { renderMarkdown } from '../lib/render-markdown';
 import { renderStrapiBlocks, type BlockNode } from '../lib/render-blocks';
+import { EmptyState } from '../ui';
 import { discoveryPage } from '../i18n/messages';
 import { useStructuredData } from '../lib/use-structured-data';
 import { buildBlogPostingSchema } from '../lib/structured-data';
@@ -23,6 +24,8 @@ export const ArticleOverlay: React.FC<ArticleOverlayProps> = ({ post, lang, onCl
     () => (useBlocks ? '' : renderMarkdown(post.body[lang])),
     [post.body, lang, useBlocks],
   );
+  const hasSubtitle = Boolean(post.sub[lang]);
+  const hasBody = useBlocks || Boolean(bodyHtml);
   useStructuredData(`article-${post.id}`, [
     buildBlogPostingSchema(post, lang, '/discovery'),
   ]);
@@ -67,15 +70,21 @@ export const ArticleOverlay: React.FC<ArticleOverlayProps> = ({ post, lang, onCl
             <div className="prose prose-sm m-0 max-w-none text-foreground [&_a]:text-primary [&_a]:underline [&_blockquote]:border-l-2 [&_blockquote]:border-border [&_blockquote]:pl-4 [&_blockquote]:italic [&_h2]:mt-6 [&_h2]:text-lg [&_h2]:font-medium [&_h3]:mt-4 [&_h3]:text-base [&_h3]:font-medium [&_hr]:my-6 [&_hr]:border-border [&_img]:my-4 [&_img]:rounded [&_li]:ml-4 [&_p]:leading-relaxed [&_ul]:my-2 [&_ul]:list-disc">
               {renderStrapiBlocks(blocks)}
             </div>
-          ) : bodyHtml ? (
+          ) : hasBody ? (
             <div
               className="prose prose-sm m-0 max-w-none text-foreground [&_a]:text-primary [&_a]:underline [&_blockquote]:border-l-2 [&_blockquote]:border-border [&_blockquote]:pl-4 [&_blockquote]:italic [&_h2]:mt-6 [&_h2]:text-lg [&_h2]:font-medium [&_h3]:mt-4 [&_h3]:text-base [&_h3]:font-medium [&_hr]:my-6 [&_hr]:border-border [&_img]:my-4 [&_img]:rounded [&_li]:ml-4 [&_p]:leading-relaxed [&_ul]:my-2 [&_ul]:list-disc"
               dangerouslySetInnerHTML={{ __html: bodyHtml }}
             />
-          ) : (
+          ) : hasSubtitle ? (
             <p className="m-0 text-pretty text-detail leading-relaxed text-muted-foreground">
               {post.sub[lang]}
             </p>
+          ) : (
+            <EmptyState
+              label={discoveryPage.noPosts[lang]}
+              description={discoveryPage.noArticleBody[lang]}
+              size="compact"
+            />
           )}
           <footer className="mt-auto flex flex-col gap-4 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
             <span className="font-mono text-label uppercase tracking-code text-muted-foreground">
