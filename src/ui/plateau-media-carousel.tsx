@@ -160,7 +160,7 @@ const PlateauMediaCarousel = ({ media, fallback, lang }: PlateauMediaCarouselPro
   return (
     <div
       ref={containerRef}
-      className="relative h-full w-full"
+      className="group relative h-full w-full"
       role="region"
       aria-roledescription="carousel"
       aria-label={labels.carousel}
@@ -214,7 +214,7 @@ const PlateauMediaCarousel = ({ media, fallback, lang }: PlateauMediaCarouselPro
             type="button"
             onClick={() => go(-1)}
             aria-label={labels.prev}
-            className="edo-focus-ring absolute left-3 top-1/2 z-20 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full border-0 bg-white/85 text-foreground shadow-sm transition-colors hover:bg-white cursor-pointer"
+            className="edo-focus-ring absolute left-3 top-1/2 z-20 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-sm border-0 bg-white/25 text-foreground backdrop-blur-md shadow-sm cursor-pointer opacity-0 transition-[opacity,background-color] duration-300 ease-out group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-white/45 motion-reduce:transition-none"
           >
             <span className="inline-block rotate-180">
               <IconArrowRight width={14} height={14} />
@@ -224,7 +224,7 @@ const PlateauMediaCarousel = ({ media, fallback, lang }: PlateauMediaCarouselPro
             type="button"
             onClick={() => go(1)}
             aria-label={labels.next}
-            className="edo-focus-ring absolute right-3 top-1/2 z-20 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full border-0 bg-white/85 text-foreground shadow-sm transition-colors hover:bg-white cursor-pointer"
+            className="edo-focus-ring absolute right-3 top-1/2 z-20 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-sm border-0 bg-white/25 text-foreground backdrop-blur-md shadow-sm cursor-pointer opacity-0 transition-[opacity,background-color] duration-300 ease-out group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-white/45 motion-reduce:transition-none"
           >
             <IconArrowRight width={14} height={14} />
           </button>
