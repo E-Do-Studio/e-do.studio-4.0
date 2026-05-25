@@ -5,7 +5,7 @@
     "singularName": "home-hero",
     "pluralName": "home-heroes",
     "displayName": "Home · Showreel",
-    "description": "Vidéo en boucle + image poster affichées dans la cellule showreel de la home.",
+    "description": "Vidéo en boucle + image(s) poster affichées dans la cellule showreel de la home.",
     "icon": "play"
   },
   "options": {
@@ -21,27 +21,10 @@
     },
     "poster": {
       "type": "media",
-      "multiple": false,
-      "required": false,
-      "allowedTypes": ["images"],
-      "description": "Legacy. Image poster unique. Conservé pour rétro-compatibilité — préférer `posters` pour les nouveaux contenus. Le front utilise `posters` en priorité et tombe sur `poster` quand `posters` est vide."
-    },
-    "posters": {
-      "type": "media",
       "multiple": true,
       "required": false,
       "allowedTypes": ["images"],
-      "description": "Liste d'images affichées en rotation crossfade. 1 image → image statique (pas d'animation). N images → fondu enchaîné automatique (~5s par image, fondu ~900ms). Remplace `poster` pour le cas multi-images."
-    },
-    "posterAlt": {
-      "type": "string",
-      "maxLength": 200,
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "description": "Texte alternatif du poster (accessibilité)."
+      "description": "Image(s) poster affichée(s) avant la lecture de la vidéo. 1 image → image statique. N images → fondu enchaîné automatique (~5s par image, fondu ~900ms). Le texte alternatif est lu sur chaque média (champ `alternativeText` de la médiathèque)."
     }
   },
   "pluginOptions": {

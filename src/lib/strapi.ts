@@ -1162,9 +1162,7 @@ export async function fetchGalleryCategories(): Promise<GalleryCategory[]> {
 
 interface StrapiHomeHero {
   video?: StrapiMedia | null;
-  poster?: StrapiMedia | null;
-  posters?: StrapiMedia[] | null;
-  posterAlt?: string | null;
+  poster?: StrapiMedia[] | null;
 }
 
 export interface HomeHeroPoster {
@@ -1174,32 +1172,27 @@ export interface HomeHeroPoster {
 
 export interface HomeHero {
   videoUrl?: string;
-  posterUrl?: string;
-  posters?: HomeHeroPoster[];
-  posterAlt?: string;
+  posters: HomeHeroPoster[];
 }
 
 export async function fetchHomeHero(): Promise<HomeHero | null> {
   try {
     const res = await fetchStrapi<{ data: StrapiHomeHero | null }>('home-hero', {
-      'populate': 'video,poster,posters',
+      'populate': 'video,poster',
       'locale': 'fr',
     });
     const data = res?.data;
     if (!data) return null;
-    const fallbackAlt = data.posterAlt ?? data.poster?.alternativeText ?? '';
-    const posters: HomeHeroPoster[] = (data.posters ?? [])
+    const posters: HomeHeroPoster[] = (data.poster ?? [])
       .map((m) => {
         const url = resolveRawMediaUrl(m);
         if (!url) return null;
-        return { url, alt: m.alternativeText ?? fallbackAlt ?? '' };
+        return { url, alt: m.alternativeText ?? '' };
       })
       .filter((p): p is HomeHeroPoster => p !== null);
     return {
       videoUrl: resolveRawMediaUrl(data.video),
-      posterUrl: resolveRawMediaUrl(data.poster),
-      posters: posters.length > 0 ? posters : undefined,
-      posterAlt: fallbackAlt || undefined,
+      posters,
     };
   } catch {
     return null;

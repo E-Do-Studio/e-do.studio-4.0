@@ -1,6 +1,5 @@
 import { lazy, Suspense, useState } from 'react';
 import { CellLabel, IconArrowRight, IconChat, IconX, ImageCrossfade, PageHeader, SocialLinksRow, VideoLoop, cn } from './ui';
-import type { ImageCrossfadeSlide } from './ui';
 import { MarqueeCell } from './cells';
 
 const AssistantChat = lazy(() => import('./assistant-chat'));
@@ -73,21 +72,12 @@ const DirectionA = () => {
   // still in flight.
   const heroResolved = !homeHeroLoading;
   const heroCmsVideo = homeHero?.videoUrl;
-  const heroCmsPoster = homeHero?.posterUrl;
-  const heroCmsPosters = homeHero?.posters;
-  const heroHasCmsPosters = !!heroCmsPosters && heroCmsPosters.length > 0;
-  const heroHasCmsPoster = !!heroCmsPoster;
-  const heroHasAnyCmsImage = heroHasCmsPosters || heroHasCmsPoster;
-  const heroUseFallback = heroResolved && !heroCmsVideo && !heroHasAnyCmsImage;
+  const heroPosters = homeHero?.posters ?? [];
+  const heroHasCmsPosters = heroPosters.length > 0;
+  const heroUseFallback = heroResolved && !heroCmsVideo && !heroHasCmsPosters;
   const heroVideo = heroCmsVideo ?? (heroUseFallback ? '/videos/showreel.mp4' : undefined);
-  const heroPoster = heroCmsPoster ?? (heroUseFallback ? '/showreel-preview.webp' : undefined);
-  const heroPosterAlt = homeHero?.posterAlt ?? '';
-  const heroCrossfadeSlides: ImageCrossfadeSlide[] = heroHasCmsPosters
-    ? heroCmsPosters!
-    : heroHasCmsPoster
-      ? [{ url: heroCmsPoster!, alt: heroPosterAlt }]
-      : [];
-  const heroShowStaticPicture = heroUseFallback || (!!homeHeroError && !heroHasAnyCmsImage);
+  const heroVideoPoster = heroPosters[0]?.url ?? (heroUseFallback ? '/showreel-preview.webp' : undefined);
+  const heroShowStaticPicture = heroUseFallback || (!!homeHeroError && !heroHasCmsPosters);
   const [chatOpen, setChatOpen] = useState(false);
   // Subtitles for the homepage machine grid are pinned in the codebase so
   // marketing wording stays consistent regardless of Strapi content.
@@ -216,8 +206,8 @@ const DirectionA = () => {
           onClick={() => goto('gallery')}
           className="edo-focus-ring group relative flex h-full w-full cursor-pointer items-center justify-center overflow-hidden border-0 bg-edo-dark p-0 text-left transition-all duration-150 hover:brightness-75"
         >
-          {heroCrossfadeSlides.length > 0 ? (
-            <ImageCrossfade images={heroCrossfadeSlides} priority />
+          {heroHasCmsPosters ? (
+            <ImageCrossfade images={heroPosters} priority />
           ) : heroShowStaticPicture ? (
             <picture>
               <source srcSet="/showreel-preview.avif" type="image/avif" />
@@ -234,7 +224,7 @@ const DirectionA = () => {
           {heroVideo && (
             <VideoLoop
               src={heroVideo}
-              poster={heroPoster}
+              poster={heroVideoPoster}
               className="absolute inset-0 h-full w-full"
             />
           )}
