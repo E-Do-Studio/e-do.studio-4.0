@@ -390,6 +390,20 @@ export const discoveryPage = {
   behindScenes: { fr: 'Coulisses', en: 'Behind the scenes' } as B,
   morePosts: { fr: "Plus d'articles", en: 'More posts' } as B,
   noPosts: { fr: 'Aucun article', en: 'No posts' } as B,
+  noFeaturedPost: { fr: 'Article à la une', en: 'Featured article' } as B,
+  noFeaturedPostHint: {
+    fr: 'Le premier article du journal arrive bientôt.',
+    en: 'The first journal entry is coming soon.',
+  } as B,
+  noSecondaryPost: { fr: 'Article suivant', en: 'Next article' } as B,
+  noSecondaryPostHint: {
+    fr: 'Un nouveau format est en préparation.',
+    en: 'A new long-form piece is on its way.',
+  } as B,
+  noArticleBody: {
+    fr: 'Le contenu de cet article sera bientôt disponible.',
+    en: 'This article will be available shortly.',
+  } as B,
   quote: {
     fr: "On apprend en faisant. On partage ce qu'on apprend.",
     en: 'We learn by doing. We share what we learn.',

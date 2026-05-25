@@ -3,7 +3,9 @@ import type { DiscoveryPost, Lang } from '../types';
 import { DiscoveryCover } from './discovery-cover';
 import { ArticleMeta, CellBadge } from './shared';
 import { cn } from '../ui/cn';
-import { cellBase } from './styles';
+import { EmptyState } from '../ui';
+import { cellBase, labelBase } from './styles';
+import { discoveryPage } from '../i18n/messages';
 
 interface ArticleCardProps {
   post: DiscoveryPost;
@@ -51,4 +53,35 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({ post, lang, onOpen, he
       </span>
     </div>
   </button>
+);
+
+interface ArticleEmptyCardProps {
+  lang: Lang;
+  headline?: boolean;
+  className?: string;
+  badge?: number;
+}
+
+export const ArticleEmptyCard: React.FC<ArticleEmptyCardProps> = ({ lang, headline = false, className, badge }) => (
+  <section
+    aria-label={discoveryPage.noFeaturedPost[lang]}
+    className={cn(
+      cellBase,
+      'order-1 grid min-h-80 grid-rows-article-auto bg-white lg:min-h-0',
+      headline && 'lg:grid-rows-article-headline-lg',
+      className,
+    )}
+  >
+    {badge != null && <CellBadge n={badge} />}
+    <div className="relative min-h-0 border-b border-border bg-muted">
+      <span className={cn(labelBase, 'absolute left-cell top-3 text-muted-foreground')}>
+        {discoveryPage.noFeaturedPost[lang]}
+      </span>
+    </div>
+    <EmptyState
+      size="compact"
+      label={discoveryPage.noPosts[lang]}
+      description={discoveryPage.noFeaturedPostHint[lang]}
+    />
+  </section>
 );
