@@ -11,23 +11,13 @@
   "options": {
     "draftAndPublish": true
   },
-  "pluginOptions": {
-    "i18n": {
-      "localized": true
-    }
-  },
   "attributes": {
     "name": {
       "type": "string",
       "required": true,
       "minLength": 1,
       "maxLength": 80,
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "description": "Nom de la marque tel qu'affiché côté site. Localisé uniquement si la marque utilise un nom différent en EN."
+      "description": "Nom de la marque tel qu'affiché côté site. Identique dans toutes les langues (un nom de marque ne se traduit pas — EDO-159)."
     },
     "url": {
       "type": "string",
