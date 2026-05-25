@@ -1076,22 +1076,12 @@ function resolveGalleryMediaUrl(m: StrapiMedia): string | undefined {
 }
 
 export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
-  // gallery-project (EDO-135) and gallery-brand (EDO-159) are both non-i18n,
-  // so brand names are universal across locales. We still ask Strapi
-  // explicitly for `brand.name` via the nested `populate[brand][fields]`
-  // syntax: this forces the attribute to be included regardless of any
-  // residual i18n metadata in the relation (stale schema cache, in-flight
-  // deploy, migration not yet applied on a given environment). Simple
-  // populate (`populate=brand`) silently dropped the field on a brand
-  // relation that Strapi still believed was localized — see regression
-  // EDO-161 where the vertical brand label disappeared from the /galerie
-  // grid immediately after EDO-159 landed.
-  // `locale: 'fr'` is kept as a belt-and-braces: harmless for non-localized
-  // collections and required if the CMS rolls back to a localized brand.
+  // `populate=*` returns every first-level relation with all its scalar
+  // attributes — category.slug, brand.name, and the media files with their
+  // url/formats. Simpler and more robust than nested populate across the
+  // i18n schema transition (EDO-159).
   const res = await fetchStrapi<{ data: StrapiGalleryProject[] }>('gallery-projects', {
-    'populate[category]': '*',
-    'populate[brand][fields][0]': 'name',
-    'populate[media]': '*',
+    'populate': '*',
     'sort': 'createdAt:asc',
     'pagination[pageSize]': '100',
     'locale': 'fr',
