@@ -38,10 +38,12 @@
     "stage": {
       "type": "enumeration",
       "enum": ["live", "eclipse", "horizontal", "vertical", "cyclorama"],
+      "required": true,
       "description": "Plateau utilisé pour ce projet. Liste fermée pour éviter les valeurs invalides."
     },
     "year": {
       "type": "string",
+      "required": true,
       "regex": "^\\d{4}$",
       "minLength": 4,
       "maxLength": 4,
@@ -51,12 +53,14 @@
       "type": "relation",
       "relation": "manyToOne",
       "target": "api::gallery-category.gallery-category",
+      "required": true,
       "description": "Catégorie principale du projet."
     },
     "brand": {
       "type": "relation",
       "relation": "manyToOne",
       "target": "api::gallery-brand.gallery-brand",
+      "required": true,
       "description": "Marque cliente du projet."
     },
     "media": {
