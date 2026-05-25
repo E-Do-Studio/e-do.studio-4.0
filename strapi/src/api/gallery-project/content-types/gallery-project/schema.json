@@ -11,22 +11,13 @@
   "options": {
     "draftAndPublish": true
   },
-  "pluginOptions": {
-    "i18n": {
-      "localized": true
-    }
-  },
+  "pluginOptions": {},
   "attributes": {
     "title": {
       "type": "string",
       "required": true,
       "minLength": 2,
       "maxLength": 120,
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
       "description": "Titre du projet (ex: « Campagne SS26 — Saar Paris »)."
     },
     "slug": {
