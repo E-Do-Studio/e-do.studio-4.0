@@ -134,24 +134,28 @@ const DirectionA = () => {
         </div>
 
         <div className="flex flex-1 min-h-0 overflow-hidden bg-edo-black">
-          <div className="grid flex-1 grid-cols-3 content-end gap-px bg-edo-black md:grid-cols-4">
+          <div className="grid flex-1 grid-cols-3 content-end bg-edo-black md:grid-cols-4">
             {ecomMachines.map((m, i) => (
               <button
                 key={m.slug}
                 onClick={() => goto('plateau-' + m.slug)}
                 className={cn(
-                  'edo-focus-ring group flex aspect-[4/3] min-w-0 cursor-pointer flex-col justify-between border-0 bg-edo-black px-3 py-3 text-left text-white transition-colors duration-150 hover:bg-edo-dark md:aspect-square md:px-4 md:py-4',
+                  'edo-focus-ring group flex aspect-[4/3] min-w-0 cursor-pointer flex-col justify-between bg-edo-black px-3 py-3 text-left text-white transition-colors duration-150 hover:bg-edo-dark md:aspect-square md:px-4 md:py-4',
+                  // Hairline gray rules: top edge separates the card row from
+                  // the empty area above, left edge separates adjacent cards.
+                  'border-t border-l border-edo-gray-600',
+                  // First card has no left border.
+                  i === 0 && 'border-l-0',
                   // 4 items in a 3-col mobile grid would leave the 4th alone
                   // on row 2; let it span the row to avoid an awkward gap.
-                  i === 3 && 'col-span-3 aspect-auto md:col-span-1 md:aspect-square',
+                  // Mobile: starts a new row (no left border). Desktop: col 4
+                  // (left border restored).
+                  i === 3 && 'col-span-3 aspect-auto border-l-0 md:col-span-1 md:aspect-square md:border-l',
                 )}
               >
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-micro text-edo-gray-500 tracking-meta">
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
-                  <IconArrowRight className="text-edo-gray-500" width="14" height="14" />
-                </div>
+                <span className="font-mono text-micro text-edo-gray-500 tracking-meta">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
                 <div>
                   <div className="truncate text-cell font-medium tracking-headline leading-tight text-white">{m[lang].t}</div>
                   <div className="truncate mt-1 text-micro font-mono uppercase tracking-caption text-edo-gray-500">{m[lang].sub}</div>
