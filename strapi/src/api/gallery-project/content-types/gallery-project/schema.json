@@ -47,10 +47,6 @@
       "maxLength": 4,
       "description": "Année du projet (4 chiffres, ex: « 2026 »). Convertie depuis integer par la migration `2026.05.07T10.10.00.gallery-project-year-int-to-varchar.js` qui tourne au boot."
     },
-    "rank": {
-      "type": "integer",
-      "configurable": false
-    },
     "category": {
       "type": "relation",
       "relation": "manyToOne",

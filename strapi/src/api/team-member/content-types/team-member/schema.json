@@ -49,10 +49,6 @@
       "multiple": false,
       "allowedTypes": ["images"],
       "description": "Photo (carrée, 400×400 recommandé). Optionnel."
-    },
-    "rank": {
-      "type": "integer",
-      "configurable": false
     }
   }
 }

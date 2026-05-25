@@ -50,10 +50,6 @@
       ],
       "description": "DEPRECATED — couplage incorrect catégorie/plateau. À supprimer ou remplacer par une relation vers `machine` (Phase 3). Aujourd'hui jamais lu côté front."
     },
-    "rank": {
-      "type": "integer",
-      "configurable": false
-    },
     "seo": {
       "type": "component",
       "component": "shared.seo-meta",

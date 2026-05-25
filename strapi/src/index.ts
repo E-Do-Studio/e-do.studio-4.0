@@ -1,16 +1,5 @@
 import type { Core } from '@strapi/strapi';
 
-const ORDERABLE_CONTENT_TYPES = [
-  'api::gallery-brand.gallery-brand',
-  'api::gallery-category.gallery-category',
-  'api::gallery-project.gallery-project',
-  'api::machine.machine',
-  'api::post-production-type.post-production-type',
-  'api::team-member.team-member',
-  'api::contact-subject.contact-subject',
-  'api::legal-section.legal-section',
-];
-
 const PUBLIC_COLLECTION_TYPES = [
   'api::blog-category.blog-category',
   'api::blog-post.blog-post',
@@ -43,9 +32,6 @@ const PUBLIC_SINGLE_TYPES = [
  * back to them when the new field is empty, or because the data
  * migration has not run on prod. Hiding them keeps the editor UX
  * uncluttered without losing the data.
- *
- * Always-hidden globally:
- *   `rank` — managed by the drag-and-drop plugin, not editable directly.
  */
 const HIDDEN_FIELDS_BY_CT: Record<string, string[]> = {
   'api::blog-post.blog-post': ['cta_text', 'cta_label', 'cta_url', 'seo_title', 'seo_description', 'seo_image'],
@@ -181,24 +167,16 @@ export default {
 };
 
 /**
- * Force-hide `rank` (and any deprecated fields) from the Content Manager edit
- * view. The previous implementation read directly from `strapi.store` and
- * skipped when no config existed yet — but that's exactly the case where the
- * user sees the unwanted field on first admin open. This version uses the
+ * Force-hide deprecated fields from the Content Manager edit view at boot.
+ * The previous implementation read directly from `strapi.store` and skipped
+ * when no config existed yet — but that's exactly the case where the user
+ * sees the unwanted field on first admin open. This version uses the
  * content-manager service, which auto-synthesises a default config from the
  * schema when none is stored, so the patch always applies.
  */
 async function hideContentManagerFields(strapi: Core.Strapi) {
-  const allCtUids = new Set<string>([
-    ...ORDERABLE_CONTENT_TYPES,
-    ...Object.keys(HIDDEN_FIELDS_BY_CT),
-  ]);
-
-  for (const uid of allCtUids) {
-    const fieldsToHide = new Set<string>([
-      ...(ORDERABLE_CONTENT_TYPES.includes(uid) ? ['rank'] : []),
-      ...(HIDDEN_FIELDS_BY_CT[uid] ?? []),
-    ]);
+  for (const [uid, fields] of Object.entries(HIDDEN_FIELDS_BY_CT)) {
+    const fieldsToHide = new Set<string>(fields);
     if (fieldsToHide.size === 0) continue;
 
     try {

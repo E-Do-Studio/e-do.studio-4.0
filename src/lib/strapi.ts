@@ -218,7 +218,6 @@ interface StrapiGalleryCategory {
   name: string;
   slug: string;
   group?: string;
-  rank: number;
 }
 
 type StageKey = 'live' | 'eclipse' | 'horizontal' | 'vertical' | 'cyclorama';
@@ -229,7 +228,6 @@ interface StrapiGalleryProject {
   slug: string;
   stage?: StageKey | null;
   year: number | string;
-  rank: number;
   category?: StrapiGalleryCategory;
   brand?: StrapiGalleryBrand;
   media?: StrapiMedia[];
@@ -445,7 +443,7 @@ const MACHINE_LABELS: Record<string, { fr: string; en: string }> = {
 
 export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
   const [machinesBI, cycloBI] = await Promise.all([
-    fetchStrapiBilingual<{ data: StrapiMachine[] }>('machines', { 'populate': 'specs,pricingRows,seo,seo.image,media,media.image,media.video,media.poster', 'sort': 'rank:asc' }),
+    fetchStrapiBilingual<{ data: StrapiMachine[] }>('machines', { 'populate': 'specs,pricingRows,seo,seo.image,media,media.image,media.video,media.poster', 'sort': 'createdAt:asc' }),
     fetchStrapiBilingual<{ data: StrapiCyclorama }>('cyclorama', { 'populate': 'specs,amenities,pricingRows,seo,seo.image,media,media.image,media.video,media.poster' }),
   ]);
 
@@ -504,7 +502,7 @@ export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
 
 export async function fetchMachines(): Promise<MachineInfo[]> {
   const [machinesBI, cycloBI] = await Promise.all([
-    fetchStrapiBilingual<{ data: StrapiMachine[] }>('machines', { 'sort': 'rank:asc' }),
+    fetchStrapiBilingual<{ data: StrapiMachine[] }>('machines', { 'sort': 'createdAt:asc' }),
     fetchStrapiBilingual<{ data: StrapiCyclorama }>('cyclorama'),
   ]);
 
@@ -551,7 +549,7 @@ function priceFromRow(row: StrapiPricingRow): PPPrice {
 export async function fetchPostProdTypes(): Promise<PPCat[]> {
   const resBI = await fetchStrapiBilingual<{ data: StrapiPostProdType[] }>('post-production-types', {
     'populate': 'includes,priceRows',
-    'sort': 'rank:asc',
+    'sort': 'createdAt:asc',
   });
 
   const frTypes = resBI.fr.data;
@@ -676,7 +674,7 @@ export async function fetchSocialLinks(): Promise<SocialLink[]> {
 
 export async function fetchBrands(): Promise<string[]> {
   const res = await fetchStrapi<{ data: StrapiGalleryBrand[] }>('gallery-brands', {
-    'sort': 'rank:asc',
+    'sort': 'createdAt:asc',
     'pagination[pageSize]': '50',
   });
   return res.data.map(b => b.name);
@@ -874,7 +872,6 @@ interface StrapiLegalSection {
   title: string;
   body?: unknown;
   lastUpdatedAt?: string;
-  rank?: number;
 }
 
 export interface LegalSectionContent {
@@ -889,7 +886,7 @@ export type LegalSectionsByDocument = Partial<Record<LegalDocumentKey, LegalSect
 export async function fetchLegalSectionsByDocument(): Promise<LegalSectionsByDocument> {
   try {
     const resBI = await fetchStrapiBilingual<{ data: StrapiLegalSection[] }>('legal-sections', {
-      'sort': 'rank:asc',
+      'sort': 'slug:asc',
       'pagination[pageSize]': '200',
     });
     const frSections = resBI.fr.data ?? [];
@@ -941,7 +938,7 @@ function formatLastUpdated(iso?: string): string {
 
 export async function fetchLegalDocuments(): Promise<LegalDocumentMeta[]> {
   const resBI = await fetchStrapiBilingual<{ data: StrapiLegalSection[] }>('legal-sections', {
-    'sort': 'rank:asc',
+    'sort': 'slug:asc',
     'pagination[pageSize]': '200',
   });
   const frSections = resBI.fr.data ?? [];
@@ -974,12 +971,11 @@ interface StrapiContactSubject {
   key: string;
   name: string;
   description?: string;
-  rank?: number;
 }
 
 export async function fetchContactSubjects(): Promise<ContactSubject[]> {
   const resBI = await fetchStrapiBilingual<{ data: StrapiContactSubject[] }>('contact-subjects', {
-    'sort': 'rank:asc',
+    'sort': 'createdAt:asc',
     'pagination[pageSize]': '50',
   });
   const frSubjects = resBI.fr.data ?? [];
@@ -1005,13 +1001,12 @@ interface StrapiTeamMember {
   role: string;
   email: string | null;
   photo?: StrapiMedia;
-  rank?: number;
 }
 
 export async function fetchTeamMembers(): Promise<TeamMember[]> {
   const resBI = await fetchStrapiBilingual<{ data: StrapiTeamMember[] }>('team-members', {
     'populate': 'photo',
-    'sort': 'rank:asc',
+    'sort': 'createdAt:asc',
     'pagination[pageSize]': '50',
   });
   const frMembers = resBI.fr.data ?? [];
@@ -1093,7 +1088,7 @@ export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
   // (not i18n today — revisit if editorial needs per-locale alt).
   const res = await fetchStrapi<{ data: StrapiGalleryProject[] }>('gallery-projects', {
     'populate': 'category,brand,media',
-    'sort': 'rank:asc',
+    'sort': 'createdAt:asc',
     'pagination[pageSize]': '100',
     'locale': 'fr',
   });
@@ -1125,7 +1120,7 @@ export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
 
 export async function fetchGalleryCategories(): Promise<GalleryCategory[]> {
   const resBI = await fetchStrapiBilingual<{ data: StrapiGalleryCategory[] }>('gallery-categories', {
-    'sort': 'rank:asc',
+    'sort': 'createdAt:asc',
   });
   const frCats = resBI.fr.data;
   const enCats = resBI.en.data;
