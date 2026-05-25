@@ -59,7 +59,7 @@ const LegalPage = () => {
   const hasStrapiBody = strapiBody.length > 0;
 
   return (
-    <div className="edo-page-enter grid w-full gap-px bg-hairline md:grid-cols-contact-shell md:grid-rows-app md:h-full md:overflow-hidden">
+    <div className="edo-page-enter grid w-full gap-px bg-background md:grid-cols-contact-shell md:grid-rows-app md:h-full md:overflow-hidden">
 
       {/* Mobile header */}
       <PageHeader
