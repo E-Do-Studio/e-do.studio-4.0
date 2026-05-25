@@ -1,5 +1,6 @@
 import { lazy, Suspense, useState } from 'react';
-import { CellLabel, IconArrowRight, IconChat, IconX, PageHeader, SocialLinksRow, VideoLoop, cn } from './ui';
+import { CellLabel, IconArrowRight, IconChat, IconX, ImageCrossfade, PageHeader, SocialLinksRow, VideoLoop, cn } from './ui';
+import type { ImageCrossfadeSlide } from './ui';
 import { MarqueeCell } from './cells';
 
 const AssistantChat = lazy(() => import('./assistant-chat'));
@@ -73,11 +74,20 @@ const DirectionA = () => {
   const heroResolved = !homeHeroLoading;
   const heroCmsVideo = homeHero?.videoUrl;
   const heroCmsPoster = homeHero?.posterUrl;
-  const heroUseFallback = heroResolved && !heroCmsVideo && !heroCmsPoster;
+  const heroCmsPosters = homeHero?.posters;
+  const heroHasCmsPosters = !!heroCmsPosters && heroCmsPosters.length > 0;
+  const heroHasCmsPoster = !!heroCmsPoster;
+  const heroHasAnyCmsImage = heroHasCmsPosters || heroHasCmsPoster;
+  const heroUseFallback = heroResolved && !heroCmsVideo && !heroHasAnyCmsImage;
   const heroVideo = heroCmsVideo ?? (heroUseFallback ? '/videos/showreel.mp4' : undefined);
   const heroPoster = heroCmsPoster ?? (heroUseFallback ? '/showreel-preview.webp' : undefined);
-  const heroHasCmsPoster = !!heroCmsPoster;
-  const heroShowStaticPicture = heroUseFallback || (!!homeHeroError && !heroCmsPoster);
+  const heroPosterAlt = homeHero?.posterAlt ?? '';
+  const heroCrossfadeSlides: ImageCrossfadeSlide[] = heroHasCmsPosters
+    ? heroCmsPosters!
+    : heroHasCmsPoster
+      ? [{ url: heroCmsPoster!, alt: heroPosterAlt }]
+      : [];
+  const heroShowStaticPicture = heroUseFallback || (!!homeHeroError && !heroHasAnyCmsImage);
   const [chatOpen, setChatOpen] = useState(false);
   // Subtitles for the homepage machine grid are pinned in the codebase so
   // marketing wording stays consistent regardless of Strapi content.
@@ -206,14 +216,8 @@ const DirectionA = () => {
           onClick={() => goto('gallery')}
           className="edo-focus-ring group relative flex h-full w-full cursor-pointer items-center justify-center overflow-hidden border-0 bg-edo-dark p-0 text-left transition-all duration-150 hover:brightness-75"
         >
-          {heroHasCmsPoster ? (
-            <img
-              src={heroPoster}
-              alt={homeHero?.posterAlt ?? ''}
-              fetchPriority="high"
-              decoding="async"
-              className="pointer-events-none absolute inset-0 h-full w-full object-cover"
-            />
+          {heroCrossfadeSlides.length > 0 ? (
+            <ImageCrossfade images={heroCrossfadeSlides} priority />
           ) : heroShowStaticPicture ? (
             <picture>
               <source srcSet="/showreel-preview.avif" type="image/avif" />

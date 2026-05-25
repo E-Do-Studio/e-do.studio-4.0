@@ -1163,27 +1163,43 @@ export async function fetchGalleryCategories(): Promise<GalleryCategory[]> {
 interface StrapiHomeHero {
   video?: StrapiMedia | null;
   poster?: StrapiMedia | null;
+  posters?: StrapiMedia[] | null;
   posterAlt?: string | null;
+}
+
+export interface HomeHeroPoster {
+  url: string;
+  alt: string;
 }
 
 export interface HomeHero {
   videoUrl?: string;
   posterUrl?: string;
+  posters?: HomeHeroPoster[];
   posterAlt?: string;
 }
 
 export async function fetchHomeHero(): Promise<HomeHero | null> {
   try {
     const res = await fetchStrapi<{ data: StrapiHomeHero | null }>('home-hero', {
-      'populate': 'video,poster',
+      'populate': 'video,poster,posters',
       'locale': 'fr',
     });
     const data = res?.data;
     if (!data) return null;
+    const fallbackAlt = data.posterAlt ?? data.poster?.alternativeText ?? '';
+    const posters: HomeHeroPoster[] = (data.posters ?? [])
+      .map((m) => {
+        const url = resolveRawMediaUrl(m);
+        if (!url) return null;
+        return { url, alt: m.alternativeText ?? fallbackAlt ?? '' };
+      })
+      .filter((p): p is HomeHeroPoster => p !== null);
     return {
       videoUrl: resolveRawMediaUrl(data.video),
       posterUrl: resolveRawMediaUrl(data.poster),
-      posterAlt: data.posterAlt ?? data.poster?.alternativeText ?? undefined,
+      posters: posters.length > 0 ? posters : undefined,
+      posterAlt: fallbackAlt || undefined,
     };
   } catch {
     return null;

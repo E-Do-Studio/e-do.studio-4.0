@@ -22,9 +22,16 @@
     "poster": {
       "type": "media",
       "multiple": false,
-      "required": true,
+      "required": false,
       "allowedTypes": ["images"],
-      "description": "Image poster affichée avant la lecture de la vidéo. Le front affiche un fallback statique tant que Strapi renvoie 404/null."
+      "description": "Legacy. Image poster unique. Conservé pour rétro-compatibilité — préférer `posters` pour les nouveaux contenus. Le front utilise `posters` en priorité et tombe sur `poster` quand `posters` est vide."
+    },
+    "posters": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": ["images"],
+      "description": "Liste d'images affichées en rotation crossfade. 1 image → image statique (pas d'animation). N images → fondu enchaîné automatique (~5s par image, fondu ~900ms). Remplace `poster` pour le cas multi-images."
     },
     "posterAlt": {
       "type": "string",
