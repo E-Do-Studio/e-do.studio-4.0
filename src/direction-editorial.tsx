@@ -125,9 +125,9 @@ const DirectionA = () => {
               {homeMsg.studioHeadlineAccent[lang]}
             </span>
           </h2>
-          <p className="m-0 max-w-prose text-pretty text-detail leading-relaxed text-edo-gray-200">
+          <p className="m-0 max-w-2xl text-pretty text-cell md:text-tile-title font-light leading-snug text-edo-gray-200">
             {homeMsg.studioSubtitleLead[lang]}
-            <strong className="font-semibold text-white">
+            <strong className="font-medium text-white">
               {homeMsg.studioSubtitleStrong[lang]}
             </strong>
           </p>
