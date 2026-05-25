@@ -247,7 +247,7 @@ const AssistantInput = ({ input, setInput, loading, lang, onSend, inputRef }: As
       disabled={loading}
       maxLength={MAX_INPUT_CHARS}
       placeholder={assistantMsg.placeholder[lang]}
-      className="min-w-0 flex-1 border-0 bg-transparent font-sans text-detail text-foreground caret-primary opacity-100 outline-none placeholder:text-muted-foreground placeholder:transition-colors disabled:opacity-50 group-hover:placeholder:text-primary"
+      className="min-w-0 flex-1 border-0 bg-transparent font-sans text-detail text-foreground caret-primary opacity-100 outline-none placeholder:text-muted-foreground disabled:opacity-50"
     />
     <button
       type="submit"
