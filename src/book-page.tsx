@@ -675,7 +675,7 @@ const BookPageV2 = () => {
   }
 
   return (
-    <div className="edo-page-enter grid w-full gap-px bg-edo-pure-black md:h-full md:overflow-hidden md:grid-cols-book md:grid-rows-app">
+    <div className="edo-page-enter grid w-full gap-px bg-background md:h-full md:overflow-hidden md:grid-cols-book md:grid-rows-app">
 
       {/* Mobile header */}
       <PageHeader
