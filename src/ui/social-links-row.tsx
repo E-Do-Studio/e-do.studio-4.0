@@ -20,7 +20,7 @@ const SocialLinksRow = ({ className }: SocialLinksRowProps) => {
   const { data } = useSocialLinks();
   const items: SocialLink[] = data ?? [];
   return (
-    <div className={cn('grid h-11 grid-cols-4 gap-px', className)}>
+    <div className={cn('grid h-11 grid-cols-4 gap-px bg-edo-pure-black', className)}>
       {items.map((s) => (
         <a
           key={s.k}
