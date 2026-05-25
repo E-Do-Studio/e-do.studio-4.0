@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { useQueryStates, parseAsString } from "nuqs";
-import { usePageContext } from "./router";
+import { Link } from "@tanstack/react-router";
+import { usePageContext, SCREEN_TO_PATH } from "./router";
 import { useDocumentMeta } from "./lib/use-document-meta";
 import { useStructuredData } from "./lib/use-structured-data";
 import { buildGalleryCollectionSchema, buildBreadcrumbSchema } from "./lib/structured-data";
@@ -20,6 +21,22 @@ const PLATEAU_LABELS: Record<string, { fr: string; en: string }> = {
   eclipse: { fr: "Eclipse", en: "Eclipse" },
   live: { fr: "Live", en: "Live" },
 };
+
+const PLATEAU_TO_SCREEN: Record<string, string> = {
+  cyclorama: "cyclorama",
+  horizontal: "plateau-horizontal",
+  vertical: "plateau-vertical",
+  eclipse: "plateau-eclipse",
+  live: "plateau-live",
+};
+
+function resolvePlateauPath(plateau: string | undefined, lang: Lang): string | null {
+  if (!plateau) return null;
+  const screen = PLATEAU_TO_SCREEN[plateau];
+  if (!screen) return null;
+  const resolver = SCREEN_TO_PATH[screen];
+  return resolver ? resolver(lang) : null;
+}
 
 const PROJECT_PALETTES: Record<
   string,
@@ -469,18 +486,25 @@ const GalleryContent = ({
   </div>
 );
 
-const ProjectRow = ({ project, lang, style }: { project: GalleryProject; lang: Lang; style?: CSSProperties }) => (
-  <div className="edo-list-row grid gap-px bg-edo-pure-black grid-cols-gallery-row-mobile md:grid-cols-gallery-row" style={style}>
-    <ProjectLabel project={project} lang={lang} />
-    {[0, 1, 2].map((imageIndex) => (
-      <ProjectImage
-        key={imageIndex}
-        project={project}
-        imageIndex={imageIndex}
-      />
-    ))}
-  </div>
-);
+const ProjectRow = ({ project, lang, style }: { project: GalleryProject; lang: Lang; style?: CSSProperties }) => {
+  const to = resolvePlateauPath(project.plateau, lang);
+  const plateauLabel = PLATEAU_LABELS[project.plateau]?.[lang] ?? project.plateau;
+  const ariaLabel = `${project.brand} — ${plateauLabel}`;
+  return (
+    <div className="edo-list-row grid gap-px bg-edo-pure-black grid-cols-gallery-row-mobile md:grid-cols-gallery-row" style={style}>
+      <ProjectLabel project={project} lang={lang} to={to} ariaLabel={ariaLabel} />
+      {[0, 1, 2].map((imageIndex) => (
+        <ProjectImage
+          key={imageIndex}
+          project={project}
+          imageIndex={imageIndex}
+          to={to}
+          ariaLabel={ariaLabel}
+        />
+      ))}
+    </div>
+  );
+};
 
 const usePrefersReducedMotion = (): boolean => {
   const [reduced, setReduced] = useState(false);
@@ -495,10 +519,22 @@ const usePrefersReducedMotion = (): boolean => {
   return reduced;
 };
 
-const ProjectLabel = ({ project, lang }: { project: GalleryProject; lang: Lang }) => {
+const ProjectLabel = ({
+  project,
+  lang,
+  to,
+  ariaLabel,
+}: {
+  project: GalleryProject;
+  lang: Lang;
+  to: string | null;
+  ariaLabel: string;
+}) => {
   const plateauLabel = PLATEAU_LABELS[project.plateau]?.[lang] ?? project.plateau;
-  return (
-    <button className="edo-focus-ring relative flex cursor-pointer flex-col items-center justify-between overflow-hidden border-0 bg-white px-2.5 py-3.5 text-left font-sans">
+  const className =
+    "edo-focus-ring relative flex cursor-pointer flex-col items-center justify-between overflow-hidden border-0 bg-white px-2.5 py-3.5 text-left font-sans no-underline text-inherit";
+  const content = (
+    <>
       <span className="max-w-full self-start truncate font-mono text-micro uppercase tracking-code text-muted-foreground">
         {plateauLabel}
       </span>
@@ -510,61 +546,75 @@ const ProjectLabel = ({ project, lang }: { project: GalleryProject; lang: Lang }
       <span className="self-start font-mono text-micro tracking-code text-muted-foreground">
         {project.year}
       </span>
-    </button>
+    </>
   );
+  if (to) {
+    return (
+      <Link to={to} aria-label={ariaLabel} className={className}>
+        {content}
+      </Link>
+    );
+  }
+  return <div className={className.replace("cursor-pointer ", "")}>{content}</div>;
 };
 
 const ProjectImage = ({
   project,
   imageIndex,
+  to,
+  ariaLabel,
 }: {
   project: GalleryProject;
   imageIndex: number;
+  to: string | null;
+  ariaLabel: string;
 }) => {
   const reducedMotion = usePrefersReducedMotion();
   const item = project.media[imageIndex];
 
+  const wrapperClass =
+    "edo-focus-ring relative block aspect-portrait overflow-hidden bg-white no-underline text-inherit";
+
+  let inner: ReactNode;
   if (!item) {
-    return (
-      <div className="relative aspect-portrait overflow-hidden bg-white">
-        <ProjectCoverFallback project={project} seed={project.id * 3 + imageIndex} />
-      </div>
+    inner = <ProjectCoverFallback project={project} seed={project.id * 3 + imageIndex} />;
+  } else if (item.mime.startsWith("video/")) {
+    const altText = item.alt || `${project.brand} — ${imageIndex + 1}`;
+    inner = (
+      <video
+        key={item.url}
+        autoPlay={!reducedMotion}
+        loop
+        muted
+        playsInline
+        preload="metadata"
+        disablePictureInPicture
+        aria-label={altText}
+        className="absolute inset-0 h-full w-full object-cover pointer-events-none select-none"
+      >
+        <source src={item.url} type={item.mime} />
+      </video>
     );
-  }
-
-  const altText = item.alt || `${project.brand} — ${imageIndex + 1}`;
-  const isVideo = item.mime.startsWith("video/");
-
-  if (isVideo) {
-    return (
-      <div className="relative aspect-portrait overflow-hidden bg-white">
-        <video
-          key={item.url}
-          autoPlay={!reducedMotion}
-          loop
-          muted
-          playsInline
-          preload="metadata"
-          disablePictureInPicture
-          aria-label={altText}
-          className="absolute inset-0 h-full w-full object-cover pointer-events-none select-none"
-        >
-          <source src={item.url} type={item.mime} />
-        </video>
-      </div>
-    );
-  }
-
-  return (
-    <div className="relative aspect-portrait overflow-hidden bg-white">
+  } else {
+    const altText = item.alt || `${project.brand} — ${imageIndex + 1}`;
+    inner = (
       <img
         src={item.url}
         alt={altText}
-        className="absolute inset-0 h-full w-full object-cover"
+        className="absolute inset-0 h-full w-full object-cover pointer-events-none"
         loading="lazy"
       />
-    </div>
-  );
+    );
+  }
+
+  if (to) {
+    return (
+      <Link to={to} aria-label={ariaLabel} className={wrapperClass}>
+        {inner}
+      </Link>
+    );
+  }
+  return <div className={wrapperClass}>{inner}</div>;
 };
 
 const ProjectCoverFallback = ({ project, seed }: { project: GalleryProject; seed: number }) => {

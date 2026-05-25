@@ -48,7 +48,7 @@ export function usePageContext(): PageContextValue {
   return ctx;
 }
 
-const SCREEN_TO_PATH: Record<string, (lang: Lang) => string> = {
+export const SCREEN_TO_PATH: Record<string, (lang: Lang) => string> = {
   home: (l) => `/${l}`,
   cyclorama: (l) => `/${l}/cyclorama`,
   'plateau-horizontal': (l) => `/${l}/plateau/horizontal`,
