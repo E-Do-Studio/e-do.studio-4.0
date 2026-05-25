@@ -1004,7 +1004,7 @@ const MultiPlateauStep = ({ lang, plateaus, perPlateau, setPerPlateau, fallback,
         if (!px) return null;
         const st = perPlateau[k] || {};
         return (
-          <div key={k} className={idx < list.length - 1 ? 'border-b-8 border-b-muted' : ''}>
+          <div key={k}>
             {list.length > 1 && (
               <div className="px-6 border-b border-foreground flex items-center h-control box-border gap-3 bg-white flex-wrap">
                 <span className="edo-cell-label text-primary whitespace-nowrap">{lang==='fr'?'Plateau':'Stage'} {String(idx+1).padStart(2,'0')}</span>
