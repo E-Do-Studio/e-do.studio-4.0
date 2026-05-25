@@ -1076,12 +1076,16 @@ function resolveGalleryMediaUrl(m: StrapiMedia): string | undefined {
 }
 
 export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
-  // The gallery-project content-type is no longer localized (EDO-135) — no
-  // `locale` parameter is needed. `media.alternativeText` is also non-i18n.
+  // gallery-project is non-i18n (EDO-135), but the populated `brand` relation
+  // still points at the localized gallery-brand collection. Without `locale`,
+  // Strapi v5 populates the brand object but strips its localized fields
+  // (`name`), so `p.brand.name` came back undefined and the brand label
+  // disappeared from each gallery item (EDO-152).
   const res = await fetchStrapi<{ data: StrapiGalleryProject[] }>('gallery-projects', {
     'populate': 'category,brand,media',
     'sort': 'createdAt:asc',
     'pagination[pageSize]': '100',
+    'locale': 'fr',
   });
 
   return res.data.map((p, i) => {
