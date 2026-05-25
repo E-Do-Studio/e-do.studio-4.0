@@ -6,7 +6,6 @@ import {
   fetchDiscoveryPosts,
   fetchDiscoveryCategories,
   fetchSocialLinks,
-  fetchBrands,
   fetchContact,
   fetchStudioHours,
   fetchSiteDefaults,
@@ -70,10 +69,6 @@ export function useDiscoveryCategories() {
 
 export function useSocialLinks() {
   return useAsync<SocialLink[]>(fetchSocialLinks);
-}
-
-export function useBrands() {
-  return useAsync<string[]>(fetchBrands);
 }
 
 export function useContact() {

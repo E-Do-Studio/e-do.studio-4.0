@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import type { FormEvent } from 'react';
 import { CellLabel, CellTitle, IconArrowRight, IconPlay, IconMenu, Wordmark, LangSwitch, cn } from './ui';
-import { useMachines, useBrands, useContact } from './lib/use-strapi';
+import { useMachines, useContact } from './lib/use-strapi';
+import { BRANDS } from './lib/brands';
 import type { Lang, MachineInfo } from './types';
 import { common, cells as cellsMsg, assistant as assistantMsg } from './i18n/messages';
 
@@ -366,8 +367,7 @@ interface GalleryCellProps {
 }
 
 const GalleryCell = ({ columns = 3, rows = 1, onOpen, seeds = null, palette = 'editorial', showViewAll = false, lang = 'fr' }: GalleryCellProps) => {
-  const { data: brands } = useBrands();
-  const brandList = brands ?? [];
+  const brandList = BRANDS;
   const total = columns * rows - (showViewAll ? 1 : 0);
   const actualSeeds = seeds || Array.from({ length: total }, (_, i) => i + 1);
   return (
@@ -432,8 +432,7 @@ interface MarqueeCellProps {
 }
 
 const MarqueeCell = ({ items, pxPerSecond = 50, size = 18 }: MarqueeCellProps) => {
-  const { data: brands } = useBrands();
-  const list = items ?? brands ?? [];
+  const list = items ?? BRANDS;
   const trackRef = useRef<HTMLDivElement>(null);
   const [duration, setDuration] = useState(40);
 

@@ -679,14 +679,6 @@ export async function fetchSocialLinks(): Promise<SocialLink[]> {
   return (res.data.socialLinks ?? []).map(s => ({ k: s.platform, label: s.label, href: s.url }));
 }
 
-export async function fetchBrands(): Promise<string[]> {
-  const res = await fetchStrapi<{ data: StrapiGalleryBrand[] }>('gallery-brands', {
-    'sort': 'createdAt:asc',
-    'pagination[pageSize]': '50',
-  });
-  return res.data.map(b => b.name);
-}
-
 export interface ContactInfo {
   phone: string;
   phoneHref: string;
