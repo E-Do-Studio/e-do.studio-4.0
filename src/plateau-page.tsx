@@ -1,5 +1,5 @@
 import { useParams } from '@tanstack/react-router';
-import { IconArrowRight, CellLabel, PageHeader, Wordmark, Loader, PlateauMediaCarousel } from './ui';
+import { IconArrowRight, CellLabel, PageHeader, Wordmark, PlateauMediaCarousel } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
 import { useStructuredData } from './lib/use-structured-data';
 import { buildPlateauServiceSchema, buildBreadcrumbSchema } from './lib/structured-data';
@@ -88,7 +88,7 @@ const PlateauPage = ({ slug }: { slug: string }) => {
       lang,
     ),
   ]);
-  if (loading || !plateaux) return <Loader lang={lang} size="page" />;
+  if (loading || !plateaux) return null;
   const p = plateaux[slug] || plateaux.cyclorama;
   const order = ['live','eclipse','horizontal','vertical','cyclorama'];
 

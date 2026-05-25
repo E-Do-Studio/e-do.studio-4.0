@@ -14,7 +14,6 @@ import { NavMenu } from './nav-menu';
 import { CookieBanner } from './cookie-banner';
 import { useGoogleAnalytics } from './lib/use-google-analytics';
 import { DirectionA } from './direction-editorial';
-import { Loader } from './ui';
 
 const VALID_LANGS: Lang[] = ['fr', 'en'];
 const DEFAULT_LANG: Lang = 'fr';
@@ -62,13 +61,6 @@ export const SCREEN_TO_PATH: Record<string, (lang: Lang) => string> = {
   book: (l) => `/${l}/${l === 'fr' ? 'reserver' : 'book'}`,
   legal: (l) => `/${l}/legal`,
 };
-
-function RoutePendingFallback() {
-  const pathname = useRouterState({ select: (s) => s.resolvedLocation?.pathname ?? '' });
-  const langSegment = pathname.split('/')[1];
-  const lang: Lang = VALID_LANGS.includes(langSegment as Lang) ? (langSegment as Lang) : DEFAULT_LANG;
-  return <Loader lang={lang} size="page" />;
-}
 
 function LangLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -210,8 +202,6 @@ const routeTree = rootRoute.addChildren([
 
 export const router = createRouter({
   routeTree,
-  defaultPendingComponent: RoutePendingFallback,
-  defaultPendingMs: 0,
 });
 
 declare module '@tanstack/react-router' {
