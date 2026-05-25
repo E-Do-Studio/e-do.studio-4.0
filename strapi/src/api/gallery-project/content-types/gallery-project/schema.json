@@ -17,24 +17,6 @@
     }
   },
   "attributes": {
-    "title": {
-      "type": "string",
-      "required": true,
-      "minLength": 2,
-      "maxLength": 120,
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "description": "Titre du projet (ex: « Campagne SS26 — Saar Paris »)."
-    },
-    "slug": {
-      "type": "uid",
-      "targetField": "title",
-      "required": true,
-      "description": "URL du projet (auto-généré). Ne plus modifier après publication."
-    },
     "stage": {
       "type": "enumeration",
       "enum": ["live", "eclipse", "horizontal", "vertical", "cyclorama"],
