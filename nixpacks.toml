@@ -1,0 +1,14 @@
+# Pin the nixpkgs archive to a known-good revision.
+#
+# Nixpacks' default install phase pulls ba913eda2df8eb72147259189d55932012df6301,
+# whose upstream tarball is currently missing pkgs/by-name/sa/satty/package.nix,
+# which makes `nix-env -if` fail and breaks the deploy build (Coolify / Nixpacks).
+# 23f9169c4ccce521379e602cc82ed873a1f1b52b is the revision Nixpacks already uses
+# successfully for the setup phase on this project, so pinning the whole build to
+# it sidesteps the broken tarball without changing any application code.
+nixpkgsArchive = "23f9169c4ccce521379e602cc82ed873a1f1b52b"
+
+providers = ["node"]
+
+[phases.setup]
+nixPkgs = ["nodejs_20", "npm-9_x"]
