@@ -232,8 +232,7 @@ interface StrapiGalleryProject {
   rank: number;
   category?: StrapiGalleryCategory;
   brand?: StrapiGalleryBrand;
-  images?: StrapiMedia[];
-  media?: StrapiMediaItem[];
+  media?: StrapiMedia[];
 }
 
 // ─── PlateauSpec type (local, matches what the frontend expects) ────────────
@@ -1058,7 +1057,6 @@ export interface GalleryProject {
   plateau: string;
   year: string;
   tone: 'mono' | 'dark' | 'warm';
-  imageUrls: string[];
   media: MediaItem[];
 }
 
@@ -1073,24 +1071,22 @@ function slugToTitle(slug: string): string {
 }
 
 export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
-  const resBI = await fetchStrapiBilingual<{ data: StrapiGalleryProject[] }>('gallery-projects', {
-    'populate': 'category,brand,images,media,media.image,media.video,media.poster',
+  const res = await fetchStrapi<{ data: StrapiGalleryProject[] }>('gallery-projects', {
+    'populate': 'category,brand,media',
     'sort': 'rank:asc',
     'pagination[pageSize]': '100',
   });
 
-  const frProjects = resBI.fr.data;
-  const enProjects = resBI.en.data;
-
-  return frProjects.map((p, i) => {
-    const pEn = enProjects.find(e => e.id === p.id) ?? p;
-    const imageUrls = (p.images ?? [])
-      .map(img => resolveStrapiMediaUrl(img))
-      .filter((u): u is string => !!u);
-    const mediaFromComponent = mergeMediaItems(p.media, pEn.media);
-    const media: MediaItem[] = mediaFromComponent.length > 0
-      ? mediaFromComponent
-      : imageUrls.map((url): MediaItem => ({ kind: 'image', url, alt: { fr: '', en: '' } }));
+  return res.data.map((p, i) => {
+    const media: MediaItem[] = (p.media ?? []).flatMap((file): MediaItem[] => {
+      const alt: Bilingual = { fr: file.alternativeText ?? '', en: file.alternativeText ?? '' };
+      if (file.mime?.startsWith('video/')) {
+        const url = resolveRawMediaUrl(file);
+        return url ? [{ kind: 'video', url, alt }] : [];
+      }
+      const url = resolveStrapiMediaUrl(file);
+      return url ? [{ kind: 'image', url, alt }] : [];
+    });
     return {
       id: p.id,
       brand: p.brand?.name ?? p.title ?? slugToTitle(p.slug),
@@ -1099,7 +1095,6 @@ export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
       plateau: p.stage ?? '',
       year: String(p.year),
       tone: TONES[i % 3],
-      imageUrls,
       media,
     };
   });

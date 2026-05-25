@@ -403,7 +403,7 @@ export function buildGalleryCollectionSchema(
       '@type': 'CreativeWork',
       name: p.brand,
       url,
-      image: p.imageUrls?.[0],
+      image: p.media.find((m) => m.kind === 'image')?.url,
       genre: p.cat,
       dateCreated: p.year,
     }),
