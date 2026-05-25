@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { CSSProperties } from "react";
 import { useQueryStates, parseAsString } from "nuqs";
 import { usePageContext } from "./router";
@@ -477,10 +477,24 @@ const ProjectRow = ({ project, lang, style }: { project: GalleryProject; lang: L
         key={imageIndex}
         project={project}
         imageIndex={imageIndex}
+        lang={lang}
       />
     ))}
   </div>
 );
+
+const usePrefersReducedMotion = (): boolean => {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReduced(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+  return reduced;
+};
 
 const ProjectLabel = ({ project, lang }: { project: GalleryProject; lang: Lang }) => {
   const plateauLabel = PLATEAU_LABELS[project.plateau]?.[lang] ?? project.plateau;
@@ -504,18 +518,69 @@ const ProjectLabel = ({ project, lang }: { project: GalleryProject; lang: Lang }
 const ProjectImage = ({
   project,
   imageIndex,
+  lang,
 }: {
   project: GalleryProject;
   imageIndex: number;
+  lang: Lang;
 }) => {
-  const imageUrl = project.imageUrls[imageIndex];
+  const reducedMotion = usePrefersReducedMotion();
+  const item = project.media[imageIndex];
+  const fallbackUrl = project.imageUrls[imageIndex];
+
+  if (!item && !fallbackUrl) {
+    return (
+      <div className="relative aspect-portrait overflow-hidden bg-white">
+        <ProjectCoverFallback project={project} seed={project.id * 3 + imageIndex} />
+      </div>
+    );
+  }
+
+  if (item?.kind === "video") {
+    const altText = item.alt[lang] || `${project.brand} — ${imageIndex + 1}`;
+    return (
+      <div className="relative aspect-portrait overflow-hidden bg-white">
+        {reducedMotion ? (
+          item.poster ? (
+            <img
+              src={item.poster}
+              alt={altText}
+              className="absolute inset-0 h-full w-full object-cover"
+              loading="lazy"
+              decoding="async"
+            />
+          ) : (
+            <ProjectCoverFallback project={project} seed={project.id * 3 + imageIndex} />
+          )
+        ) : (
+          <video
+            src={item.url}
+            poster={item.poster}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="metadata"
+            disablePictureInPicture
+            aria-label={altText}
+            className="absolute inset-0 h-full w-full object-cover pointer-events-none select-none"
+          />
+        )}
+      </div>
+    );
+  }
+
+  const imageUrl = item?.kind === "image" ? item.url : fallbackUrl;
+  const altText = item?.kind === "image" && item.alt[lang]
+    ? item.alt[lang]
+    : `${project.brand} — ${imageIndex + 1}`;
 
   return (
     <div className="relative aspect-portrait overflow-hidden bg-white">
       {imageUrl ? (
         <img
           src={imageUrl}
-          alt={`${project.brand} — ${imageIndex + 1}`}
+          alt={altText}
           className="absolute inset-0 h-full w-full object-cover"
           loading="lazy"
         />

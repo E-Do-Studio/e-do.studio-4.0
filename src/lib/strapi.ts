@@ -233,6 +233,7 @@ interface StrapiGalleryProject {
   category?: StrapiGalleryCategory;
   brand?: StrapiGalleryBrand;
   images?: StrapiMedia[];
+  media?: StrapiMediaItem[];
 }
 
 // ─── PlateauSpec type (local, matches what the frontend expects) ────────────
@@ -1058,6 +1059,7 @@ export interface GalleryProject {
   year: string;
   tone: 'mono' | 'dark' | 'warm';
   imageUrls: string[];
+  media: MediaItem[];
 }
 
 export interface GalleryCategory {
@@ -1071,22 +1073,36 @@ function slugToTitle(slug: string): string {
 }
 
 export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
-  const res = await fetchStrapi<{ data: StrapiGalleryProject[] }>('gallery-projects', {
-    'populate': 'category,brand,images',
+  const resBI = await fetchStrapiBilingual<{ data: StrapiGalleryProject[] }>('gallery-projects', {
+    'populate': 'category,brand,images,media,media.image,media.video,media.poster',
     'sort': 'rank:asc',
     'pagination[pageSize]': '100',
   });
 
-  return res.data.map((p, i) => ({
-    id: p.id,
-    brand: p.brand?.name ?? p.title ?? slugToTitle(p.slug),
-    slug: p.slug,
-    cat: p.category?.slug ?? 'other',
-    plateau: p.stage ?? '',
-    year: String(p.year),
-    tone: TONES[i % 3],
-    imageUrls: (p.images ?? []).map(img => resolveStrapiMediaUrl(img)).filter((u): u is string => !!u),
-  }));
+  const frProjects = resBI.fr.data;
+  const enProjects = resBI.en.data;
+
+  return frProjects.map((p, i) => {
+    const pEn = enProjects.find(e => e.id === p.id) ?? p;
+    const imageUrls = (p.images ?? [])
+      .map(img => resolveStrapiMediaUrl(img))
+      .filter((u): u is string => !!u);
+    const mediaFromComponent = mergeMediaItems(p.media, pEn.media);
+    const media: MediaItem[] = mediaFromComponent.length > 0
+      ? mediaFromComponent
+      : imageUrls.map((url): MediaItem => ({ kind: 'image', url, alt: { fr: '', en: '' } }));
+    return {
+      id: p.id,
+      brand: p.brand?.name ?? p.title ?? slugToTitle(p.slug),
+      slug: p.slug,
+      cat: p.category?.slug ?? 'other',
+      plateau: p.stage ?? '',
+      year: String(p.year),
+      tone: TONES[i % 3],
+      imageUrls,
+      media,
+    };
+  });
 }
 
 export async function fetchGalleryCategories(): Promise<GalleryCategory[]> {
