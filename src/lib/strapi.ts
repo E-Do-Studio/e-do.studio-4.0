@@ -302,6 +302,7 @@ export interface PPCat {
   formats: string[];
   samples: string[];
   brands: string[];
+  seo?: Bilingual<SeoMeta>;
 }
 
 // ─── Transform helpers ──────────────────────────────────────────────────────
@@ -547,7 +548,7 @@ function priceFromRow(row: StrapiPricingRow): PPPrice {
 
 export async function fetchPostProdTypes(): Promise<PPCat[]> {
   const resBI = await fetchStrapiBilingual<{ data: StrapiPostProdType[] }>('post-production-types', {
-    'populate': 'includes,priceRows,media',
+    'populate': 'includes,priceRows,media,seo,seo.image',
     'sort': 'createdAt:asc',
   });
 
@@ -579,6 +580,7 @@ export async function fetchPostProdTypes(): Promise<PPCat[]> {
       formats: [],
       samples,
       brands: [],
+      seo: buildSeo(tFr.seo, tEn.seo),
     };
   });
 }

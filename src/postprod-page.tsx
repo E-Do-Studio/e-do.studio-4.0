@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { useQueryState, parseAsString } from 'nuqs';
 import { Button, CellLabel, EmptyState, IconArrowRight, Loader, PageHeader, Wordmark } from './ui';
-import { useDocumentMeta } from './lib/use-document-meta';
+import { useDocumentMeta, type SeoOverride } from './lib/use-document-meta';
 import { useStructuredData } from './lib/use-structured-data';
 import { buildPostProdServiceSchema, buildBreadcrumbSchema } from './lib/structured-data';
 import { usePostProdTypes } from './lib/use-strapi';
-import type { PPCat as StrapiPPCat } from './lib/strapi';
+import type { PPCat as StrapiPPCat, SeoMeta } from './lib/strapi';
 import type { Bilingual } from './types';
 import { usePageContext } from './router';
 import { common, postprod as postprodMsg } from './i18n/messages';
@@ -140,26 +141,63 @@ function adaptStrapiCats(strapi: StrapiPPCat[]): PPCat[] {
 
 const PostprodPage = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
-  useDocumentMeta('postprod', lang);
   const ppQuery = usePostProdTypes();
   const cats: PPCat[] = ppQuery.data ? adaptStrapiCats(ppQuery.data) : [];
+  const strapiCats: StrapiPPCat[] = ppQuery.data ?? [];
+
+  const [type, setType] = useQueryState(
+    'type',
+    parseAsString.withDefault('').withOptions({ history: 'push', clearOnDefault: true }),
+  );
+
+  // Auto-select the first available cat when the URL param is missing OR points
+  // to a slug that no longer exists in Strapi. The auto-selection must NOT
+  // pollute the URL — fall back silently to "no param" (the default state).
+  const hasValidType = !!type && cats.some(c => c.k === type);
+  useEffect(() => {
+    if (type && cats.length > 0 && !cats.some(c => c.k === type)) {
+      setType(null);
+    }
+  }, [type, cats, setType]);
+
+  const k = hasValidType ? type : (cats[0]?.k ?? '');
+  const cat = cats.find(c => c.k === k) || cats[0];
+
+  // SEO override per type — prefer Strapi-provided seo, fall back to a
+  // computed title/description so every type still has unique meta.
+  const strapiSeo: SeoMeta | undefined = cat
+    ? strapiCats.find(c => c.k === cat.k)?.seo?.[lang]
+    : undefined;
+  const computedOverride: SeoOverride | undefined = cat
+    ? {
+        title: `${cat[lang]} — ${lang === 'fr' ? 'Post-production' : 'Post-production'} — E-Do Studio Paris`,
+        description: cat.tagline[lang] || cat.features[lang]?.[0] || undefined,
+      }
+    : undefined;
+  const seoOverride: SeoOverride | undefined = strapiSeo
+    ? {
+        title: strapiSeo.title || computedOverride?.title,
+        description: strapiSeo.description || computedOverride?.description,
+        imageUrl: strapiSeo.imageUrl,
+        noIndex: strapiSeo.noIndex,
+      }
+    : computedOverride;
+  useDocumentMeta('postprod', lang, seoOverride);
+
+  const postprodLabel = lang === 'fr' ? 'Post-production' : 'Post-production';
+  const breadcrumbBase: { name: string; pathname: string }[] = [
+    { name: lang === 'fr' ? 'Accueil' : 'Home', pathname: '' },
+    { name: postprodLabel, pathname: '/post-production' },
+  ];
+  const breadcrumbItems = cat && hasValidType
+    ? [...breadcrumbBase, { name: cat[lang], pathname: `/post-production?type=${cat.k}` }]
+    : breadcrumbBase;
   useStructuredData('postprod', [
     ppQuery.data && ppQuery.data.length > 0
       ? buildPostProdServiceSchema({ cats: ppQuery.data, lang, pathname: '/post-production' })
       : null,
-    buildBreadcrumbSchema(
-      [
-        { name: lang === 'fr' ? 'Accueil' : 'Home', pathname: '' },
-        { name: lang === 'fr' ? 'Post-production' : 'Post-production', pathname: '/post-production' },
-      ],
-      lang,
-    ),
+    buildBreadcrumbSchema(breadcrumbItems, lang),
   ]);
-  const [k, setK] = useState<string>('');
-  useEffect(() => {
-    if (!cats.find(c => c.k === k) && cats[0]) setK(cats[0].k);
-  }, [cats, k]);
-  const cat = cats.find(c=>c.k===k) || cats[0];
   const dark = !!cat?.featured;
   const bgCls = dark ? 'bg-foreground' : 'bg-white';
   const fgCls = dark ? 'text-white' : 'text-foreground';
@@ -231,8 +269,9 @@ const PostprodPage = () => {
         {cats.map((c,idx)=>{
           const active = k===c.k;
           const isLast = idx===cats.length-1;
+          const defaultK = cats[0]?.k;
           return (
-            <button key={c.k} onClick={()=>setK(c.k)}
+            <button key={c.k} onClick={()=>setType(c.k === defaultK ? null : c.k)}
               className={`edo-focus-ring flex-none border-0 ${active?'bg-muted border-b-2 border-b-primary md:border-b-0 md:border-l-2 md:border-l-primary':'bg-white border-b-2 border-b-transparent md:border-b-0 md:border-l-2 md:border-l-transparent'} ${idx>0?'md:border-t md:border-t-border':''} ${isLast?'md:border-b md:border-b-border':''} py-3 px-4 cursor-pointer text-left flex flex-col gap-1 transition-all duration-150 min-h-16 md:min-h-18`}>
               <span className={`font-mono text-micro tracking-label ${active?'text-primary':'text-muted-foreground'}`}>{String(idx+1).padStart(2,'0')}</span>
               <span className={`text-detail ${active?'font-medium':'font-normal'} tracking-copy-tight text-foreground leading-snug whitespace-nowrap overflow-hidden text-ellipsis`}>{c[lang]}</span>
