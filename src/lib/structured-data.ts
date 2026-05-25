@@ -396,18 +396,21 @@ export function buildGalleryCollectionSchema(
   pathname: string,
 ): JsonLdNode {
   const url = pageUrl(lang, pathname);
-  const items = projects.slice(0, 50).map((p, i) => ({
-    '@type': 'ListItem',
-    position: i + 1,
-    item: compact({
-      '@type': 'CreativeWork',
-      name: p.brand,
-      url,
-      image: p.imageUrls?.[0],
-      genre: p.cat,
-      dateCreated: p.year,
-    }),
-  }));
+  const items = projects.slice(0, 50).map((p, i) => {
+    const firstImage = p.media?.find((m) => m.mime.startsWith('image/'));
+    return {
+      '@type': 'ListItem',
+      position: i + 1,
+      item: compact({
+        '@type': 'CreativeWork',
+        name: p.brand,
+        url,
+        image: firstImage?.url,
+        genre: p.cat,
+        dateCreated: p.year,
+      }),
+    };
+  });
   return compact({
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',

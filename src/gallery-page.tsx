@@ -477,7 +477,6 @@ const ProjectRow = ({ project, lang, style }: { project: GalleryProject; lang: L
         key={imageIndex}
         project={project}
         imageIndex={imageIndex}
-        lang={lang}
       />
     ))}
   </div>
@@ -518,17 +517,14 @@ const ProjectLabel = ({ project, lang }: { project: GalleryProject; lang: Lang }
 const ProjectImage = ({
   project,
   imageIndex,
-  lang,
 }: {
   project: GalleryProject;
   imageIndex: number;
-  lang: Lang;
 }) => {
   const reducedMotion = usePrefersReducedMotion();
   const item = project.media[imageIndex];
-  const fallbackUrl = project.imageUrls[imageIndex];
 
-  if (!item && !fallbackUrl) {
+  if (!item) {
     return (
       <div className="relative aspect-portrait overflow-hidden bg-white">
         <ProjectCoverFallback project={project} seed={project.id * 3 + imageIndex} />
@@ -536,57 +532,37 @@ const ProjectImage = ({
     );
   }
 
-  if (item?.kind === "video") {
-    const altText = item.alt[lang] || `${project.brand} — ${imageIndex + 1}`;
+  const altText = item.alt || `${project.brand} — ${imageIndex + 1}`;
+  const isVideo = item.mime.startsWith("video/");
+
+  if (isVideo) {
     return (
       <div className="relative aspect-portrait overflow-hidden bg-white">
-        {reducedMotion ? (
-          item.poster ? (
-            <img
-              src={item.poster}
-              alt={altText}
-              className="absolute inset-0 h-full w-full object-cover"
-              loading="lazy"
-              decoding="async"
-            />
-          ) : (
-            <ProjectCoverFallback project={project} seed={project.id * 3 + imageIndex} />
-          )
-        ) : (
-          <video
-            src={item.url}
-            poster={item.poster}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="metadata"
-            disablePictureInPicture
-            aria-label={altText}
-            className="absolute inset-0 h-full w-full object-cover pointer-events-none select-none"
-          />
-        )}
+        <video
+          key={item.url}
+          autoPlay={!reducedMotion}
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          disablePictureInPicture
+          aria-label={altText}
+          className="absolute inset-0 h-full w-full object-cover pointer-events-none select-none"
+        >
+          <source src={item.url} type={item.mime} />
+        </video>
       </div>
     );
   }
-
-  const imageUrl = item?.kind === "image" ? item.url : fallbackUrl;
-  const altText = item?.kind === "image" && item.alt[lang]
-    ? item.alt[lang]
-    : `${project.brand} — ${imageIndex + 1}`;
 
   return (
     <div className="relative aspect-portrait overflow-hidden bg-white">
-      {imageUrl ? (
-        <img
-          src={imageUrl}
-          alt={altText}
-          className="absolute inset-0 h-full w-full object-cover"
-          loading="lazy"
-        />
-      ) : (
-        <ProjectCoverFallback project={project} seed={project.id * 3 + imageIndex} />
-      )}
+      <img
+        src={item.url}
+        alt={altText}
+        className="absolute inset-0 h-full w-full object-cover"
+        loading="lazy"
+      />
     </div>
   );
 };

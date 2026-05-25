@@ -63,17 +63,12 @@
       "target": "api::gallery-brand.gallery-brand",
       "description": "Marque cliente du projet."
     },
-    "images": {
+    "media": {
       "type": "media",
       "multiple": true,
-      "allowedTypes": ["images"],
-      "description": "Galerie d'images du projet (15 max recommandé). L'image 1 est utilisée comme couverture par défaut."
-    },
-    "media": {
-      "type": "component",
-      "repeatable": true,
-      "component": "shared.media-item",
-      "description": "Médias du projet (images + vidéos). Si renseigné, prioritaire sur le champ `images` historique. L'item 1 sert de couverture par défaut."
+      "required": true,
+      "allowedTypes": ["images", "videos"],
+      "description": "Médias du projet : exactement 3 entrées, images ou vidéos (mp4/webm). Validé par lifecycles.ts. Le fichier 1 sert de couverture par défaut. La migration 2026.05.25T10.30.00.gallery-project-unify-media.js déplace les anciens liens `images` vers ce champ."
     }
   }
 }

@@ -232,8 +232,7 @@ interface StrapiGalleryProject {
   rank: number;
   category?: StrapiGalleryCategory;
   brand?: StrapiGalleryBrand;
-  images?: StrapiMedia[];
-  media?: StrapiMediaItem[];
+  media?: StrapiMedia[];
 }
 
 // ─── PlateauSpec type (local, matches what the frontend expects) ────────────
@@ -1050,6 +1049,12 @@ export async function fetchSiteDefaults(): Promise<SiteDefaults> {
 
 // ─── Gallery types & fetchers ──────────────────────────────────────────────
 
+export interface GalleryMedia {
+  url: string;
+  mime: string;
+  alt: string;
+}
+
 export interface GalleryProject {
   id: number;
   brand: string;
@@ -1058,8 +1063,7 @@ export interface GalleryProject {
   plateau: string;
   year: string;
   tone: 'mono' | 'dark' | 'warm';
-  imageUrls: string[];
-  media: MediaItem[];
+  media: GalleryMedia[];
 }
 
 export interface GalleryCategory {
@@ -1072,25 +1076,40 @@ function slugToTitle(slug: string): string {
   return slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
+function resolveGalleryMediaUrl(m: StrapiMedia): string | undefined {
+  if (!m.url) return undefined;
+  // Videos must be served as the raw upload; images can use the medium
+  // format when available for lighter payloads at the gallery grid scale.
+  const isVideo = m.mime?.startsWith('video/');
+  const path = isVideo ? m.url : (m.formats?.medium?.url ?? m.url);
+  if (path.startsWith('http')) return path;
+  return `${STRAPI_URL}${path}`;
+}
+
 export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
-  const resBI = await fetchStrapiBilingual<{ data: StrapiGalleryProject[] }>('gallery-projects', {
-    'populate': 'category,brand,images,media,media.image,media.video,media.poster',
+  // Mono-language fetch: the legacy `shared.media-item` component carried
+  // a localized `alt`, which is the only reason this fetch used to be
+  // bilingual. The unified native `media` field exposes `alternativeText`
+  // (not i18n today — revisit if editorial needs per-locale alt).
+  const res = await fetchStrapi<{ data: StrapiGalleryProject[] }>('gallery-projects', {
+    'populate': 'category,brand,media',
     'sort': 'rank:asc',
     'pagination[pageSize]': '100',
+    'locale': 'fr',
   });
 
-  const frProjects = resBI.fr.data;
-  const enProjects = resBI.en.data;
-
-  return frProjects.map((p, i) => {
-    const pEn = enProjects.find(e => e.id === p.id) ?? p;
-    const imageUrls = (p.images ?? [])
-      .map(img => resolveStrapiMediaUrl(img))
-      .filter((u): u is string => !!u);
-    const mediaFromComponent = mergeMediaItems(p.media, pEn.media);
-    const media: MediaItem[] = mediaFromComponent.length > 0
-      ? mediaFromComponent
-      : imageUrls.map((url): MediaItem => ({ kind: 'image', url, alt: { fr: '', en: '' } }));
+  return res.data.map((p, i) => {
+    const media: GalleryMedia[] = (p.media ?? [])
+      .map((m) => {
+        const url = resolveGalleryMediaUrl(m);
+        if (!url) return null;
+        return {
+          url,
+          mime: m.mime ?? '',
+          alt: m.alternativeText ?? '',
+        };
+      })
+      .filter((m): m is GalleryMedia => m !== null);
     return {
       id: p.id,
       brand: p.brand?.name ?? p.title ?? slugToTitle(p.slug),
@@ -1099,7 +1118,6 @@ export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
       plateau: p.stage ?? '',
       year: String(p.year),
       tone: TONES[i % 3],
-      imageUrls,
       media,
     };
   });
