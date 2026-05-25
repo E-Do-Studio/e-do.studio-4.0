@@ -61,17 +61,11 @@
       "repeatable": true,
       "description": "Ce qui est inclus dans la prestation (liste à puces)."
     },
-    "image": {
-      "type": "media",
-      "multiple": false,
-      "allowedTypes": ["images"],
-      "description": "Image illustrative de la prestation."
-    },
-    "gallery": {
+    "media": {
       "type": "media",
       "multiple": true,
-      "allowedTypes": ["images"],
-      "description": "Galerie d'exemples avant/après."
+      "allowedTypes": ["images", "videos"],
+      "description": "Médias de démonstration de la prestation : sélection multiple comme pour les projets galerie. Remplace les anciens champs `image` (cover unique) et `gallery` (exemples). Migrations: `2026.05.25T14.00.00.post-production-type-unify-media.js` (rename des liens morph existants vers ce champ)."
     },
     "seo": {
       "type": "component",

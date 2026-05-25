@@ -104,6 +104,7 @@ interface StrapiPostProdType {
   price: string;
   includes?: StrapiLocalizedItem[];
   priceRows?: StrapiPricingRow[];
+  media?: StrapiMedia[];
   seo?: StrapiSeoMeta;
 }
 
@@ -546,7 +547,7 @@ function priceFromRow(row: StrapiPricingRow): PPPrice {
 
 export async function fetchPostProdTypes(): Promise<PPCat[]> {
   const resBI = await fetchStrapiBilingual<{ data: StrapiPostProdType[] }>('post-production-types', {
-    'populate': 'includes,priceRows',
+    'populate': 'includes,priceRows,media',
     'sort': 'createdAt:asc',
   });
 
@@ -557,6 +558,12 @@ export async function fetchPostProdTypes(): Promise<PPCat[]> {
     const tEn = enTypes.find(e => e.slug === tFr.slug) ?? tFr;
     const firstRow = tFr.priceRows?.[0];
     const price = firstRow ? priceFromRow(firstRow) : parsePriceText(tFr.price);
+    // `media` is non-i18n: the FR locale is the source of truth. The
+    // schema allows multiple images/videos — selection multiple like
+    // gallery-project.
+    const samples = (tFr.media ?? [])
+      .map((m) => resolveStrapiMediaUrl(m))
+      .filter((u): u is string => !!u);
     return {
       k: tFr.slug,
       medium: 'photo',
@@ -570,7 +577,7 @@ export async function fetchPostProdTypes(): Promise<PPCat[]> {
         en: (tEn.includes ?? []).map(i => i.text),
       },
       formats: [],
-      samples: [],
+      samples,
       brands: [],
     };
   });

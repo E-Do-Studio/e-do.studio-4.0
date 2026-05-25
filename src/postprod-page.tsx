@@ -66,6 +66,28 @@ interface SampleImageProps {
 }
 
 const SampleImage = ({ seed, label, medium }: SampleImageProps) => {
+  // When `seed` looks like a URL (or relative path returned by the CMS),
+  // render the real media. Otherwise fall back to the SVG placeholder
+  // keyed off the palette seed — used when fewer than 6 demo medias are
+  // configured in Strapi.
+  const isMediaUrl = seed.startsWith('http') || seed.startsWith('/');
+  if (isMediaUrl) {
+    return (
+      <div className="relative w-full h-full overflow-hidden bg-muted">
+        <img
+          src={seed}
+          alt={label ?? ''}
+          loading="lazy"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        {label && (
+          <span className="absolute bottom-1.5 left-2 font-mono text-nano tracking-ui uppercase opacity-55 text-white">
+            {label}
+          </span>
+        )}
+      </div>
+    );
+  }
   const p = PALETTES[seed] || PALETTES['mono-a'];
   const hash = [...seed].reduce((a,c)=>a+c.charCodeAt(0),0) % 5;
   return (
@@ -91,6 +113,9 @@ const SampleImage = ({ seed, label, medium }: SampleImageProps) => {
 
 const SAMPLE_CYCLE = ['warm-a','warm-b','warm-c','warm-d','warm-e','warm-b'];
 
+// Real media URLs from Strapi (when present) come first; the remaining
+// slots fall back to the palette cycle so the grid stays visually full
+// even when fewer than 6 demo medias are configured.
 function fillSamples(samples: string[]): string[] {
   const out: string[] = [];
   for (let i = 0; i < 6; i++) out.push(samples[i] || SAMPLE_CYCLE[i % SAMPLE_CYCLE.length]);
