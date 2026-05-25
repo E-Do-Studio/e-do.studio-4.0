@@ -117,35 +117,44 @@ const DirectionA = () => {
       />
 
       {/* ── Rows 2-3 left: E-commerce section ── */}
-      <div className="col-span-2 min-h-72 flex flex-col overflow-hidden bg-white md:col-start-1 md:col-end-7 md:row-start-2 md:row-end-4 md:min-h-0">
-        <div className="px-4 pt-6 pb-4">
-          <p className="m-0 whitespace-pre-line text-pretty text-detail leading-relaxed text-foreground">
-            {homeMsg.studioIntro[lang]}
+      <div className="col-span-2 min-h-72 flex flex-col overflow-hidden bg-edo-black md:col-start-1 md:col-end-7 md:row-start-2 md:row-end-4 md:min-h-0">
+        <div className="flex flex-1 flex-col justify-between gap-6 px-5 pt-6 pb-5 md:px-7 md:pt-8 md:pb-6">
+          <h2 className="m-0 text-balance text-hero font-light tracking-display leading-solid text-white">
+            {homeMsg.studioHeadlineLead[lang]}{' '}
+            <span className="italic text-primary">
+              {homeMsg.studioHeadlineAccent[lang]}
+            </span>
+          </h2>
+          <p className="m-0 max-w-prose text-pretty text-detail leading-relaxed text-edo-gray-200">
+            {homeMsg.studioSubtitleLead[lang]}
+            <strong className="font-semibold text-white">
+              {homeMsg.studioSubtitleStrong[lang]}
+            </strong>
           </p>
         </div>
 
-        <div className="flex flex-1 min-h-0 overflow-hidden bg-white">
-          <div className="grid flex-1 grid-cols-3 content-end gap-px bg-white md:grid-cols-4">
+        <div className="flex min-h-0 overflow-hidden bg-edo-pure-black">
+          <div className="grid flex-1 grid-cols-3 content-end gap-px bg-edo-pure-black md:grid-cols-4">
             {ecomMachines.map((m, i) => (
               <button
                 key={m.slug}
                 onClick={() => goto('plateau-' + m.slug)}
                 className={cn(
-                  'edo-focus-ring group flex aspect-[4/3] min-w-0 cursor-pointer flex-col justify-between border-0 border-t border-l border-border bg-white px-3 py-3 text-left text-foreground transition-colors duration-150 hover:bg-muted md:aspect-square md:px-4 md:py-4',
+                  'edo-focus-ring group flex aspect-[4/3] min-w-0 cursor-pointer flex-col justify-between border-0 border-t border-l border-edo-pure-black bg-edo-black px-3 py-3 text-left text-white transition-colors duration-150 hover:bg-edo-dark md:aspect-square md:px-4 md:py-4',
                   // 4 items in a 3-col mobile grid would leave the 4th alone
                   // on row 2; let it span the row to avoid an awkward gap.
                   i === 3 && 'col-span-3 aspect-auto md:col-span-1 md:aspect-square',
                 )}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-micro text-muted-foreground tracking-meta">
+                  <span className="font-mono text-micro text-edo-gray-500 tracking-meta">
                     {String(i + 1).padStart(2, '0')}
                   </span>
-                  <IconArrowRight className="text-muted-foreground" width="14" height="14" />
+                  <IconArrowRight className="text-edo-gray-500" width="14" height="14" />
                 </div>
                 <div>
-                  <div className="truncate text-cell font-medium tracking-headline leading-tight">{m[lang].t}</div>
-                  <div className="truncate mt-1 text-micro font-mono uppercase tracking-caption text-muted-foreground">{m[lang].sub}</div>
+                  <div className="truncate text-cell font-medium tracking-headline leading-tight text-white">{m[lang].t}</div>
+                  <div className="truncate mt-1 text-micro font-mono uppercase tracking-caption text-edo-gray-500">{m[lang].sub}</div>
                 </div>
               </button>
             ))}
