@@ -114,7 +114,7 @@ const DirectionA = () => {
 
   return (
     /* Mobile: 2-col grid, vertical scroll. Desktop (md+): 12-col bento, fixed viewport */
-    <div className="edo-page-enter grid w-full grid-cols-2 gap-px bg-background md:h-full md:grid-cols-12 md:grid-rows-home md:overflow-hidden">
+    <div className="edo-page-enter grid w-full grid-cols-2 gap-px bg-edo-pure-black md:h-full md:grid-cols-12 md:grid-rows-home md:overflow-hidden">
       <h1 className="sr-only">E-Do Studio — {homeMsg.srTitle[lang]}</h1>
 
       {/* ── Row 1: Header ── */}
