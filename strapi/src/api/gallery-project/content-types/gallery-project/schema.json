@@ -63,17 +63,11 @@
       "target": "api::gallery-brand.gallery-brand",
       "description": "Marque cliente du projet."
     },
-    "images": {
+    "media": {
       "type": "media",
       "multiple": true,
-      "allowedTypes": ["images"],
-      "description": "Galerie d'images du projet (15 max recommandé). L'image 1 est utilisée comme couverture par défaut."
-    },
-    "media": {
-      "type": "component",
-      "repeatable": true,
-      "component": "shared.media-item",
-      "description": "Médias du projet (images + vidéos). Si renseigné, prioritaire sur le champ `images` historique. L'item 1 sert de couverture par défaut."
+      "allowedTypes": ["images", "videos"],
+      "description": "Médias du projet (images et vidéos, 15 max recommandé). Le média 1 est utilisé comme couverture par défaut."
     }
   }
 }
