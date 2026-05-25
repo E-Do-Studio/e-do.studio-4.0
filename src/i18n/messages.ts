@@ -185,21 +185,22 @@ export const home = {
     fr: 'Studio photo et vidéo professionnel à Paris',
     en: 'Professional photo and video studio in Paris',
   } as B,
-  studioHeadline: {
-    line1: { fr: 'Le studio qui', en: 'The studio that' } as B,
-    line2Lead: { fr: 'fait tourner votre', en: 'powers your' } as B,
-    line2Accent: { fr: 'e-commerce.', en: 'e-commerce.' } as B,
-  },
-  studioSubtitle: {
-    lead: {
-      fr: 'Photo, vidéo et retouche pour vos catalogues en ligne — ',
-      en: 'Photo, video and retouching for your online catalogues — ',
-    } as B,
-    accent: {
-      fr: 'du créateur indépendant à la maison de luxe.',
-      en: 'from independent creator to luxury house.',
-    } as B,
-  },
+  studioHeadlineLead: {
+    fr: 'Le studio qui fait tourner votre',
+    en: 'The studio that powers your',
+  } as B,
+  studioHeadlineAccent: {
+    fr: 'e-commerce.',
+    en: 'e-commerce.',
+  } as B,
+  studioSubtitleLead: {
+    fr: 'Photo, vidéo et retouche pour vos catalogues en ligne — ',
+    en: 'Photo, video and retouching for your online catalogues — ',
+  } as B,
+  studioSubtitleStrong: {
+    fr: 'du créateur indépendant à la maison de luxe.',
+    en: 'from independent creator to luxury house.',
+  } as B,
   machineSubs: {
     horizontal: { fr: 'Packshot à plat', en: 'Flat packshot' } as B,
     vertical: { fr: 'Packshot ghost / piqué', en: 'Ghost / pinned packshot' } as B,
