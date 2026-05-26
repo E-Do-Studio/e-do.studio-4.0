@@ -23,6 +23,9 @@ export const common = {
   sending: { fr: 'Envoi en cours…', en: 'Sending…' } as B,
   description: { fr: 'Description', en: 'Description' } as B,
   all: { fr: 'Tout', en: 'All' } as B,
+  prevImage: { fr: 'Image précédente', en: 'Previous image' } as B,
+  nextImage: { fr: 'Image suivante', en: 'Next image' } as B,
+  imageCarousel: { fr: 'Carrousel d’images', en: 'Image carousel' } as B,
 };
 
 export const nav = {

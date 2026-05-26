@@ -1,5 +1,7 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from '@tanstack/react-router';
 import { CellLabel, IconArrowRight, PageHeader } from './ui';
+import { cn } from './ui/cn';
 import { VideoLoop } from './ui/video-loop';
 import { useDocumentMeta } from './lib/use-document-meta';
 import { useStructuredData } from './lib/use-structured-data';
@@ -7,6 +9,128 @@ import { buildPlateauServiceSchema, buildBreadcrumbSchema } from './lib/structur
 import { usePageContext } from './router';
 import { usePlateaux } from './lib/use-strapi';
 import { common, plateau as plateauMsg } from './i18n/messages';
+import type { Lang } from './types';
+import type { MediaItem } from './lib/strapi';
+
+// Up to 4 tiles visible at once; the rest reachable via the arrows.
+const VISIBLE_TILES = 4;
+
+interface DemoCarouselProps {
+  items: MediaItem[];
+  lang: Lang;
+  plateauName: string;
+  className?: string;
+}
+
+const DemoCarousel = ({ items, lang, plateauName, className }: DemoCarouselProps) => {
+  const stripRef = useRef<HTMLDivElement>(null);
+  const [canPrev, setCanPrev] = useState(false);
+  const [canNext, setCanNext] = useState(false);
+
+  // True when there are more tiles than the visible window — only then do we
+  // surface the arrows (≤4 items fit edge-to-edge with no overflow).
+  const hasOverflow = items.length > VISIBLE_TILES;
+  const visible = Math.min(items.length, VISIBLE_TILES);
+  const tileBasis = `${100 / visible}%`;
+
+  const updateScrollState = useCallback(() => {
+    const el = stripRef.current;
+    if (!el) return;
+    // 1px epsilon absorbs subpixel rounding on smooth-scroll endpoints.
+    const epsilon = 1;
+    setCanPrev(el.scrollLeft > epsilon);
+    setCanNext(el.scrollLeft + el.clientWidth < el.scrollWidth - epsilon);
+  }, []);
+
+  useEffect(() => {
+    const el = stripRef.current;
+    if (!el) return;
+    updateScrollState();
+    const onScroll = () => updateScrollState();
+    el.addEventListener('scroll', onScroll, { passive: true });
+    const ro = new ResizeObserver(updateScrollState);
+    ro.observe(el);
+    return () => {
+      el.removeEventListener('scroll', onScroll);
+      ro.disconnect();
+    };
+  }, [updateScrollState, items.length]);
+
+  const scrollByTile = (dir: 1 | -1) => {
+    const el = stripRef.current;
+    if (!el) return;
+    const firstTile = el.querySelector<HTMLElement>('[data-carousel-tile]');
+    const step = firstTile?.offsetWidth ?? el.clientWidth / VISIBLE_TILES;
+    el.scrollBy({ left: dir * step, behavior: 'smooth' });
+  };
+
+  const arrowBtn =
+    'edo-focus-ring absolute top-1/2 z-10 -translate-y-1/2 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-border bg-white text-foreground transition-opacity duration-150 hover:bg-muted disabled:cursor-default disabled:opacity-0 disabled:pointer-events-none';
+
+  return (
+    <div className={cn('relative', className)}>
+      <div
+        ref={stripRef}
+        role="group"
+        aria-roledescription="carousel"
+        aria-label={common.imageCarousel[lang]}
+        className="flex h-full gap-px overflow-x-auto bg-edo-pure-black snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {items.map((item, i) => (
+          <div
+            key={`${item.url}-${i}`}
+            data-carousel-tile
+            className="relative shrink-0 snap-start overflow-hidden bg-white"
+            style={{ flexBasis: tileBasis }}
+            role="group"
+            aria-roledescription="slide"
+            aria-label={`${i + 1} / ${items.length}`}
+          >
+            {item.kind === 'video' ? (
+              <VideoLoop
+                src={item.url}
+                poster={item.poster}
+                objectFit="cover"
+                className="absolute inset-0 h-full w-full"
+              />
+            ) : (
+              <img
+                src={item.url}
+                alt={item.alt[lang] || `${plateauName} — ${i + 1}`}
+                loading="lazy"
+                decoding="async"
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            )}
+          </div>
+        ))}
+      </div>
+
+      {hasOverflow && (
+        <>
+          <button
+            type="button"
+            onClick={() => scrollByTile(-1)}
+            disabled={!canPrev}
+            aria-label={common.prevImage[lang]}
+            className={cn(arrowBtn, 'left-2')}
+          >
+            <IconArrowRight width="16" height="16" className="rotate-180" />
+          </button>
+          <button
+            type="button"
+            onClick={() => scrollByTile(1)}
+            disabled={!canNext}
+            aria-label={common.nextImage[lang]}
+            className={cn(arrowBtn, 'right-2')}
+          >
+            <IconArrowRight width="16" height="16" />
+          </button>
+        </>
+      )}
+    </div>
+  );
+};
 
 const PlateauPage = ({ slug }: { slug: string }) => {
   const { lang, setLang, openMenu, goto } = usePageContext();
@@ -35,9 +159,9 @@ const PlateauPage = ({ slug }: { slug: string }) => {
   const hero = p.machineImage;
   // Carousel below the hero. The "main media" (machineImage) is included as
   // the first tile so the carousel surfaces it alongside the demo items; the
-  // hero still anchors it visually above. Capped at 4 tiles total to keep the
-  // strip readable.
-  const demoMedia = (hero ? [hero, ...p.media] : p.media).slice(0, 4);
+  // hero still anchors it visually above. Up to 4 tiles fit at once; if more
+  // media are configured, prev/next arrows scroll through the rest.
+  const demoMedia = hero ? [hero, ...p.media] : p.media;
 
   return (
     /* Mobile: single-column stacked, scrollable. Desktop (md+): 4-column bento */
@@ -99,34 +223,15 @@ const PlateauPage = ({ slug }: { slug: string }) => {
         </div>
       )}
 
-      {/* Demo carousel — images OR videos (autoplay/muted/loop). Only renders
-          as many tiles as the entry has media (capped at 4). */}
+      {/* Demo carousel — images OR videos (autoplay/muted/loop). Up to 4
+          tiles fit at once; prev/next arrows appear when there are more. */}
       {demoMedia.length > 0 && (
-        <div
-          className="grid gap-px bg-edo-pure-black md:col-start-2 md:col-span-2 md:row-start-4 md:min-h-0"
-          style={{ gridTemplateColumns: `repeat(${demoMedia.length}, minmax(0, 1fr))` }}
-        >
-          {demoMedia.map((item, i) => (
-            <div key={`${item.url}-${i}`} className="relative overflow-hidden bg-white">
-              {item.kind === 'video' ? (
-                <VideoLoop
-                  src={item.url}
-                  poster={item.poster}
-                  objectFit="cover"
-                  className="absolute inset-0 h-full w-full"
-                />
-              ) : (
-                <img
-                  src={item.url}
-                  alt={item.alt[lang] || ''}
-                  loading="lazy"
-                  decoding="async"
-                  className="absolute inset-0 h-full w-full object-cover"
-                />
-              )}
-            </div>
-          ))}
-        </div>
+        <DemoCarousel
+          items={demoMedia}
+          lang={lang}
+          plateauName={p.name}
+          className="md:col-start-2 md:col-span-2 md:row-start-4 md:min-h-0"
+        />
       )}
 
       {/* Name + tagline */}
