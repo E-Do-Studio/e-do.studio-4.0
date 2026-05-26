@@ -139,19 +139,31 @@ const isSafeHref = (href: unknown): href is string =>
 
 const assistantMarkdownComponents = {
   p: ({ children }: { children?: React.ReactNode }) => (
-    <p className="m-0 mb-1.5 text-detail leading-normal last:mb-0">{children}</p>
+    <p className="m-0 mb-2 text-detail leading-normal last:mb-0">{children}</p>
   ),
   strong: ({ children }: { children?: React.ReactNode }) => (
-    <strong className="font-semibold">{children}</strong>
+    <strong className="font-semibold text-foreground">{children}</strong>
   ),
   em: ({ children }: { children?: React.ReactNode }) => (
     <em className="italic">{children}</em>
   ),
+  h1: ({ children }: { children?: React.ReactNode }) => (
+    <div className="mb-1 mt-2 font-mono text-nano uppercase tracking-code text-primary first:mt-0">{children}</div>
+  ),
+  h2: ({ children }: { children?: React.ReactNode }) => (
+    <div className="mb-1 mt-2 font-mono text-nano uppercase tracking-code text-primary first:mt-0">{children}</div>
+  ),
+  h3: ({ children }: { children?: React.ReactNode }) => (
+    <div className="mb-1 mt-2 font-mono text-nano uppercase tracking-code text-primary first:mt-0">{children}</div>
+  ),
+  h4: ({ children }: { children?: React.ReactNode }) => (
+    <div className="mb-1 mt-2 font-mono text-nano uppercase tracking-code text-primary first:mt-0">{children}</div>
+  ),
   ul: ({ children }: { children?: React.ReactNode }) => (
-    <ul className="m-0 mb-1.5 list-disc pl-4 text-detail leading-normal last:mb-0">{children}</ul>
+    <ul className="m-0 mb-2 list-disc pl-4 text-detail leading-normal last:mb-0">{children}</ul>
   ),
   ol: ({ children }: { children?: React.ReactNode }) => (
-    <ol className="m-0 mb-1.5 list-decimal pl-4 text-detail leading-normal last:mb-0">{children}</ol>
+    <ol className="m-0 mb-2 list-decimal pl-4 text-detail leading-normal last:mb-0">{children}</ol>
   ),
   li: ({ children }: { children?: React.ReactNode }) => (
     <li className="mb-0.5 text-detail leading-normal">{children}</li>
@@ -159,12 +171,13 @@ const assistantMarkdownComponents = {
   a: ({ href, children }: { href?: string; children?: React.ReactNode }) => {
     if (!isSafeHref(href)) return <>{children}</>;
     const isMail = href.toLowerCase().startsWith('mailto:');
+    const isInternal = /^https?:\/\/(www\.)?e-do\.studio/i.test(href);
     return (
       <a
         href={href}
-        target={isMail ? '_self' : '_blank'}
-        rel={isMail ? undefined : 'noopener noreferrer'}
-        className="underline underline-offset-2 hover:text-primary"
+        target={isMail || isInternal ? '_self' : '_blank'}
+        rel={isMail || isInternal ? undefined : 'noopener noreferrer'}
+        className="font-medium text-primary underline underline-offset-2 transition-colors hover:text-foreground"
       >
         {children}
       </a>
@@ -172,7 +185,7 @@ const assistantMarkdownComponents = {
   },
 };
 
-const ALLOWED_MARKDOWN_ELEMENTS = ['p', 'strong', 'em', 'a', 'ul', 'ol', 'li', 'br'];
+const ALLOWED_MARKDOWN_ELEMENTS = ['p', 'strong', 'em', 'a', 'ul', 'ol', 'li', 'br', 'h1', 'h2', 'h3', 'h4'];
 
 const ChatBubble = ({ role, content }: ChatBubbleProps) => {
   const isUser = role === 'user';
