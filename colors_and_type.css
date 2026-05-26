@@ -343,7 +343,7 @@
 }
 
 @utility grid-rows-home {
-  grid-template-rows: 54px 84px 1.1fr 1.25fr 84px 44px;
+  grid-template-rows: 54px 44px 84px 1.1fr 1.25fr 84px;
 }
 
 @utility grid-cols-plateau {

@@ -116,8 +116,16 @@ const DirectionA = () => {
         ]}
       />
 
-      {/* ── Rows 2-3 left: E-commerce section ── */}
-      <div className="col-span-2 min-h-72 flex flex-col overflow-hidden bg-edo-black md:col-start-1 md:col-end-7 md:row-start-2 md:row-end-4 md:min-h-0">
+      {/* ── Row 2: Social links (wrapped to 4-col grid) ── */}
+      <SocialLinksRow className="col-span-2 md:col-start-1 md:col-end-5 md:row-start-2" />
+
+      {/* ── Row 2: Marquee ── */}
+      <div className="col-span-2 h-11 flex items-center overflow-hidden bg-white min-w-0 md:col-start-5 md:col-end-13 md:row-start-2">
+        <MarqueeCell size={20} />
+      </div>
+
+      {/* ── Rows 3-4 left: E-commerce section ── */}
+      <div className="col-span-2 min-h-72 flex flex-col overflow-hidden bg-edo-black md:col-start-1 md:col-end-7 md:row-start-3 md:row-end-5 md:min-h-0">
         <div className="flex flex-shrink-0 flex-col gap-3 px-5 pt-6 pb-5 md:px-7 md:pt-7 md:pb-6">
           <h2 className="m-0 text-balance text-[clamp(1.625rem,3vw,2.5rem)] font-light tracking-display leading-tight text-white">
             {homeMsg.studioHeadlineLead[lang]}{' '}
@@ -173,11 +181,11 @@ const DirectionA = () => {
         </div>
       </div>
 
-      {/* ── Rows 2-3 right: Gallery hero ── */}
+      {/* ── Rows 3-4 right: Gallery hero ── */}
       <button
         onClick={() => goto('gallery')}
         aria-label={common.gallery[lang]}
-        className="edo-focus-ring group relative col-span-2 min-h-48 flex flex-col items-stretch justify-end overflow-hidden border-0 bg-edo-dark p-6 text-white transition-all duration-150 hover:brightness-75 md:col-start-7 md:col-end-13 md:row-start-2 md:row-end-4"
+        className="edo-focus-ring group relative col-span-2 min-h-48 flex flex-col items-stretch justify-end overflow-hidden border-0 bg-edo-dark p-6 text-white transition-all duration-150 hover:brightness-75 md:col-start-7 md:col-end-13 md:row-start-3 md:row-end-5"
       >
         {galleryUseCrossfade ? (
           <ImageCrossfade images={heroPosters} priority />
@@ -223,8 +231,8 @@ const DirectionA = () => {
         </div>
       </button>
 
-      {/* ── Row 4 left: Video / showreel ── */}
-      <div className="col-span-2 min-h-56 flex overflow-hidden bg-black md:col-span-3 md:col-start-1 md:col-end-4 md:row-start-4 md:min-h-0">
+      {/* ── Row 5 left: Video / showreel ── */}
+      <div className="col-span-2 min-h-56 flex overflow-hidden bg-black md:col-span-3 md:col-start-1 md:col-end-4 md:row-start-5 md:min-h-0">
         <button
           onClick={() => goto('gallery')}
           className="edo-focus-ring group relative flex h-full w-full cursor-pointer items-center justify-center overflow-hidden border-0 bg-edo-dark p-0 text-left transition-all duration-150 hover:brightness-75"
@@ -253,10 +261,10 @@ const DirectionA = () => {
         </button>
       </div>
 
-      {/* ── Rows 4-5 middle: Cyclorama ── */}
+      {/* ── Rows 5-6 middle: Cyclorama ── */}
       <button
         onClick={() => goto('cyclorama')}
-        className="edo-focus-ring group col-span-2 min-h-32 flex cursor-pointer flex-col justify-between border-0 bg-white p-5 text-left text-foreground transition-colors duration-150 hover:bg-muted md:col-span-3 md:col-start-4 md:col-end-7 md:row-start-4 md:row-end-6 md:min-h-0"
+        className="edo-focus-ring group col-span-2 min-h-32 flex cursor-pointer flex-col justify-between border-0 bg-white p-5 text-left text-foreground transition-colors duration-150 hover:bg-muted md:col-span-3 md:col-start-4 md:col-end-7 md:row-start-5 md:row-end-7 md:min-h-0"
       >
         <CellLabel>Espace</CellLabel>
         <div className="flex items-end justify-between gap-3">
@@ -277,10 +285,10 @@ const DirectionA = () => {
         </div>
       </button>
 
-      {/* ── Row 4 right: Book CTA ── */}
+      {/* ── Row 5 right: Book CTA ── */}
       <button
         onClick={() => goto('book')}
-        className="edo-focus-ring group col-span-2 h-20 flex cursor-pointer items-center justify-between gap-3 border-0 bg-primary px-5 py-3 text-left text-white transition-colors duration-150 hover:bg-foreground hover:text-white md:col-start-7 md:col-end-10 md:row-start-4 md:h-21"
+        className="edo-focus-ring group col-span-2 h-20 flex cursor-pointer items-center justify-between gap-3 border-0 bg-primary px-5 py-3 text-left text-white transition-colors duration-150 hover:bg-foreground hover:text-white md:col-start-7 md:col-end-10 md:row-start-5 md:h-21"
       >
         <div className="flex min-w-0 flex-col gap-1 transition-transform duration-150 group-hover:scale-102">
           <span className="font-mono text-label uppercase tracking-label text-white">
@@ -295,10 +303,10 @@ const DirectionA = () => {
           width="16" height="16"        />
       </button>
 
-      {/* ── Row 5 left: Discovery CTA ── */}
+      {/* ── Row 6 left: Discovery CTA ── */}
       <button
         onClick={() => goto('discovery')}
-        className="edo-focus-ring group relative col-span-1 h-20 flex cursor-pointer items-center justify-between gap-3 border-0 bg-foreground px-4 py-3 text-left text-white transition-all duration-150 hover:brightness-110 md:col-start-1 md:col-end-4 md:row-start-5 md:h-21"
+        className="edo-focus-ring group relative col-span-1 h-20 flex cursor-pointer items-center justify-between gap-3 border-0 bg-foreground px-4 py-3 text-left text-white transition-all duration-150 hover:brightness-110 md:col-start-1 md:col-end-4 md:row-start-6 md:h-21"
       >
         <svg viewBox="0 0 200 84" preserveAspectRatio="none" className="absolute inset-0 h-full w-full opacity-20">
           {[...Array(7)].map((_, i) => (<line key={'h' + i} x1="0" y1={i * 14} x2="200" y2={i * 14} stroke="currentColor" strokeWidth="0.3" />))}
@@ -317,10 +325,10 @@ const DirectionA = () => {
         </div>
       </button>
 
-      {/* ── Rows 4-5 right: Post-production ── */}
+      {/* ── Rows 5-6 right: Post-production ── */}
       <button
         onClick={() => goto('postprod')}
-        className="edo-focus-ring group col-span-1 h-20 flex cursor-pointer flex-col justify-between border-0 bg-white p-5 text-left text-foreground transition-colors duration-150 hover:bg-muted md:col-start-7 md:col-end-10 md:row-start-4 md:row-end-6 md:mt-home-offset md:h-home-offset"
+        className="edo-focus-ring group col-span-1 h-20 flex cursor-pointer flex-col justify-between border-0 bg-white p-5 text-left text-foreground transition-colors duration-150 hover:bg-muted md:col-start-7 md:col-end-10 md:row-start-5 md:row-end-7 md:mt-home-offset md:h-home-offset"
       >
         <CellLabel>Service</CellLabel>
         <div className="flex items-end justify-between gap-2.5">
@@ -339,28 +347,20 @@ const DirectionA = () => {
         </div>
       </button>
 
-      {/* ── Rows 4-5 far right: Assistant chat (desktop only; mobile uses FAB) ── */}
+      {/* ── Rows 5-6 far right: Assistant chat (desktop only; mobile uses FAB) ── */}
       <Suspense
         fallback={
           <div
             aria-hidden
-            className="hidden bg-white md:flex md:col-start-10 md:col-end-13 md:row-start-4 md:row-end-6 md:min-h-0"
+            className="hidden bg-white md:flex md:col-start-10 md:col-end-13 md:row-start-5 md:row-end-7 md:min-h-0"
           />
         }
       >
         <AssistantChat
           lang={lang}
-          className="hidden md:flex md:col-start-10 md:col-end-13 md:row-start-4 md:row-end-6 md:min-h-0"
+          className="hidden md:flex md:col-start-10 md:col-end-13 md:row-start-5 md:row-end-7 md:min-h-0"
         />
       </Suspense>
-
-      {/* ── Row 6: Social links (wrapped to 4-col grid) ── */}
-      <SocialLinksRow className="col-span-2 md:col-start-1 md:col-end-5 md:row-start-6" />
-
-      {/* ── Row 6: Marquee ── */}
-      <div className="col-span-2 h-11 flex items-center overflow-hidden bg-white min-w-0 md:col-start-5 md:col-end-13 md:row-start-6">
-        <MarqueeCell size={20} />
-      </div>
 
       {/* ── Mobile chat FAB + sheet ── */}
       <button
