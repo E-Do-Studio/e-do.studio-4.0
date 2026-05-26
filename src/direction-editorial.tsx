@@ -192,7 +192,7 @@ const DirectionA = () => {
       <button
         onClick={() => goto('gallery')}
         aria-label={common.gallery[lang]}
-        className="edo-focus-ring group relative col-span-2 min-h-48 flex flex-col items-stretch justify-end overflow-hidden border-0 bg-edo-dark p-6 text-white transition-all duration-150 hover:brightness-75 md:col-start-7 md:col-end-13 md:row-start-3 md:row-end-5"
+        className="edo-focus-ring group relative col-span-2 aspect-[6/5] flex flex-col items-stretch justify-end overflow-hidden border-0 bg-edo-dark p-6 text-white transition-all duration-150 hover:brightness-75 md:col-start-7 md:col-end-13 md:row-start-3 md:row-end-5 md:aspect-auto"
       >
         {galleryUseCrossfade ? (
           <ImageCrossfade images={heroPosters} priority />
@@ -238,7 +238,60 @@ const DirectionA = () => {
         </div>
       </button>
 
-      {/* ── Row 5 left: Video / showreel ── */}
+      {/*
+       * Mobile JSX order below mirrors the requested mobile stack:
+       *   Post-production + Cyclorama (50/50) → Video → Book CTA → Discovery (full-width).
+       * Desktop positions are pinned by md:col-start-* / md:row-start-* so JSX order
+       * doesn't affect the bento layout above the md breakpoint.
+       */}
+
+      {/* ── Rows 5-6 right (desktop) / mobile row A left: Post-production ── */}
+      <button
+        onClick={() => goto('postprod')}
+        className="edo-focus-ring group col-span-1 h-36 flex cursor-pointer flex-col justify-between border-0 bg-white p-5 text-left text-foreground transition-colors duration-150 hover:bg-muted md:col-start-7 md:col-end-10 md:row-start-5 md:row-end-7 md:mt-home-offset md:h-home-offset"
+      >
+        <CellLabel>Service</CellLabel>
+        <div className="flex items-end justify-between gap-2.5">
+          <div className="min-w-0">
+            <div className="whitespace-nowrap text-page-title font-light tracking-display leading-none text-foreground">
+              Post-production
+            </div>
+            <div className="mt-1.5 font-mono text-caption uppercase tracking-ui text-muted-foreground">
+              {homeMsg.retouchPhotoVideo[lang]}
+            </div>
+          </div>
+          <IconArrowRight
+            className="flex-shrink-0 transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5"
+            width="16" height="16"
+          />
+        </div>
+      </button>
+
+      {/* ── Rows 5-6 middle (desktop) / mobile row A right: Cyclorama ── */}
+      <button
+        onClick={() => goto('cyclorama')}
+        className="edo-focus-ring group col-span-1 h-36 flex cursor-pointer flex-col justify-between border-0 bg-white p-5 text-left text-foreground transition-colors duration-150 hover:bg-muted md:col-span-3 md:col-start-4 md:col-end-7 md:row-start-5 md:row-end-7 md:h-auto md:min-h-0"
+      >
+        <CellLabel>Espace</CellLabel>
+        <div className="flex items-end justify-between gap-3">
+          <div className="min-w-0">
+            <div className="whitespace-nowrap text-page-title font-light tracking-display leading-none text-foreground">
+              Cyclorama
+            </div>
+            <div className="mt-1.5 text-caption font-mono uppercase tracking-ui text-muted-foreground">
+              {homeMsg.freeProductionPhotovideo[lang]}
+            </div>
+          </div>
+          <div className="flex flex-shrink-0 items-center justify-center">
+            <IconArrowRight
+              className="transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5"
+              width="16" height="16"
+            />
+          </div>
+        </div>
+      </button>
+
+      {/* ── Row 5 left (desktop) / mobile row B: Video / showreel ── */}
       <div className="col-span-2 min-h-56 flex overflow-hidden bg-black md:col-span-3 md:col-start-1 md:col-end-4 md:row-start-5 md:min-h-0">
         <button
           onClick={() => goto('gallery')}
@@ -268,31 +321,7 @@ const DirectionA = () => {
         </button>
       </div>
 
-      {/* ── Rows 5-6 middle: Cyclorama ── */}
-      <button
-        onClick={() => goto('cyclorama')}
-        className="edo-focus-ring group col-span-2 min-h-32 flex cursor-pointer flex-col justify-between border-0 bg-white p-5 text-left text-foreground transition-colors duration-150 hover:bg-muted md:col-span-3 md:col-start-4 md:col-end-7 md:row-start-5 md:row-end-7 md:min-h-0"
-      >
-        <CellLabel>Espace</CellLabel>
-        <div className="flex items-end justify-between gap-3">
-          <div className="min-w-0">
-            <div className="whitespace-nowrap text-page-title font-light tracking-display leading-none text-foreground">
-              Cyclorama
-            </div>
-            <div className="mt-1.5 text-caption font-mono uppercase tracking-ui text-muted-foreground">
-              {homeMsg.freeProductionPhotovideo[lang]}
-            </div>
-          </div>
-          <div className="flex flex-shrink-0 items-center justify-center">
-            <IconArrowRight
-              className="transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5"
-              width="16" height="16"
-            />
-          </div>
-        </div>
-      </button>
-
-      {/* ── Row 5 right: Book CTA ── */}
+      {/* ── Row 5 right (desktop) / mobile row C: Book CTA ── */}
       <button
         onClick={() => goto('book')}
         className="edo-focus-ring group col-span-2 h-20 flex cursor-pointer items-center justify-between gap-3 border-0 bg-primary px-5 py-3 text-left text-white transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90 md:col-start-7 md:col-end-10 md:row-start-5 md:h-21"
@@ -337,28 +366,6 @@ const DirectionA = () => {
           <span className="sm:hidden inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 p-1.5 text-white/80" aria-hidden="true">
             <IconLock width="12" height="12" />
           </span>
-        </div>
-      </button>
-
-      {/* ── Rows 5-6 right: Post-production ── */}
-      <button
-        onClick={() => goto('postprod')}
-        className="edo-focus-ring group col-span-1 h-20 flex cursor-pointer flex-col justify-between border-0 bg-white p-5 text-left text-foreground transition-colors duration-150 hover:bg-muted md:col-start-7 md:col-end-10 md:row-start-5 md:row-end-7 md:mt-home-offset md:h-home-offset"
-      >
-        <CellLabel>Service</CellLabel>
-        <div className="flex items-end justify-between gap-2.5">
-          <div className="min-w-0">
-            <div className="whitespace-nowrap text-page-title font-light tracking-display leading-none text-foreground">
-              Post-production
-            </div>
-            <div className="mt-1.5 font-mono text-caption uppercase tracking-ui text-muted-foreground">
-              {homeMsg.retouchPhotoVideo[lang]}
-            </div>
-          </div>
-          <IconArrowRight
-            className="flex-shrink-0 transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5"
-            width="16" height="16"
-          />
         </div>
       </button>
 
