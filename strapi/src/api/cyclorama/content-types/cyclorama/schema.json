@@ -49,7 +49,7 @@
       "allowedTypes": ["images"],
       "description": "Image principale du plateau."
     },
-    "landscapeImage": {
+    "machineImage": {
       "type": "media",
       "multiple": false,
       "allowedTypes": ["images"],

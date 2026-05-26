@@ -99,7 +99,7 @@
       },
       "description": "Tarification opérateur structurée — remplace progressivement `operatorPricing`. Localisé : libellés FR/EN indépendants."
     },
-    "landscapeImage": {
+    "machineImage": {
       "type": "media",
       "multiple": false,
       "allowedTypes": ["images"],

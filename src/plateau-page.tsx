@@ -91,7 +91,7 @@ const PlateauPage = ({ slug }: { slug: string }) => {
   if (loading || !plateaux) return null;
   const p = plateaux[slug] || plateaux.cyclorama;
   const order = ['live','eclipse','horizontal','vertical','cyclorama'];
-  const hero = p.landscapeImage;
+  const hero = p.machineImage;
 
   return (
     /* Mobile: single-column stacked, scrollable. Desktop (md+): 4-column bento */
