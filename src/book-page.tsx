@@ -1069,6 +1069,33 @@ const Step2Date = ({ lang, p, viewY, viewM, months, days, calCells, selected, se
       }
     }
   }, [selected, selectedDayBooked, isSelectedToday]);
+  React.useEffect(()=>{
+    if (selected) return;
+    if (availLoading) return;
+    if (viewY !== todayY || viewM !== todayM) return;
+    const isFullDay = rentalHours >= 8;
+    const daysInMonth = new Date(viewY, viewM + 1, 0).getDate();
+    const hasValidArrival = (d: number) => {
+      const booked = bookedHoursMap[d];
+      const sameAsToday = d === todayD;
+      for (let h = 9; h <= 19 - rentalHours; h++) {
+        if (sameAsToday && h <= currentHour) continue;
+        if (isHourBlocked(booked, h, rentalHours)) continue;
+        return true;
+      }
+      return false;
+    };
+    for (let d = todayD; d <= daysInMonth; d++) {
+      const dow = new Date(viewY, viewM, d).getDay();
+      const weekend = dow === 0 || dow === 6;
+      if (weekend && !isFullDay) continue;
+      const av = availMap[d] || 'free';
+      if (av === 'unavailable') continue;
+      if (!hasValidArrival(d)) continue;
+      setSelected({ y: viewY, m: viewM, d });
+      return;
+    }
+  }, [availLoading, availMap, bookedHoursMap, selected, viewY, viewM, rentalHours]);
   return (<div>
     <div className="px-6 border-b border-foreground flex items-center h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local"><span className="edo-cell-label text-primary whitespace-nowrap">{`06 · ${fr ? 'Choisir une date' : 'Pick a date'}`}</span></div>
 
