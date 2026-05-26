@@ -1,6 +1,13 @@
-import { useEffect, useRef } from 'react';
-import { useQueryState, parseAsString } from 'nuqs';
-import { Button, EmptyState, IconArrowRight, PageHeader } from './ui';
+import { useEffect, useMemo, useRef } from 'react';
+import { useQueryStates, parseAsString } from 'nuqs';
+import {
+  Button,
+  EmptyState,
+  IconArrowRight,
+  MobileNavStrip,
+  PageHeader,
+} from './ui';
+import type { StripGroup } from './ui';
 import { useDocumentMeta, type SeoOverride } from './lib/use-document-meta';
 import { useStructuredData } from './lib/use-structured-data';
 import { buildPostProdServiceSchema, buildBreadcrumbSchema } from './lib/structured-data';
@@ -188,9 +195,11 @@ const PostprodPage = () => {
   const cats: PPCat[] = ppQuery.data ? adaptStrapiCats(ppQuery.data) : [];
   const strapiCats: StrapiPPCat[] = ppQuery.data ?? [];
 
-  const [type, setType] = useQueryState(
-    'type',
-    parseAsString.withDefault('').withOptions({ history: 'push', clearOnDefault: true }),
+  const [{ type }, setFilters] = useQueryStates(
+    {
+      type: parseAsString.withDefault(''),
+    },
+    { history: 'push', clearOnDefault: true },
   );
 
   // Auto-select the first available cat when the URL param is missing OR points
@@ -199,12 +208,35 @@ const PostprodPage = () => {
   const hasValidType = !!type && cats.some(c => c.k === type);
   useEffect(() => {
     if (type && cats.length > 0 && !cats.some(c => c.k === type)) {
-      setType(null);
+      setFilters({ type: null });
     }
-  }, [type, cats, setType]);
+  }, [type, cats, setFilters]);
 
   const k = hasValidType ? type : (cats[0]?.k ?? '');
   const cat = cats.find(c => c.k === k) || cats[0];
+
+  const typeOptions = useMemo(
+    () => [
+      { k: 'all', label: common.all[lang] },
+      ...cats.map(c => ({ k: c.k, label: c[lang] })),
+    ],
+    [cats, lang],
+  );
+
+  const stripGroups: StripGroup[] = useMemo(
+    () => [
+      {
+        key: 'type',
+        label: postprodMsg.category[lang],
+        options: typeOptions,
+        value: hasValidType ? type : 'all',
+        onSelect: () => undefined,
+      },
+    ],
+    [typeOptions, hasValidType, type, lang],
+  );
+
+  const stripSummary = hasValidType ? cat?.[lang] : common.all[lang];
 
   // SEO override per type — prefer Strapi-provided seo, fall back to a
   // computed title/description so every type still has unique meta.
@@ -279,24 +311,40 @@ const PostprodPage = () => {
         ]}
       />
 
-      {/* Sidebar: horizontal tab scroll on mobile, vertical list on desktop */}
-      <aside className="bg-white flex flex-row overflow-x-auto scrollbar-thin md:col-start-1 md:row-start-2 md:flex-col md:overflow-x-hidden md:overflow-y-auto">
+      {/* Mobile: filter strip → bottom sheet. Desktop sidebar remains below. */}
+      <MobileNavStrip
+        triggerLabel={postprodMsg.category[lang]}
+        groups={stripGroups}
+        hasActive={hasValidType}
+        activeCount={hasValidType ? 1 : 0}
+        summary={stripSummary}
+        ariaLabel={lang === 'fr' ? 'Filtrer par catégorie' : 'Filter by category'}
+        lang={lang}
+        onApply={(draft) => {
+          const next = draft.type;
+          setFilters({ type: !next || next === 'all' ? null : next });
+        }}
+        className="col-span-full md:hidden"
+      />
+
+      {/* Desktop sidebar — vertical list, hidden on mobile (mobile uses the strip above) */}
+      <aside className="hidden bg-white md:col-start-1 md:row-start-2 md:flex md:flex-col md:overflow-x-hidden md:overflow-y-auto">
         {cats.map((c,idx)=>{
           const active = k===c.k;
           const isLast = idx===cats.length-1;
           const defaultK = cats[0]?.k;
           return (
-            <button key={c.k} onClick={()=>setType(c.k === defaultK ? null : c.k)}
-              className={`edo-focus-ring flex-none border-0 ${active?'bg-muted border-b-2 border-b-primary md:border-b-0 md:border-l-2 md:border-l-primary':'bg-white border-b-2 border-b-transparent md:border-b-0 md:border-l-2 md:border-l-transparent'} ${idx>0?'md:border-t md:border-t-border':''} ${isLast?'md:border-b md:border-b-border':''} py-3 px-4 cursor-pointer text-left flex flex-col gap-1 transition-all duration-150 min-h-16 md:min-h-18`}>
+            <button key={c.k} onClick={()=>setFilters({ type: c.k === defaultK ? null : c.k })}
+              className={`edo-focus-ring flex-none border-0 ${active?'bg-muted border-l-2 border-l-primary':'bg-white border-l-2 border-l-transparent'} ${idx>0?'border-t border-t-border':''} ${isLast?'border-b border-b-border':''} py-3 px-4 cursor-pointer text-left flex flex-col gap-1 transition-all duration-150 min-h-18`}>
               <span className={`font-mono text-micro tracking-label ${active?'text-primary':'text-muted-foreground'}`}>{String(idx+1).padStart(2,'0')}</span>
               <span className={`text-detail ${active?'font-medium':'font-normal'} tracking-copy-tight text-foreground leading-snug whitespace-nowrap overflow-hidden text-ellipsis`}>{c[lang]}</span>
-              <span className="hidden md:block font-mono text-micro text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis mt-auto">
+              <span className="font-mono text-micro text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis mt-auto">
                 {c.price?.kind==='quote' ? common.onRequest[lang] : `${c.price.from?(postprodMsg.from[lang] + ' '):''}${c.price.amount}${c.price.unit?.[lang] ?? ''}`}
               </span>
             </button>
           );
         })}
-        <div className="hidden md:flex mt-auto py-3.5 px-4 border-t border-t-border flex-col gap-1.5 shrink-0 bg-muted">
+        <div className="mt-auto flex py-3.5 px-4 border-t border-t-border flex-col gap-1.5 shrink-0 bg-muted">
           <span className="font-mono text-micro tracking-label uppercase text-primary">
             {postprodMsg.note[lang]}
           </span>
