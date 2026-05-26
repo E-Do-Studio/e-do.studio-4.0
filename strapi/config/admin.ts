@@ -6,8 +6,7 @@ import type { Core } from '@strapi/strapi';
 const PATH_BY_UID: Record<string, (lang: string, slug?: string) => string> = {
   'api::home-hero.home-hero': (l) => `/${l}`,
   'api::site-setting.site-setting': (l) => `/${l}`,
-  'api::cyclorama.cyclorama': (l) => `/${l}/cyclorama`,
-  'api::machine.machine': (l, slug) => (slug ? `/${l}/plateau/${slug}` : `/${l}/cyclorama`),
+  'api::machine.machine': (l, slug) => (slug ? (slug === 'cyclorama' ? `/${l}/cyclorama` : `/${l}/plateau/${slug}`) : `/${l}`),
   'api::post-production-type.post-production-type': (l) => `/${l}/post-production`,
   'api::gallery-project.gallery-project': (l) => `/${l}/galerie`,
   'api::gallery-category.gallery-category': (l) => `/${l}/galerie`,

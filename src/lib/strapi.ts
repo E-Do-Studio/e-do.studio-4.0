@@ -93,26 +93,14 @@ interface StrapiMachine {
   subtitle: string;
   description: string;
   pricing: string;
+  pricingDescription?: string | null;
   operatorPricing: string | null;
   specs?: StrapiSpec[];
+  usages?: StrapiLocalizedItem[];
   pricingRows?: StrapiPricingRow[];
   operatorPricingRows?: StrapiPricingRow[];
   machineImage?: StrapiMedia | null;
   media?: StrapiMedia[];
-  seo?: StrapiSeoMeta;
-}
-
-interface StrapiCyclorama {
-  title: string;
-  subtitle: string;
-  description: string;
-  pricing: string;
-  pricingDescription: string;
-  specs?: StrapiSpec[];
-  usages?: StrapiLocalizedItem[];
-  pricingRows?: StrapiPricingRow[];
-  machineImage?: StrapiMedia | null;
-  media?: StrapiMediaItem[];
   seo?: StrapiSeoMeta;
 }
 
@@ -137,14 +125,6 @@ interface StrapiMedia {
     small?: { url: string };
     thumbnail?: { url: string };
   };
-}
-
-interface StrapiMediaItem {
-  kind: 'image' | 'video';
-  image?: StrapiMedia | null;
-  video?: StrapiMedia | null;
-  poster?: StrapiMedia | null;
-  alt?: string | null;
 }
 
 interface StrapiBlogPost {
@@ -506,32 +486,6 @@ function mediaListToItems(items: StrapiMedia[] | undefined): MediaItem[] {
   return out;
 }
 
-function mergeMediaItems(frItems: StrapiMediaItem[] | undefined, enItems: StrapiMediaItem[] | undefined): MediaItem[] {
-  const fr = frItems ?? [];
-  const en = enItems ?? [];
-  // The media component itself is non-localized in Strapi, but `alt` IS localized
-  // at the entry level — so FR/EN come in as parallel arrays of the same length.
-  // Merge by index; the FR entry is the source of truth for kind/url/poster.
-  const out: MediaItem[] = [];
-  for (let i = 0; i < fr.length; i++) {
-    const f = fr[i];
-    const e = en[i] ?? f;
-    const altFr = f.alt ?? '';
-    const altEn = e.alt ?? altFr;
-    const alt: Bilingual = { fr: altFr, en: altEn };
-    if (f.kind === 'video') {
-      const url = resolveRawMediaUrl(f.video);
-      if (!url) continue;
-      out.push({ kind: 'video', url, poster: resolveRawMediaUrl(f.poster), alt });
-    } else {
-      const url = resolveStrapiMediaUrl(f.image);
-      if (!url) continue;
-      out.push({ kind: 'image', url, alt });
-    }
-  }
-  return out;
-}
-
 function parsePricingToRates(pricingFr: string, pricingEn: string): { k: Bilingual; v: string }[] {
   const frParts = pricingFr?.split(' · ') ?? [];
   const enParts = pricingEn?.split(' · ') ?? [];
@@ -582,13 +536,16 @@ function pricingRowsToRates(
   return rates;
 }
 
-const CYCLO_USES: Bilingual[] = [
-  { fr: 'Campagne & éditorial', en: 'Campaign & editorial' },
-  { fr: 'Film publicitaire', en: 'Advertising film' },
-  { fr: 'Packshot & still life', en: 'Packshot & still life' },
-];
-
+// Fallback `usages` per slug. Used when the Strapi entry has no usages
+// component rows (e.g. on a fresh install before editors fill them in).
+// Once the cyclorama Machine row carries its own usages from Strapi, the
+// fallback for that slug is silently superseded.
 const MACHINE_USES: Record<string, Bilingual[]> = {
+  cyclorama: [
+    { fr: 'Campagne & éditorial', en: 'Campaign & editorial' },
+    { fr: 'Film publicitaire', en: 'Advertising film' },
+    { fr: 'Packshot & still life', en: 'Packshot & still life' },
+  ],
   horizontal: [
     { fr: 'Prêt-à-porter à plat', en: 'Flat-laid ready-to-wear' },
     { fr: 'Compositions produits', en: 'Product compositions' },
@@ -621,40 +578,26 @@ const MACHINE_LABELS: Record<string, { fr: string; en: string }> = {
 
 // ─── Data fetchers ──────────────────────────────────────────────────────────
 
+// Stable display order on every plateau-aware page. Cyclorama goes first;
+// the rest follows the studio's standard ordering (live → eclipse → packshot
+// stages). Any machine slug not listed falls in afterwards in API order.
+const PLATEAU_ORDER = ['cyclorama', 'live', 'eclipse', 'horizontal', 'vertical'];
+
+function sortByPlateauOrder<T extends { slug: string }>(rows: T[]): T[] {
+  const indexOf = (slug: string) => {
+    const i = PLATEAU_ORDER.indexOf(slug);
+    return i === -1 ? Number.POSITIVE_INFINITY : i;
+  };
+  return [...rows].sort((a, b) => indexOf(a.slug) - indexOf(b.slug));
+}
+
 export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
-  const [machinesBI, cycloBI] = await Promise.all([
-    fetchStrapiBilingual<{ data: StrapiMachine[] }>('machines', { 'populate': 'specs,pricingRows,seo,seo.image,machineImage,media', 'sort': 'createdAt:asc' }),
-    fetchStrapiBilingual<{ data: StrapiCyclorama }>('cyclorama', { 'populate': 'specs,usages,pricingRows,seo,seo.image,machineImage,media,media.image,media.video,media.poster' }),
-  ]);
+  const machinesBI = await fetchStrapiBilingual<{ data: StrapiMachine[] }>('machines', {
+    'populate': 'specs,usages,pricingRows,seo,seo.image,machineImage,media',
+    'sort': 'createdAt:asc',
+  });
 
-  const result: Record<string, PlateauSpec> = {};
-
-  const cycFr = cycloBI.fr.data;
-  const cycEn = cycloBI.en.data;
-  if (cycFr) {
-    const cycRows = cycFr.pricingRows ?? [];
-    const cycRowsEn = cycEn?.pricingRows ?? [];
-    const rates = cycRows.length > 0
-      ? pricingRowsToRates(cycRows, cycRowsEn)
-      : parsePricingToRates(cycFr.pricing, cycEn?.pricing ?? cycFr.pricing);
-    result.cyclorama = {
-      num: '01',
-      name: 'Cyclorama',
-      slug: 'cyclorama',
-      tagline: { fr: cycFr.subtitle, en: cycEn?.subtitle ?? cycFr.subtitle },
-      desc: { fr: cycFr.description, en: cycEn?.description ?? cycFr.description },
-      specs: mergeSpecs(cycFr.specs ?? [], cycEn?.specs ?? []),
-      uses: mergeLocalizedItems(cycFr.usages ?? [], cycEn?.usages ?? []),
-      rates,
-      ratesNote: cycFr.pricingDescription ? { fr: cycFr.pricingDescription, en: cycEn?.pricingDescription ?? cycFr.pricingDescription } : undefined,
-      visual: 'cyc',
-      machineImage: buildMachineImage(cycFr.machineImage, cycEn?.machineImage),
-      media: mergeMediaItems(cycFr.media, cycEn?.media),
-      seo: buildSeo(cycFr.seo, cycEn?.seo),
-    };
-  }
-
-  const machinesFr = machinesBI.fr.data;
+  const machinesFr = sortByPlateauOrder(machinesBI.fr.data);
   const machinesEn = machinesBI.en.data;
   // Invariant (EDO-241): the cyclorama lives in its own single-type. The
   // `machines` collection must not carry a `slug='cyclorama'` row — if one
@@ -667,16 +610,23 @@ export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
     const rates = rows.length > 0
       ? pricingRowsToRates(rows, rowsEn)
       : parsePricingToRates(mFr.pricing, mEn.pricing);
+    const uses = mFr.usages && mFr.usages.length > 0
+      ? mergeLocalizedItems(mFr.usages, mEn.usages ?? mFr.usages)
+      : (MACHINE_USES[mFr.slug] ?? []);
+    const noteFr = mFr.pricingDescription;
+    const noteEn = mEn.pricingDescription ?? noteFr;
+    const ratesNote = noteFr ? { fr: noteFr, en: noteEn ?? noteFr } : undefined;
     result[mFr.slug] = {
-      num: String(i + 2).padStart(2, '0'),
+      num: String(i + 1).padStart(2, '0'),
       name: mFr.title,
       slug: mFr.slug,
       tagline: { fr: mFr.subtitle, en: mEn.subtitle },
       desc: { fr: mFr.description, en: mEn.description },
       specs: mergeSpecs(mFr.specs ?? [], mEn.specs ?? []),
-      uses: MACHINE_USES[mFr.slug] ?? [],
+      uses,
       rates,
-      visual: mFr.slug,
+      ratesNote,
+      visual: mFr.slug === 'cyclorama' ? 'cyc' : mFr.slug,
       machineImage: buildMachineImage(mFr.machineImage, mEn.machineImage),
       media: mediaListToItems(mFr.media),
       seo: buildSeo(mFr.seo, mEn.seo),
@@ -687,35 +637,20 @@ export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
 }
 
 export async function fetchMachines(): Promise<MachineInfo[]> {
-  const [machinesBI, cycloBI] = await Promise.all([
-    fetchStrapiBilingual<{ data: StrapiMachine[] }>('machines', { 'sort': 'createdAt:asc' }),
-    fetchStrapiBilingual<{ data: StrapiCyclorama }>('cyclorama'),
-  ]);
+  const machinesBI = await fetchStrapiBilingual<{ data: StrapiMachine[] }>('machines', {
+    'sort': 'createdAt:asc',
+  });
 
-  const cycFr = cycloBI.fr.data;
-  const cycEn = cycloBI.en.data;
-  const list: MachineInfo[] = [];
-
-  if (cycFr) {
-    list.push({
-      slug: 'cyclorama',
-      fr: { t: cycFr.title || 'Cyclorama', sub: cycFr.subtitle, label: MACHINE_LABELS.cyclorama?.fr },
-      en: { t: cycEn?.title || 'Cyclorama', sub: cycEn?.subtitle ?? cycFr.subtitle, label: MACHINE_LABELS.cyclorama?.en },
-    });
-  }
-
-  const machinesFr = machinesBI.fr.data;
+  const machinesFr = sortByPlateauOrder(machinesBI.fr.data);
   const machinesEn = machinesBI.en.data;
   for (const mFr of machinesFr) {
     const mEn = machinesEn.find(e => e.slug === mFr.slug) ?? mFr;
-    list.push({
+    return {
       slug: mFr.slug,
       fr: { t: mFr.title, sub: mFr.subtitle, label: MACHINE_LABELS[mFr.slug]?.fr },
       en: { t: mEn.title, sub: mEn.subtitle, label: MACHINE_LABELS[mFr.slug]?.en },
-    });
-  }
-
-  return list;
+    };
+  });
 }
 
 function priceFromRow(row: StrapiPricingRow): PPPrice {
