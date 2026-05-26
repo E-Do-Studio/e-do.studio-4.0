@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from '@tanstack/react-router';
-import { CellLabel, IconArrowRight, PageHeader } from './ui';
+import { CellLabel, IconArrowRight, MobileNavStrip, PageHeader } from './ui';
+import type { StripOption } from './ui';
 import { cn } from './ui/cn';
 import { VideoLoop } from './ui/video-loop';
 import { useDocumentMeta } from './lib/use-document-meta';
@@ -254,6 +255,19 @@ const PlateauPage = ({ slug }: { slug: string }) => {
   const goPrev = () => setActiveIndex((i) => i - 1);
   const goNext = () => setActiveIndex((i) => i + 1);
 
+  // Mobile navigation between plateaux: each option maps to a router screen.
+  // Labels are kept clean (no "01 · ") to match EDO-261 (post-prod) — the
+  // numbered prefix only survives on the desktop sidebar where ordering is
+  // already visually conveyed by the vertical column.
+  const plateauOptions: StripOption[] = order.flatMap((m) => {
+    const cfg = plateaux[m];
+    return cfg ? [{ k: m, label: cfg.name }] : [];
+  });
+  const navigateToPlateau = (key: string) => {
+    if (key === slug) return;
+    goto(key === 'cyclorama' ? 'cyclorama' : `plateau-${key}`);
+  };
+
   return (
     /* Mobile: single-column stacked, scrollable. Desktop (md+): 4-column bento */
     <div className="edo-page-enter grid w-full gap-px bg-edo-pure-black md:h-full md:grid-cols-plateau md:grid-rows-plateau md:overflow-hidden">
@@ -273,8 +287,27 @@ const PlateauPage = ({ slug }: { slug: string }) => {
         ]}
       />
 
-      {/* Sidebar: horizontal scroll on mobile, vertical list on desktop */}
-      <div className="bg-white flex flex-row overflow-x-auto md:col-start-1 md:row-start-2 md:row-span-4 md:flex-col md:overflow-x-hidden md:overflow-y-auto">
+      {/* Mobile navigation: bottom-sheet trigger replacing the horizontal strip. */}
+      <MobileNavStrip
+        triggerLabel="PLATEAUX"
+        ariaLabel={common.stages[lang]}
+        lang={lang}
+        hasActive={false}
+        summary={p.name}
+        groups={[
+          {
+            key: 'plateau',
+            label: 'PLATEAUX',
+            options: plateauOptions,
+            value: slug,
+            onSelect: navigateToPlateau,
+          },
+        ]}
+        onApply={(draft) => navigateToPlateau(draft.plateau)}
+      />
+
+      {/* Desktop sidebar: vertical list, hidden on mobile (replaced by MobileNavStrip). */}
+      <div className="hidden bg-white md:col-start-1 md:row-start-2 md:row-span-4 md:flex md:flex-col md:overflow-x-hidden md:overflow-y-auto">
         {order.map((m, i) => {
           const cfg = plateaux[m];
           if (!cfg) return null;
