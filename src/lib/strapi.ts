@@ -599,8 +599,10 @@ export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
 
   const machinesFr = sortByPlateauOrder(machinesBI.fr.data);
   const machinesEn = machinesBI.en.data;
-  const result: Record<string, PlateauSpec> = {};
-
+  // Invariant (EDO-241): the cyclorama lives in its own single-type. The
+  // `machines` collection must not carry a `slug='cyclorama'` row — if one
+  // reappears it will overwrite the single-type fields above. Seed + drop
+  // migration enforce this; do not reintroduce a defensive filter here.
   machinesFr.forEach((mFr, i) => {
     const mEn = machinesEn.find(e => e.slug === mFr.slug) ?? mFr;
     const rows = mFr.pricingRows ?? [];
@@ -641,8 +643,7 @@ export async function fetchMachines(): Promise<MachineInfo[]> {
 
   const machinesFr = sortByPlateauOrder(machinesBI.fr.data);
   const machinesEn = machinesBI.en.data;
-
-  return machinesFr.map((mFr) => {
+  for (const mFr of machinesFr) {
     const mEn = machinesEn.find(e => e.slug === mFr.slug) ?? mFr;
     return {
       slug: mFr.slug,

@@ -213,6 +213,7 @@ export const home = {
   } as B,
   requestQuoteOr: { fr: 'Demander un devis ou', en: 'Request a quote or' } as B,
   tellMeMore: { fr: "Dites-m'en plus", en: 'Tell me more' } as B,
+  comingSoon: { fr: 'Bientôt disponible', en: 'Coming soon' } as B,
   retouchPhotoVideo: {
     fr: 'Retouche · Photo & Vidéo',
     en: 'Retouching · Photo & Video',

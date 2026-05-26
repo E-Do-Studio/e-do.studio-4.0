@@ -312,61 +312,8 @@ async function seedMachines() {
     );
   }
 
-  await upsertCollection(
-    'machines',
-    'cyclorama',
-    {
-      title: 'Cyclorama',
-      slug: 'cyclorama',
-      subtitle: 'Production libre',
-      description:
-        "Cyclo 2 faces de 30 m² pour photo et vidéo sur fond blanc infini. À la journée ou à la semaine, en production libre ou avec notre équipe.",
-      pricing: '650€ / 5h · 880€ / 10h · Sur demande / 10h éditorial',
-      pricingDescription: 'Remise en blanc 110 € · Électricité 1,40 €/kWh',
-      usages: [
-        { text: 'Campagne & éditorial' },
-        { text: 'Film publicitaire' },
-        { text: 'Packshot & still life' },
-      ],
-      specs: [
-        { label: 'Surface', value: '240 m² · Cyclo 2 faces 32 m²' },
-        { label: 'Dimensions', value: '6,3m L × 5,2m l × 5m H' },
-        { label: 'Éclairage naturel', value: 'Skydomes occultable' },
-        { label: 'Accès', value: 'Quai de livraison 3,5m L × 4,5m H' },
-        { label: 'Extérieur', value: 'Accès direct, parking sur place' },
-        { label: 'Électricité', value: '1 prise Marechal 63A triphasée · 15 prises 16A' },
-        { label: 'Connectivité & son', value: 'Wi-Fi très haut débit · Sound system intégré' },
-        { label: 'Maquillage', value: '2 postes maquillage équipés' },
-        { label: 'Habillage', value: "2 cabines d'essayage" },
-        { label: 'Cuisine', value: 'Entièrement équipée' },
-      ],
-    },
-    {
-      title: 'Cyclorama',
-      subtitle: 'Free production',
-      description:
-        '30 m² 2-sided cyclorama for photo and video on an infinite white background. Daily or weekly, as a free-production rental or crewed.',
-      pricing: '€650 / 5 hours · €880 / 10 hours · On request / 10 hours editorial',
-      pricingDescription: 'Repaint €110 · Electricity €1.40/kWh',
-      usages: [
-        { text: 'Campaign & editorial' },
-        { text: 'Advertising film' },
-        { text: 'Packshot & still life' },
-      ],
-      specs: [
-        { label: 'Surface', value: '240 m² · 2-sided cyclo 32 m²' },
-        { label: 'Dimensions', value: '6.3m L × 5.2m W × 5m H' },
-        { label: 'Natural light', value: 'Blackout skydomes' },
-        { label: 'Access', value: 'Loading dock 3.5m L × 4.5m H' },
-        { label: 'Exterior', value: 'Direct access, on-site parking' },
-        { label: 'Electricity', value: '1 Marechal 63A 3-phase · 15 × 16A outlets' },
-        { label: 'Connectivity & sound', value: 'High-speed Wi-Fi · Integrated sound system' },
-        { label: 'Make-up', value: '2 equipped make-up stations' },
-        { label: 'Dressing', value: '2 fitting rooms' },
-        { label: 'Kitchen', value: 'Fully equipped' },
-      ],
-    },
-  );
+  // Cyclorama lives in the `cyclorama` single-type (seeded by seedCyclorama),
+  // not in this `machines` collection — see EDO-241.
 }
 
 // ─── 3. Post-production types ─────────────────────────────────────────────
