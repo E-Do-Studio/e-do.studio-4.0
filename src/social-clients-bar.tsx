@@ -1,4 +1,4 @@
-import { BookCTAInline } from './book-cta';
+import { BookCTATile } from './book-cta';
 import { MarqueeCell } from './cells';
 import type { Lang } from './types';
 import { SocialLinksRow, cn } from './ui';
@@ -16,17 +16,16 @@ const SocialClientsBar = ({ className, lang, onBook }: SocialClientsBarProps) =>
       className,
     )}
   >
-    {/* Mobile: social icons + orange Réserver CTA share one row, marquee
-        below. The 2:1 column ratio gives the booking CTA roughly a third of
-        the row width so it reads as a primary action rather than a label.
+    {/* Mobile: the same BookCTATile that lives in the desktop bento row 5
+        is rendered here at the right of the social icons — one component,
+        two render sites. The social icons row stretches to the tile's
+        height (h-20) so the strip reads as a single mobile CTA band.
         Desktop: md:contents flattens this wrapper so SocialLinksRow lands
-        in col 1 of the outer grid and the inline button is removed via
-        md:hidden, restoring the original [social | marquee] layout. The
-        desktop instance of the same brand CTA lives in DirectionA at its
-        bento position; see BookCTATile in book-cta.tsx. */}
+        in col 1 of the outer grid (back to h-11), and the tile is hidden
+        here via md:hidden (its desktop instance lives in DirectionA). */}
     <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-px bg-edo-pure-black md:contents">
-      <SocialLinksRow />
-      <BookCTAInline lang={lang} onClick={onBook} className="md:hidden" />
+      <SocialLinksRow className="h-20 md:h-11" />
+      <BookCTATile lang={lang} onClick={onBook} className="md:hidden" />
     </div>
     <div className="flex h-11 min-w-0 items-center overflow-hidden bg-white">
       <MarqueeCell size={20} />
