@@ -345,22 +345,22 @@ const PostprodPage = () => {
 
       {/* Sample images grid */}
       <div className="grid grid-cols-3 gap-px bg-white md:col-start-3 md:col-span-2 md:row-start-2 md:grid-rows-double md:min-h-0">
-        <div className={`${bgCls} relative overflow-hidden aspect-portrait`}>
+        <div className={`${bgCls} relative overflow-hidden aspect-portrait md:aspect-auto md:h-full`}>
           <SampleImage seed={cat.samples[0]} label={cat.brands?.[0] || `${cat.k.toUpperCase()} · 01`} medium={cat.medium}/>
         </div>
-        <div className={`${bgCls} relative overflow-hidden aspect-portrait`}>
+        <div className={`${bgCls} relative overflow-hidden aspect-portrait md:aspect-auto md:h-full`}>
           <SampleImage seed={cat.samples[1]} label={cat.brands?.[1] || `${cat.k.toUpperCase()} · 02`} medium={cat.medium}/>
         </div>
-        <div className={`${bgCls} relative overflow-hidden aspect-portrait`}>
+        <div className={`${bgCls} relative overflow-hidden aspect-portrait md:aspect-auto md:h-full`}>
           <SampleImage seed={cat.samples[2]} label={cat.brands?.[2] || `${cat.k.toUpperCase()} · 03`} medium={cat.medium}/>
         </div>
-        <div className={`${bgCls} relative overflow-hidden aspect-portrait`}>
+        <div className={`${bgCls} relative overflow-hidden aspect-portrait md:aspect-auto md:h-full`}>
           <SampleImage seed={cat.samples[3] || cat.samples[0]} label={cat.brands?.[3] || `${cat.k.toUpperCase()} · 04`} medium={cat.medium}/>
         </div>
-        <div className={`${bgCls} relative overflow-hidden aspect-portrait`}>
+        <div className={`${bgCls} relative overflow-hidden aspect-portrait md:aspect-auto md:h-full`}>
           <SampleImage seed={cat.samples[4] || cat.samples[1]} label={cat.brands?.[4] || `${cat.k.toUpperCase()} · 05`} medium={cat.medium}/>
         </div>
-        <div className={`${bgCls} relative overflow-hidden aspect-portrait`}>
+        <div className={`${bgCls} relative overflow-hidden aspect-portrait md:aspect-auto md:h-full`}>
           <SampleImage seed={cat.samples[5] || cat.samples[2]} label={cat.brands?.[5] || `${cat.k.toUpperCase()} · 06`} medium={cat.medium}/>
         </div>
       </div>
