@@ -153,12 +153,19 @@ const DirectionA = () => {
                   i === 3 && 'col-span-3 aspect-auto border-l-0 md:col-span-1 md:aspect-square md:border-l',
                 )}
               >
-                <span className="font-mono text-micro text-edo-gray-500 tracking-meta">
-                  {String(i + 1).padStart(2, '0')}
-                </span>
-                <div>
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-micro text-edo-gray-500 tracking-meta">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <IconArrowRight
+                    className="text-edo-gray-500 transition-all duration-200 ease-edo-out group-hover:translate-x-1 group-hover:text-white"
+                    width="14"
+                    height="14"
+                  />
+                </div>
+                <div className="transition-transform duration-200 ease-edo-out group-hover:-translate-y-0.5">
                   <div className="truncate text-cell font-medium tracking-headline leading-tight text-white">{m[lang].t}</div>
-                  <div className="truncate mt-1 text-micro font-mono uppercase tracking-caption text-edo-gray-500">{m[lang].sub}</div>
+                  <div className="truncate mt-1 text-micro font-mono uppercase tracking-caption text-edo-gray-500 transition-colors duration-200 group-hover:text-edo-gray-200">{m[lang].sub}</div>
                 </div>
               </button>
             ))}
