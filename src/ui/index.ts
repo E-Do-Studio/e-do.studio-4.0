@@ -15,6 +15,7 @@ export {
   IconChat,
   IconLock,
   IconChevronDown,
+  IconSelector,
 } from './icons';
 export type { IconProps } from './icons';
 

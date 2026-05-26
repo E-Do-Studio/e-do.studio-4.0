@@ -216,27 +216,29 @@ const BottomSheet = ({
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',
         }}
       >
-        <div className="relative shrink-0 border-b border-border bg-white px-4 pb-3 pt-3">
+        <div className="shrink-0 border-b border-border bg-white">
           <div
             aria-hidden
-            className="mx-auto mb-2 h-1 w-10 rounded-full bg-border opacity-40"
+            className="mx-auto mt-2 h-1 w-10 rounded-full bg-border opacity-40"
           />
-          <h2
-            ref={titleRef}
-            id={titleId}
-            tabIndex={-1}
-            className="font-mono text-label uppercase tracking-label text-foreground outline-none"
-          >
-            {title}
-          </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={closeLabel}
-            className="edo-focus-ring absolute right-2 top-2 grid size-11 cursor-pointer place-items-center text-foreground transition-colors duration-150 ease-edo-out hover:bg-muted"
-          >
-            <IconX width={18} height={18} />
-          </button>
+          <div className="flex items-center justify-between gap-3 px-4 pb-3 pt-2">
+            <h2
+              ref={titleRef}
+              id={titleId}
+              tabIndex={-1}
+              className="font-mono text-label uppercase tracking-label text-foreground outline-none"
+            >
+              {title}
+            </h2>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label={closeLabel}
+              className="edo-focus-ring -my-1 -mr-2 grid size-9 shrink-0 cursor-pointer place-items-center text-foreground transition-colors duration-150 ease-edo-out hover:bg-muted"
+            >
+              <IconX width={18} height={18} />
+            </button>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto overscroll-contain [touch-action:pan-y]">

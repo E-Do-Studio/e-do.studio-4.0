@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from '@tanstack/react-router';
-import { BottomSheet, CellLabel, IconArrowRight, PageHeader } from './ui';
+import { BottomSheet, CellLabel, IconArrowRight, IconSelector, PageHeader } from './ui';
 import { cn } from './ui/cn';
 import { VideoLoop } from './ui/video-loop';
 import { useDocumentMeta } from './lib/use-document-meta';
@@ -314,7 +314,7 @@ const PlateauPage = ({ slug }: { slug: string }) => {
         <span className="ml-auto font-mono text-micro uppercase tracking-ui text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">
           {p.tagline[lang]}
         </span>
-        <IconArrowRight width="16" height="16" className="shrink-0 text-foreground" />
+        <IconSelector width="16" height="16" className="shrink-0 text-foreground" />
       </button>
 
       <BottomSheet
@@ -418,8 +418,14 @@ const PlateauPage = ({ slug }: { slug: string }) => {
         />
       )}
 
-      {/* Name + tagline */}
-      <div className="bg-white py-3.5 px-4 flex flex-col justify-between gap-1 md:col-start-4 md:row-start-2">
+      {/* Name + tagline. Hidden on mobile because the sticky picker trigger
+          above already shows the plateau name + tagline — repeating them as a
+          large hero right under the trigger felt duplicated. The trigger acts
+          as the mobile heading; the desktop layout still surfaces this block
+          in the right-hand column. The h1 below stays in the DOM on mobile
+          via sr-only so screen readers always have a page heading. */}
+      <h1 className="sr-only md:hidden">{p.name}</h1>
+      <div className="hidden bg-white py-3.5 px-4 md:col-start-4 md:row-start-2 md:flex md:flex-col md:justify-between md:gap-1">
         <CellLabel>{p.tagline[lang]}</CellLabel>
         <h1 className="text-tile-large font-light m-0 tracking-display leading-none">{p.name}</h1>
       </div>
