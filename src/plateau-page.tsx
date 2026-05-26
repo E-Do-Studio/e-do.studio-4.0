@@ -228,7 +228,7 @@ const PlateauPage = ({ slug }: { slug: string }) => {
 
       {/* Book CTA */}
       <button onClick={()=>{ try{localStorage.setItem('edo-book-plateau', slug);}catch(e){} goto('book'); }}
-        className="edo-focus-ring bg-primary p-4 border-0 cursor-pointer flex flex-col justify-between text-left text-white font-inherit min-h-20 transition-colors hover:bg-foreground hover:text-white md:col-start-4 md:row-start-5">
+        className="edo-focus-ring bg-primary p-4 border-0 cursor-pointer flex flex-col justify-between text-left text-white font-inherit min-h-20 transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90 md:col-start-4 md:row-start-5">
         <CellLabel className="text-white/80">06 · {common.bookNow[lang]}</CellLabel>
         <div className="flex justify-between items-end text-white w-full">
           <span className="text-tile-large font-medium tracking-headline">{common.bookThisStage[lang]}</span>

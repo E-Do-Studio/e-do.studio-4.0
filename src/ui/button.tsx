@@ -18,7 +18,7 @@ const sizeMap: Record<ButtonSize, string> = {
 };
 
 const variantMap: Record<ButtonVariant, string> = {
-  default: 'bg-primary text-primary-foreground hover:bg-foreground hover:text-white',
+  default: 'bg-primary text-primary-foreground hover:opacity-90',
   outline: 'border border-foreground bg-background text-foreground hover:bg-muted',
   secondary: 'bg-secondary text-secondary-foreground hover:bg-muted',
   ghost: 'bg-transparent text-foreground hover:bg-muted',
