@@ -210,7 +210,7 @@ const LegalPage = () => {
       </div>
 
       {/* Main content */}
-      <div className="bg-muted overflow-auto md:col-start-2 md:col-span-2 md:row-start-2">
+      <div className="bg-muted overflow-auto md:col-start-2 md:col-span-3 md:row-start-2">
 
         <div className="bg-white pt-9 px-5 pb-7 border-b border-border grid grid-cols-fluid-auto gap-6 items-end md:px-10">
           <div>
