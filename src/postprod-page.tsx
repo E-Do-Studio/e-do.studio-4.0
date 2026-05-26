@@ -304,23 +304,27 @@ const PostprodPage = () => {
 
       {/* Mobile navigation: sticky single-row trigger showing the current
           post-prod type. Tap opens a BottomSheet listing all types; selecting
-          a row in the sheet updates the type and closes the sheet immediately. */}
+          a row in the sheet updates the type and closes the sheet immediately.
+          Name + tagline stack vertically so long taglines don't truncate the
+          name (post-prod taglines are full sentences). */}
       <button
         type="button"
         onClick={() => setNavSheetOpen(true)}
         aria-haspopup="dialog"
         aria-expanded={navSheetOpen}
         aria-controls="postprod-nav-sheet"
-        className="col-span-full sticky top-14 z-30 md:hidden flex items-center gap-4 min-h-14 w-full px-4 py-3 bg-white border-b border-border text-left edo-focus-ring cursor-pointer"
+        className="col-span-full sticky top-14 z-30 md:hidden flex items-center gap-4 min-h-14 w-full px-4 py-2.5 bg-white border-b border-border text-left edo-focus-ring cursor-pointer"
       >
         <span className="font-mono text-label tracking-label text-muted-foreground">
           {currentNumber}
         </span>
-        <span className="text-cell tracking-copy-tight font-medium text-foreground truncate">
-          {cat[lang]}
-        </span>
-        <span className="ml-auto font-mono text-micro uppercase tracking-ui text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">
-          {cat.tagline[lang]}
+        <span className="flex-1 min-w-0 flex flex-col gap-0.5">
+          <span className="text-cell tracking-copy-tight font-medium text-foreground truncate">
+            {cat[lang]}
+          </span>
+          <span className="font-mono text-micro uppercase tracking-ui text-muted-foreground truncate">
+            {cat.tagline[lang]}
+          </span>
         </span>
         <IconSelector width="16" height="16" className="shrink-0 text-foreground" />
       </button>
@@ -358,16 +362,18 @@ const PostprodPage = () => {
                   >
                     {num}
                   </span>
-                  <span className="text-cell tracking-copy-tight font-medium truncate">
-                    {c[lang]}
-                  </span>
-                  <span
-                    className={cn(
-                      'ml-auto font-mono text-micro uppercase tracking-ui whitespace-nowrap overflow-hidden text-ellipsis',
-                      active ? 'text-background/70' : 'text-muted-foreground',
-                    )}
-                  >
-                    {c.tagline[lang]}
+                  <span className="flex-1 min-w-0 flex flex-col gap-0.5">
+                    <span className="text-cell tracking-copy-tight font-medium truncate">
+                      {c[lang]}
+                    </span>
+                    <span
+                      className={cn(
+                        'font-mono text-micro uppercase tracking-ui truncate',
+                        active ? 'text-background/70' : 'text-muted-foreground',
+                      )}
+                    >
+                      {c.tagline[lang]}
+                    </span>
                   </span>
                   <IconArrowRight width="16" height="16" className="shrink-0" />
                 </button>
