@@ -719,7 +719,7 @@ export interface ContactInfo {
   phoneHref: string;
   email: string;
   emailHref: string;
-  address: { street: string; zip: string; city: string; postalCode: string; country?: string };
+  address: { street: string; zip: string; city: string; postalCode: string; country?: string; complement?: string };
   fullAddress?: string;
   googleMapsUrl?: string;
   mapsEmbedUrl?: string;
@@ -749,6 +749,7 @@ export async function fetchContact(): Promise<ContactInfo> {
   const city = addr?.city ?? s.city;
   const postalCode = addr?.postalCode ?? s.postalCode;
   const country = addr?.country ?? s.country;
+  const complement = addr?.complement ?? undefined;
   const fullAddress = addr ? composeFullAddress(addr) : s.fullAddress;
 
   return {
@@ -762,6 +763,7 @@ export async function fetchContact(): Promise<ContactInfo> {
       city,
       postalCode,
       country,
+      complement: complement || undefined,
     },
     fullAddress,
     googleMapsUrl: s.googleMapsUrl,
@@ -785,6 +787,17 @@ function trimTime(t?: string | null): string {
   if (!t) return '';
   const m = String(t).match(/^(\d{2}):(\d{2})/);
   return m ? `${m[1]}:${m[2]}` : String(t);
+}
+
+// Strapi sometimes stores the legacy `hours` / `weekendHours` strings with a
+// day prefix baked in (e.g. "Lun-Ven 10:00-18:00", "Sam-Dim sur demande"). The
+// rail already prints the day range as the row label, so trim that prefix so
+// the value column doesn't echo it back.
+function stripLeadingDayPrefix(value: string): string {
+  if (!value) return value;
+  return value
+    .replace(/^([A-Za-zéèêàâîïôûç]{2,})\s*[-–—]\s*([A-Za-zéèêàâîïôûç]{2,})\s+/i, '')
+    .trim();
 }
 
 function summarizeRange(rows: StrapiOpeningHour[], days: DayOfWeek[], lang: 'fr' | 'en'): string {
@@ -827,9 +840,13 @@ export async function fetchStudioHours(): Promise<StudioHours> {
       weekend: { fr: summarizeRange(rowsFr, WEEKEND, 'fr'), en: summarizeRange(rowsFr, WEEKEND, 'en') },
     };
   }
+  const weekdayFr = stripLeadingDayPrefix(fr.hours ?? '');
+  const weekdayEn = stripLeadingDayPrefix(en?.hours ?? fr.hours ?? '');
+  const weekendFr = stripLeadingDayPrefix(fr.weekendHours ?? '');
+  const weekendEn = stripLeadingDayPrefix(en?.weekendHours ?? fr.weekendHours ?? '');
   return {
-    weekday: { fr: fr.hours ?? '', en: en?.hours ?? fr.hours ?? '' },
-    weekend: { fr: fr.weekendHours ?? '', en: en?.weekendHours ?? fr.weekendHours ?? '' },
+    weekday: { fr: weekdayFr, en: weekdayEn },
+    weekend: { fr: weekendFr, en: weekendEn },
   };
 }
 
