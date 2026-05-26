@@ -120,12 +120,6 @@
       },
       "description": "Tarification opérateur structurée — remplace progressivement `operatorPricing`. Localisé : libellés FR/EN indépendants."
     },
-    "machineImage": {
-      "type": "media",
-      "multiple": false,
-      "allowedTypes": ["images", "videos"],
-      "description": "DÉPRÉCIÉ — ne plus remplir (EDO-249). La cover de la page Plateau est désormais la PREMIÈRE entrée de `media`. Conservé en fallback pour les anciennes fiches : si renseigné et absent de `media`, il est utilisé comme première image du carrousel cover."
-    },
     "media": {
       "type": "media",
       "multiple": true,
