@@ -29,9 +29,9 @@
       "required": true,
       "description": "URL de l'article (auto-généré). Ne plus modifier après publication."
     },
-    "publishedAt": {
+    "articleDate": {
       "type": "datetime",
-      "description": "Date de publication éditoriale. KNOWN ISSUE — shadow le champ système Strapi (draftAndPublish). À renommer en `articleDate` lors du refactor Phase 3."
+      "description": "Date de publication éditoriale affichée sur l'article (indépendante du publish state Strapi). Remplace l'ancien `publishedAt` qui shadow le champ système draftAndPublish (EDO-256)."
     },
     "categories": {
       "type": "relation",
