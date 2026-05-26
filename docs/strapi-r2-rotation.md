@@ -50,7 +50,15 @@ With both keys still active:
    Library. Confirm it appears.
 2. Open the public site (e-do.studio) and confirm an existing image still
    loads from `CF_PUBLIC_URL`.
-3. Re-run CORS setup if it has drifted:
+3. CORS setup runs automatically on every Strapi boot (`npm run start`
+   chains `node scripts/setup-r2-cors.mjs --best-effort` before
+   `strapi start`), so a redeploy or container restart is enough to
+   re-apply the default origins. The best-effort flag makes the script
+   log warnings instead of crashing if creds are missing or the API call
+   fails, so it can never block Strapi boot.
+
+   To run it manually (e.g. from a laptop, or to pass a one-off
+   `CORS_ALLOWED_ORIGINS` override):
    ```
    cd strapi
    CF_ACCOUNT_ID=... CF_ACCESS_KEY_ID=... CF_ACCESS_SECRET=... \
