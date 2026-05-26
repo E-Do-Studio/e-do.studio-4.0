@@ -99,6 +99,12 @@
       },
       "description": "Tarification opérateur structurée — remplace progressivement `operatorPricing`. Localisé : libellés FR/EN indépendants."
     },
+    "landscapeImage": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"],
+      "description": "Image hero de la machine, présentée en mode paysage en haut de la page Plateau. Optionnelle : si vide, le carousel `media` occupe seul la zone visuelle (ancien comportement)."
+    },
     "media": {
       "type": "media",
       "multiple": true,

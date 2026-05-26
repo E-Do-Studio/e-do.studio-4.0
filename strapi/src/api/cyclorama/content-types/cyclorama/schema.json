@@ -49,6 +49,12 @@
       "allowedTypes": ["images"],
       "description": "Image principale du plateau."
     },
+    "landscapeImage": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"],
+      "description": "Image hero du cyclorama, présentée en mode paysage en haut de la page Plateau. Optionnelle : si vide, le carousel `media` occupe seul la zone visuelle (ancien comportement)."
+    },
     "specs": {
       "type": "component",
       "component": "shared.spec",

@@ -91,6 +91,7 @@ const PlateauPage = ({ slug }: { slug: string }) => {
   if (loading || !plateaux) return null;
   const p = plateaux[slug] || plateaux.cyclorama;
   const order = ['live','eclipse','horizontal','vertical','cyclorama'];
+  const hero = p.landscapeImage;
 
   return (
     /* Mobile: single-column stacked, scrollable. Desktop (md+): 4-column bento */
@@ -129,8 +130,27 @@ const PlateauPage = ({ slug }: { slug: string }) => {
         })}
       </div>
 
-      {/* Visual diagram */}
-      <div className="relative overflow-hidden flex items-center justify-center bg-gradient-to-b from-edo-cream to-edo-sand min-h-56 md:col-start-2 md:col-span-2 md:row-start-2 md:row-span-3 md:min-h-0">
+      {/* Hero landscape image (top) — falls back to the SVG diagram when no
+          dedicated hero image has been set on the entry. Splits the visual
+          area into hero rows 2-3 + demo carousel row 4. */}
+      {hero ? (
+        <div className="relative overflow-hidden bg-gradient-to-b from-edo-cream to-edo-sand min-h-56 md:col-start-2 md:col-span-2 md:row-start-2 md:row-span-2 md:min-h-0">
+          <img
+            src={hero.url}
+            alt={hero.alt[lang] || p.name}
+            loading="eager"
+            decoding="async"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        </div>
+      ) : (
+        <div className="relative overflow-hidden flex items-center justify-center bg-gradient-to-b from-edo-cream to-edo-sand min-h-56 md:col-start-2 md:col-span-2 md:row-start-2 md:row-span-2 md:min-h-0">
+          <PlateauVisual kind={p.visual}/>
+        </div>
+      )}
+
+      {/* Demo carousel (below hero) */}
+      <div className="relative overflow-hidden flex items-center justify-center bg-gradient-to-b from-edo-cream to-edo-sand min-h-40 md:col-start-2 md:col-span-2 md:row-start-4 md:min-h-0">
         <PlateauMediaCarousel media={p.media} fallback={<PlateauVisual kind={p.visual}/>} lang={lang} />
       </div>
 
