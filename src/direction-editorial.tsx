@@ -136,7 +136,7 @@ const DirectionA = () => {
         </div>
 
         <div className="flex flex-1 min-h-0 overflow-hidden bg-edo-black">
-          <div className="grid flex-1 grid-cols-3 content-end bg-edo-black md:grid-cols-4">
+          <div className="grid flex-1 grid-cols-2 content-end bg-edo-black md:grid-cols-4">
             {ecomMachines.map((m, i) => (
               <button
                 key={m.slug}
@@ -146,13 +146,11 @@ const DirectionA = () => {
                   // Hairline gray rules: top edge separates the card row from
                   // the empty area above, left edge separates adjacent cards.
                   'border-t border-l border-edo-gray-600',
-                  // First card has no left border.
-                  i === 0 && 'border-l-0',
-                  // 4 items in a 3-col mobile grid would leave the 4th alone
-                  // on row 2; let it span the row to avoid an awkward gap.
-                  // Mobile: starts a new row (no left border). Desktop: col 4
-                  // (left border restored).
-                  i === 3 && 'col-span-3 aspect-auto border-l-0 md:col-span-1 md:aspect-square md:border-l',
+                  // Mobile (2-col): left-column cells (even index) have no left border.
+                  // Desktop (4-col): only the first cell has no left border — restore
+                  // the left rule on the mobile left-column cell at md.
+                  i % 2 === 0 && 'border-l-0',
+                  i === 0 ? 'md:border-l-0' : 'md:border-l',
                 )}
               >
                 <div className="flex items-center justify-between">
