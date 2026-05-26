@@ -374,7 +374,7 @@ const BookPageV2 = () => {
   ]);
   const today = new Date();
   const [draft] = useStateBook(() => loadDraft());
-  const [step, setStep] = useStateBook<number>(() => { if (draft) return draft.step; try { if (localStorage.getItem('edo-book-plateau')) return 1; } catch(e){} return 0; });
+  const [step, setStep] = useStateBook<number>(() => { if (draft) return draft.step; try { if (localStorage.getItem('edo-book-plateau')) return 1; } catch(e){} return 1; });
   const [configGlobal, setConfigGlobal] = useStateBook<ConfigGlobal>(() => draft ? draft.configGlobal as ConfigGlobal : { projectType: 'ecom', urgency: 'flex', postprod: false });
   const [configSessions, setConfigSessions] = useStateBook<BookingSession[]>(() => draft ? draft.configSessions as BookingSession[] : [makeBlankSession()]);
   const [activeSessionIdx, setActiveSessionIdx] = useStateBook<number>(() => draft ? draft.activeSessionIdx : 0);
@@ -741,7 +741,7 @@ const BookPageV2 = () => {
           <div className="px-5 flex items-center justify-between gap-3 bg-muted min-h-control box-border shrink-0 border-b border-foreground">
             <span className="font-mono text-micro tracking-code uppercase text-muted-foreground min-w-0">
               {bookingMsg.manualOr[lang]}
-              <span className="text-primary font-semibold">{bookingMsg.letUsGuide[lang]}</span>
+              <span className="text-foreground">{bookingMsg.letUsGuide[lang]}</span>
             </span>
             <div className="flex items-center gap-2 flex-none">
               <button onClick={()=>{ setPlateau(null); setPlateaus([]); setPerPlateau({}); setSlotType('hour'); setHours(1); setCycloMode('halfH'); setPaint(false); setKwh(0); setTeam({}); setPp({}); setSelected(null); setStep(1); }}
@@ -749,7 +749,7 @@ const BookPageV2 = () => {
                 ↻ {common.reset[lang]}
               </button>
               <button onClick={()=>setStep(0)}
-                className="edo-focus-ring bg-primary border border-primary px-3 py-1.5 cursor-pointer font-mono text-label tracking-code uppercase text-white whitespace-nowrap leading-normal font-semibold transition-all duration-150 hover:bg-foreground hover:text-white hover:border-foreground">
+                className="edo-focus-ring bg-transparent border border-border px-2 py-1 cursor-pointer font-mono text-micro tracking-code uppercase text-muted-foreground whitespace-nowrap leading-normal transition-colors duration-150 hover:text-foreground hover:border-foreground">
                 ← {bookingMsg.configurator[lang]}
               </button>
             </div>
