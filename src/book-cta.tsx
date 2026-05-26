@@ -16,11 +16,11 @@ const BookCTATile = ({ lang, onClick, className }: BookCTAProps) => (
     type="button"
     onClick={onClick}
     className={cn(
-      'edo-focus-ring group h-20 flex cursor-pointer items-center justify-between gap-3 border-0 bg-primary px-5 py-3 text-left text-white transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90 md:h-21',
+      'edo-focus-ring group h-12 flex cursor-pointer items-center justify-between gap-3 border-0 bg-primary px-4 py-2 text-left text-white transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90 md:h-21 md:px-5 md:py-3',
       className,
     )}
   >
-    <span className="min-w-0 text-tile-title font-normal tracking-headline leading-tight text-white transition-transform duration-150 group-hover:scale-102">
+    <span className="min-w-0 text-base font-normal tracking-headline leading-tight text-white transition-transform duration-150 group-hover:scale-102 md:text-tile-title">
       {common.book[lang]}
     </span>
     <IconArrowRight
