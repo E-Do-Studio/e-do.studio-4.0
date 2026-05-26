@@ -431,8 +431,6 @@ export const discoveryPage = {
   studioOpen: { fr: 'Studio · 7j/7', en: 'Studio · 7d/7' } as B,
   behindScenes: { fr: 'Coulisses', en: 'Behind the scenes' } as B,
   morePosts: { fr: "Plus d'articles", en: 'More posts' } as B,
-  categories: { fr: 'Catégories', en: 'Categories' } as B,
-  filterCategoriesAria: { fr: 'Filtrer les articles par catégorie', en: 'Filter articles by category' } as B,
   noPosts: { fr: 'Aucun article', en: 'No posts' } as B,
   noFeaturedPost: { fr: 'Article à la une', en: 'Featured article' } as B,
   noFeaturedPostHint: {
