@@ -88,6 +88,27 @@
       },
       "description": "Tarification structurée — remplace progressivement le champ `pricing` (texte parsé en regex). Tant que vide, le front continue de lire `pricing`. Localisé : libellés FR/EN indépendants."
     },
+    "pricingDescription": {
+      "type": "text",
+      "maxLength": 600,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "description": "Note tarifaire affichée sous la grille des prix (ex: « Remise en blanc 110 € · Électricité 1,40 €/kWh »). Optionnel."
+    },
+    "usages": {
+      "type": "component",
+      "component": "shared.localized-item",
+      "repeatable": true,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "description": "Cas d'usage du plateau (« Usages » sur la page front), présentés sous forme de liste. Localisé : items FR/EN indépendants. Optionnel — si vide, le front utilise un dictionnaire de secours par slug."
+    },
     "operatorPricingRows": {
       "type": "component",
       "component": "shared.pricing-row",

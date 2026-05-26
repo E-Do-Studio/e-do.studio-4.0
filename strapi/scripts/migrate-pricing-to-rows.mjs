@@ -19,7 +19,7 @@
  * skipped (no double-write).
  *
  * Format expected on the legacy strings:
- *   - Pricing (machine, cyclorama):  "5h / € 650 · 10h / € 880 · 10h éditorial / Sur demande"
+ *   - Pricing (machine):  "5h / € 650 · 10h / € 880 · 10h éditorial / Sur demande"
  *     (rows separated by ' · ', label/amount split by '/' or ':')
  *   - Price (post-production-type):  "À partir de 7,90€"  or  "Sur devis"
  */
@@ -196,13 +196,6 @@ async function main() {
     collection: 'machines',
     legacyField: 'operatorPricing',
     rowsField: 'operatorPricingRows',
-    parser: parsePricingString,
-  });
-
-  await migrateSingle({
-    singleType: 'cyclorama',
-    legacyField: 'pricing',
-    rowsField: 'pricingRows',
     parser: parsePricingString,
   });
 

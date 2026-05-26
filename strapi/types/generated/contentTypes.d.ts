@@ -501,45 +501,6 @@ export interface ApiBlogPostBlogPost extends Struct.CollectionTypeSchema {
   };
 }
 
-export interface ApiCycloramaCyclorama extends Struct.SingleTypeSchema {
-  collectionName: "cycloramas";
-  info: {
-    displayName: "Cyclorama";
-    pluralName: "cycloramas";
-    singularName: "cyclorama";
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    comfortText: Schema.Attribute.Text;
-    complementaryServices: Schema.Attribute.Text;
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
-      Schema.Attribute.Private;
-    description: Schema.Attribute.Text;
-    equipmentRental: Schema.Attribute.Text;
-    gallery: Schema.Attribute.Media<undefined, true>;
-    image: Schema.Attribute.Media;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      "oneToMany",
-      "api::cyclorama.cyclorama"
-    > &
-      Schema.Attribute.Private;
-    pricing: Schema.Attribute.String;
-    pricingDescription: Schema.Attribute.Text;
-    publishedAt: Schema.Attribute.DateTime;
-    specs: Schema.Attribute.Component<"shared.spec", true>;
-    subtitle: Schema.Attribute.String;
-    title: Schema.Attribute.String;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
-      Schema.Attribute.Private;
-    usages: Schema.Attribute.Component<"shared.localized-item", true>;
-  };
-}
-
 export interface ApiGalleryBrandGalleryBrand
   extends Struct.CollectionTypeSchema {
   collectionName: "gallery_brands";
@@ -680,6 +641,7 @@ export interface ApiMachineMachine extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     operatorPricing: Schema.Attribute.String;
     pricing: Schema.Attribute.String;
+    pricingDescription: Schema.Attribute.Text;
     publishedAt: Schema.Attribute.DateTime;
     slug: Schema.Attribute.UID<"title"> & Schema.Attribute.Required;
     specs: Schema.Attribute.Component<"shared.spec", true>;
@@ -688,6 +650,7 @@ export interface ApiMachineMachine extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
       Schema.Attribute.Private;
+    usages: Schema.Attribute.Component<"shared.localized-item", true>;
     video: Schema.Attribute.Media;
   };
 }
@@ -1293,7 +1256,6 @@ declare module "@strapi/strapi" {
       "admin::user": AdminUser;
       "api::blog-category.blog-category": ApiBlogCategoryBlogCategory;
       "api::blog-post.blog-post": ApiBlogPostBlogPost;
-      "api::cyclorama.cyclorama": ApiCycloramaCyclorama;
       "api::gallery-brand.gallery-brand": ApiGalleryBrandGalleryBrand;
       "api::gallery-category.gallery-category": ApiGalleryCategoryGalleryCategory;
       "api::gallery-project.gallery-project": ApiGalleryProjectGalleryProject;

@@ -14,7 +14,6 @@ const PUBLIC_COLLECTION_TYPES = [
 ];
 
 const PUBLIC_SINGLE_TYPES = [
-  'api::cyclorama.cyclorama',
   'api::site-setting.site-setting',
   'api::home-hero.home-hero',
 ];
@@ -35,7 +34,6 @@ const PUBLIC_SINGLE_TYPES = [
  */
 const HIDDEN_FIELDS_BY_CT: Record<string, string[]> = {
   'api::blog-post.blog-post': ['cta_text', 'cta_label', 'cta_url', 'seo_title', 'seo_description', 'seo_image'],
-  'api::cyclorama.cyclorama': ['pricing'],
   'api::machine.machine': ['pricing', 'operatorPricing'],
   'api::post-production-type.post-production-type': ['price'],
   'api::site-setting.site-setting': [
