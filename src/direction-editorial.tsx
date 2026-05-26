@@ -12,7 +12,7 @@ import {
 } from './lib/structured-data';
 import type { Lang } from './types';
 import { usePageContext } from './router';
-import { cells as cellsMsg, common, contact as contactMsg, home as homeMsg } from './i18n/messages';
+import { cells as cellsMsg, common, home as homeMsg } from './i18n/messages';
 
 interface MachineRowItem {
   slug: string;
@@ -100,8 +100,7 @@ const DirectionA = () => {
       {/* ── Row 1: Header ── */}
       <PageHeader
         lang={lang}
-        title={contactMsg.hours[lang]}
-        subtitle={homeMsg.monSatHours[lang]}
+        title={homeMsg.monSatHours[lang]}
         className="col-span-2 h-14 md:col-start-1 md:col-span-12 md:row-start-1 md:h-full"
         onMenuClick={openMenu}
         onLogoClick={() => goto('home')}
