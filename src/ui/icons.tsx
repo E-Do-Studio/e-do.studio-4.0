@@ -71,6 +71,15 @@ const IconChevronDown = (props: IconProps) => (
   </svg>
 );
 
+// Up/down chevrons stacked — the standard "tap to pick from a list" affordance
+// used by native picker fields. Distinct from `IconArrowRight` (linear next).
+const IconSelector = (props: IconProps) => (
+  <svg {...defaults} {...props}>
+    <path d="m8 9 4-4 4 4" />
+    <path d="m8 15 4 4 4-4" />
+  </svg>
+);
+
 export {
   IconMenu,
   IconX,
@@ -80,5 +89,6 @@ export {
   IconChat,
   IconLock,
   IconChevronDown,
+  IconSelector,
 };
 export type { IconProps };
