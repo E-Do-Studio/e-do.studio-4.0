@@ -1,5 +1,5 @@
-import { lazy, Suspense, useState } from 'react';
-import { CellLabel, IconArrowRight, IconChat, IconLock, IconX, ImageCrossfade, PageHeader, VideoLoop, cn } from './ui';
+import { lazy, Suspense } from 'react';
+import { CellLabel, IconArrowRight, IconLock, ImageCrossfade, MobileAssistantFab, PageHeader, VideoLoop, cn } from './ui';
 import { BookCTATile } from './book-cta';
 import { SocialClientsBar } from './social-clients-bar';
 
@@ -13,7 +13,7 @@ import {
 } from './lib/structured-data';
 import type { Lang } from './types';
 import { usePageContext } from './router';
-import { cells as cellsMsg, common, home as homeMsg } from './i18n/messages';
+import { common, home as homeMsg } from './i18n/messages';
 
 interface MachineRowItem {
   slug: string;
@@ -92,7 +92,6 @@ const DirectionA = () => {
   // the CMS resolves to a video, VideoLoop fades in on top. Without this, the
   // tile flashes empty on refresh while we wait for the home-hero fetch.
   const heroShowStaticPicture = !heroCmsVideo || !!homeHeroError;
-  const [chatOpen, setChatOpen] = useState(false);
   // Subtitles for the homepage machine grid are pinned in the codebase so
   // marketing wording stays consistent regardless of Strapi content.
   const ecomMachines: MachineRowItem[] = machines
@@ -387,46 +386,10 @@ const DirectionA = () => {
       </Suspense>
 
       {/* ── Mobile chat FAB + sheet ──
-          Sized at 44px (≥40px tap target) and toned down visually so it sits
-          discreetly over the bento on mobile without competing with the
-          orange "Réserver" CTA. Desktop keeps the in-grid AssistantChat. */}
-      <button
-        type="button"
-        onClick={() => setChatOpen(true)}
-        aria-label={cellsMsg.assistant[lang]}
-        className="edo-focus-ring fixed bottom-3 right-3 z-overlay flex h-11 w-11 cursor-pointer items-center justify-center border border-foreground/40 bg-primary/85 text-white shadow-sm backdrop-blur-sm transition-all duration-150 hover:bg-primary hover:shadow-md md:hidden"
-      >
-        <IconChat width="18" height="18" />
-      </button>
-
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={cellsMsg.assistant[lang]}
-        aria-hidden={chatOpen ? undefined : true}
-        {...({ inert: chatOpen ? undefined : '' } as Record<string, unknown>)}
-        className={cn(
-          'fixed inset-0 z-sheet flex flex-col bg-white transition-opacity duration-200 md:hidden',
-          chatOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0',
-        )}
-      >
-        <div className="flex shrink-0 items-center justify-between border-b border-foreground px-4 py-3">
-          <CellLabel>{cellsMsg.assistant[lang]}</CellLabel>
-          <button
-            type="button"
-            onClick={() => setChatOpen(false)}
-            aria-label={common.close[lang]}
-            className="edo-focus-ring flex h-10 w-10 cursor-pointer items-center justify-center border-0 bg-transparent text-foreground transition-colors hover:bg-muted"
-          >
-            <IconX width="20" height="20" />
-          </button>
-        </div>
-        <div className="flex min-h-0 flex-1 flex-col">
-          <Suspense fallback={<div aria-hidden className="flex-1 bg-white" />}>
-            {chatOpen && <AssistantChat lang={lang} className="h-full w-full" />}
-          </Suspense>
-        </div>
-      </div>
+          Discreet 40px floating button that opens a full-screen sheet on
+          mobile. Desktop keeps the in-grid AssistantChat. Logic lives in
+          MobileAssistantFab so the discovery page can reuse the same UX. */}
+      <MobileAssistantFab lang={lang} />
 
     </div>
   );

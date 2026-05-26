@@ -1,6 +1,7 @@
 import React, { lazy, Suspense, useMemo, useState } from 'react';
 import type { Lang } from '../types';
 import type { DiscoveryPost } from '../types';
+import { MobileAssistantFab } from '../ui';
 
 const AssistantChat = lazy(() => import('../assistant-chat'));
 import { ArticleCard, ArticleEmptyCard } from './article-card';
@@ -105,20 +106,25 @@ export const DiscoveryBentoGrid: React.FC<DiscoveryBentoGridProps> = ({ lang, go
           className="md:col-span-2 lg:col-start-5 lg:col-span-2 lg:row-start-4 lg:row-span-3 lg:order-none"
         />
 
+        {/* Inline AssistantChat: shown md+ where it fits inside the bento.
+            On mobile the tile would push the rest of the page down, so it
+            is replaced by a floating button (see MobileAssistantFab below). */}
         <Suspense
           fallback={
             <div
               aria-hidden
-              className="order-8 min-h-88 bg-white md:col-span-2 lg:col-start-7 lg:col-span-2 lg:row-start-4 lg:row-span-3 lg:order-none lg:min-h-0"
+              className="hidden md:flex order-8 min-h-88 bg-white md:col-span-2 lg:col-start-7 lg:col-span-2 lg:row-start-4 lg:row-span-3 lg:order-none lg:min-h-0"
             />
           }
         >
           <AssistantChat
             lang={lang}
-            className="order-8 min-h-88 md:col-span-2 lg:col-start-7 lg:col-span-2 lg:row-start-4 lg:row-span-3 lg:order-none lg:min-h-0"
+            className="hidden md:flex order-8 min-h-88 md:col-span-2 lg:col-start-7 lg:col-span-2 lg:row-start-4 lg:row-span-3 lg:order-none lg:min-h-0"
           />
         </Suspense>
       </main>
+
+      <MobileAssistantFab lang={lang} />
 
       {openPost && <ArticleOverlay post={openPost} lang={lang} onClose={() => setOpenPost(null)} />}
     </>

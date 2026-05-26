@@ -63,3 +63,5 @@ export type {
   StripGroup,
   StripOption,
 } from './mobile-nav-strip';
+
+export { MobileAssistantFab } from './mobile-assistant-fab';
