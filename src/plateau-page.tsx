@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from '@tanstack/react-router';
-import { CellLabel, IconArrowRight, MobileNavStrip, PageHeader } from './ui';
-import type { StripOption } from './ui';
+import { CellLabel, IconArrowRight, PageHeader } from './ui';
 import { cn } from './ui/cn';
 import { VideoLoop } from './ui/video-loop';
 import { useDocumentMeta } from './lib/use-document-meta';
@@ -261,11 +260,11 @@ const PlateauPage = ({ slug }: { slug: string }) => {
   const goPrev = () => setActiveIndex((i) => i - 1);
   const goNext = () => setActiveIndex((i) => i + 1);
 
-  // Mobile navigation between plateaux: each option maps to a router screen.
+  // Mobile navigation between plateaux: tap on a pill = immediate route change.
   // Labels are kept clean (no "01 · ") to match EDO-261 (post-prod) — the
   // numbered prefix only survives on the desktop sidebar where ordering is
   // already visually conveyed by the vertical column.
-  const plateauOptions: StripOption[] = order.flatMap((m) => {
+  const plateauOptions = order.flatMap((m) => {
     const cfg = plateaux[m];
     return cfg ? [{ k: m, label: cfg.name }] : [];
   });
@@ -293,26 +292,36 @@ const PlateauPage = ({ slug }: { slug: string }) => {
         ]}
       />
 
-      {/* Mobile navigation: bottom-sheet trigger replacing the horizontal strip. */}
-      <MobileNavStrip
-        triggerLabel="PLATEAUX"
-        ariaLabel={common.stages[lang]}
-        lang={lang}
-        hasActive={false}
-        summary={p.name}
-        groups={[
-          {
-            key: 'plateau',
-            label: 'PLATEAUX',
-            options: plateauOptions,
-            value: slug,
-            onSelect: navigateToPlateau,
-          },
-        ]}
-        onApply={(draft) => navigateToPlateau(draft.plateau)}
-      />
+      {/* Mobile navigation: sticky inline pills. Tap = immediate route change,
+          mirroring EDO-261 (post-prod). No bottom-sheet, no apply button. */}
+      <nav
+        aria-label={common.stages[lang]}
+        className="sticky top-14 z-30 md:hidden flex gap-2 overflow-x-auto px-4 py-2 bg-white border-b border-border snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {plateauOptions.map((o) => {
+          const active = o.k === slug;
+          return (
+            <button
+              key={o.k}
+              type="button"
+              onClick={() => navigateToPlateau(o.k)}
+              aria-pressed={active}
+              className={cn(
+                'snap-start shrink-0 min-h-11 px-4 py-2 rounded-full whitespace-nowrap',
+                'font-mono uppercase text-label tracking-label',
+                'transition-colors duration-150 ease-edo-out edo-focus-ring',
+                active
+                  ? 'bg-foreground text-background'
+                  : 'bg-white text-foreground border border-border',
+              )}
+            >
+              {o.label}
+            </button>
+          );
+        })}
+      </nav>
 
-      {/* Desktop sidebar: vertical list, hidden on mobile (replaced by MobileNavStrip). */}
+      {/* Desktop sidebar: vertical list, hidden on mobile (replaced by inline pill nav). */}
       <div className="hidden bg-white md:col-start-1 md:row-start-2 md:row-span-4 md:flex md:flex-col md:overflow-x-hidden md:overflow-y-auto">
         {order.map((m, i) => {
           const cfg = plateaux[m];
