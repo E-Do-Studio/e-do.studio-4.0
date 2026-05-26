@@ -134,33 +134,33 @@ const DirectionA = () => {
       <SocialClientsBar className="col-span-2 md:col-start-1 md:col-end-13 md:row-start-2" />
 
       {/* ── Rows 3-4 left: E-commerce section ── */}
-      <div className="col-span-2 min-h-72 flex flex-col overflow-hidden bg-edo-black md:col-start-1 md:col-end-7 md:row-start-3 md:row-end-5 md:min-h-0">
+      <div className="col-span-2 min-h-72 flex flex-col overflow-hidden bg-white md:col-start-1 md:col-end-7 md:row-start-3 md:row-end-5 md:min-h-0">
         <div className="flex flex-shrink-0 flex-col gap-3 px-5 pt-6 pb-5 md:px-7 md:pt-7 md:pb-6">
-          <h2 className="m-0 text-balance text-[clamp(1.625rem,3vw,2.5rem)] font-light tracking-display leading-tight text-white">
+          <h2 className="m-0 text-balance text-[clamp(1.625rem,3vw,2.5rem)] font-light tracking-display leading-tight text-foreground">
             {homeMsg.studioHeadlineLead[lang]}{' '}
             <span className="italic text-primary">
               {homeMsg.studioHeadlineAccent[lang]}
             </span>
           </h2>
-          <p className="m-0 text-balance text-detail leading-snug text-edo-gray-200">
+          <p className="m-0 text-balance text-detail leading-snug text-muted-foreground">
             {homeMsg.studioSubtitleLead[lang]}
-            <strong className="font-semibold text-white">
+            <strong className="font-semibold text-foreground">
               {homeMsg.studioSubtitleStrong[lang]}
             </strong>
           </p>
         </div>
 
-        <div className="flex flex-1 min-h-0 overflow-hidden bg-edo-black">
-          <div className="grid flex-1 grid-cols-2 content-end bg-edo-black md:grid-cols-4">
+        <div className="flex flex-1 min-h-0 overflow-hidden bg-white">
+          <div className="grid flex-1 grid-cols-2 content-end bg-white md:grid-cols-4">
             {ecomMachines.map((m, i) => (
               <button
                 key={m.slug}
                 onClick={() => goto('plateau-' + m.slug)}
                 className={cn(
-                  'edo-focus-ring group flex aspect-[4/3] min-w-0 cursor-pointer flex-col justify-between bg-edo-black px-3 py-3 text-left text-white transition-colors duration-150 hover:bg-edo-dark md:aspect-square md:px-4 md:py-4',
+                  'edo-focus-ring group flex aspect-[4/3] min-w-0 cursor-pointer flex-col justify-between bg-white px-3 py-3 text-left text-foreground transition-colors duration-150 hover:bg-muted md:aspect-square md:px-4 md:py-4',
                   // Hairline gray rules: top edge separates the card row from
                   // the empty area above, left edge separates adjacent cards.
-                  'border-t border-l border-edo-gray-600',
+                  'border-t border-l border-edo-gray-200',
                   // Mobile (2-col): left-column cells (even index) have no left border.
                   // Desktop (4-col): only the first cell has no left border — restore
                   // the left rule on the mobile left-column cell at md.
@@ -169,18 +169,18 @@ const DirectionA = () => {
                 )}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-micro text-edo-gray-500 tracking-meta">
+                  <span className="font-mono text-micro text-muted-foreground tracking-meta">
                     {String(i + 1).padStart(2, '0')}
                   </span>
                   <IconArrowRight
-                    className="text-edo-gray-500 transition-all duration-200 ease-edo-out group-hover:translate-x-1 group-hover:text-white"
+                    className="text-muted-foreground transition-all duration-200 ease-edo-out group-hover:translate-x-1 group-hover:text-foreground"
                     width="14"
                     height="14"
                   />
                 </div>
                 <div className="transition-transform duration-200 ease-edo-out group-hover:-translate-y-0.5">
-                  <div className="truncate text-cell font-medium tracking-headline leading-tight text-white">{m[lang].t}</div>
-                  <div className="truncate mt-1 text-micro font-mono uppercase tracking-caption text-edo-gray-500 transition-colors duration-200 group-hover:text-edo-gray-200">{m[lang].sub}</div>
+                  <div className="truncate text-cell font-medium tracking-headline leading-tight text-foreground">{m[lang].t}</div>
+                  <div className="truncate mt-1 text-micro font-mono uppercase tracking-caption text-muted-foreground transition-colors duration-200 group-hover:text-foreground">{m[lang].sub}</div>
                 </div>
               </button>
             ))}
