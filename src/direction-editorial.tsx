@@ -296,8 +296,12 @@ const DirectionA = () => {
         </div>
       </button>
 
-      {/* ── Row 5 left (desktop) / mobile row B: Video / showreel ── */}
-      <div className="col-span-2 min-h-56 flex overflow-hidden bg-black md:col-span-3 md:col-start-1 md:col-end-4 md:row-start-5 md:min-h-0">
+      {/* ── Row 5 left (desktop) / mobile row B: Video / showreel ──
+          Mobile uses a 5:4 aspect ratio so the showreel renders at a similar
+          relative size to its desktop tile (~360×284 on a 1440×900 viewport),
+          instead of being shrunk to a short banner. md+ reverts to the grid
+          row sizing via aspect-auto. */}
+      <div className="col-span-2 aspect-[5/4] flex overflow-hidden bg-black md:col-span-3 md:col-start-1 md:col-end-4 md:row-start-5 md:aspect-auto md:min-h-0">
         <button
           onClick={() => goto('gallery')}
           className="edo-focus-ring group relative flex h-full w-full cursor-pointer items-center justify-center overflow-hidden border-0 bg-edo-dark p-0 text-left transition-all duration-150 hover:brightness-75"
