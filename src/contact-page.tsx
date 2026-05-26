@@ -332,7 +332,7 @@ const ContactForm = ({ lang, form, setForm, submit, sending, sendError, subjects
     <button
       type="submit"
       disabled={sending}
-      className="edo-focus-ring col-span-2 row-start-8 flex cursor-pointer items-center justify-center gap-3.5 border-0 bg-primary font-mono text-caption uppercase tracking-label text-white transition-colors hover:bg-foreground hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+      className="edo-focus-ring col-span-2 row-start-8 flex cursor-pointer items-center justify-center gap-3.5 border-0 bg-primary font-mono text-caption uppercase tracking-label text-white transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {sending
         ? common.sending[lang]

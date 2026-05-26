@@ -46,12 +46,12 @@ const PageHeaderActionButton = ({
   const isPrimary = variant === 'primary';
   const isDark = variant === 'dark';
   const actionClassName = cn(
-    'edo-focus-ring flex h-full cursor-pointer items-center justify-center gap-2 border-0 font-mono uppercase no-underline transition-colors',
+    'edo-focus-ring flex h-full cursor-pointer items-center justify-center gap-2 border-0 font-mono uppercase no-underline transition-[color,background-color,opacity] duration-150 ease-edo-out',
     expand ? 'flex-1' : 'flex-none',
     isPrimary
-      ? 'bg-primary px-6 text-label tracking-caption text-white hover:bg-foreground hover:text-white'
+      ? 'bg-primary px-6 text-label tracking-caption text-white hover:opacity-90'
       : isDark
-        ? 'bg-foreground px-5 text-label tracking-label text-white hover:brightness-110'
+        ? 'bg-foreground px-5 text-label tracking-label text-white hover:text-primary'
         : 'bg-background px-5 text-label tracking-ui text-foreground hover:bg-muted',
     className,
   );

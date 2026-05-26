@@ -148,7 +148,7 @@ interface BookCtaTileProps {
 export const BookCtaTile: React.FC<BookCtaTileProps> = ({ lang, goto }) => (
   <button
     onClick={() => goto('book')}
-    className="edo-focus-ring group relative flex h-21 shrink-0 cursor-pointer items-center justify-between gap-3.5 overflow-hidden border-0 bg-primary px-cell-lg py-3.5 text-left text-white transition-colors hover:bg-foreground hover:text-white"
+    className="edo-focus-ring group relative flex h-21 shrink-0 cursor-pointer items-center justify-between gap-3.5 overflow-hidden border-0 bg-primary px-cell-lg py-3.5 text-left text-white transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90"
   >
     <span className="flex min-w-0 origin-left flex-col items-start gap-1 transition-transform duration-200 ease-edo-out group-hover:scale-102">
       <span className="font-mono text-label uppercase tracking-label text-white/75">

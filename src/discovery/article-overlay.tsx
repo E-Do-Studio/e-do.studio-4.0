@@ -90,7 +90,7 @@ export const ArticleOverlay: React.FC<ArticleOverlayProps> = ({ post, lang, onCl
             <span className="font-mono text-label uppercase tracking-code text-muted-foreground">
               {post.author} · {post.date[lang]}
             </span>
-            <button onClick={onClose} className="edo-focus-ring h-10 cursor-pointer border-0 bg-foreground px-cell-lg font-mono text-caption uppercase tracking-label text-white transition-all hover:brightness-110">
+            <button onClick={onClose} className="edo-focus-ring h-10 cursor-pointer border-0 bg-foreground px-cell-lg font-mono text-caption uppercase tracking-label text-white transition-[color,background-color,opacity] duration-150 ease-edo-out hover:text-primary">
               {discoveryPage.close[lang]}
             </button>
           </footer>

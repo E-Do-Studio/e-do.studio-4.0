@@ -280,7 +280,7 @@ const DirectionA = () => {
       {/* ── Row 5 right: Book CTA ── */}
       <button
         onClick={() => goto('book')}
-        className="edo-focus-ring group col-span-2 h-20 flex cursor-pointer items-center justify-between gap-3 border-0 bg-primary px-5 py-3 text-left text-white transition-colors duration-150 hover:bg-foreground hover:text-white md:col-start-7 md:col-end-10 md:row-start-5 md:h-21"
+        className="edo-focus-ring group col-span-2 h-20 flex cursor-pointer items-center justify-between gap-3 border-0 bg-primary px-5 py-3 text-left text-white transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90 md:col-start-7 md:col-end-10 md:row-start-5 md:h-21"
       >
         <div className="flex min-w-0 flex-col gap-1 transition-transform duration-150 group-hover:scale-102">
           <span className="font-mono text-label uppercase tracking-label text-white">
@@ -298,7 +298,7 @@ const DirectionA = () => {
       {/* ── Row 6 left: Discovery CTA ── */}
       <button
         onClick={() => goto('discovery')}
-        className="edo-focus-ring group relative col-span-1 h-20 flex cursor-pointer items-center justify-between gap-3 border-0 bg-foreground px-4 py-3 text-left text-white transition-all duration-150 hover:brightness-110 md:col-start-1 md:col-end-4 md:row-start-6 md:h-21"
+        className="edo-focus-ring group relative col-span-1 h-20 flex cursor-pointer items-center justify-between gap-3 border-0 bg-foreground px-4 py-3 text-left text-white transition-[color,background-color,opacity] duration-150 ease-edo-out hover:text-primary md:col-start-1 md:col-end-4 md:row-start-6 md:h-21"
       >
         <svg viewBox="0 0 200 84" preserveAspectRatio="none" className="absolute inset-0 h-full w-full opacity-20">
           {[...Array(7)].map((_, i) => (<line key={'h' + i} x1="0" y1={i * 14} x2="200" y2={i * 14} stroke="currentColor" strokeWidth="0.3" />))}
