@@ -97,7 +97,7 @@ interface StrapiMachine {
   specs?: StrapiSpec[];
   pricingRows?: StrapiPricingRow[];
   operatorPricingRows?: StrapiPricingRow[];
-  landscapeImage?: StrapiMedia | null;
+  machineImage?: StrapiMedia | null;
   media?: StrapiMedia[];
   seo?: StrapiSeoMeta;
 }
@@ -111,7 +111,7 @@ interface StrapiCyclorama {
   specs?: StrapiSpec[];
   usages?: StrapiLocalizedItem[];
   pricingRows?: StrapiPricingRow[];
-  landscapeImage?: StrapiMedia | null;
+  machineImage?: StrapiMedia | null;
   media?: StrapiMediaItem[];
   seo?: StrapiSeoMeta;
 }
@@ -276,7 +276,7 @@ export interface PlateauSpec {
   rates: { k: Bilingual; v: string | Bilingual }[];
   ratesNote?: Bilingual;
   visual: string;
-  landscapeImage?: { url: string; alt: Bilingual };
+  machineImage?: { url: string; alt: Bilingual };
   media: MediaItem[];
   seo?: Bilingual<SeoMeta>;
 }
@@ -412,7 +412,7 @@ function mergeLocalizedItems(frItems: StrapiLocalizedItem[], enItems: StrapiLoca
   });
 }
 
-function buildLandscapeImage(
+function buildMachineImage(
   fr: StrapiMedia | null | undefined,
   en: StrapiMedia | null | undefined,
 ): { url: string; alt: Bilingual } | undefined {
@@ -558,8 +558,8 @@ const MACHINE_LABELS: Record<string, { fr: string; en: string }> = {
 
 export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
   const [machinesBI, cycloBI] = await Promise.all([
-    fetchStrapiBilingual<{ data: StrapiMachine[] }>('machines', { 'populate': 'specs,pricingRows,seo,seo.image,landscapeImage,media', 'sort': 'createdAt:asc' }),
-    fetchStrapiBilingual<{ data: StrapiCyclorama }>('cyclorama', { 'populate': 'specs,usages,pricingRows,seo,seo.image,landscapeImage,media,media.image,media.video,media.poster' }),
+    fetchStrapiBilingual<{ data: StrapiMachine[] }>('machines', { 'populate': 'specs,pricingRows,seo,seo.image,machineImage,media', 'sort': 'createdAt:asc' }),
+    fetchStrapiBilingual<{ data: StrapiCyclorama }>('cyclorama', { 'populate': 'specs,usages,pricingRows,seo,seo.image,machineImage,media,media.image,media.video,media.poster' }),
   ]);
 
   const result: Record<string, PlateauSpec> = {};
@@ -583,7 +583,7 @@ export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
       rates,
       ratesNote: cycFr.pricingDescription ? { fr: cycFr.pricingDescription, en: cycEn?.pricingDescription ?? cycFr.pricingDescription } : undefined,
       visual: 'cyc',
-      landscapeImage: buildLandscapeImage(cycFr.landscapeImage, cycEn?.landscapeImage),
+      machineImage: buildMachineImage(cycFr.machineImage, cycEn?.machineImage),
       media: mergeMediaItems(cycFr.media, cycEn?.media),
       seo: buildSeo(cycFr.seo, cycEn?.seo),
     };
@@ -608,7 +608,7 @@ export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
       uses: MACHINE_USES[mFr.slug] ?? [],
       rates,
       visual: mFr.slug,
-      landscapeImage: buildLandscapeImage(mFr.landscapeImage, mEn.landscapeImage),
+      machineImage: buildMachineImage(mFr.machineImage, mEn.machineImage),
       media: mediaListToItems(mFr.media),
       seo: buildSeo(mFr.seo, mEn.seo),
     };
