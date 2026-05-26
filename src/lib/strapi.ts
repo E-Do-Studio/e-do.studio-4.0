@@ -108,7 +108,7 @@ interface StrapiCyclorama {
   pricing: string;
   pricingDescription: string;
   specs?: StrapiSpec[];
-  amenities?: StrapiLocalizedItem[];
+  usages?: StrapiLocalizedItem[];
   pricingRows?: StrapiPricingRow[];
   media?: StrapiMediaItem[];
   seo?: StrapiSeoMeta;
@@ -479,7 +479,7 @@ const MACHINE_LABELS: Record<string, { fr: string; en: string }> = {
 export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
   const [machinesBI, cycloBI] = await Promise.all([
     fetchStrapiBilingual<{ data: StrapiMachine[] }>('machines', { 'populate': 'specs,pricingRows,seo,seo.image,media', 'sort': 'createdAt:asc' }),
-    fetchStrapiBilingual<{ data: StrapiCyclorama }>('cyclorama', { 'populate': 'specs,amenities,pricingRows,seo,seo.image,media,media.image,media.video,media.poster' }),
+    fetchStrapiBilingual<{ data: StrapiCyclorama }>('cyclorama', { 'populate': 'specs,usages,pricingRows,seo,seo.image,media,media.image,media.video,media.poster' }),
   ]);
 
   const result: Record<string, PlateauSpec> = {};
@@ -499,7 +499,7 @@ export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
       tagline: { fr: cycFr.subtitle, en: cycEn?.subtitle ?? cycFr.subtitle },
       desc: { fr: cycFr.description, en: cycEn?.description ?? cycFr.description },
       specs: mergeSpecs(cycFr.specs ?? [], cycEn?.specs ?? []),
-      uses: mergeLocalizedItems(cycFr.amenities ?? [], cycEn?.amenities ?? []),
+      uses: mergeLocalizedItems(cycFr.usages ?? [], cycEn?.usages ?? []),
       rates,
       ratesNote: cycFr.pricingDescription ? { fr: cycFr.pricingDescription, en: cycEn?.pricingDescription ?? cycFr.pricingDescription } : undefined,
       visual: 'cyc',

@@ -512,7 +512,6 @@ export interface ApiCycloramaCyclorama extends Struct.SingleTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
-    amenities: Schema.Attribute.Component<"shared.localized-item", true>;
     comfortText: Schema.Attribute.Text;
     complementaryServices: Schema.Attribute.Text;
     createdAt: Schema.Attribute.DateTime;
@@ -537,6 +536,7 @@ export interface ApiCycloramaCyclorama extends Struct.SingleTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<"oneToOne", "admin::user"> &
       Schema.Attribute.Private;
+    usages: Schema.Attribute.Component<"shared.localized-item", true>;
   };
 }
 
