@@ -50,7 +50,12 @@
       "type": "component",
       "component": "shared.spec",
       "repeatable": true,
-      "description": "Caractéristiques techniques (label / valeur)."
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "description": "Caractéristiques techniques (label / valeur). Localisé : chaque locale a sa propre liste éditable."
     },
     "pricing": {
       "type": "string",
@@ -76,13 +81,23 @@
       "type": "component",
       "component": "shared.pricing-row",
       "repeatable": true,
-      "description": "Tarification structurée — remplace progressivement le champ `pricing` (texte parsé en regex). Tant que vide, le front continue de lire `pricing`."
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "description": "Tarification structurée — remplace progressivement le champ `pricing` (texte parsé en regex). Tant que vide, le front continue de lire `pricing`. Localisé : libellés FR/EN indépendants."
     },
     "operatorPricingRows": {
       "type": "component",
       "component": "shared.pricing-row",
       "repeatable": true,
-      "description": "Tarification opérateur structurée — remplace progressivement `operatorPricing`."
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "description": "Tarification opérateur structurée — remplace progressivement `operatorPricing`. Localisé : libellés FR/EN indépendants."
     },
     "media": {
       "type": "media",
