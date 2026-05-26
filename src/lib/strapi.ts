@@ -520,6 +520,29 @@ function pricingRowsToRates(
   return rates;
 }
 
+// Fallback `specs` per slug. Mirrors `MACHINE_USES` below: used when the
+// Strapi entry has no specs component rows. EDO-254 hit this on the
+// restored cyclorama row (the legacy single-type schema never carried a
+// `specs` field, so PR #280's restore migration couldn't copy them).
+// Backfill migration `2026.05.27T14.00.00.machines-backfill-cyclorama-specs.js`
+// repopulates the DB so editors own the data; this fallback covers the
+// window before that migration runs on each environment and shields the
+// page from a future drop of the same data.
+const MACHINE_SPECS: Record<string, { k: Bilingual; v: Bilingual }[]> = {
+  cyclorama: [
+    { k: { fr: 'Surface', en: 'Surface' }, v: { fr: '240 m² · Cyclo 2 faces 32 m²', en: '240 m² · 2-sided cyclo 32 m²' } },
+    { k: { fr: 'Dimensions', en: 'Dimensions' }, v: { fr: '6,3m L × 5,2m l × 5m H', en: '6.3m L × 5.2m W × 5m H' } },
+    { k: { fr: 'Éclairage naturel', en: 'Natural light' }, v: { fr: 'Skydomes occultable', en: 'Blackout skydomes' } },
+    { k: { fr: 'Accès', en: 'Access' }, v: { fr: 'Quai de livraison 3,5m L × 4,5m H', en: 'Loading dock 3.5m L × 4.5m H' } },
+    { k: { fr: 'Extérieur', en: 'Exterior' }, v: { fr: 'Accès direct, parking sur place', en: 'Direct access, on-site parking' } },
+    { k: { fr: 'Électricité', en: 'Electricity' }, v: { fr: '1 prise Marechal 63A triphasée · 15 prises 16A', en: '1 Marechal 63A 3-phase · 15 × 16A outlets' } },
+    { k: { fr: 'Connectivité & son', en: 'Connectivity & sound' }, v: { fr: 'Wi-Fi très haut débit · Sound system intégré', en: 'High-speed Wi-Fi · Integrated sound system' } },
+    { k: { fr: 'Maquillage', en: 'Make-up' }, v: { fr: '2 postes maquillage équipés', en: '2 equipped make-up stations' } },
+    { k: { fr: 'Habillage', en: 'Dressing' }, v: { fr: "2 cabines d'essayage", en: '2 fitting rooms' } },
+    { k: { fr: 'Cuisine', en: 'Kitchen' }, v: { fr: 'Entièrement équipée', en: 'Fully equipped' } },
+  ],
+};
+
 // Fallback `usages` per slug. Used when the Strapi entry has no usages
 // component rows (e.g. on a fresh install before editors fill them in).
 // Once the cyclorama Machine row carries its own usages from Strapi, the
@@ -599,6 +622,9 @@ export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
     const uses = mFr.usages && mFr.usages.length > 0
       ? mergeLocalizedItems(mFr.usages, mEn.usages ?? mFr.usages)
       : (MACHINE_USES[mFr.slug] ?? []);
+    const specs = mFr.specs && mFr.specs.length > 0
+      ? mergeSpecs(mFr.specs, mEn.specs ?? mFr.specs)
+      : (MACHINE_SPECS[mFr.slug] ?? []);
     const noteFr = mFr.pricingDescription;
     const noteEn = mEn.pricingDescription ?? noteFr;
     const ratesNote = noteFr ? { fr: noteFr, en: noteEn ?? noteFr } : undefined;
@@ -608,7 +634,7 @@ export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
       slug: mFr.slug,
       tagline: { fr: mFr.subtitle, en: mEn.subtitle },
       desc: { fr: mFr.description, en: mEn.description },
-      specs: mergeSpecs(mFr.specs ?? [], mEn.specs ?? []),
+      specs,
       uses,
       rates,
       ratesNote,
