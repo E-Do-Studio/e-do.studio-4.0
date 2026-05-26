@@ -1,6 +1,6 @@
 import { lazy, Suspense, useState } from 'react';
-import { CellLabel, IconArrowRight, IconChat, IconX, ImageCrossfade, PageHeader, SocialLinksRow, VideoLoop, cn } from './ui';
-import { MarqueeCell } from './cells';
+import { CellLabel, IconArrowRight, IconChat, IconX, ImageCrossfade, PageHeader, VideoLoop, cn } from './ui';
+import { SocialClientsBar } from './social-clients-bar';
 
 const AssistantChat = lazy(() => import('./assistant-chat'));
 import { useSocialLinks, useMachines, useContact, useHomeHero, useStudioHours, useSiteBusinessInfo } from './lib/use-strapi';
@@ -116,13 +116,8 @@ const DirectionA = () => {
         ]}
       />
 
-      {/* ── Row 2: Social links (wrapped to 4-col grid) ── */}
-      <SocialLinksRow className="col-span-2 md:col-start-1 md:col-end-5 md:row-start-2" />
-
-      {/* ── Row 2: Marquee ── */}
-      <div className="col-span-2 h-11 flex items-center overflow-hidden bg-white min-w-0 md:col-start-5 md:col-end-13 md:row-start-2">
-        <MarqueeCell size={20} />
-      </div>
+      {/* ── Row 2: Social links + clients marquee ── */}
+      <SocialClientsBar className="col-span-2 md:col-start-1 md:col-end-13 md:row-start-2" />
 
       {/* ── Rows 3-4 left: E-commerce section ── */}
       <div className="col-span-2 min-h-72 flex flex-col overflow-hidden bg-edo-black md:col-start-1 md:col-end-7 md:row-start-3 md:row-end-5 md:min-h-0">

@@ -339,7 +339,7 @@
 }
 
 @utility grid-rows-discovery-shell {
-  grid-template-rows: 52px minmax(0, 1fr) 44px;
+  grid-template-rows: 52px 44px minmax(0, 1fr);
 }
 
 @utility grid-rows-home {
