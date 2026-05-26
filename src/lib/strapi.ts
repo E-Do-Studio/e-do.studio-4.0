@@ -366,11 +366,12 @@ const PLATEAU_EN_FALLBACK: Record<string, string> = {
 // FR fallback dictionary for plateau specs/usages. Mirrors PLATEAU_EN_FALLBACK
 // in reverse: maps known English spec strings back to their French
 // translations. The semi-prod Strapi has English content stored under the FR
-// locale's component rows (specs/usages) for cyclorama and machines, so the
-// raw FR value coming from the API still renders as English. Until the data
-// is fixed in the CMS, swap any FR-locale string that matches a known English
-// key for its French translation. Once Strapi serves real French rows that
-// differ from the dictionary keys, this fallback is a no-op (lookup misses).
+// locale's component rows (specs/usages) on machine rows (cyclorama included,
+// since EDO-233 merged it into the machines collection), so the raw FR value
+// coming from the API still renders as English. Until the data is fixed in
+// the CMS, swap any FR-locale string that matches a known English key for its
+// French translation. Once Strapi serves real French rows that differ from
+// the dictionary keys, this fallback is a no-op (lookup misses).
 const PLATEAU_FR_FALLBACK: Record<string, string> = {
   // Cyclorama / machine spec labels (EN → FR)
   'Natural light': 'Éclairage naturel',
@@ -600,10 +601,11 @@ export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
   const machinesFr = sortByPlateauOrder(machinesBI.fr.data);
   const machinesEn = machinesBI.en.data;
   const result: Record<string, PlateauSpec> = {};
-  // Invariant (EDO-241): the cyclorama lives in its own single-type. The
-  // `machines` collection must not carry a `slug='cyclorama'` row — if one
-  // reappears it will overwrite the single-type fields above. Seed + drop
-  // migration enforce this; do not reintroduce a defensive filter here.
+  // Post-EDO-233 (PR #265): the cyclorama single-type was merged into the
+  // `machines` collection and is now expected to appear here as the row with
+  // `slug='cyclorama'` (sorted first by PLATEAU_ORDER). The historical
+  // EDO-241 invariant ("machines must not carry a cyclorama row") is
+  // intentionally reversed — its absence now means the page won't render.
   machinesFr.forEach((mFr, i) => {
     const mEn = machinesEn.find(e => e.slug === mFr.slug) ?? mFr;
     const rows = mFr.pricingRows ?? [];
