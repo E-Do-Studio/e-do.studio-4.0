@@ -1,0 +1,62 @@
+import { lazy, Suspense, useState } from 'react';
+import { CellLabel } from './typography';
+import { IconChat, IconX } from './icons';
+import { cn } from './cn';
+import type { Lang } from '../types';
+import { common, cells as cellsMsg } from '../i18n/messages';
+
+const AssistantChat = lazy(() => import('../assistant-chat'));
+
+interface MobileAssistantFabProps {
+  lang: Lang;
+}
+
+// Floating chat button + full-screen dialog used on mobile.
+// Pages that render <AssistantChat> inline on desktop should hide that
+// instance below md and mount this FAB instead, so the chat never pushes
+// page content down on small screens.
+export const MobileAssistantFab = ({ lang }: MobileAssistantFabProps) => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-label={cellsMsg.assistant[lang]}
+        className="edo-focus-ring fixed bottom-3 right-3 z-overlay flex h-10 w-10 cursor-pointer items-center justify-center border border-foreground/40 bg-foreground/85 text-white shadow-sm backdrop-blur-sm transition-all duration-150 hover:bg-foreground hover:shadow-md md:hidden"
+      >
+        <IconChat width="16" height="16" />
+      </button>
+
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={cellsMsg.assistant[lang]}
+        aria-hidden={open ? undefined : true}
+        {...({ inert: open ? undefined : '' } as Record<string, unknown>)}
+        className={cn(
+          'fixed inset-0 z-sheet flex flex-col bg-white transition-opacity duration-200 md:hidden',
+          open ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0',
+        )}
+      >
+        <div className="flex shrink-0 items-center justify-between border-b border-foreground px-4 py-3">
+          <CellLabel>{cellsMsg.assistant[lang]}</CellLabel>
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            aria-label={common.close[lang]}
+            className="edo-focus-ring flex h-10 w-10 cursor-pointer items-center justify-center border-0 bg-transparent text-foreground transition-colors hover:bg-muted"
+          >
+            <IconX width="20" height="20" />
+          </button>
+        </div>
+        <div className="flex min-h-0 flex-1 flex-col">
+          <Suspense fallback={<div aria-hidden className="flex-1 bg-white" />}>
+            {open && <AssistantChat lang={lang} className="h-full w-full" />}
+          </Suspense>
+        </div>
+      </div>
+    </>
+  );
+};

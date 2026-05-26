@@ -164,12 +164,21 @@
   }
 }
 
-/* ── Mobile: allow normal page scroll (root is overflow:hidden on desktop) ── */
+/* ── Mobile: allow normal page scroll (root is overflow:hidden on desktop) ──
+   Use 100dvh instead of 100% so the height tracks the dynamic viewport on
+   iOS (the URL bar collapse no longer leaves a phantom white strip at the
+   bottom). Body inherits the page bento gap colour so any area below the
+   last cell — overscroll, short pages — blends in instead of flashing
+   white. */
 @media (max-width: 767px) {
   html, body, #root {
     overflow: visible;
     height: auto;
-    min-height: 100%;
+    min-height: 100dvh;
+  }
+
+  body {
+    background: var(--edo-pure-black);
   }
 }
 
