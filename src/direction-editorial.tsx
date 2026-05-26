@@ -327,11 +327,10 @@ const DirectionA = () => {
       </div>
 
       {/* ── Row 5 right (desktop only): Book CTA.
-          Same logical button as the BookCTAInline in SocialClientsBar — both
-          render BookCTA variants from book-cta.tsx so the Réserver CTA has a
-          single definition. The desktop tile is the only Réserver visible at
-          md+ (the inline mobile cell is md:hidden); on mobile this tile is
-          hidden via `col-span-2 hidden md:flex`. */}
+          Renders the exact same BookCTATile component as the mobile social
+          row in SocialClientsBar — one component, two viewport-conditional
+          render sites. This instance is hidden on mobile via
+          `col-span-2 hidden md:flex`; the mobile instance is hidden at md+. */}
       <BookCTATile
         lang={lang}
         onClick={() => goto('book')}

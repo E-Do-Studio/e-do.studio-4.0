@@ -8,26 +8,9 @@ interface BookCTAProps {
   className?: string;
 }
 
-// Inline variant — sits in the mobile social row at the right of the social
-// icons. Carries the same brand identity as the BookCTATile orange tile
-// (orange background, white sentence-case "Réserver" in the headline face)
-// at the social row's h-11, so the mobile row reads social labels then the
-// primary booking CTA without dropping to a secondary link style.
-const BookCTAInline = ({ lang, onClick, className }: BookCTAProps) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={cn(
-      'edo-focus-ring flex h-11 cursor-pointer items-center justify-center border-0 bg-primary px-4 text-cell font-light tracking-headline leading-none text-white transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90',
-      className,
-    )}
-  >
-    {common.book[lang]}
-  </button>
-);
-
-// Tile variant — the orange CTA tile in the desktop bento, with the two-line
-// "Demander un devis ou / Réserver" copy and the trailing arrow.
+// The orange "Réserver" tile. Single definition of the booking CTA, used at
+// two render sites: the mobile social row (SocialClientsBar) and the desktop
+// bento at row 5 (DirectionA). Same DOM, same brand language in both.
 const BookCTATile = ({ lang, onClick, className }: BookCTAProps) => (
   <button
     type="button"
@@ -53,5 +36,5 @@ const BookCTATile = ({ lang, onClick, className }: BookCTAProps) => (
   </button>
 );
 
-export { BookCTAInline, BookCTATile };
+export { BookCTATile };
 export type { BookCTAProps };
