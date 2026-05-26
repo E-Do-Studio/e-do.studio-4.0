@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useMemo, useState } from 'react';
-import type { DiscoveryCategory, Lang } from '../types';
+import type { Lang } from '../types';
 import type { DiscoveryPost } from '../types';
 
 const AssistantChat = lazy(() => import('../assistant-chat'));
@@ -12,12 +12,10 @@ import { BookBackstageStack, NewsletterCard, QuoteTile, SplitArticleCard, SplitA
 interface DiscoveryBentoGridProps {
   lang: Lang;
   goto: (screen: string) => void;
-  cat: string;
-  setCat: (cat: string) => void;
-  cats?: DiscoveryCategory[];
 }
 
-export const DiscoveryBentoGrid: React.FC<DiscoveryBentoGridProps> = ({ lang, goto, cat, setCat, cats }) => {
+export const DiscoveryBentoGrid: React.FC<DiscoveryBentoGridProps> = ({ lang, goto }) => {
+  const [cat, setCat] = useState('all');
   const [openPost, setOpenPost] = useState<DiscoveryPost | null>(null);
   const { data: posts } = useDiscoveryPosts();
   const allPosts = posts ?? [];
@@ -52,7 +50,6 @@ export const DiscoveryBentoGrid: React.FC<DiscoveryBentoGridProps> = ({ lang, go
           onOpen={setOpenPost}
           cat={cat}
           setCat={setCat}
-          cats={cats}
           badge={2}
           className="md:col-span-2 lg:col-start-3 lg:col-span-2 lg:row-start-1 lg:row-span-4 lg:order-none"
         />
