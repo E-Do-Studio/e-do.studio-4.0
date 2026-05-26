@@ -1,5 +1,5 @@
 import React from 'react';
-import type { DiscoveryPost, Lang } from '../types';
+import type { DiscoveryCategory, DiscoveryPost, Lang } from '../types';
 import { ArticleMeta, CellBadge } from './shared';
 import { DiscoveryCover } from './discovery-cover';
 import { FilterChips } from './filter-chips';
@@ -14,11 +14,12 @@ interface MorePostsCardProps {
   onOpen: (post: DiscoveryPost) => void;
   cat: string;
   setCat: (cat: string) => void;
+  cats?: DiscoveryCategory[];
   className?: string;
   badge?: number;
 }
 
-export const MorePostsCard: React.FC<MorePostsCardProps> = ({ posts, lang, onOpen, cat, setCat, className, badge }) => {
+export const MorePostsCard: React.FC<MorePostsCardProps> = ({ posts, lang, onOpen, cat, setCat, cats, className, badge }) => {
   const filteredPosts = cat === 'all' ? posts : posts.filter((post) => post.cat === cat);
 
   return (
@@ -34,7 +35,9 @@ export const MorePostsCard: React.FC<MorePostsCardProps> = ({ posts, lang, onOpe
             {filteredPosts.length}/{posts.length}
           </span>
         </div>
-        <FilterChips value={cat} onChange={setCat} lang={lang} compact />
+        <div className="hidden md:block">
+          <FilterChips cats={cats} value={cat} onChange={setCat} lang={lang} compact />
+        </div>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto">
