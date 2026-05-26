@@ -16,12 +16,12 @@ const SocialClientsBar = ({ className, lang, onBook }: SocialClientsBarProps) =>
       className,
     )}
   >
-    {/* Mobile: social icons + Réserver CTA share one row, marquee below.
-        Desktop: md:contents flattens this wrapper so SocialLinksRow lands
-        in col 1 of the outer grid and the Réserver button is removed via
-        md:hidden, restoring the original [social | marquee] layout.
-        The desktop instance of the same button lives in DirectionA at its
-        bento position; see BookCTATile in book-cta.tsx for the shared CTA. */}
+    {/* Mobile: social icons + orange Réserver CTA share one row, marquee
+        below. Desktop: md:contents flattens this wrapper so SocialLinksRow
+        lands in col 1 of the outer grid and the inline button is removed
+        via md:hidden, restoring the original [social | marquee] layout.
+        The desktop instance of the same brand CTA lives in DirectionA at
+        its bento position; see BookCTATile in book-cta.tsx. */}
     <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-px bg-edo-pure-black md:contents">
       <SocialLinksRow />
       <BookCTAInline lang={lang} onClick={onBook} className="md:hidden" />
