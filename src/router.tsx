@@ -186,6 +186,15 @@ const legalRoute = createRoute({
   component: lazyRouteComponent(() => import('./legal-page'), 'LegalPage'),
 });
 
+const devMobileNavStripRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: '/dev/mobile-nav-strip',
+  component: lazyRouteComponent(
+    () => import('./dev/mobile-nav-strip-test'),
+    'MobileNavStripDevPage',
+  ),
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   langRoute.addChildren([
@@ -199,6 +208,7 @@ const routeTree = rootRoute.addChildren([
     bookFrRoute,
     bookEnRoute,
     legalRoute,
+    devMobileNavStripRoute,
   ]),
 ]);
 
