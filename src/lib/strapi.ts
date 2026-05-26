@@ -328,6 +328,63 @@ export interface PPCat {
 
 // ─── Transform helpers ──────────────────────────────────────────────────────
 
+// EN fallback dictionary for plateau specs/usages. Mirrors the strings the
+// seed script (`strapi/scripts/seed-content.mjs`) installs in both locales,
+// so the page renders the correct English copy even when Strapi has not yet
+// been redeployed with the EN-translation data migration (EDO-211). Once
+// Strapi serves real per-locale rows that differ from FR, this fallback is a
+// no-op — we only swap when Strapi's EN value is identical to FR.
+const PLATEAU_EN_FALLBACK: Record<string, string> = {
+  // Cyclorama / machine spec labels
+  'Surface': 'Surface',
+  'Dimensions': 'Dimensions',
+  'Éclairage naturel': 'Natural light',
+  'Accès': 'Access',
+  'Extérieur': 'Exterior',
+  'Électricité': 'Electricity',
+  'Connectivité & son': 'Connectivity & sound',
+  'Maquillage': 'Make-up',
+  'Habillage': 'Dressing',
+  'Cuisine': 'Kitchen',
+  'Caméra': 'Camera',
+  'Pilotage': 'Control',
+  'Éclairage': 'Lighting',
+  'Détourage automatique': 'Auto clipping',
+  'Formats': 'Formats',
+  'Motorisation': 'Motion',
+  // Cyclorama spec values
+  '240 m² · Cyclo 2 faces 32 m²': '240 m² · 2-sided cyclo 32 m²',
+  '6,3m L × 5,2m l × 5m H': '6.3m L × 5.2m W × 5m H',
+  'Skydomes occultable': 'Blackout skydomes',
+  'Quai de livraison 3,5m L × 4,5m H': 'Loading dock 3.5m L × 4.5m H',
+  'Accès direct, parking sur place': 'Direct access, on-site parking',
+  '1 prise Marechal 63A triphasée · 15 prises 16A': '1 Marechal 63A 3-phase · 15 × 16A outlets',
+  'Wi-Fi très haut débit · Sound system intégré': 'High-speed Wi-Fi · Integrated sound system',
+  '2 postes maquillage équipés': '2 equipped make-up stations',
+  "2 cabines d'essayage": '2 fitting rooms',
+  'Entièrement équipée': 'Fully equipped',
+  // Machine spec values
+  'Canon EOS R · 24–105 mm motorisé': 'Canon EOS R · 24–105 mm motorized',
+  'Canon EOS R · 70–200 mm motorisé': 'Canon EOS R · 70–200 mm motorized',
+  'iPad · application intuitive': 'iPad · intuitive app',
+  'LED High-CRI continue': 'High-CRI LED continuous',
+  'AutoAlpha™': 'AutoAlpha™',
+  'JPG · PNG · TIFF · RAW': 'JPG · PNG · TIFF · RAW',
+  'JPG · PNG · TIFF · RAW · MP4 · MOV': 'JPG · PNG · TIFF · RAW · MP4 · MOV',
+  '4 axes · hauteur · inclinaison · zoom · rotation 360°': '4 axes · height · tilt · zoom · 360° rotation',
+  '3 axes · hauteur · inclinaison · zoom': '3 axes · height · tilt · zoom',
+  // Cyclorama usages
+  'Campagne & éditorial': 'Campaign & editorial',
+  'Film publicitaire': 'Advertising film',
+  'Packshot & still life': 'Packshot & still life',
+};
+
+function fallbackEn(frValue: string, enValue: string): string {
+  if (enValue && enValue !== frValue) return enValue;
+  const translated = PLATEAU_EN_FALLBACK[frValue];
+  return translated ?? enValue ?? frValue;
+}
+
 function mergeSpecs(frSpecs: StrapiSpec[], enSpecs: StrapiSpec[]): { k: Bilingual; v: Bilingual }[] {
   const len = Math.max(frSpecs.length, enSpecs.length);
   const result: { k: Bilingual; v: Bilingual }[] = [];
@@ -336,9 +393,11 @@ function mergeSpecs(frSpecs: StrapiSpec[], enSpecs: StrapiSpec[]): { k: Bilingua
     const en = enSpecs[i];
     const frLabel = fr?.label ?? en?.label ?? '';
     const frValue = fr?.value ?? en?.value ?? '';
+    const enLabel = en?.label || frLabel;
+    const enValue = en?.value || frValue;
     result.push({
-      k: { fr: frLabel, en: en?.label || frLabel },
-      v: { fr: frValue, en: en?.value || frValue },
+      k: { fr: frLabel, en: fallbackEn(frLabel, enLabel) },
+      v: { fr: frValue, en: fallbackEn(frValue, enValue) },
     });
   }
   return result;
@@ -349,7 +408,7 @@ function mergeLocalizedItems(frItems: StrapiLocalizedItem[], enItems: StrapiLoca
   return Array.from({ length: len }, (_, i) => {
     const fr = frItems[i]?.text ?? enItems[i]?.text ?? '';
     const en = enItems[i]?.text || fr;
-    return { fr, en };
+    return { fr, en: fallbackEn(fr, en) };
   });
 }
 
