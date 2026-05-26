@@ -181,7 +181,7 @@ const ChatBubble = ({ role, content }: ChatBubbleProps) => {
     <div className={cn('flex', isUser ? 'justify-end' : 'justify-start')}>
       <div
         className={cn(
-          'max-w-message break-words text-caption leading-normal tracking-copy-tight',
+          'max-w-message break-words text-detail leading-normal tracking-copy-tight',
           isUser
             ? 'bg-foreground px-3 py-2 text-white whitespace-pre-wrap'
             : 'bg-transparent py-1 text-foreground'
