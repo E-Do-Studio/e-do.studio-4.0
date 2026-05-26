@@ -103,14 +103,14 @@
       "type": "media",
       "multiple": false,
       "allowedTypes": ["images"],
-      "description": "Image hero de la machine, présentée en mode paysage en haut de la page Plateau. Optionnelle : si vide, le carousel `media` occupe seul la zone visuelle (ancien comportement)."
+      "description": "Image hero de la machine, présentée en haut de la page Plateau (object-fit: contain — l'image entière est visible, lettrée si besoin sur le fond crème). Optionnelle : si vide, le diagramme SVG de la machine est affiché à la place."
     },
     "media": {
       "type": "media",
       "multiple": true,
       "required": true,
       "allowedTypes": ["images", "videos"],
-      "description": "Médias du plateau (images et/ou vidéos), ordonnés. Le 1er média sert de couverture. Remplace les anciens champs `image` (cover unique), `gallery` (images supplémentaires), `video` (vidéo unique) et le composant `media` (shared.media-item). Migration : `2026.05.25T21.00.00.machine-unify-media.js`."
+      "description": "Médias du plateau (images et/ou vidéos), ordonnés. Les 4 premiers sont affichés en grille sous l'image hero (les vidéos utilisent leur poster). Migration : `2026.05.25T21.00.00.machine-unify-media.js`."
     },
     "seo": {
       "type": "component",

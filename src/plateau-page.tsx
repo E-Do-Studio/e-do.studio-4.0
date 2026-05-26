@@ -1,5 +1,5 @@
 import { useParams } from '@tanstack/react-router';
-import { CellLabel, IconArrowRight, PageHeader, PlateauMediaCarousel } from './ui';
+import { CellLabel, IconArrowRight, PageHeader } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
 import { useStructuredData } from './lib/use-structured-data';
 import { buildPlateauServiceSchema, buildBreadcrumbSchema } from './lib/structured-data';
@@ -132,7 +132,7 @@ const PlateauPage = ({ slug }: { slug: string }) => {
 
       {/* Hero landscape image (top) — falls back to the SVG diagram when no
           dedicated hero image has been set on the entry. Splits the visual
-          area into hero rows 2-3 + demo carousel row 4. */}
+          area into hero rows 2-3 + 4-tile demo grid row 4. */}
       {hero ? (
         <div className="relative overflow-hidden bg-gradient-to-b from-edo-cream to-edo-sand min-h-56 md:col-start-2 md:col-span-2 md:row-start-2 md:row-span-2 md:min-h-0">
           <img
@@ -140,7 +140,7 @@ const PlateauPage = ({ slug }: { slug: string }) => {
             alt={hero.alt[lang] || p.name}
             loading="eager"
             decoding="async"
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full object-contain"
           />
         </div>
       ) : (
@@ -149,10 +149,31 @@ const PlateauPage = ({ slug }: { slug: string }) => {
         </div>
       )}
 
-      {/* Demo carousel (below hero) */}
-      <div className="relative overflow-hidden flex items-center justify-center bg-gradient-to-b from-edo-cream to-edo-sand min-h-40 md:col-start-2 md:col-span-2 md:row-start-4 md:min-h-0">
-        <PlateauMediaCarousel media={p.media} fallback={<PlateauVisual kind={p.visual}/>} lang={lang} />
-      </div>
+      {/* Demo grid — up to 4 demonstration images side-by-side. Videos use
+          their poster frame so the strip stays static (no autoplay clutter
+          under the hero). Falls back to the SVG diagram when no media. */}
+      {p.media.length > 0 ? (
+        <div className="grid grid-cols-4 gap-px bg-edo-pure-black md:col-start-2 md:col-span-2 md:row-start-4 md:min-h-0">
+          {p.media.slice(0, 4).map((item, i) => {
+            const src = item.kind === 'image' ? item.url : (item.poster ?? item.url);
+            return (
+              <div key={`${item.url}-${i}`} className="relative overflow-hidden bg-gradient-to-b from-edo-cream to-edo-sand">
+                <img
+                  src={src}
+                  alt={item.alt[lang] || ''}
+                  loading="lazy"
+                  decoding="async"
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="relative overflow-hidden flex items-center justify-center bg-gradient-to-b from-edo-cream to-edo-sand min-h-40 md:col-start-2 md:col-span-2 md:row-start-4 md:min-h-0">
+          <PlateauVisual kind={p.visual}/>
+        </div>
+      )}
 
       {/* Name + tagline */}
       <div className="bg-white py-3.5 px-4 flex flex-col justify-between gap-1 md:col-start-4 md:row-start-2">
