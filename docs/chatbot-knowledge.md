@@ -101,6 +101,39 @@ cold start and refreshes its in-memory cache every 5 minutes.
 The edge function does not need to be redeployed — it discovers new chunks
 automatically via the table read.
 
+## Availability lookup (EDO-220)
+
+In addition to the CMS knowledge base, the edge function can answer "do you
+have a slot on…" questions by consulting the booking calendar. The contract
+lives in `supabase/functions/chat/availability.ts`:
+
+- A keyword/intent parser decides whether the turn is about availability. If
+  not, the calendar is never queried.
+- When triggered, the function reads `bookings` / `booking_sessions` with a
+  **strict column projection** (`preferred_date`, `arrival_hour`, plus only
+  `plateau_key` and `hours` on sessions). Every row is then passed through
+  `sanitizeBookingProjection`, which drops any non-whitelisted key as a
+  defense-in-depth check — even if the SELECT is widened by mistake, no PII
+  reaches the LLM.
+- The result handed to the system prompt is a list of computed **free slots
+  only** (date, plateau, hour range, duration) plus the booking page link.
+  Raw booking rows never appear in the prompt.
+- The system prompt has an explicit non-negotiable rule forbidding the model
+  from mentioning anything about other bookings or clients.
+
+Run the regression tests with:
+
+```bash
+deno test --allow-env --allow-read --allow-net supabase/functions/chat/availability_test.ts
+```
+
+The PII-leak test (`getAvailability end-to-end: prompt block never contains
+injected PII`) is the security backstop: it asserts that even when the
+backend returns rows poisoned with `client_name`, `client_email`,
+`client_phone`, `notes`, `total_estimate`, `reference`, etc., none of those
+values can be found in the final prompt block. If you touch the whitelist or
+the SELECT statement, this test MUST stay green.
+
 ## Limits & roadmap
 
 - **Retrieval is keyword-only** (title × 3, tags × 2, body × 1). Good enough
