@@ -135,7 +135,11 @@ interface StrapiBlogPost {
   body?: string;
   bodyBlocks?: BlockNode[];
   coverImage?: StrapiMedia;
-  publishedAt: string;
+  // Editorial date set by the editor (independent of Strapi's publish state).
+  // `publishedAt` is kept as a fallback for posts that haven't been migrated
+  // yet but is no longer authoritative (EDO-256).
+  articleDate?: string | null;
+  publishedAt?: string | null;
   categories?: { id: number; title: string; slug: string }[];
 }
 
@@ -750,9 +754,13 @@ function resolveRawMediaUrl(media?: StrapiMedia | null): string | undefined {
 }
 
 export async function fetchDiscoveryPosts(): Promise<DiscoveryPost[]> {
+  // Sort by the editorial `articleDate` (EDO-256). `publishedAt` is the
+  // system field driving draft/publish state — sorting/filtering against it
+  // hid posts whose editorial date had been overwritten by the publish
+  // action. We keep it as a fallback for the displayed date below.
   const resBI = await fetchStrapiBilingual<{ data: StrapiBlogPost[] }>('blog-posts', {
     'populate': 'categories,coverImage,bodyBlocks',
-    'sort': 'publishedAt:desc',
+    'sort': 'articleDate:desc',
     'pagination[pageSize]': '50',
   });
 
@@ -768,6 +776,7 @@ export async function fetchDiscoveryPosts(): Promise<DiscoveryPost[]> {
     const blocksFr = Array.isArray(pFr.bodyBlocks) ? pFr.bodyBlocks : [];
     const blocksEn = Array.isArray(pEn.bodyBlocks) ? pEn.bodyBlocks : blocksFr;
     const readingTime = estimateReadingTime(bodyFr || bodyEn);
+    const displayDate = pFr.articleDate ?? pFr.publishedAt ?? '';
     return {
       id: pFr.id,
       cat: catFr?.slug ?? 'tips',
@@ -777,7 +786,7 @@ export async function fetchDiscoveryPosts(): Promise<DiscoveryPost[]> {
       sub: { fr: pFr.excerpt, en: pEn.excerpt },
       body: { fr: bodyFr, en: bodyEn },
       bodyBlocks: blocksFr.length > 0 || blocksEn.length > 0 ? { fr: blocksFr, en: blocksEn } : undefined,
-      date: formatStrapiDate(pFr.publishedAt),
+      date: formatStrapiDate(displayDate),
       read: `${readingTime} min`,
       author: 'Studio',
       coverUrl: resolveStrapiMediaUrl(pFr.coverImage),

@@ -335,7 +335,7 @@ async function buildBlogChunks() {
   try {
     const res = await fetchBilingual('blog-posts', {
       populate: 'categories,bodyBlocks',
-      sort: 'publishedAt:desc',
+      sort: 'articleDate:desc',
       'pagination[pageSize]': 50,
     });
     const frList = res.fr?.data ?? [];
