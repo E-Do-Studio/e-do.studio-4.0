@@ -17,7 +17,7 @@ const CookieBanner = ({ lang, onLegalClick }: CookieBannerProps) => {
     <div
       role="region"
       aria-label={cookieBanner.ariaLabel[lang]}
-      className="fixed inset-x-0 bottom-0 z-sticky border-t border-foreground bg-background text-foreground"
+      className="fixed inset-x-0 bottom-0 z-modal border-t border-foreground bg-background text-foreground"
     >
       <div className="flex flex-col gap-4 px-5 py-4 md:flex-row md:items-center md:justify-between md:gap-6 md:px-8 md:py-5">
         <div className="flex flex-col gap-1.5 md:max-w-3xl">

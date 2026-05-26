@@ -241,8 +241,12 @@
   .text-balance { text-wrap: balance; }
   .text-pretty { text-wrap: pretty; }
   .edo-writing-vertical { writing-mode: vertical-rl; }
+  .z-dropdown { z-index: var(--z-dropdown); }
+  .z-sticky { z-index: var(--z-sticky); }
   .z-overlay { z-index: var(--z-overlay); }
   .z-sheet { z-index: calc(var(--z-overlay) + 1); }
+  .z-modal { z-index: var(--z-modal); }
+  .z-toast { z-index: var(--z-toast); }
   .z-local { z-index: 5; }
 }
 
