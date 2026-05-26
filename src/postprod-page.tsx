@@ -1,11 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQueryState, parseAsString } from 'nuqs';
 import { Button, EmptyState, IconArrowRight, PageHeader } from './ui';
 import { useDocumentMeta, type SeoOverride } from './lib/use-document-meta';
 import { useStructuredData } from './lib/use-structured-data';
 import { buildPostProdServiceSchema, buildBreadcrumbSchema } from './lib/structured-data';
 import { usePostProdTypes } from './lib/use-strapi';
-import type { PPCat as StrapiPPCat, SeoMeta } from './lib/strapi';
+import type { PPCat as StrapiPPCat, PPSample, SeoMeta } from './lib/strapi';
 import type { Bilingual } from './types';
 import { usePageContext } from './router';
 import { common, postprod as postprodMsg } from './i18n/messages';
@@ -17,6 +17,11 @@ interface PPPrice {
   kind?: string;
 }
 
+// `samples` is a tagged union: real CMS media (image | video) plus a
+// `placeholder` variant that drives the SVG palette fallback when fewer
+// than 6 demo medias are configured in Strapi.
+type SampleSlot = PPSample | { kind: 'placeholder'; seed: string };
+
 interface PPCat {
   k: string;
   medium: string;
@@ -27,7 +32,7 @@ interface PPCat {
   note: Bilingual;
   features: Bilingual<string[]>;
   formats: string[];
-  samples: string[];
+  samples: SampleSlot[];
   brands: string[];
   featured?: boolean;
 }
@@ -61,23 +66,56 @@ const PALETTES: Record<string, PaletteColors> = {
 };
 
 interface SampleImageProps {
-  seed: string;
+  sample: SampleSlot;
   label?: string;
   medium: string;
 }
 
-const SampleImage = ({ seed, label, medium }: SampleImageProps) => {
-  // When `seed` looks like a URL (or relative path returned by the CMS),
-  // render the real media. Otherwise fall back to the SVG placeholder
-  // keyed off the palette seed — used when fewer than 6 demo medias are
-  // configured in Strapi.
-  const isMediaUrl = seed.startsWith('http') || seed.startsWith('/');
-  if (isMediaUrl) {
+const SampleVideo = ({ src, mime, label }: { src: string; mime: string; label?: string }) => {
+  const ref = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    // `autoplay` + `muted` is enough on most browsers, but Safari/iOS
+    // sometimes ignores the attribute when the element mounts off-screen.
+    // Calling .play() defensively keeps the loop running once visible.
+    el.play().catch(() => {});
+  }, [src]);
+  return (
+    <div className="relative w-full h-full overflow-hidden bg-muted">
+      <video
+        ref={ref}
+        src={src}
+        autoPlay
+        loop
+        muted
+        playsInline
+        preload="metadata"
+        disablePictureInPicture
+        aria-label={label ?? ''}
+        className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
+      >
+        <source src={src} type={mime} />
+      </video>
+      {label && (
+        <span className="absolute bottom-1.5 left-2 font-mono text-nano tracking-ui uppercase opacity-55 text-white">
+          {label}
+        </span>
+      )}
+    </div>
+  );
+};
+
+const SampleImage = ({ sample, label, medium }: SampleImageProps) => {
+  if (sample.kind === 'video') {
+    return <SampleVideo src={sample.url} mime={sample.mime} label={sample.alt || label} />;
+  }
+  if (sample.kind === 'image') {
     return (
       <div className="relative w-full h-full overflow-hidden bg-muted">
         <img
-          src={seed}
-          alt={label ?? ''}
+          src={sample.url}
+          alt={sample.alt || label || ''}
           loading="lazy"
           className="absolute inset-0 w-full h-full object-cover"
         />
@@ -89,6 +127,7 @@ const SampleImage = ({ seed, label, medium }: SampleImageProps) => {
       </div>
     );
   }
+  const seed = sample.seed;
   const p = PALETTES[seed] || PALETTES['mono-a'];
   const hash = [...seed].reduce((a,c)=>a+c.charCodeAt(0),0) % 5;
   return (
@@ -114,12 +153,16 @@ const SampleImage = ({ seed, label, medium }: SampleImageProps) => {
 
 const SAMPLE_CYCLE = ['warm-a','warm-b','warm-c','warm-d','warm-e','warm-b'];
 
-// Real media URLs from Strapi (when present) come first; the remaining
+// Real media items from Strapi (when present) come first; the remaining
 // slots fall back to the palette cycle so the grid stays visually full
 // even when fewer than 6 demo medias are configured.
-function fillSamples(samples: string[]): string[] {
-  const out: string[] = [];
-  for (let i = 0; i < 6; i++) out.push(samples[i] || SAMPLE_CYCLE[i % SAMPLE_CYCLE.length]);
+function fillSamples(samples: PPSample[]): SampleSlot[] {
+  const out: SampleSlot[] = [];
+  for (let i = 0; i < 6; i++) {
+    const s = samples[i];
+    if (s) out.push(s);
+    else out.push({ kind: 'placeholder', seed: SAMPLE_CYCLE[i % SAMPLE_CYCLE.length] });
+  }
   return out;
 }
 
@@ -315,26 +358,17 @@ const PostprodPage = () => {
         </div>
       </div>
 
-      {/* Sample images grid */}
+      {/* Sample media grid — images + videos (EDO-222) */}
       <div className="grid grid-cols-3 gap-px bg-edo-pure-black md:col-start-3 md:col-span-2 md:row-start-2 md:grid-rows-double md:min-h-0">
-        <div className={`${bgCls} relative overflow-hidden aspect-portrait md:aspect-auto md:h-full`}>
-          <SampleImage seed={cat.samples[0]} label={cat.brands?.[0] || `${cat.k.toUpperCase()} · 01`} medium={cat.medium}/>
-        </div>
-        <div className={`${bgCls} relative overflow-hidden aspect-portrait md:aspect-auto md:h-full`}>
-          <SampleImage seed={cat.samples[1]} label={cat.brands?.[1] || `${cat.k.toUpperCase()} · 02`} medium={cat.medium}/>
-        </div>
-        <div className={`${bgCls} relative overflow-hidden aspect-portrait md:aspect-auto md:h-full`}>
-          <SampleImage seed={cat.samples[2]} label={cat.brands?.[2] || `${cat.k.toUpperCase()} · 03`} medium={cat.medium}/>
-        </div>
-        <div className={`${bgCls} relative overflow-hidden aspect-portrait md:aspect-auto md:h-full`}>
-          <SampleImage seed={cat.samples[3] || cat.samples[0]} label={cat.brands?.[3] || `${cat.k.toUpperCase()} · 04`} medium={cat.medium}/>
-        </div>
-        <div className={`${bgCls} relative overflow-hidden aspect-portrait md:aspect-auto md:h-full`}>
-          <SampleImage seed={cat.samples[4] || cat.samples[1]} label={cat.brands?.[4] || `${cat.k.toUpperCase()} · 05`} medium={cat.medium}/>
-        </div>
-        <div className={`${bgCls} relative overflow-hidden aspect-portrait md:aspect-auto md:h-full`}>
-          <SampleImage seed={cat.samples[5] || cat.samples[2]} label={cat.brands?.[5] || `${cat.k.toUpperCase()} · 06`} medium={cat.medium}/>
-        </div>
+        {cat.samples.slice(0, 6).map((sample, i) => (
+          <div key={i} className={`${bgCls} relative overflow-hidden aspect-portrait md:aspect-auto md:h-full`}>
+            <SampleImage
+              sample={sample}
+              label={cat.brands?.[i] || `${cat.k.toUpperCase()} · ${String(i + 1).padStart(2, '0')}`}
+              medium={cat.medium}
+            />
+          </div>
+        ))}
       </div>
     </div>
   );

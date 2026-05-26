@@ -311,6 +311,10 @@ export interface PPPrice {
   kind?: string;
 }
 
+export type PPSample =
+  | { kind: 'image'; url: string; alt: string }
+  | { kind: 'video'; url: string; mime: string; alt: string };
+
 export interface PPCat {
   k: string;
   medium: string;
@@ -321,7 +325,7 @@ export interface PPCat {
   note: Bilingual;
   features: Bilingual<string[]>;
   formats: string[];
-  samples: string[];
+  samples: PPSample[];
   brands: string[];
   seo?: Bilingual<SeoMeta>;
 }
@@ -686,12 +690,22 @@ export async function fetchPostProdTypes(): Promise<PPCat[]> {
     const tEn = enTypes.find(e => e.slug === tFr.slug) ?? tFr;
     const firstRow = tFr.priceRows?.[0];
     const price = firstRow ? priceFromRow(firstRow) : parsePriceText(tFr.price);
-    // `media` is non-i18n: the FR locale is the source of truth. The
-    // schema allows multiple images/videos — selection multiple like
-    // gallery-project.
-    const samples = (tFr.media ?? [])
-      .map((m) => resolveStrapiMediaUrl(m))
-      .filter((u): u is string => !!u);
+    // `media` is non-i18n: the FR locale is the source of truth. The schema
+    // allows both images and videos — preserve the kind so the gallery can
+    // render `<video>` for clips and `<img>` for stills (EDO-222).
+    const samples: PPSample[] = (tFr.media ?? [])
+      .map((m): PPSample | null => {
+        const alt = m.alternativeText ?? '';
+        if (m.mime?.startsWith('video/')) {
+          const url = resolveRawMediaUrl(m);
+          if (!url) return null;
+          return { kind: 'video', url, mime: m.mime, alt };
+        }
+        const url = resolveStrapiMediaUrl(m);
+        if (!url) return null;
+        return { kind: 'image', url, alt };
+      })
+      .filter((s): s is PPSample => s !== null);
     return {
       k: tFr.slug,
       medium: 'photo',
