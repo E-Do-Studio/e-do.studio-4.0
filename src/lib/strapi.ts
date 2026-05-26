@@ -599,6 +599,7 @@ export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
 
   const machinesFr = sortByPlateauOrder(machinesBI.fr.data);
   const machinesEn = machinesBI.en.data;
+  const result: Record<string, PlateauSpec> = {};
   // Invariant (EDO-241): the cyclorama lives in its own single-type. The
   // `machines` collection must not carry a `slug='cyclorama'` row — if one
   // reappears it will overwrite the single-type fields above. Seed + drop

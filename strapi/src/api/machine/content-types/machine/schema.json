@@ -124,14 +124,14 @@
       "type": "media",
       "multiple": false,
       "allowedTypes": ["images", "videos"],
-      "description": "Média hero de la machine (image OU vidéo, ex: MP4 en boucle), présenté en haut de la page Plateau (object-fit: contain). Optionnel : si vide, la cellule n'est pas rendue. Les vidéos sont jouées en autoplay/muted/loop."
+      "description": "DÉPRÉCIÉ — ne plus remplir (EDO-249). La cover de la page Plateau est désormais la PREMIÈRE entrée de `media`. Conservé en fallback pour les anciennes fiches : si renseigné et absent de `media`, il est utilisé comme première image du carrousel cover."
     },
     "media": {
       "type": "media",
       "multiple": true,
       "required": true,
       "allowedTypes": ["images", "videos"],
-      "description": "Médias du plateau (images et/ou vidéos), ordonnés. Les 4 premiers sont affichés en grille sous l'image hero (les vidéos utilisent leur poster). Migration : `2026.05.25T21.00.00.machine-unify-media.js`."
+      "description": "Médias du plateau (images et/ou vidéos), ordonnés. La PREMIÈRE entrée sert de cover sur la page Plateau ; les flèches dans la cover font défiler le reste de la liste. Les vidéos sont jouées en autoplay/muted/loop. Migration : `2026.05.25T21.00.00.machine-unify-media.js`."
     },
     "seo": {
       "type": "component",

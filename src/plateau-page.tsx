@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useParams } from '@tanstack/react-router';
 import { CellLabel, IconArrowRight, PageHeader } from './ui';
 import { cn } from './ui/cn';
@@ -12,120 +12,76 @@ import { common, plateau as plateauMsg } from './i18n/messages';
 import type { Lang } from './types';
 import type { MediaItem } from './lib/strapi';
 
-// Up to 4 tiles visible at once; the rest reachable via the arrows.
-const VISIBLE_TILES = 4;
-
-interface DemoCarouselProps {
+interface CoverCarouselProps {
   items: MediaItem[];
   lang: Lang;
   plateauName: string;
   className?: string;
 }
 
-const DemoCarousel = ({ items, lang, plateauName, className }: DemoCarouselProps) => {
-  const stripRef = useRef<HTMLDivElement>(null);
-  const [canPrev, setCanPrev] = useState(false);
-  const [canNext, setCanNext] = useState(false);
+// Cover carousel — renders one media item full-cell with prev/next arrows
+// overlaid inside the image. Wraps around at the ends so the controls never
+// appear "dead" sitting on top of the artwork; arrows are hidden entirely
+// when the entry only has one media item.
+const CoverCarousel = ({ items, lang, plateauName, className }: CoverCarouselProps) => {
+  const [index, setIndex] = useState(0);
+  if (items.length === 0) return null;
+  const safeIndex = ((index % items.length) + items.length) % items.length;
+  const item = items[safeIndex];
+  const hasMultiple = items.length > 1;
 
-  // True when there are more tiles than the visible window — only then do we
-  // surface the arrows (≤4 items fit edge-to-edge with no overflow).
-  const hasOverflow = items.length > VISIBLE_TILES;
-  const visible = Math.min(items.length, VISIBLE_TILES);
-  const tileBasis = `${100 / visible}%`;
-
-  const updateScrollState = useCallback(() => {
-    const el = stripRef.current;
-    if (!el) return;
-    // 1px epsilon absorbs subpixel rounding on smooth-scroll endpoints.
-    const epsilon = 1;
-    setCanPrev(el.scrollLeft > epsilon);
-    setCanNext(el.scrollLeft + el.clientWidth < el.scrollWidth - epsilon);
-  }, []);
-
-  useEffect(() => {
-    const el = stripRef.current;
-    if (!el) return;
-    updateScrollState();
-    const onScroll = () => updateScrollState();
-    el.addEventListener('scroll', onScroll, { passive: true });
-    const ro = new ResizeObserver(updateScrollState);
-    ro.observe(el);
-    return () => {
-      el.removeEventListener('scroll', onScroll);
-      ro.disconnect();
-    };
-  }, [updateScrollState, items.length]);
-
-  const scrollByTile = (dir: 1 | -1) => {
-    const el = stripRef.current;
-    if (!el) return;
-    const firstTile = el.querySelector<HTMLElement>('[data-carousel-tile]');
-    const step = firstTile?.offsetWidth ?? el.clientWidth / VISIBLE_TILES;
-    el.scrollBy({ left: dir * step, behavior: 'smooth' });
-  };
+  const go = (delta: 1 | -1) => setIndex((i) => i + delta);
 
   const arrowBtn =
-    'edo-focus-ring absolute top-1/2 z-10 -translate-y-1/2 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-border bg-white text-foreground transition-opacity duration-150 hover:bg-muted disabled:cursor-default disabled:opacity-0 disabled:pointer-events-none';
+    'edo-focus-ring absolute top-1/2 z-10 -translate-y-1/2 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-border bg-white/90 text-foreground backdrop-blur-sm transition-colors duration-150 hover:bg-white';
 
   return (
-    <div className={cn('relative', className)}>
-      <div
-        ref={stripRef}
-        role="group"
-        aria-roledescription="carousel"
-        aria-label={common.imageCarousel[lang]}
-        className="flex h-full gap-px overflow-x-auto bg-edo-pure-black snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      >
-        {items.map((item, i) => (
-          <div
-            key={`${item.url}-${i}`}
-            data-carousel-tile
-            className="relative shrink-0 snap-start overflow-hidden bg-white"
-            style={{ flexBasis: tileBasis }}
-            role="group"
-            aria-roledescription="slide"
-            aria-label={`${i + 1} / ${items.length}`}
-          >
-            {item.kind === 'video' ? (
-              <VideoLoop
-                src={item.url}
-                poster={item.poster}
-                objectFit="cover"
-                className="absolute inset-0 h-full w-full"
-              />
-            ) : (
-              <img
-                src={item.url}
-                alt={item.alt[lang] || `${plateauName} — ${i + 1}`}
-                loading="lazy"
-                decoding="async"
-                className="absolute inset-0 h-full w-full object-cover"
-              />
-            )}
-          </div>
-        ))}
-      </div>
+    <div
+      className={cn('relative overflow-hidden bg-white min-h-56 md:min-h-0', className)}
+      role={hasMultiple ? 'group' : undefined}
+      aria-roledescription={hasMultiple ? 'carousel' : undefined}
+      aria-label={hasMultiple ? common.imageCarousel[lang] : undefined}
+    >
+      {item.kind === 'video' ? (
+        <VideoLoop
+          key={item.url}
+          src={item.url}
+          poster={item.poster}
+          objectFit="contain"
+          className="absolute inset-0 h-full w-full"
+        />
+      ) : (
+        <img
+          key={item.url}
+          src={item.url}
+          alt={item.alt[lang] || `${plateauName} — ${safeIndex + 1}`}
+          loading="eager"
+          decoding="async"
+          className="absolute inset-0 h-full w-full object-contain"
+        />
+      )}
 
-      {hasOverflow && (
+      {hasMultiple && (
         <>
           <button
             type="button"
-            onClick={() => scrollByTile(-1)}
-            disabled={!canPrev}
+            onClick={() => go(-1)}
             aria-label={common.prevImage[lang]}
-            className={cn(arrowBtn, 'left-2')}
+            className={cn(arrowBtn, 'left-3 md:left-4')}
           >
-            <IconArrowRight width="16" height="16" className="rotate-180" />
+            <IconArrowRight width="18" height="18" className="rotate-180" />
           </button>
           <button
             type="button"
-            onClick={() => scrollByTile(1)}
-            disabled={!canNext}
+            onClick={() => go(1)}
             aria-label={common.nextImage[lang]}
-            className={cn(arrowBtn, 'right-2')}
+            className={cn(arrowBtn, 'right-3 md:right-4')}
           >
-            <IconArrowRight width="16" height="16" />
+            <IconArrowRight width="18" height="18" />
           </button>
+          <span aria-live="polite" className="sr-only">
+            {`${safeIndex + 1} / ${items.length}`}
+          </span>
         </>
       )}
     </div>
@@ -156,12 +112,19 @@ const PlateauPage = ({ slug }: { slug: string }) => {
   if (loading || !plateaux) return null;
   const p = plateaux[slug] || plateaux.cyclorama;
   const order = ['live','eclipse','horizontal','vertical','cyclorama'];
-  const hero = p.machineImage;
-  // Carousel below the hero. The "main media" (machineImage) is included as
-  // the first tile so the carousel surfaces it alongside the demo items; the
-  // hero still anchors it visually above. Up to 4 tiles fit at once; if more
-  // media are configured, prev/next arrows scroll through the rest.
-  const demoMedia = hero ? [hero, ...p.media] : p.media;
+  // Cover = first item of the media list. The legacy `machineImage` field is
+  // kept as a fallback so entries that still set it (instead of seeding `media`)
+  // continue to render — when both exist, `machineImage` is prepended unless it
+  // already matches the first media URL.
+  const legacyCover = p.machineImage;
+  const coverItems: MediaItem[] =
+    legacyCover && p.media[0]?.url !== legacyCover.url
+      ? [legacyCover, ...p.media]
+      : p.media.length > 0
+        ? p.media
+        : legacyCover
+          ? [legacyCover]
+          : [];
 
   return (
     /* Mobile: single-column stacked, scrollable. Desktop (md+): 4-column bento */
@@ -200,37 +163,15 @@ const PlateauPage = ({ slug }: { slug: string }) => {
         })}
       </div>
 
-      {/* Hero media — image OR video (autoplay/muted/loop). Skipped when no
-          machineImage is set on the entry (no SVG placeholder). */}
-      {hero && (
-        <div className="relative overflow-hidden bg-white min-h-56 md:col-start-2 md:col-span-2 md:row-start-2 md:row-span-2 md:min-h-0">
-          {hero.kind === 'video' ? (
-            <VideoLoop
-              src={hero.url}
-              poster={hero.poster}
-              objectFit="contain"
-              className="absolute inset-0 h-full w-full"
-            />
-          ) : (
-            <img
-              src={hero.url}
-              alt={hero.alt[lang] || p.name}
-              loading="eager"
-              decoding="async"
-              className="absolute inset-0 h-full w-full object-contain"
-            />
-          )}
-        </div>
-      )}
-
-      {/* Demo carousel — images OR videos (autoplay/muted/loop). Up to 4
-          tiles fit at once; prev/next arrows appear when there are more. */}
-      {demoMedia.length > 0 && (
-        <DemoCarousel
-          items={demoMedia}
+      {/* Cover — one big media item spanning the hero + demo region.
+          Arrows overlaid inside the image cycle prev/next through the media
+          list, replacing the hero / thumbnail-strip split that lived here. */}
+      {coverItems.length > 0 && (
+        <CoverCarousel
+          items={coverItems}
           lang={lang}
           plateauName={p.name}
-          className="md:col-start-2 md:col-span-2 md:row-start-4 md:min-h-0"
+          className="md:col-start-2 md:col-span-2 md:row-start-2 md:row-span-3 md:min-h-0"
         />
       )}
 
