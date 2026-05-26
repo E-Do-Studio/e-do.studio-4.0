@@ -344,7 +344,7 @@ const DirectionA = () => {
         aria-disabled="true"
         aria-label={`Discovery — ${homeMsg.comingSoon[lang]}`}
         tabIndex={-1}
-        className="pointer-events-none cursor-not-allowed group relative col-span-1 h-20 flex items-center justify-between gap-3 border-0 bg-foreground px-4 py-3 text-left text-white md:col-start-1 md:col-end-4 md:row-start-6 md:h-21"
+        className="pointer-events-none cursor-not-allowed group relative col-span-2 h-20 flex items-center justify-between gap-3 border-0 bg-foreground px-4 py-3 text-left text-white md:col-span-3 md:col-start-1 md:col-end-4 md:row-start-6 md:h-21"
       >
         <svg viewBox="0 0 200 84" preserveAspectRatio="none" className="absolute inset-0 h-full w-full opacity-20">
           {[...Array(7)].map((_, i) => (<line key={'h' + i} x1="0" y1={i * 14} x2="200" y2={i * 14} stroke="currentColor" strokeWidth="0.3" />))}
