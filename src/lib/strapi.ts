@@ -643,7 +643,7 @@ export async function fetchMachines(): Promise<MachineInfo[]> {
 
   const machinesFr = sortByPlateauOrder(machinesBI.fr.data);
   const machinesEn = machinesBI.en.data;
-  for (const mFr of machinesFr) {
+  return machinesFr.map((mFr) => {
     const mEn = machinesEn.find(e => e.slug === mFr.slug) ?? mFr;
     return {
       slug: mFr.slug,
