@@ -131,7 +131,11 @@ const DirectionA = () => {
       />
 
       {/* ── Row 2: Social links + clients marquee ── */}
-      <SocialClientsBar className="col-span-2 md:col-start-1 md:col-end-13 md:row-start-2" />
+      <SocialClientsBar
+        lang={lang}
+        onBook={() => goto('book')}
+        className="col-span-2 md:col-start-1 md:col-end-13 md:row-start-2"
+      />
 
       {/* ── Rows 3-4 left: E-commerce section ── */}
       <div className="col-span-2 min-h-72 flex flex-col overflow-hidden bg-white md:col-start-1 md:col-end-7 md:row-start-3 md:row-end-5 md:min-h-0">
