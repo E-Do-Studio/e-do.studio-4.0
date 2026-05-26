@@ -53,7 +53,7 @@
       "type": "media",
       "multiple": false,
       "allowedTypes": ["images"],
-      "description": "Image hero du cyclorama, présentée en mode paysage en haut de la page Plateau. Optionnelle : si vide, le carousel `media` occupe seul la zone visuelle (ancien comportement)."
+      "description": "Image hero du cyclorama, présentée en haut de la page Plateau (object-fit: contain — l'image entière est visible, lettrée si besoin sur le fond crème). Optionnelle : si vide, le diagramme SVG est affiché à la place."
     },
     "specs": {
       "type": "component",
@@ -148,7 +148,7 @@
       "type": "component",
       "component": "shared.media-item",
       "repeatable": true,
-      "description": "Carousel ordonné de médias (image ou vidéo) pour la page détail. Le front retombe sur le schéma SVG si vide."
+      "description": "Médias ordonnés (image ou vidéo) du plateau. Les 4 premiers sont affichés en grille sous l'image hero (les vidéos utilisent leur poster). Le front retombe sur le schéma SVG si vide."
     },
     "seo": {
       "type": "component",
