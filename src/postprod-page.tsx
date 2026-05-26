@@ -1,13 +1,12 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQueryStates, parseAsString } from 'nuqs';
 import {
   Button,
   EmptyState,
   IconArrowRight,
-  MobileNavStrip,
   PageHeader,
+  cn,
 } from './ui';
-import type { StripGroup } from './ui';
 import { useDocumentMeta, type SeoOverride } from './lib/use-document-meta';
 import { useStructuredData } from './lib/use-structured-data';
 import { buildPostProdServiceSchema, buildBreadcrumbSchema } from './lib/structured-data';
@@ -215,28 +214,10 @@ const PostprodPage = () => {
   const k = hasValidType ? type : (cats[0]?.k ?? '');
   const cat = cats.find(c => c.k === k) || cats[0];
 
-  const typeOptions = useMemo(
-    () => [
-      { k: 'all', label: common.all[lang] },
-      ...cats.map(c => ({ k: c.k, label: c[lang] })),
-    ],
-    [cats, lang],
-  );
-
-  const stripGroups: StripGroup[] = useMemo(
-    () => [
-      {
-        key: 'type',
-        label: postprodMsg.category[lang],
-        options: typeOptions,
-        value: hasValidType ? type : 'all',
-        onSelect: () => undefined,
-      },
-    ],
-    [typeOptions, hasValidType, type, lang],
-  );
-
-  const stripSummary = hasValidType ? cat?.[lang] : common.all[lang];
+  const defaultK = cats[0]?.k;
+  const setType = (next: string) => {
+    setFilters({ type: !next || next === defaultK ? null : next });
+  };
 
   // SEO override per type — prefer Strapi-provided seo, fall back to a
   // computed title/description so every type still has unique meta.
@@ -311,30 +292,41 @@ const PostprodPage = () => {
         ]}
       />
 
-      {/* Mobile: filter strip → bottom sheet. Desktop sidebar remains below. */}
-      <MobileNavStrip
-        triggerLabel={postprodMsg.category[lang]}
-        groups={stripGroups}
-        hasActive={hasValidType}
-        activeCount={hasValidType ? 1 : 0}
-        summary={stripSummary}
-        ariaLabel={lang === 'fr' ? 'Filtrer par catégorie' : 'Filter by category'}
-        lang={lang}
-        onApply={(draft) => {
-          const next = draft.type;
-          setFilters({ type: !next || next === 'all' ? null : next });
-        }}
-        className="col-span-full md:hidden"
-      />
+      {/* Mobile: inline horizontal pills nav — tap = direct section jump (no draft, no Apply). */}
+      <nav
+        aria-label={lang === 'fr' ? 'Types de post-production' : 'Post-production types'}
+        className="col-span-full sticky top-14 z-30 md:hidden flex gap-2 overflow-x-auto px-4 py-2 bg-white border-b border-border snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {cats.map((c) => {
+          const active = k === c.k;
+          return (
+            <button
+              key={c.k}
+              type="button"
+              onClick={() => setType(c.k)}
+              aria-pressed={active}
+              className={cn(
+                'snap-start shrink-0 min-h-11 px-4 py-2 rounded-full whitespace-nowrap',
+                'font-mono uppercase text-label tracking-label',
+                'transition-colors duration-150 ease-edo-out edo-focus-ring',
+                active
+                  ? 'bg-foreground text-background'
+                  : 'bg-white text-foreground border border-border',
+              )}
+            >
+              {c[lang]}
+            </button>
+          );
+        })}
+      </nav>
 
-      {/* Desktop sidebar — vertical list, hidden on mobile (mobile uses the strip above) */}
+      {/* Desktop sidebar — vertical list, hidden on mobile (mobile uses the inline nav above) */}
       <aside className="hidden bg-white md:col-start-1 md:row-start-2 md:flex md:flex-col md:overflow-x-hidden md:overflow-y-auto">
         {cats.map((c,idx)=>{
           const active = k===c.k;
           const isLast = idx===cats.length-1;
-          const defaultK = cats[0]?.k;
           return (
-            <button key={c.k} onClick={()=>setFilters({ type: c.k === defaultK ? null : c.k })}
+            <button key={c.k} onClick={()=>setType(c.k)}
               className={`edo-focus-ring flex-none border-0 ${active?'bg-muted border-l-2 border-l-primary':'bg-white border-l-2 border-l-transparent'} ${idx>0?'border-t border-t-border':''} ${isLast?'border-b border-b-border':''} py-3 px-4 cursor-pointer text-left flex flex-col gap-1 transition-all duration-150 min-h-18`}>
               <span className={`font-mono text-micro tracking-label ${active?'text-primary':'text-muted-foreground'}`}>{String(idx+1).padStart(2,'0')}</span>
               <span className={`text-detail ${active?'font-medium':'font-normal'} tracking-copy-tight text-foreground leading-snug whitespace-nowrap overflow-hidden text-ellipsis`}>{c[lang]}</span>
