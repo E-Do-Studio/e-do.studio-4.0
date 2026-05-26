@@ -329,9 +329,13 @@ function mergeSpecs(frSpecs: StrapiSpec[], enSpecs: StrapiSpec[]): { k: Bilingua
   const len = Math.max(frSpecs.length, enSpecs.length);
   const result: { k: Bilingual; v: Bilingual }[] = [];
   for (let i = 0; i < len; i++) {
+    const fr = frSpecs[i];
+    const en = enSpecs[i];
+    const frLabel = fr?.label ?? en?.label ?? '';
+    const frValue = fr?.value ?? en?.value ?? '';
     result.push({
-      k: { fr: frSpecs[i]?.label ?? '', en: enSpecs[i]?.label ?? '' },
-      v: { fr: frSpecs[i]?.value ?? '', en: enSpecs[i]?.value ?? '' },
+      k: { fr: frLabel, en: en?.label || frLabel },
+      v: { fr: frValue, en: en?.value || frValue },
     });
   }
   return result;
@@ -339,10 +343,11 @@ function mergeSpecs(frSpecs: StrapiSpec[], enSpecs: StrapiSpec[]): { k: Bilingua
 
 function mergeLocalizedItems(frItems: StrapiLocalizedItem[], enItems: StrapiLocalizedItem[]): Bilingual[] {
   const len = Math.max(frItems.length, enItems.length);
-  return Array.from({ length: len }, (_, i) => ({
-    fr: frItems[i]?.text ?? '',
-    en: enItems[i]?.text ?? '',
-  }));
+  return Array.from({ length: len }, (_, i) => {
+    const fr = frItems[i]?.text ?? enItems[i]?.text ?? '';
+    const en = enItems[i]?.text || fr;
+    return { fr, en };
+  });
 }
 
 function mediaListToItems(items: StrapiMedia[] | undefined): MediaItem[] {
@@ -426,11 +431,12 @@ function pricingRowsToRates(
   const onRequest: Bilingual = { fr: 'Sur demande', en: 'On request' };
   const rates: { k: Bilingual; v: string | Bilingual }[] = [];
   for (let i = 0; i < len; i++) {
-    const fr = frRows[i];
+    const fr = frRows[i] ?? enRows[i];
     const en = enRows[i] ?? fr;
     if (!fr) continue;
+    const frLabel = fr.label ?? en?.label ?? '';
     rates.push({
-      k: { fr: fr.label ?? '', en: en?.label ?? fr.label ?? '' },
+      k: { fr: frLabel, en: en?.label || frLabel },
       v: formatRowAmount(fr, onRequest),
     });
   }
