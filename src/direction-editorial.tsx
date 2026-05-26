@@ -20,6 +20,16 @@ interface MachineRowItem {
   en: { t: string; sub: string };
 }
 
+// Rendered before Strapi resolves so the four ecommerce cells don't flash
+// empty on first refresh. Titles match the Strapi `machines` collection and
+// subs mirror homeMsg.machineSubs (the same overrides we apply at runtime).
+const HOME_FALLBACK_MACHINES: MachineRowItem[] = [
+  { slug: 'horizontal', fr: { t: 'Horizontal', sub: 'Packshot à plat' }, en: { t: 'Horizontal', sub: 'Flat packshot' } },
+  { slug: 'vertical', fr: { t: 'Vertical', sub: 'Packshot ghost / piqué' }, en: { t: 'Vertical', sub: 'Ghost / pinned packshot' } },
+  { slug: 'eclipse', fr: { t: 'Éclipse', sub: 'Photo et vidéo objets et access' }, en: { t: 'Eclipse', sub: 'Object & accessory photo / video' } },
+  { slug: 'live', fr: { t: 'Live', sub: 'Photo et vidéo Porté' }, en: { t: 'Live', sub: 'On-model photo & video' } },
+];
+
 interface MachineRowProps {
   idx: number;
   m: MachineRowItem;
@@ -77,20 +87,25 @@ const DirectionA = () => {
   const heroUseFallback = heroResolved && !heroCmsVideo;
   const heroVideo = heroCmsVideo ?? (heroUseFallback ? '/videos/showreel.mp4' : undefined);
   const heroVideoPoster = heroUseFallback ? '/showreel-preview.webp' : undefined;
-  const heroShowStaticPicture = heroUseFallback || !!homeHeroError;
+  // Render the static preview as the base layer for the showreel cell — when
+  // the CMS resolves to a video, VideoLoop fades in on top. Without this, the
+  // tile flashes empty on refresh while we wait for the home-hero fetch.
+  const heroShowStaticPicture = !heroCmsVideo || !!homeHeroError;
   const [chatOpen, setChatOpen] = useState(false);
   // Subtitles for the homepage machine grid are pinned in the codebase so
   // marketing wording stays consistent regardless of Strapi content.
-  const ecomMachines: MachineRowItem[] = (machines ?? [])
-    .filter((m) => m.slug !== 'cyclorama')
-    .map((m) => {
-      const override = homeMsg.machineSubs[m.slug];
-      return {
-        slug: m.slug,
-        fr: { t: m.fr.t, sub: override?.fr ?? m.fr.sub },
-        en: { t: m.en.t, sub: override?.en ?? m.en.sub },
-      };
-    });
+  const ecomMachines: MachineRowItem[] = machines
+    ? machines
+        .filter((m) => m.slug !== 'cyclorama')
+        .map((m) => {
+          const override = homeMsg.machineSubs[m.slug];
+          return {
+            slug: m.slug,
+            fr: { t: m.fr.t, sub: override?.fr ?? m.fr.sub },
+            en: { t: m.en.t, sub: override?.en ?? m.en.sub },
+          };
+        })
+    : HOME_FALLBACK_MACHINES;
 
   return (
     /* Mobile: 2-col grid, vertical scroll. Desktop (md+): 12-col bento, fixed viewport */
