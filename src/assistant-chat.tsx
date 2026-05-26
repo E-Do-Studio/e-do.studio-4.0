@@ -139,7 +139,7 @@ const isSafeHref = (href: unknown): href is string =>
 
 const assistantMarkdownComponents = {
   p: ({ children }: { children?: React.ReactNode }) => (
-    <p className="m-0 mb-1.5 last:mb-0">{children}</p>
+    <p className="m-0 mb-1.5 text-detail leading-normal last:mb-0">{children}</p>
   ),
   strong: ({ children }: { children?: React.ReactNode }) => (
     <strong className="font-semibold">{children}</strong>
@@ -148,13 +148,13 @@ const assistantMarkdownComponents = {
     <em className="italic">{children}</em>
   ),
   ul: ({ children }: { children?: React.ReactNode }) => (
-    <ul className="m-0 mb-1.5 list-disc pl-4 last:mb-0">{children}</ul>
+    <ul className="m-0 mb-1.5 list-disc pl-4 text-detail leading-normal last:mb-0">{children}</ul>
   ),
   ol: ({ children }: { children?: React.ReactNode }) => (
-    <ol className="m-0 mb-1.5 list-decimal pl-4 last:mb-0">{children}</ol>
+    <ol className="m-0 mb-1.5 list-decimal pl-4 text-detail leading-normal last:mb-0">{children}</ol>
   ),
   li: ({ children }: { children?: React.ReactNode }) => (
-    <li className="mb-0.5">{children}</li>
+    <li className="mb-0.5 text-detail leading-normal">{children}</li>
   ),
   a: ({ href, children }: { href?: string; children?: React.ReactNode }) => {
     if (!isSafeHref(href)) return <>{children}</>;
