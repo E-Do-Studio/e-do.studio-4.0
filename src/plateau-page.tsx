@@ -1,71 +1,12 @@
 import { useParams } from '@tanstack/react-router';
 import { CellLabel, IconArrowRight, PageHeader } from './ui';
+import { VideoLoop } from './ui/video-loop';
 import { useDocumentMeta } from './lib/use-document-meta';
 import { useStructuredData } from './lib/use-structured-data';
 import { buildPlateauServiceSchema, buildBreadcrumbSchema } from './lib/structured-data';
 import { usePageContext } from './router';
 import { usePlateaux } from './lib/use-strapi';
 import { common, plateau as plateauMsg } from './i18n/messages';
-
-const PlateauVisual = ({ kind }: { kind: string }) => {
-  const svgClass = "h-4/5 w-4/5";
-  if (kind === 'cyc') return (
-    <svg viewBox="0 0 500 400" className={svgClass} role="img" aria-label="Cyclorama — 4.7m × 6m infinity backdrop">
-      <defs><linearGradient id="cycloG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#fff"/><stop offset="1" stopColor="#e2d6c0"/></linearGradient></defs>
-      <path d="M60 360 Q60 80 250 80 Q440 80 440 360 Z" fill="url(#cycloG)" stroke="#000" strokeWidth="0.75"/>
-      <ellipse cx="250" cy="360" rx="160" ry="14" fill="rgba(0,0,0,0.08)"/>
-      <line x1="250" y1="60" x2="250" y2="380" stroke="#000" strokeWidth="0.4" strokeDasharray="2 3"/>
-      <text x="250" y="50" textAnchor="middle" fill="#595959" fontFamily="IBM Plex Mono" fontSize="10" letterSpacing="2">4,7 M</text>
-      <text x="40" y="370" textAnchor="end" fill="#595959" fontFamily="IBM Plex Mono" fontSize="10" letterSpacing="2">6 M</text>
-    </svg>
-  );
-  if (kind === 'horizontal') return (
-    <svg viewBox="0 0 500 400" className={svgClass} role="img" aria-label="Horizontal stage — 4×4m top-shot platform">
-      <rect x="80" y="60" width="340" height="280" fill="#f5f5f5" stroke="#000" strokeWidth="0.75"/>
-      {[...Array(7)].map((_,i)=><line key={'h'+i} x1="80" y1={60+i*45} x2="420" y2={60+i*45} stroke="#888" strokeWidth="0.3" strokeDasharray="2 3"/>)}
-      {[...Array(8)].map((_,i)=><line key={'v'+i} x1={80+i*48.5} y1="60" x2={80+i*48.5} y2="340" stroke="#888" strokeWidth="0.3" strokeDasharray="2 3"/>)}
-      <path d="M180 160 L220 140 L240 150 L260 140 L300 160 L290 220 L260 220 L260 260 L220 260 L220 220 L190 220 Z" fill="#141414" opacity="0.85"/>
-      <text x="250" y="50" textAnchor="middle" fill="#595959" fontFamily="IBM Plex Mono" fontSize="10" letterSpacing="2">TOP · SHOT</text>
-      <text x="40" y="380" textAnchor="end" fill="#595959" fontFamily="IBM Plex Mono" fontSize="10" letterSpacing="2">4 × 4 M</text>
-    </svg>
-  );
-  if (kind === 'vertical') return (
-    <svg viewBox="0 0 500 400" className={svgClass} role="img" aria-label="Vertical stage — 4.2m ghost mannequin platform">
-      <rect x="160" y="40" width="180" height="330" fill="#fafafa" stroke="#000" strokeWidth="0.75"/>
-      <g fill="none" stroke="#141414" strokeWidth="1">
-        <circle cx="250" cy="95" r="22"/>
-        <path d="M225 125 L215 200 L225 280 L245 280 L245 320 L235 370"/>
-        <path d="M275 125 L285 200 L275 280 L255 280 L255 320 L265 370"/>
-        <path d="M225 135 L200 180 M275 135 L300 180"/>
-      </g>
-      <line x1="160" y1="40" x2="160" y2="370" stroke="#000" strokeWidth="0.4" strokeDasharray="2 3"/>
-      <text x="250" y="28" textAnchor="middle" fill="#595959" fontFamily="IBM Plex Mono" fontSize="10" letterSpacing="2">4,2 M</text>
-      <text x="250" y="390" textAnchor="middle" fill="#595959" fontFamily="IBM Plex Mono" fontSize="10" letterSpacing="2">GHOST</text>
-    </svg>
-  );
-  if (kind === 'eclipse') return (
-    <svg viewBox="0 0 500 400" className={svgClass} role="img" aria-label="Eclipse stage — 360° rotating platform">
-      <circle cx="250" cy="200" r="150" fill="none" stroke="#000" strokeWidth="0.75" strokeDasharray="2 4"/>
-      <circle cx="250" cy="200" r="100" fill="none" stroke="#000" strokeWidth="0.5"/>
-      <circle cx="250" cy="200" r="55" fill="#141414"/>
-      {[0,60,120,180,240,300].map(a=>{ const rad=a*Math.PI/180; return <circle key={a} cx={250+Math.cos(rad)*150} cy={200+Math.sin(rad)*150} r="5" fill="#141414"/>; })}
-      <text x="250" y="30" textAnchor="middle" fill="#595959" fontFamily="IBM Plex Mono" fontSize="10" letterSpacing="2">360°</text>
-      <text x="250" y="390" textAnchor="middle" fill="#595959" fontFamily="IBM Plex Mono" fontSize="10" letterSpacing="2">ECLIPSE</text>
-    </svg>
-  );
-  if (kind === 'live') return (
-    <svg viewBox="0 0 500 400" className={svgClass} role="img" aria-label="Live stage — 3 camera NDI streaming setup">
-      <rect x="60" y="60" width="380" height="230" fill="#141414"/>
-      {[...Array(12)].map((_,i)=><line key={i} x1="60" y1={60+i*20} x2="440" y2={60+i*20} stroke="#fff" strokeOpacity="0.1" strokeWidth="0.4"/>)}
-      <circle cx="80" cy="80" r="5" fill="#e5583a"/>
-      <text x="92" y="84" fill="#fff" fontFamily="IBM Plex Mono" fontSize="10" letterSpacing="2">REC · LIVE</text>
-      <g fill="#fff"><circle cx="250" cy="130" r="18"/><path d="M230 150 L270 150 L275 230 L250 235 L225 230 Z"/></g>
-      <rect x="100" y="310" width="40" height="24" fill="#141414"/><rect x="230" y="310" width="40" height="24" fill="#141414"/><rect x="360" y="310" width="40" height="24" fill="#141414"/>
-      <text x="250" y="380" textAnchor="middle" fill="#595959" fontFamily="IBM Plex Mono" fontSize="10" letterSpacing="2">3 CAM · NDI</text>
-    </svg>
-  );
-  return null;
-};
 
 const PlateauPage = ({ slug }: { slug: string }) => {
   const { lang, setLang, openMenu, goto } = usePageContext();
@@ -92,6 +33,11 @@ const PlateauPage = ({ slug }: { slug: string }) => {
   const p = plateaux[slug] || plateaux.cyclorama;
   const order = ['live','eclipse','horizontal','vertical','cyclorama'];
   const hero = p.machineImage;
+  // Carousel below the hero. The "main media" (machineImage) is included as
+  // the first tile so the carousel surfaces it alongside the demo items; the
+  // hero still anchors it visually above. Capped at 4 tiles total to keep the
+  // strip readable.
+  const demoMedia = (hero ? [hero, ...p.media] : p.media).slice(0, 4);
 
   return (
     /* Mobile: single-column stacked, scrollable. Desktop (md+): 4-column bento */
@@ -130,48 +76,56 @@ const PlateauPage = ({ slug }: { slug: string }) => {
         })}
       </div>
 
-      {/* Hero landscape image (top) — falls back to the SVG diagram when no
-          dedicated hero image has been set on the entry. Splits the visual
-          area into hero rows 2-3 + 4-tile demo grid row 4. */}
-      {hero ? (
-        <div className="relative overflow-hidden bg-gradient-to-b from-edo-cream to-edo-sand min-h-56 md:col-start-2 md:col-span-2 md:row-start-2 md:row-span-2 md:min-h-0">
-          <img
-            src={hero.url}
-            alt={hero.alt[lang] || p.name}
-            loading="eager"
-            decoding="async"
-            className="absolute inset-0 h-full w-full object-contain"
-          />
-        </div>
-      ) : (
-        <div className="relative overflow-hidden flex items-center justify-center bg-gradient-to-b from-edo-cream to-edo-sand min-h-56 md:col-start-2 md:col-span-2 md:row-start-2 md:row-span-2 md:min-h-0">
-          <PlateauVisual kind={p.visual}/>
+      {/* Hero media — image OR video (autoplay/muted/loop). Skipped when no
+          machineImage is set on the entry (no SVG placeholder). */}
+      {hero && (
+        <div className="relative overflow-hidden bg-white min-h-56 md:col-start-2 md:col-span-2 md:row-start-2 md:row-span-2 md:min-h-0">
+          {hero.kind === 'video' ? (
+            <VideoLoop
+              src={hero.url}
+              poster={hero.poster}
+              objectFit="contain"
+              className="absolute inset-0 h-full w-full"
+            />
+          ) : (
+            <img
+              src={hero.url}
+              alt={hero.alt[lang] || p.name}
+              loading="eager"
+              decoding="async"
+              className="absolute inset-0 h-full w-full object-contain"
+            />
+          )}
         </div>
       )}
 
-      {/* Demo grid — up to 4 demonstration images side-by-side. Videos use
-          their poster frame so the strip stays static (no autoplay clutter
-          under the hero). Falls back to the SVG diagram when no media. */}
-      {p.media.length > 0 ? (
-        <div className="grid grid-cols-4 gap-px bg-edo-pure-black md:col-start-2 md:col-span-2 md:row-start-4 md:min-h-0">
-          {p.media.slice(0, 4).map((item, i) => {
-            const src = item.kind === 'image' ? item.url : (item.poster ?? item.url);
-            return (
-              <div key={`${item.url}-${i}`} className="relative overflow-hidden bg-gradient-to-b from-edo-cream to-edo-sand">
+      {/* Demo carousel — images OR videos (autoplay/muted/loop). Only renders
+          as many tiles as the entry has media (capped at 4). */}
+      {demoMedia.length > 0 && (
+        <div
+          className="grid gap-px bg-edo-pure-black md:col-start-2 md:col-span-2 md:row-start-4 md:min-h-0"
+          style={{ gridTemplateColumns: `repeat(${demoMedia.length}, minmax(0, 1fr))` }}
+        >
+          {demoMedia.map((item, i) => (
+            <div key={`${item.url}-${i}`} className="relative overflow-hidden bg-white">
+              {item.kind === 'video' ? (
+                <VideoLoop
+                  src={item.url}
+                  poster={item.poster}
+                  objectFit="cover"
+                  className="absolute inset-0 h-full w-full"
+                />
+              ) : (
                 <img
-                  src={src}
+                  src={item.url}
                   alt={item.alt[lang] || ''}
                   loading="lazy"
                   decoding="async"
                   className="absolute inset-0 h-full w-full object-cover"
                 />
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="relative overflow-hidden flex items-center justify-center bg-gradient-to-b from-edo-cream to-edo-sand min-h-40 md:col-start-2 md:col-span-2 md:row-start-4 md:min-h-0">
-          <PlateauVisual kind={p.visual}/>
+              )}
+            </div>
+          ))}
         </div>
       )}
 
