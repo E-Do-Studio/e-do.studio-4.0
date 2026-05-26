@@ -122,6 +122,10 @@ interface FindUsSectionProps {
 const FindUsSection = ({ lang, contact }: FindUsSectionProps) => {
   const c = contact.data;
   const showFallback = !contact.loading && (contact.error || !c);
+  const eyebrowFromEntries = c?.entries && c.entries.length > 0
+    ? c.entries.map((e) => `${e.label}${e.address ? ` ${e.address}` : ''}`).join(' · ')
+    : null;
+  const eyebrow = eyebrowFromEntries || c?.address.complement || null;
   return (
     <section className="border-b border-border p-6">
       <CellLabel className="mb-5 block">{contactMsg.findUs[lang]}</CellLabel>
@@ -129,16 +133,10 @@ const FindUsSection = ({ lang, contact }: FindUsSectionProps) => {
         <UnavailableNote lang={lang} />
       ) : (
         <>
-          <div className="text-detail leading-copy font-normal text-muted-foreground">
-            {c?.entries && c.entries.length > 0 && (
-              <span className="mb-2 block font-mono text-label uppercase tracking-ui">
-                {c.entries.map((e, i) => (
-                  <span key={i}>
-                    {i > 0 && ' · '}
-                    {e.label}
-                    {e.address ? ` ${e.address}` : ''}
-                  </span>
-                ))}
+          <div className="text-caption leading-copy font-normal text-foreground">
+            {eyebrow && (
+              <span className="mb-2 block font-mono text-label uppercase tracking-ui text-muted-foreground">
+                {eyebrow}
               </span>
             )}
             {c?.address.street}<br />
@@ -232,7 +230,7 @@ const PhoneSection = ({ lang, contact }: PhoneSectionProps) => {
       {showFallback ? (
         <UnavailableNote lang={lang} />
       ) : c?.phone ? (
-        <a href={c.phoneHref} className="text-detail font-mono tracking-code text-primary no-underline">
+        <a href={c.phoneHref} className="text-caption tracking-copy-tight text-primary no-underline">
           {c.phone}
         </a>
       ) : null}
