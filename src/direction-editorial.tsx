@@ -356,14 +356,17 @@ const DirectionA = () => {
         />
       </Suspense>
 
-      {/* ── Mobile chat FAB + sheet ── */}
+      {/* ── Mobile chat FAB + sheet ──
+          Sized at 44px (≥40px tap target) and toned down visually so it sits
+          discreetly over the bento on mobile without competing with the
+          orange "Réserver" CTA. Desktop keeps the in-grid AssistantChat. */}
       <button
         type="button"
         onClick={() => setChatOpen(true)}
         aria-label={cellsMsg.assistant[lang]}
-        className="edo-focus-ring fixed bottom-4 right-4 z-overlay flex h-14 w-14 cursor-pointer items-center justify-center border border-foreground bg-primary text-white shadow-lg transition-transform duration-150 hover:scale-105 md:hidden"
+        className="edo-focus-ring fixed bottom-3 right-3 z-overlay flex h-11 w-11 cursor-pointer items-center justify-center border border-foreground/40 bg-primary/85 text-white shadow-sm backdrop-blur-sm transition-all duration-150 hover:bg-primary hover:shadow-md md:hidden"
       >
-        <IconChat width="22" height="22" />
+        <IconChat width="18" height="18" />
       </button>
 
       <div
