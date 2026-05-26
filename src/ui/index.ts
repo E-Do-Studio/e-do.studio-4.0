@@ -44,3 +44,13 @@ export type { LoaderProps, LoaderSize } from './loader';
 
 export { EmptyState } from './empty-state';
 export type { EmptyStateProps, EmptyStateAction, EmptyStateSize } from './empty-state';
+
+export { BottomSheet } from './bottom-sheet';
+export type { BottomSheetProps } from './bottom-sheet';
+
+export { MobileNavStrip } from './mobile-nav-strip';
+export type {
+  MobileNavStripProps,
+  StripGroup,
+  StripOption,
+} from './mobile-nav-strip';

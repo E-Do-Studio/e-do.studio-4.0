@@ -172,3 +172,99 @@
     min-height: 100%;
   }
 }
+
+/* ── Bottom sheet primitive ──
+   Native <dialog> based. Backdrop is animated separately via ::backdrop.
+   Open: slide-up 250ms cubic-bezier(0.2, 0, 0, 1).
+   Close: slide-down 175ms cubic-bezier(0.4, 0, 1, 1) (exit-faster-than-enter).
+   prefers-reduced-motion: fade 100ms only. */
+.edo-bottom-sheet[open] {
+  display: block;
+}
+
+.edo-bottom-sheet.edo-bottom-sheet-open::backdrop {
+  background: rgb(0 0 0 / 0.55);
+  animation: edo-bottom-sheet-backdrop-in 250ms cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+.edo-bottom-sheet.edo-bottom-sheet-closing::backdrop {
+  background: rgb(0 0 0 / 0.55);
+  animation: edo-bottom-sheet-backdrop-out 175ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+.edo-bottom-sheet.edo-bottom-sheet-open .edo-bottom-sheet-panel {
+  animation: edo-bottom-sheet-in 250ms cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+.edo-bottom-sheet.edo-bottom-sheet-closing .edo-bottom-sheet-panel {
+  animation: edo-bottom-sheet-out 175ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+@keyframes edo-bottom-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes edo-bottom-sheet-out {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes edo-bottom-sheet-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes edo-bottom-sheet-backdrop-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .edo-bottom-sheet.edo-bottom-sheet-open .edo-bottom-sheet-panel,
+  .edo-bottom-sheet.edo-bottom-sheet-closing .edo-bottom-sheet-panel {
+    animation-duration: 100ms;
+    animation-name: edo-bottom-sheet-fade-in;
+  }
+  .edo-bottom-sheet.edo-bottom-sheet-closing .edo-bottom-sheet-panel {
+    animation-name: edo-bottom-sheet-fade-out;
+  }
+  .edo-bottom-sheet.edo-bottom-sheet-open::backdrop,
+  .edo-bottom-sheet.edo-bottom-sheet-closing::backdrop {
+    animation-duration: 100ms;
+  }
+}
+
+@keyframes edo-bottom-sheet-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes edo-bottom-sheet-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}

@@ -91,6 +91,20 @@ export const galleryPage = {
   tryAnotherFilter: { fr: 'Essayez un autre filtre.', en: 'Try another filter.' } as B,
 };
 
+export const mobileNav = {
+  filters: { fr: 'Filtres', en: 'Filters' } as B,
+  applyFilters: { fr: 'Appliquer', en: 'Apply' } as B,
+  reset: { fr: 'Réinitialiser', en: 'Reset' } as B,
+  closeFilters: { fr: 'Fermer', en: 'Close' } as B,
+};
+
+export const resultsCount = (count: number, lang: 'fr' | 'en'): string => {
+  if (lang === 'fr') {
+    return count <= 1 ? `${count} résultat` : `${count} résultats`;
+  }
+  return count <= 1 ? `${count} result` : `${count} results`;
+};
+
 export const postprod = {
   category: { fr: 'CATÉGORIE', en: 'CATEGORY' } as B,
   standard: { fr: 'Standard', en: 'Standard' } as B,
