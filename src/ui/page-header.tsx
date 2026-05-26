@@ -115,8 +115,18 @@ const PageHeader = ({
       </button>
     </div>
 
-    <div className="flex min-w-0 flex-1 items-center bg-background px-4 md:px-6">
-      <div className="flex min-w-0 items-baseline gap-3.5 overflow-hidden">
+    <div
+      className={cn(
+        'flex min-w-0 flex-1 items-center bg-background px-4 md:px-6',
+        subtitle ? 'justify-start' : 'justify-center',
+      )}
+    >
+      <div
+        className={cn(
+          'flex min-w-0 items-baseline overflow-hidden',
+          subtitle ? 'gap-3.5' : 'gap-0',
+        )}
+      >
         <CellLabel className="shrink-0 text-primary">{title}</CellLabel>
         {subtitle && (
           <span className="truncate font-mono text-label tracking-ui text-muted-foreground">
