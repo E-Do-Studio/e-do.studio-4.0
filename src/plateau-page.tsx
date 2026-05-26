@@ -28,13 +28,15 @@ interface CoverCarouselProps {
 
 // Cover — renders the currently selected media item full-cell with prev/next
 // arrows overlaid inside the image. Arrows are hidden when only one media item.
+// Media renders inside a fixed-aspect inner box so the visible width stays
+// stable across portrait images and wider videos (no width "jump" on swap).
 const Cover = ({ items, lang, plateauName, index, onPrev, onNext, className }: CoverCarouselProps) => {
   if (items.length === 0) return null;
   const item = items[index];
   const hasMultiple = items.length > 1;
 
   const arrowBtn =
-    'edo-focus-ring absolute top-1/2 z-10 -translate-y-1/2 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-border bg-white/90 text-foreground backdrop-blur-sm transition-colors duration-150 hover:bg-white';
+    'edo-focus-ring absolute top-1/2 z-10 -translate-y-1/2 flex h-8 w-8 cursor-pointer items-center justify-center bg-foreground/5 text-foreground transition-colors duration-150 hover:bg-foreground/10';
 
   return (
     <div
@@ -43,24 +45,28 @@ const Cover = ({ items, lang, plateauName, index, onPrev, onNext, className }: C
       aria-roledescription={hasMultiple ? 'carousel' : undefined}
       aria-label={hasMultiple ? common.imageCarousel[lang] : undefined}
     >
-      {item.kind === 'video' ? (
-        <VideoLoop
-          key={item.url}
-          src={item.url}
-          poster={item.poster}
-          objectFit="contain"
-          className="absolute inset-0 h-full w-full"
-        />
-      ) : (
-        <img
-          key={item.url}
-          src={item.url}
-          alt={item.alt[lang] || `${plateauName} — ${index + 1}`}
-          loading="eager"
-          decoding="async"
-          className="absolute inset-0 h-full w-full object-contain"
-        />
-      )}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="relative aspect-[3/4] h-full max-w-full max-h-full">
+          {item.kind === 'video' ? (
+            <VideoLoop
+              key={item.url}
+              src={item.url}
+              poster={item.poster}
+              objectFit="contain"
+              className="absolute inset-0 h-full w-full"
+            />
+          ) : (
+            <img
+              key={item.url}
+              src={item.url}
+              alt={item.alt[lang] || `${plateauName} — ${index + 1}`}
+              loading="eager"
+              decoding="async"
+              className="absolute inset-0 h-full w-full object-contain"
+            />
+          )}
+        </div>
+      </div>
 
       {hasMultiple && (
         <>
@@ -70,7 +76,7 @@ const Cover = ({ items, lang, plateauName, index, onPrev, onNext, className }: C
             aria-label={common.prevImage[lang]}
             className={cn(arrowBtn, 'left-3 md:left-4')}
           >
-            <IconArrowRight width="18" height="18" className="rotate-180" />
+            <IconArrowRight width="16" height="16" className="rotate-180" />
           </button>
           <button
             type="button"
@@ -78,7 +84,7 @@ const Cover = ({ items, lang, plateauName, index, onPrev, onNext, className }: C
             aria-label={common.nextImage[lang]}
             className={cn(arrowBtn, 'right-3 md:right-4')}
           >
-            <IconArrowRight width="18" height="18" />
+            <IconArrowRight width="16" height="16" />
           </button>
           <span aria-live="polite" className="sr-only">
             {`${index + 1} / ${items.length}`}
@@ -151,7 +157,7 @@ const ThumbStrip = ({ items, lang, plateauName, activeIndex, onSelect, className
   if (items.length === 0) return null;
 
   const arrowBtn =
-    'edo-focus-ring absolute top-1/2 z-10 -translate-y-1/2 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-border bg-white text-foreground transition-opacity duration-150 hover:bg-muted disabled:cursor-default disabled:opacity-0 disabled:pointer-events-none';
+    'edo-focus-ring absolute top-1/2 z-10 -translate-y-1/2 flex h-8 w-8 cursor-pointer items-center justify-center bg-foreground/5 text-foreground transition-[opacity,background-color] duration-150 hover:bg-foreground/10 disabled:cursor-default disabled:opacity-0 disabled:pointer-events-none';
 
   return (
     <div className={cn('relative', className)}>
