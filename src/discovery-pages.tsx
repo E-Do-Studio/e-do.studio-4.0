@@ -25,7 +25,7 @@ const DiscoveryV2 = () => {
   return (
     <DiscoveryShell>
       <DiscoveryHeader lang={lang} setLang={setLang} openMenu={openMenu} goto={goto} />
-      <SocialClientsBar className="row-start-2" />
+      <SocialClientsBar lang={lang} onBook={() => goto('book')} className="row-start-2" />
       <DiscoveryBentoGrid lang={lang} goto={goto} />
     </DiscoveryShell>
   );
