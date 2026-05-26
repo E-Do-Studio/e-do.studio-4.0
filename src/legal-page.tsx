@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, IconArrowRight, PageHeader } from './ui';
+import { BottomSheet, Button, IconArrowRight, IconSelector, PageHeader, cn } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
 import { useStructuredData } from './lib/use-structured-data';
 import { buildWebPageSchema, buildBreadcrumbSchema } from './lib/structured-data';
@@ -154,11 +154,18 @@ const LegalPage = () => {
     ),
   ]);
   const [sec, setSec] = useState<LegalDocumentKey>('mentions');
+  const [navSheetOpen, setNavSheetOpen] = useState(false);
   const { data: legalDocs } = useLegalDocuments();
   const { data: legalSectionsByDoc } = useLegalSections();
 
   const sections = legalDocs ?? [];
   const active = sections.find((s) => s.k === sec) ?? sections[0];
+  const activeIndex = Math.max(0, sections.findIndex((s) => s.k === sec));
+  const currentNumber = String(activeIndex + 1).padStart(2, '0');
+  const navigateToSection = (next: LegalDocumentKey) => {
+    setNavSheetOpen(false);
+    if (next !== sec) setSec(next);
+  };
   const allSections = legalSectionsByDoc?.[sec]?.filter((s) => s.body[lang]?.length > 0) ?? [];
   const introSection = allSections.find((s) => s.slug === `${sec}-intro`);
   const strapiBody = allSections.filter((s) => s !== introSection);
@@ -182,15 +189,81 @@ const LegalPage = () => {
         ]}
       />
 
-      {/* Sidebar: horizontal tabs on mobile, vertical list on desktop */}
-      <div className="bg-white overflow-auto flex flex-row md:col-start-1 md:row-start-2 md:flex-col">
+      {/* Mobile navigation: sticky single-row trigger showing the current legal
+          section. Tap opens a BottomSheet listing all sections; selecting a row
+          in the sheet updates the section and closes the sheet immediately. */}
+      {active && (
+        <button
+          type="button"
+          onClick={() => setNavSheetOpen(true)}
+          aria-haspopup="dialog"
+          aria-expanded={navSheetOpen}
+          aria-controls="legal-nav-sheet"
+          className="sticky top-14 z-30 md:hidden flex items-center gap-4 min-h-14 w-full px-4 py-3 bg-white border-b border-border text-left edo-focus-ring cursor-pointer"
+        >
+          <span className="font-mono text-label tracking-label text-muted-foreground">
+            {currentNumber}
+          </span>
+          <span className="text-cell tracking-copy-tight font-medium text-foreground truncate">
+            {active[lang]}
+          </span>
+          <IconSelector width="16" height="16" className="ml-auto shrink-0 text-foreground" />
+        </button>
+      )}
+
+      <BottomSheet
+        id="legal-nav-sheet"
+        open={navSheetOpen}
+        onClose={() => setNavSheetOpen(false)}
+        title={legalPage.contents[lang]}
+        ariaLabel={legalPage.contents[lang]}
+        closeLabel={common.close[lang]}
+      >
+        <ul className="list-none m-0 p-0 flex flex-col">
+          {sections.map((s, i) => {
+            const isActive = s.k === sec;
+            const num = String(i + 1).padStart(2, '0');
+            return (
+              <li key={s.k}>
+                <button
+                  type="button"
+                  onClick={() => navigateToSection(s.k)}
+                  aria-current={isActive ? 'page' : undefined}
+                  className={cn(
+                    'w-full flex items-center gap-4 min-h-14 px-4 py-3',
+                    'border-b border-border text-left',
+                    'edo-focus-ring cursor-pointer transition-colors duration-150 ease-edo-out',
+                    isActive ? 'bg-foreground text-background' : 'bg-white text-foreground',
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'font-mono text-label tracking-label',
+                      isActive ? 'text-background/70' : 'text-muted-foreground',
+                    )}
+                  >
+                    {num}
+                  </span>
+                  <span className="text-cell tracking-copy-tight font-medium truncate">
+                    {s[lang]}
+                  </span>
+                  <IconArrowRight width="16" height="16" className="ml-auto shrink-0" />
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </BottomSheet>
+
+      {/* Desktop sidebar — vertical list, hidden on mobile (replaced by trigger + sheet above). */}
+      <div className="hidden bg-white overflow-auto md:col-start-1 md:row-start-2 md:flex md:flex-col">
         <div className="px-4 pt-4 pb-2.5 shrink-0">
           <span className="edo-cell-label">{legalPage.contents[lang]}</span>
         </div>
         {sections.map((s, i) => {
           const isActive = sec === s.k;
           return (
-            <button key={s.k} onClick={() => setSec(s.k)} className={`edo-focus-ring flex-none py-3 px-4 border-0 cursor-pointer text-left flex flex-col gap-0.5 font-inherit transition-all duration-150 ${isActive ? 'bg-muted border-b-2 border-b-primary md:border-b-0 md:border-l-2 md:border-l-primary' : 'bg-transparent border-b-2 border-b-transparent md:border-b-0 md:border-l-2 md:border-l-transparent hover:bg-muted'}`}>
+            <button key={s.k} onClick={() => setSec(s.k)} className={`edo-focus-ring flex-none py-3 px-4 border-0 cursor-pointer text-left flex flex-col gap-0.5 font-inherit transition-all duration-150 ${isActive ? 'bg-muted border-l-2 border-l-primary' : 'bg-transparent border-l-2 border-l-transparent hover:bg-muted'}`}>
               <span className="font-mono text-micro tracking-label text-muted-foreground">0{i + 1}</span>
               <span className={`text-detail tracking-copy-tight whitespace-nowrap ${isActive ? 'font-medium text-foreground' : 'font-normal text-muted-foreground'}`}>
                 {s[lang]}
@@ -199,7 +272,7 @@ const LegalPage = () => {
           );
         })}
 
-        <div className="px-4 py-cell-lg border-t border-border mt-3 hidden md:block">
+        <div className="px-4 py-cell-lg border-t border-border mt-3">
           <span className="edo-cell-label mb-2.5 block">{legalPage.gotQuestion[lang]}</span>
           <p className="text-caption text-muted-foreground leading-normal mb-3">
             {legalPage.writeDirectly[lang]}

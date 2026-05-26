@@ -1,9 +1,11 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQueryStates, parseAsString } from 'nuqs';
 import {
+  BottomSheet,
   Button,
   EmptyState,
   IconArrowRight,
+  IconSelector,
   PageHeader,
   cn,
 } from './ui';
@@ -219,6 +221,14 @@ const PostprodPage = () => {
     setFilters({ type: !next || next === defaultK ? null : next });
   };
 
+  const [navSheetOpen, setNavSheetOpen] = useState(false);
+  const navigateToType = (nextK: string) => {
+    setNavSheetOpen(false);
+    if (nextK !== k) setType(nextK);
+  };
+  const currentIndex = Math.max(0, cats.findIndex(c => c.k === k));
+  const currentNumber = String(currentIndex + 1).padStart(2, '0');
+
   // SEO override per type — prefer Strapi-provided seo, fall back to a
   // computed title/description so every type still has unique meta.
   const strapiSeo: SeoMeta | undefined = cat
@@ -292,33 +302,80 @@ const PostprodPage = () => {
         ]}
       />
 
-      {/* Mobile: inline horizontal pills nav — tap = direct section jump (no draft, no Apply). */}
-      <nav
-        aria-label={lang === 'fr' ? 'Types de post-production' : 'Post-production types'}
-        className="col-span-full sticky top-14 z-30 md:hidden flex gap-2 overflow-x-auto px-4 py-2 bg-white border-b border-border snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      {/* Mobile navigation: sticky single-row trigger showing the current
+          post-prod type. Tap opens a BottomSheet listing all types; selecting
+          a row in the sheet updates the type and closes the sheet immediately. */}
+      <button
+        type="button"
+        onClick={() => setNavSheetOpen(true)}
+        aria-haspopup="dialog"
+        aria-expanded={navSheetOpen}
+        aria-controls="postprod-nav-sheet"
+        className="col-span-full sticky top-14 z-30 md:hidden flex items-center gap-4 min-h-14 w-full px-4 py-3 bg-white border-b border-border text-left edo-focus-ring cursor-pointer"
       >
-        {cats.map((c) => {
-          const active = k === c.k;
-          return (
-            <button
-              key={c.k}
-              type="button"
-              onClick={() => setType(c.k)}
-              aria-pressed={active}
-              className={cn(
-                'snap-start shrink-0 min-h-11 px-4 py-2 whitespace-nowrap',
-                'font-mono uppercase text-label tracking-label',
-                'transition-colors duration-150 ease-edo-out edo-focus-ring',
-                active
-                  ? 'bg-foreground text-background'
-                  : 'bg-white text-foreground border border-border',
-              )}
-            >
-              {c[lang]}
-            </button>
-          );
-        })}
-      </nav>
+        <span className="font-mono text-label tracking-label text-muted-foreground">
+          {currentNumber}
+        </span>
+        <span className="text-cell tracking-copy-tight font-medium text-foreground truncate">
+          {cat[lang]}
+        </span>
+        <span className="ml-auto font-mono text-micro uppercase tracking-ui text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">
+          {cat.tagline[lang]}
+        </span>
+        <IconSelector width="16" height="16" className="shrink-0 text-foreground" />
+      </button>
+
+      <BottomSheet
+        id="postprod-nav-sheet"
+        open={navSheetOpen}
+        onClose={() => setNavSheetOpen(false)}
+        title="Post-production"
+        ariaLabel="Post-production"
+        closeLabel={common.close[lang]}
+      >
+        <ul className="list-none m-0 p-0 flex flex-col">
+          {cats.map((c, i) => {
+            const active = c.k === k;
+            const num = String(i + 1).padStart(2, '0');
+            return (
+              <li key={c.k}>
+                <button
+                  type="button"
+                  onClick={() => navigateToType(c.k)}
+                  aria-current={active ? 'page' : undefined}
+                  className={cn(
+                    'w-full flex items-center gap-4 min-h-14 px-4 py-3',
+                    'border-b border-border text-left',
+                    'edo-focus-ring cursor-pointer transition-colors duration-150 ease-edo-out',
+                    active ? 'bg-foreground text-background' : 'bg-white text-foreground',
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'font-mono text-label tracking-label',
+                      active ? 'text-background/70' : 'text-muted-foreground',
+                    )}
+                  >
+                    {num}
+                  </span>
+                  <span className="text-cell tracking-copy-tight font-medium truncate">
+                    {c[lang]}
+                  </span>
+                  <span
+                    className={cn(
+                      'ml-auto font-mono text-micro uppercase tracking-ui whitespace-nowrap overflow-hidden text-ellipsis',
+                      active ? 'text-background/70' : 'text-muted-foreground',
+                    )}
+                  >
+                    {c.tagline[lang]}
+                  </span>
+                  <IconArrowRight width="16" height="16" className="shrink-0" />
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </BottomSheet>
 
       {/* Desktop sidebar — vertical list, hidden on mobile (mobile uses the inline nav above) */}
       <aside className="hidden bg-white md:col-start-1 md:row-start-2 md:flex md:flex-col md:overflow-x-hidden md:overflow-y-auto">
@@ -346,6 +403,12 @@ const PostprodPage = () => {
         </div>
       </aside>
 
+      {/* Mobile-only sr-only h1 — the visible heading lives inside the desktop
+          description panel (hidden md:block). The sticky trigger above already
+          surfaces the name + tagline on mobile, so we keep just one heading in
+          the accessibility tree at every breakpoint. */}
+      <h1 className="sr-only md:hidden">{cat[lang]}</h1>
+
       {/* Description + pricing panel */}
       <div className={`${bgCls} ${fgCls} py-8 px-6 md:px-9 flex flex-col justify-between gap-6 md:col-start-2 md:row-start-2 md:overflow-y-auto md:min-h-0`}>
         <div className="flex flex-col gap-5">
@@ -359,10 +422,10 @@ const PostprodPage = () => {
               </span>
             )}
           </div>
-          <h1 className={`m-0 text-hero font-light tracking-display leading-none ${fgCls}`}>
+          <h1 className={`hidden md:block m-0 text-hero font-light tracking-display leading-none ${fgCls}`}>
             {cat[lang]}
           </h1>
-          <span className={`font-mono text-caption tracking-code uppercase ${mutedCls}`}>
+          <span className={`hidden md:block font-mono text-caption tracking-code uppercase ${mutedCls}`}>
             {cat.tagline[lang]}
           </span>
           <ul className="mt-2 p-0 list-none flex flex-col gap-1.5">
