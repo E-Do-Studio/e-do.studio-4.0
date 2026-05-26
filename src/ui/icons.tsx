@@ -65,5 +65,20 @@ const IconLock = (props: IconProps) => (
   </svg>
 );
 
-export { IconMenu, IconX, IconArrowRight, IconGlobe, IconPlay, IconChat, IconLock };
+const IconChevronDown = (props: IconProps) => (
+  <svg {...defaults} {...props}>
+    <path d="m6 9 6 6 6-6" />
+  </svg>
+);
+
+export {
+  IconMenu,
+  IconX,
+  IconArrowRight,
+  IconGlobe,
+  IconPlay,
+  IconChat,
+  IconLock,
+  IconChevronDown,
+};
 export type { IconProps };

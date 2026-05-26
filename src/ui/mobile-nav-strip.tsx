@@ -3,7 +3,7 @@ import type { Lang } from '../types';
 import { mobileNav, resultsCount } from '../i18n/messages';
 import { BottomSheet } from './bottom-sheet';
 import { cn } from './cn';
-import { IconMenu, IconArrowRight } from './icons';
+import { IconArrowRight, IconChevronDown } from './icons';
 
 type StripOption = {
   k: string;
@@ -139,7 +139,6 @@ const MobileNavStrip = ({
           aria-controls={sheetId}
           className="edo-focus-ring flex min-h-11 w-full cursor-pointer items-center gap-2 px-4 text-left transition-colors duration-150 ease-edo-out hover:bg-muted"
         >
-          <IconMenu width={18} height={18} aria-hidden />
           <span className="font-mono text-label uppercase tracking-label text-foreground">
             {triggerLabel}
           </span>
@@ -148,7 +147,7 @@ const MobileNavStrip = ({
               · {summary}
             </span>
           ) : null}
-          <span className="ml-auto flex items-center gap-2">
+          <span className="ml-auto flex shrink-0 items-center gap-2">
             {badgeCount > 1 ? (
               <span
                 aria-hidden
@@ -157,6 +156,15 @@ const MobileNavStrip = ({
                 {badgeCount}
               </span>
             ) : null}
+            <IconChevronDown
+              width={16}
+              height={16}
+              aria-hidden
+              className={cn(
+                'text-muted-foreground transition-transform duration-150 ease-edo-out',
+                open && 'rotate-180',
+              )}
+            />
           </span>
         </button>
       </div>
