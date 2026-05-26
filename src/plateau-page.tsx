@@ -111,20 +111,9 @@ const PlateauPage = ({ slug }: { slug: string }) => {
   ]);
   if (loading || !plateaux) return null;
   const p = plateaux[slug] || plateaux.cyclorama;
+  if (!p) return null;
   const order = ['live','eclipse','horizontal','vertical','cyclorama'];
-  // Cover = first item of the media list. The legacy `machineImage` field is
-  // kept as a fallback so entries that still set it (instead of seeding `media`)
-  // continue to render — when both exist, `machineImage` is prepended unless it
-  // already matches the first media URL.
-  const legacyCover = p.machineImage;
-  const coverItems: MediaItem[] =
-    legacyCover && p.media[0]?.url !== legacyCover.url
-      ? [legacyCover, ...p.media]
-      : p.media.length > 0
-        ? p.media
-        : legacyCover
-          ? [legacyCover]
-          : [];
+  const coverItems: MediaItem[] = p.media ?? [];
 
   return (
     /* Mobile: single-column stacked, scrollable. Desktop (md+): 4-column bento */
@@ -149,6 +138,7 @@ const PlateauPage = ({ slug }: { slug: string }) => {
       <div className="bg-white flex flex-row overflow-x-auto md:col-start-1 md:row-start-2 md:row-span-4 md:flex-col md:overflow-x-hidden md:overflow-y-auto">
         {order.map((m, i) => {
           const cfg = plateaux[m];
+          if (!cfg) return null;
           const active = m === slug;
           return (
             <button key={m} onClick={()=>goto(m==='cyclorama'?'cyclorama':'plateau-'+m)}
