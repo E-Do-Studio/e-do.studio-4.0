@@ -8,23 +8,127 @@ import { usePageContext } from './router';
 import { common, legalPage } from './i18n/messages';
 import { useLegalDocuments, useLegalSections } from './lib/use-strapi';
 import type { LegalSectionContent, LegalDocumentKey } from './lib/strapi';
-import { renderStrapiBlocks } from './lib/render-blocks';
+import { renderStrapiBlocks, type BlockNode, type InlineNode } from './lib/render-blocks';
 
-interface StrapiSectionsRendererProps {
+function inlineText(children: InlineNode[]): string {
+  return children
+    .map((c) => (c.type === 'text' ? c.text : inlineText(c.children)))
+    .join('');
+}
+
+function blockToPlainText(block: BlockNode): string {
+  switch (block.type) {
+    case 'paragraph':
+    case 'heading':
+    case 'quote':
+    case 'code':
+      return inlineText(block.children);
+    case 'list':
+      return block.children.map((li) => inlineText(li.children)).join('\n');
+    default:
+      return '';
+  }
+}
+
+function blocksToPlainText(blocks: BlockNode[]): string {
+  return blocks.map(blockToPlainText).join('\n\n').trim();
+}
+
+interface DefRow {
+  k: string;
+  v: string;
+}
+
+// Detects a section authored as "Label : Value" lines (one per line in a
+// single paragraph, or one per paragraph). Returns null when the content does
+// not match the definition-list shape — the section then renders as prose.
+function tryParseDefList(blocks: BlockNode[]): DefRow[] | null {
+  const lines: string[] = [];
+  for (const b of blocks) {
+    if (b.type !== 'paragraph') return null;
+    for (const part of inlineText(b.children).split(/\n+/)) {
+      const trimmed = part.trim();
+      if (trimmed) lines.push(trimmed);
+    }
+  }
+  if (lines.length < 2) return null;
+  const rows: DefRow[] = [];
+  for (const line of lines) {
+    const m = line.match(/^([^:—–]{1,40}?)\s*:\s*(.+?)\.?$/);
+    if (!m) return null;
+    rows.push({ k: m[1].trim(), v: m[2].trim() });
+  }
+  return rows;
+}
+
+// Article sections are seeded as "Art. NN — Title" so the article number can
+// be lifted out into a dedicated column matching the previous composition.
+function tryParseArticle(title: string): { n: string; t: string } | null {
+  const m = title.match(/^Art\.\s*(\d+)\s*[—–-]\s*(.+)$/);
+  return m ? { n: m[1], t: m[2].trim() } : null;
+}
+
+interface SectionRendererProps {
   sections: LegalSectionContent[];
   lang: Lang;
 }
 
-const StrapiSectionsRenderer = ({ sections, lang }: StrapiSectionsRendererProps) => (
+const PROSE_CLASS =
+  'max-w-3xl text-detail leading-relaxed text-muted-foreground ' +
+  '[&_p]:m-0 [&_p]:mb-3 last:[&_p]:mb-0 ' +
+  '[&_a]:text-foreground [&_a]:underline ' +
+  '[&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 ' +
+  '[&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 ' +
+  '[&_li]:my-1';
+
+const StrapiSectionsRenderer = ({ sections, lang }: SectionRendererProps) => (
   <>
-    {sections.map((s) => (
-      <section key={s.slug} className="py-6 border-b border-border">
-        <h3 className="mb-3.5 text-tile-title font-medium tracking-headline text-foreground">{s.title[lang]}</h3>
-        <div className="prose prose-sm max-w-3xl text-detail leading-relaxed text-muted-foreground">
-          {renderStrapiBlocks(s.body[lang])}
-        </div>
-      </section>
-    ))}
+    {sections.map((s) => {
+      const article = tryParseArticle(s.title[lang]);
+      if (article) {
+        return (
+          <article
+            key={s.slug}
+            className="grid grid-cols-legal-article gap-5 py-5 border-b border-border"
+          >
+            <span className="font-mono text-caption tracking-label text-primary pt-1">
+              Art. {article.n}
+            </span>
+            <div>
+              <h4 className="m-0 mb-2 text-cell font-medium tracking-copy-tight text-foreground">
+                {article.t}
+              </h4>
+              <div className={PROSE_CLASS}>{renderStrapiBlocks(s.body[lang])}</div>
+            </div>
+          </article>
+        );
+      }
+      const rows = tryParseDefList(s.body[lang]);
+      return (
+        <section key={s.slug} className="py-6 border-b border-border">
+          <h3 className="mb-3.5 text-tile-title font-medium tracking-headline text-foreground">
+            {s.title[lang]}
+          </h3>
+          {rows ? (
+            <div>
+              {rows.map((r, i) => (
+                <div
+                  key={i}
+                  className="grid grid-cols-legal-row gap-5 py-2.5 border-b border-border last:border-b-0 text-detail items-baseline"
+                >
+                  <span className="font-mono text-label tracking-ui uppercase text-muted-foreground">
+                    {r.k}
+                  </span>
+                  <span className="text-foreground tracking-copy-tight">{r.v}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className={PROSE_CLASS}>{renderStrapiBlocks(s.body[lang])}</div>
+          )}
+        </section>
+      );
+    })}
   </>
 );
 
@@ -55,8 +159,12 @@ const LegalPage = () => {
 
   const sections = legalDocs ?? [];
   const active = sections.find((s) => s.k === sec) ?? sections[0];
-  const strapiBody = legalSectionsByDoc?.[sec]?.filter((s) => s.body[lang]?.length > 0) ?? [];
+  const allSections = legalSectionsByDoc?.[sec]?.filter((s) => s.body[lang]?.length > 0) ?? [];
+  const introSection = allSections.find((s) => s.slug === `${sec}-intro`);
+  const strapiBody = allSections.filter((s) => s !== introSection);
+  const intro = introSection ? blocksToPlainText(introSection.body[lang]) : '';
   const hasStrapiBody = strapiBody.length > 0;
+  const articleCount = strapiBody.filter((s) => tryParseArticle(s.title[lang])).length;
 
   return (
     <div className="edo-page-enter grid w-full gap-px bg-edo-pure-black md:grid-cols-contact-shell md:grid-rows-app md:h-full md:overflow-hidden">
@@ -135,6 +243,11 @@ const LegalPage = () => {
             <h1 className="mt-2.5 mb-3 text-page-title font-light tracking-display leading-none text-foreground">
               {active ? active[lang] : ''}<span className="text-primary">.</span>
             </h1>
+            {intro && (
+              <p className="m-0 text-detail text-muted-foreground leading-relaxed max-w-2xl">
+                {intro}
+              </p>
+            )}
           </div>
           <div className="text-right flex flex-col gap-1">
             <span className="font-mono text-label tracking-meta uppercase text-muted-foreground">
@@ -145,6 +258,13 @@ const LegalPage = () => {
         </div>
 
         <div className="pt-2 px-5 pb-10 max-w-5xl md:px-10">
+
+          {hasStrapiBody && articleCount > 0 && (
+            <div className="pt-4 pb-2 border-b border-border flex justify-between font-mono text-label tracking-meta uppercase text-muted-foreground">
+              <span>{articleCount} articles</span>
+              <span>Version {active?.updated ?? ''}</span>
+            </div>
+          )}
 
           {hasStrapiBody && (
             <StrapiSectionsRenderer sections={strapiBody} lang={lang} />
