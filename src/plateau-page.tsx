@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from '@tanstack/react-router';
 import { CellLabel, IconArrowRight, PageHeader } from './ui';
 import { cn } from './ui/cn';
@@ -12,25 +12,25 @@ import { common, plateau as plateauMsg } from './i18n/messages';
 import type { Lang } from './types';
 import type { MediaItem } from './lib/strapi';
 
+// Up to 4 thumbnails visible at once in the strip; the rest reachable via arrows.
+const VISIBLE_TILES = 4;
+
 interface CoverCarouselProps {
   items: MediaItem[];
   lang: Lang;
   plateauName: string;
+  index: number;
+  onPrev: () => void;
+  onNext: () => void;
   className?: string;
 }
 
-// Cover carousel — renders one media item full-cell with prev/next arrows
-// overlaid inside the image. Wraps around at the ends so the controls never
-// appear "dead" sitting on top of the artwork; arrows are hidden entirely
-// when the entry only has one media item.
-const CoverCarousel = ({ items, lang, plateauName, className }: CoverCarouselProps) => {
-  const [index, setIndex] = useState(0);
+// Cover — renders the currently selected media item full-cell with prev/next
+// arrows overlaid inside the image. Arrows are hidden when only one media item.
+const Cover = ({ items, lang, plateauName, index, onPrev, onNext, className }: CoverCarouselProps) => {
   if (items.length === 0) return null;
-  const safeIndex = ((index % items.length) + items.length) % items.length;
-  const item = items[safeIndex];
+  const item = items[index];
   const hasMultiple = items.length > 1;
-
-  const go = (delta: 1 | -1) => setIndex((i) => i + delta);
 
   const arrowBtn =
     'edo-focus-ring absolute top-1/2 z-10 -translate-y-1/2 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-border bg-white/90 text-foreground backdrop-blur-sm transition-colors duration-150 hover:bg-white';
@@ -54,7 +54,7 @@ const CoverCarousel = ({ items, lang, plateauName, className }: CoverCarouselPro
         <img
           key={item.url}
           src={item.url}
-          alt={item.alt[lang] || `${plateauName} — ${safeIndex + 1}`}
+          alt={item.alt[lang] || `${plateauName} — ${index + 1}`}
           loading="eager"
           decoding="async"
           className="absolute inset-0 h-full w-full object-contain"
@@ -65,7 +65,7 @@ const CoverCarousel = ({ items, lang, plateauName, className }: CoverCarouselPro
         <>
           <button
             type="button"
-            onClick={() => go(-1)}
+            onClick={onPrev}
             aria-label={common.prevImage[lang]}
             className={cn(arrowBtn, 'left-3 md:left-4')}
           >
@@ -73,15 +73,148 @@ const CoverCarousel = ({ items, lang, plateauName, className }: CoverCarouselPro
           </button>
           <button
             type="button"
-            onClick={() => go(1)}
+            onClick={onNext}
             aria-label={common.nextImage[lang]}
             className={cn(arrowBtn, 'right-3 md:right-4')}
           >
             <IconArrowRight width="18" height="18" />
           </button>
           <span aria-live="polite" className="sr-only">
-            {`${safeIndex + 1} / ${items.length}`}
+            {`${index + 1} / ${items.length}`}
           </span>
+        </>
+      )}
+    </div>
+  );
+};
+
+interface ThumbStripProps {
+  items: MediaItem[];
+  lang: Lang;
+  plateauName: string;
+  activeIndex: number;
+  onSelect: (i: number) => void;
+  className?: string;
+}
+
+// Thumbnail strip — up to 4 tiles visible at a time. Clicking a tile sets it
+// as the cover. When there are more than 4 items the strip scrolls horizontally
+// and surfaces prev/next arrows; the active tile is outlined.
+const ThumbStrip = ({ items, lang, plateauName, activeIndex, onSelect, className }: ThumbStripProps) => {
+  const stripRef = useRef<HTMLDivElement>(null);
+  const [canPrev, setCanPrev] = useState(false);
+  const [canNext, setCanNext] = useState(false);
+
+  const hasOverflow = items.length > VISIBLE_TILES;
+  const visible = Math.min(items.length, VISIBLE_TILES);
+  const tileBasis = `${100 / visible}%`;
+
+  const updateScrollState = useCallback(() => {
+    const el = stripRef.current;
+    if (!el) return;
+    const epsilon = 1;
+    setCanPrev(el.scrollLeft > epsilon);
+    setCanNext(el.scrollLeft + el.clientWidth < el.scrollWidth - epsilon);
+  }, []);
+
+  useEffect(() => {
+    const el = stripRef.current;
+    if (!el) return;
+    updateScrollState();
+    const onScroll = () => updateScrollState();
+    el.addEventListener('scroll', onScroll, { passive: true });
+    const ro = new ResizeObserver(updateScrollState);
+    ro.observe(el);
+    return () => {
+      el.removeEventListener('scroll', onScroll);
+      ro.disconnect();
+    };
+  }, [updateScrollState, items.length]);
+
+  // Keep the active tile in view when the cover moves via the overlay arrows.
+  useEffect(() => {
+    const el = stripRef.current;
+    if (!el) return;
+    const tile = el.querySelector<HTMLElement>(`[data-tile-index="${activeIndex}"]`);
+    tile?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+  }, [activeIndex]);
+
+  const scrollByTile = (dir: 1 | -1) => {
+    const el = stripRef.current;
+    if (!el) return;
+    const firstTile = el.querySelector<HTMLElement>('[data-tile-index]');
+    const step = firstTile?.offsetWidth ?? el.clientWidth / VISIBLE_TILES;
+    el.scrollBy({ left: dir * step, behavior: 'smooth' });
+  };
+
+  if (items.length === 0) return null;
+
+  const arrowBtn =
+    'edo-focus-ring absolute top-1/2 z-10 -translate-y-1/2 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-border bg-white text-foreground transition-opacity duration-150 hover:bg-muted disabled:cursor-default disabled:opacity-0 disabled:pointer-events-none';
+
+  return (
+    <div className={cn('relative', className)}>
+      <div
+        ref={stripRef}
+        className="flex h-full gap-px overflow-x-auto bg-edo-pure-black snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {items.map((item, i) => {
+          const isActive = i === activeIndex;
+          return (
+            <button
+              key={`${item.url}-${i}`}
+              type="button"
+              data-tile-index={i}
+              onClick={() => onSelect(i)}
+              aria-label={`${item.alt[lang] || plateauName} — ${i + 1} / ${items.length}`}
+              aria-current={isActive ? 'true' : undefined}
+              className={cn(
+                'edo-focus-ring relative shrink-0 snap-start overflow-hidden bg-white border-0 p-0 cursor-pointer',
+                isActive && 'outline outline-2 outline-primary outline-offset-[-2px]',
+              )}
+              style={{ flexBasis: tileBasis }}
+            >
+              {item.kind === 'video' ? (
+                <VideoLoop
+                  src={item.url}
+                  poster={item.poster}
+                  objectFit="cover"
+                  className="absolute inset-0 h-full w-full"
+                />
+              ) : (
+                <img
+                  src={item.url}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {hasOverflow && (
+        <>
+          <button
+            type="button"
+            onClick={() => scrollByTile(-1)}
+            disabled={!canPrev}
+            aria-label={common.prevImage[lang]}
+            className={cn(arrowBtn, 'left-2')}
+          >
+            <IconArrowRight width="16" height="16" className="rotate-180" />
+          </button>
+          <button
+            type="button"
+            onClick={() => scrollByTile(1)}
+            disabled={!canNext}
+            aria-label={common.nextImage[lang]}
+            className={cn(arrowBtn, 'right-2')}
+          >
+            <IconArrowRight width="16" height="16" />
+          </button>
         </>
       )}
     </div>
@@ -109,11 +242,17 @@ const PlateauPage = ({ slug }: { slug: string }) => {
       lang,
     ),
   ]);
+  const [activeIndex, setActiveIndex] = useState(0);
   if (loading || !plateaux) return null;
   const p = plateaux[slug] || plateaux.cyclorama;
   if (!p) return null;
   const order = ['live','eclipse','horizontal','vertical','cyclorama'];
   const coverItems: MediaItem[] = p.media ?? [];
+  const safeIndex = coverItems.length === 0
+    ? 0
+    : ((activeIndex % coverItems.length) + coverItems.length) % coverItems.length;
+  const goPrev = () => setActiveIndex((i) => i - 1);
+  const goNext = () => setActiveIndex((i) => i + 1);
 
   return (
     /* Mobile: single-column stacked, scrollable. Desktop (md+): 4-column bento */
@@ -153,15 +292,31 @@ const PlateauPage = ({ slug }: { slug: string }) => {
         })}
       </div>
 
-      {/* Cover — one big media item spanning the hero + demo region.
-          Arrows overlaid inside the image cycle prev/next through the media
-          list, replacing the hero / thumbnail-strip split that lived here. */}
+      {/* Cover — current media item with prev/next arrows overlaid inside the
+          image. The cover and the thumbnail strip below share `activeIndex`,
+          so navigating either control keeps both in sync. */}
       {coverItems.length > 0 && (
-        <CoverCarousel
+        <Cover
           items={coverItems}
           lang={lang}
           plateauName={p.name}
-          className="md:col-start-2 md:col-span-2 md:row-start-2 md:row-span-3 md:min-h-0"
+          index={safeIndex}
+          onPrev={goPrev}
+          onNext={goNext}
+          className="md:col-start-2 md:col-span-2 md:row-start-2 md:row-span-2 md:min-h-0"
+        />
+      )}
+
+      {/* Thumbnail strip — up to 4 tiles visible at once, scrollable when the
+          entry has more media. Clicking a tile sets it as the cover. */}
+      {coverItems.length > 0 && (
+        <ThumbStrip
+          items={coverItems}
+          lang={lang}
+          plateauName={p.name}
+          activeIndex={safeIndex}
+          onSelect={setActiveIndex}
+          className="md:col-start-2 md:col-span-2 md:row-start-4 md:min-h-0"
         />
       )}
 
