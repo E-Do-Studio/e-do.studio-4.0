@@ -350,6 +350,10 @@
   grid-template-columns: 190px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);
 }
 
+@utility grid-cols-contact-shell {
+  grid-template-columns: 240px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);
+}
+
 @utility grid-rows-plateau {
   grid-template-rows: 54px 78px minmax(0,1.58fr) minmax(0,0.72fr) minmax(0,0.52fr);
 }

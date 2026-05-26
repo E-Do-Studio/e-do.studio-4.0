@@ -125,7 +125,7 @@ const FindUsSection = ({ lang, contact }: FindUsSectionProps) => {
   const eyebrowFromEntries = c?.entries && c.entries.length > 0
     ? c.entries.map((e) => `${e.label}${e.address ? ` ${e.address}` : ''}`).join(' · ')
     : null;
-  const eyebrow = eyebrowFromEntries || c?.address.complement || null;
+  const eyebrow = eyebrowFromEntries || c?.address.complement || 'Parc d’activités Victor Hugo · Bât. 6.7';
   return (
     <section className="border-b border-border p-6">
       <CellLabel className="mb-5 block">{contactMsg.findUs[lang]}</CellLabel>
@@ -133,12 +133,10 @@ const FindUsSection = ({ lang, contact }: FindUsSectionProps) => {
         <UnavailableNote lang={lang} />
       ) : (
         <>
-          <div className="text-caption leading-copy font-normal text-foreground">
-            {eyebrow && (
-              <span className="mb-2 block font-mono text-label uppercase tracking-ui text-muted-foreground">
-                {eyebrow}
-              </span>
-            )}
+          <div className="text-detail leading-copy font-medium text-foreground">
+            <span className="mb-2 block font-mono text-label font-normal uppercase tracking-ui text-muted-foreground">
+              {eyebrow}
+            </span>
             {c?.address.street}<br />
             {c?.address.postalCode} <span className="whitespace-nowrap">{c?.address.city}</span>
             {c?.address.country ? <>,<br />{c.address.country}</> : null}
@@ -210,9 +208,11 @@ interface HoursRowProps {
 }
 
 const HoursRow = ({ label, value, muted = false }: HoursRowProps) => (
-  <div className="flex justify-between gap-3">
+  <div className="flex items-baseline justify-between gap-3 whitespace-nowrap">
     <span className="text-muted-foreground">{label}</span>
-    <span className={cn('font-mono text-caption', muted && 'text-muted-foreground')}>{value}</span>
+    <span className={cn('text-caption', muted ? 'text-muted-foreground' : 'font-mono text-foreground')}>
+      {value}
+    </span>
   </div>
 );
 
@@ -230,7 +230,7 @@ const PhoneSection = ({ lang, contact }: PhoneSectionProps) => {
       {showFallback ? (
         <UnavailableNote lang={lang} />
       ) : c?.phone ? (
-        <a href={c.phoneHref} className="text-caption tracking-copy-tight text-primary no-underline">
+        <a href={c.phoneHref} className="text-detail font-medium tracking-copy-tight text-primary no-underline">
           {c.phone}
         </a>
       ) : null}
@@ -592,7 +592,7 @@ const ContactPage = () => {
   };
 
   return (
-    <div className="edo-page-enter grid w-full gap-px bg-edo-pure-black md:h-full md:grid-cols-plateau md:grid-rows-page md:overflow-hidden">
+    <div className="edo-page-enter grid w-full gap-px bg-edo-pure-black md:h-full md:grid-cols-contact-shell md:grid-rows-page md:overflow-hidden">
       {/* Unified header — compact right-aligned actions on all breakpoints */}
       <PageHeader
         lang={lang}
