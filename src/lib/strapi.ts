@@ -591,7 +591,13 @@ export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
 
   const machinesFr = machinesBI.fr.data;
   const machinesEn = machinesBI.en.data;
-  machinesFr.forEach((mFr, i) => {
+  // Cyclorama is its own single-type (populated above) and carries the canonical
+  // `usages` array + `pricingDescription`. The Strapi seed also creates a
+  // cyclorama row in the `machines` collection; if we let it through here it
+  // overwrites the single-type entry with `uses: []` (no MACHINE_USES key) and
+  // EN specs that were never localized on that collection row.
+  const machineRows = machinesFr.filter((m) => m.slug !== 'cyclorama');
+  machineRows.forEach((mFr, i) => {
     const mEn = machinesEn.find(e => e.slug === mFr.slug) ?? mFr;
     const rows = mFr.pricingRows ?? [];
     const rowsEn = mEn.pricingRows ?? [];
@@ -638,6 +644,10 @@ export async function fetchMachines(): Promise<MachineInfo[]> {
   const machinesFr = machinesBI.fr.data;
   const machinesEn = machinesBI.en.data;
   for (const mFr of machinesFr) {
+    // Skip the cyclorama-as-machine row — it's already in the list via the
+    // single-type fetch above and duplicating it confuses every consumer of
+    // useMachines() (selectors, editorial direction page).
+    if (mFr.slug === 'cyclorama') continue;
     const mEn = machinesEn.find(e => e.slug === mFr.slug) ?? mFr;
     list.push({
       slug: mFr.slug,
