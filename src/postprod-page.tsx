@@ -344,7 +344,7 @@ const PostprodPage = () => {
       </div>
 
       {/* Sample images grid */}
-      <div className="grid grid-cols-3 gap-px bg-white md:col-start-3 md:col-span-2 md:row-start-2 md:grid-rows-double md:min-h-0">
+      <div className="grid grid-cols-3 gap-px bg-edo-pure-black md:col-start-3 md:col-span-2 md:row-start-2 md:grid-rows-double md:min-h-0">
         <div className={`${bgCls} relative overflow-hidden aspect-portrait md:aspect-auto md:h-full`}>
           <SampleImage seed={cat.samples[0]} label={cat.brands?.[0] || `${cat.k.toUpperCase()} · 01`} medium={cat.medium}/>
         </div>
