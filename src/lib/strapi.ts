@@ -97,6 +97,7 @@ interface StrapiMachine {
   specs?: StrapiSpec[];
   pricingRows?: StrapiPricingRow[];
   operatorPricingRows?: StrapiPricingRow[];
+  landscapeImage?: StrapiMedia | null;
   media?: StrapiMedia[];
   seo?: StrapiSeoMeta;
 }
@@ -110,6 +111,7 @@ interface StrapiCyclorama {
   specs?: StrapiSpec[];
   usages?: StrapiLocalizedItem[];
   pricingRows?: StrapiPricingRow[];
+  landscapeImage?: StrapiMedia | null;
   media?: StrapiMediaItem[];
   seo?: StrapiSeoMeta;
 }
@@ -274,6 +276,7 @@ export interface PlateauSpec {
   rates: { k: Bilingual; v: string | Bilingual }[];
   ratesNote?: Bilingual;
   visual: string;
+  landscapeImage?: { url: string; alt: Bilingual };
   media: MediaItem[];
   seo?: Bilingual<SeoMeta>;
 }
@@ -348,6 +351,18 @@ function mergeLocalizedItems(frItems: StrapiLocalizedItem[], enItems: StrapiLoca
     const en = enItems[i]?.text || fr;
     return { fr, en };
   });
+}
+
+function buildLandscapeImage(
+  fr: StrapiMedia | null | undefined,
+  en: StrapiMedia | null | undefined,
+): { url: string; alt: Bilingual } | undefined {
+  const source = fr ?? en ?? undefined;
+  const url = resolveStrapiMediaUrl(source);
+  if (!url) return undefined;
+  const altFr = fr?.alternativeText ?? en?.alternativeText ?? '';
+  const altEn = en?.alternativeText ?? altFr;
+  return { url, alt: { fr: altFr, en: altEn } };
 }
 
 function mediaListToItems(items: StrapiMedia[] | undefined): MediaItem[] {
@@ -484,8 +499,8 @@ const MACHINE_LABELS: Record<string, { fr: string; en: string }> = {
 
 export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
   const [machinesBI, cycloBI] = await Promise.all([
-    fetchStrapiBilingual<{ data: StrapiMachine[] }>('machines', { 'populate': 'specs,pricingRows,seo,seo.image,media', 'sort': 'createdAt:asc' }),
-    fetchStrapiBilingual<{ data: StrapiCyclorama }>('cyclorama', { 'populate': 'specs,usages,pricingRows,seo,seo.image,media,media.image,media.video,media.poster' }),
+    fetchStrapiBilingual<{ data: StrapiMachine[] }>('machines', { 'populate': 'specs,pricingRows,seo,seo.image,landscapeImage,media', 'sort': 'createdAt:asc' }),
+    fetchStrapiBilingual<{ data: StrapiCyclorama }>('cyclorama', { 'populate': 'specs,usages,pricingRows,seo,seo.image,landscapeImage,media,media.image,media.video,media.poster' }),
   ]);
 
   const result: Record<string, PlateauSpec> = {};
@@ -509,6 +524,7 @@ export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
       rates,
       ratesNote: cycFr.pricingDescription ? { fr: cycFr.pricingDescription, en: cycEn?.pricingDescription ?? cycFr.pricingDescription } : undefined,
       visual: 'cyc',
+      landscapeImage: buildLandscapeImage(cycFr.landscapeImage, cycEn?.landscapeImage),
       media: mergeMediaItems(cycFr.media, cycEn?.media),
       seo: buildSeo(cycFr.seo, cycEn?.seo),
     };
@@ -533,6 +549,7 @@ export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
       uses: MACHINE_USES[mFr.slug] ?? [],
       rates,
       visual: mFr.slug,
+      landscapeImage: buildLandscapeImage(mFr.landscapeImage, mEn.landscapeImage),
       media: mediaListToItems(mFr.media),
       seo: buildSeo(mFr.seo, mEn.seo),
     };
