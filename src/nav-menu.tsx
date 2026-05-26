@@ -1,20 +1,13 @@
-import { Fragment } from 'react';
-import { useNavigate, useRouterState } from '@tanstack/react-router';
+import { useNavigate } from '@tanstack/react-router';
 import { CellLabel, IconX, cn } from './ui';
-import { usePlateaux, useSocialLinks } from './lib/use-strapi';
+import { useSocialLinks } from './lib/use-strapi';
 import { nav, common } from './i18n/messages';
 import type { Lang, SocialLink } from './types';
-import type { PlateauSpec } from './lib/strapi';
 
 interface NavItemDef {
   label: string;
   href: string;
 }
-
-const PLATEAU_ORDER = ['live', 'eclipse', 'horizontal', 'vertical', 'cyclorama'] as const;
-
-const plateauHref = (lang: Lang, slug: string) =>
-  slug === 'cyclorama' ? `/${lang}/cyclorama` : `/${lang}/plateau/${slug}`;
 
 interface NavOverlayProps {
   isOpen: boolean;
@@ -78,96 +71,6 @@ const NavItemLink = ({ item, index, onClose, navigate }: NavItemLinkProps) => (
     </span>
   </a>
 );
-
-interface PlateauRowProps {
-  index: number;
-  name: string;
-  tagline: string;
-  href: string;
-  active: boolean;
-  onClose: () => void;
-  navigate: (opts: { to: string }) => void;
-}
-
-const PlateauRow = ({ index, name, tagline, href, active, onClose, navigate }: PlateauRowProps) => (
-  <a
-    href={href}
-    aria-current={active ? 'page' : undefined}
-    onClick={(e) => {
-      e.preventDefault();
-      onClose();
-      navigate({ to: href });
-    }}
-    className={cn(
-      'edo-focus-ring flex min-h-13 cursor-pointer items-center gap-3 border-b border-foreground px-4 py-2.5 no-underline transition-colors',
-      active
-        ? 'bg-foreground text-background'
-        : 'bg-white text-foreground hover:bg-muted',
-    )}
-  >
-    <span
-      className={cn(
-        'font-mono text-label tracking-label shrink-0 w-7',
-        active ? 'text-background' : 'text-muted-foreground',
-      )}
-    >
-      {String(index + 1).padStart(2, '0')}
-    </span>
-    <span className="text-cell font-light truncate">{name}</span>
-    <span
-      className={cn(
-        'ml-auto font-mono text-micro tracking-meta uppercase truncate text-right',
-        active ? 'text-background/80' : 'text-muted-foreground',
-      )}
-    >
-      {tagline}
-    </span>
-    <span
-      aria-hidden="true"
-      className={cn(
-        'font-mono text-micro tracking-meta shrink-0',
-        active ? 'text-background' : 'text-muted-foreground',
-      )}
-    >
-      →
-    </span>
-  </a>
-);
-
-interface PlateauListProps {
-  lang: Lang;
-  plateaux: Record<string, PlateauSpec>;
-  currentSlug: string | null;
-  onClose: () => void;
-  navigate: (opts: { to: string }) => void;
-}
-
-const PlateauList = ({ lang, plateaux, currentSlug, onClose, navigate }: PlateauListProps) => {
-  const rows = PLATEAU_ORDER.flatMap((slug) => {
-    const spec = plateaux[slug];
-    return spec ? [{ slug, spec }] : [];
-  });
-  if (rows.length === 0) return null;
-  return (
-    <div role="group" aria-label={common.stages[lang]}>
-      <div className="flex items-center border-b border-foreground px-4 py-2.5">
-        <CellLabel>{common.stages[lang]}</CellLabel>
-      </div>
-      {rows.map(({ slug, spec }, i) => (
-        <PlateauRow
-          key={slug}
-          index={i}
-          name={spec.name}
-          tagline={spec.tagline[lang]}
-          href={plateauHref(lang, slug)}
-          active={slug === currentSlug}
-          onClose={onClose}
-          navigate={navigate}
-        />
-      ))}
-    </div>
-  );
-};
 
 interface NavExternalLinkProps {
   href: string;
@@ -257,30 +160,9 @@ interface NavMenuProps {
   onClose: () => void;
 }
 
-const isPlateauItem = (item: NavItemDef) => item.href.includes('/plateau/');
-
 const NavMenu = ({ lang, isOpen, onClose, setLang }: NavMenuProps) => {
   const navigate = useNavigate();
   const { data: socialLinks } = useSocialLinks();
-  const { data: plateaux } = usePlateaux();
-  const pathname = useRouterState({ select: (s) => s.resolvedLocation?.pathname ?? '' });
-  const currentSlug = (() => {
-    const m = pathname.match(/^\/(?:fr|en)\/plateau\/([^/]+)/);
-    if (m) return m[1];
-    if (/^\/(?:fr|en)\/cyclorama/.test(pathname)) return 'cyclorama';
-    return null;
-  })();
-
-  // When plateaux are loaded, splice the inline list in place of the single
-  // "Plateaux" link; otherwise render the legacy nav untouched so we never
-  // hide the entry behind a loading state.
-  const plateauReady = !!plateaux && Object.keys(plateaux).length > 0;
-  const renderItems = plateauReady
-    ? nav.items[lang].filter((it) => !isPlateauItem(it))
-    : nav.items[lang];
-  const plateauInsertIndex = plateauReady
-    ? nav.items[lang].findIndex(isPlateauItem)
-    : -1;
 
   return (
     <>
@@ -299,24 +181,13 @@ const NavMenu = ({ lang, isOpen, onClose, setLang }: NavMenuProps) => {
         <NavHeader onClose={onClose} lang={lang} />
 
         <nav className="flex flex-1 flex-col overflow-y-auto" aria-label={common.menu[lang]}>
-          {renderItems.map((item, index) => (
-            <Fragment key={item.href}>
-              {plateauReady && plateaux && index === plateauInsertIndex && (
-                <PlateauList
-                  lang={lang}
-                  plateaux={plateaux}
-                  currentSlug={currentSlug}
-                  onClose={onClose}
-                  navigate={navigate}
-                />
-              )}
-              <NavItemLink item={item} index={index} onClose={onClose} navigate={navigate} />
-            </Fragment>
+          {nav.items[lang].map((item, index) => (
+            <NavItemLink key={item.href} item={item} index={index} onClose={onClose} navigate={navigate} />
           ))}
           <NavExternalLink
             href="https://etouch.e-do.studio"
             label="Etouch"
-            index={renderItems.length}
+            index={nav.items[lang].length}
           />
           <SocialGrid links={socialLinks ?? []} />
         </nav>

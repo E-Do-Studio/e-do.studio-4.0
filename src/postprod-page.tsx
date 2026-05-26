@@ -306,7 +306,7 @@ const PostprodPage = () => {
               onClick={() => setType(c.k)}
               aria-pressed={active}
               className={cn(
-                'snap-start shrink-0 min-h-11 px-4 py-2 rounded-full whitespace-nowrap',
+                'snap-start shrink-0 min-h-11 px-4 py-2 whitespace-nowrap',
                 'font-mono uppercase text-label tracking-label',
                 'transition-colors duration-150 ease-edo-out edo-focus-ring',
                 active
