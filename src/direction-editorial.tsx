@@ -1,5 +1,6 @@
 import { lazy, Suspense, useState } from 'react';
 import { CellLabel, IconArrowRight, IconChat, IconLock, IconX, ImageCrossfade, PageHeader, VideoLoop, cn } from './ui';
+import { BookCTATile } from './book-cta';
 import { SocialClientsBar } from './social-clients-bar';
 
 const AssistantChat = lazy(() => import('./assistant-chat'));
@@ -326,24 +327,16 @@ const DirectionA = () => {
       </div>
 
       {/* ── Row 5 right (desktop only): Book CTA.
-          On mobile this CTA is moved up into the social bar (see SocialClientsBar)
-          so we don't duplicate it here — hidden below md, restored at md+. */}
-      <button
+          Same logical button as the BookCTAInline in SocialClientsBar — both
+          render BookCTA variants from book-cta.tsx so the Réserver CTA has a
+          single definition. The desktop tile is the only Réserver visible at
+          md+ (the inline mobile cell is md:hidden); on mobile this tile is
+          hidden via `col-span-2 hidden md:flex`. */}
+      <BookCTATile
+        lang={lang}
         onClick={() => goto('book')}
-        className="edo-focus-ring group col-span-2 h-20 hidden cursor-pointer items-center justify-between gap-3 border-0 bg-primary px-5 py-3 text-left text-white transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90 md:col-start-7 md:col-end-10 md:row-start-5 md:h-21 md:flex"
-      >
-        <div className="flex min-w-0 flex-col gap-1 transition-transform duration-150 group-hover:scale-102">
-          <span className="font-mono text-label uppercase tracking-label text-white">
-            {homeMsg.requestQuoteOr[lang]}
-          </span>
-          <span className="text-tile-title font-normal tracking-headline leading-tight text-white">
-            {common.book[lang]}
-          </span>
-        </div>
-        <IconArrowRight
-          className="flex-shrink-0 transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5 group-hover:scale-110"
-          width="16" height="16"        />
-      </button>
+        className="col-span-2 hidden md:col-start-7 md:col-end-10 md:row-start-5 md:flex"
+      />
 
       {/* ── Row 6 left: Discovery CTA (Coming soon) ── */}
       <button
