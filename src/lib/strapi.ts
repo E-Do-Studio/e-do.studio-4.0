@@ -383,10 +383,64 @@ const PLATEAU_EN_FALLBACK: Record<string, string> = {
   'Packshot & still life': 'Packshot & still life',
 };
 
+// FR fallback dictionary for plateau specs/usages. Mirrors PLATEAU_EN_FALLBACK
+// in reverse: maps known English spec strings back to their French
+// translations. The semi-prod Strapi has English content stored under the FR
+// locale's component rows (specs/usages) for cyclorama and machines, so the
+// raw FR value coming from the API still renders as English. Until the data
+// is fixed in the CMS, swap any FR-locale string that matches a known English
+// key for its French translation. Once Strapi serves real French rows that
+// differ from the dictionary keys, this fallback is a no-op (lookup misses).
+const PLATEAU_FR_FALLBACK: Record<string, string> = {
+  // Cyclorama / machine spec labels (EN → FR)
+  'Natural light': 'Éclairage naturel',
+  'Access': 'Accès',
+  'Exterior': 'Extérieur',
+  'Electricity': 'Électricité',
+  'Connectivity & sound': 'Connectivité & son',
+  'Make-up': 'Maquillage',
+  'Dressing': 'Habillage',
+  'Kitchen': 'Cuisine',
+  'Camera': 'Caméra',
+  'Control': 'Pilotage',
+  'Lighting': 'Éclairage',
+  'Auto clipping': 'Détourage automatique',
+  'Motion': 'Motorisation',
+  // Cyclorama spec values (EN → FR)
+  '240 m² · 2-sided cyclo 32 m²': '240 m² · Cyclo 2 faces 32 m²',
+  '240 m² 2-sided cyclo 32 m²': '240 m² · Cyclo 2 faces 32 m²',
+  '6.3m L × 5.2m W × 5m H': '6,3m L × 5,2m l × 5m H',
+  'Blackout skydomes': 'Skydomes occultable',
+  'Loading dock 3.5m L × 4.5m H': 'Quai de livraison 3,5m L × 4,5m H',
+  'Direct access, on-site parking': 'Accès direct, parking sur place',
+  '1 Marechal 63A 3-phase · 15 × 16A outlets': '1 prise Marechal 63A triphasée · 15 prises 16A',
+  '1 Maréchal 63A 3-phase · 15 × 16A outlets': '1 prise Marechal 63A triphasée · 15 prises 16A',
+  'High-speed Wi-Fi · Integrated sound system': 'Wi-Fi très haut débit · Sound system intégré',
+  '2 equipped make-up stations': '2 postes maquillage équipés',
+  '2 fitting rooms': "2 cabines d'essayage",
+  'Fully equipped': 'Entièrement équipée',
+  // Machine spec values (EN → FR)
+  'Canon EOS R · 24–105 mm motorized': 'Canon EOS R · 24–105 mm motorisé',
+  'Canon EOS R · 70–200 mm motorized': 'Canon EOS R · 70–200 mm motorisé',
+  'iPad · intuitive app': 'iPad · application intuitive',
+  'High-CRI LED continuous': 'LED High-CRI continue',
+  '4 axes · height · tilt · zoom · 360° rotation': '4 axes · hauteur · inclinaison · zoom · rotation 360°',
+  '3 axes · height · tilt · zoom': '3 axes · hauteur · inclinaison · zoom',
+  // Cyclorama usages (EN → FR)
+  'Campaign & editorial': 'Campagne & éditorial',
+  'Advertising film': 'Film publicitaire',
+};
+
 function fallbackEn(frValue: string, enValue: string): string {
   if (enValue && enValue !== frValue) return enValue;
   const translated = PLATEAU_EN_FALLBACK[frValue];
   return translated ?? enValue ?? frValue;
+}
+
+function fallbackFr(frValue: string, enValue: string): string {
+  const translated = PLATEAU_FR_FALLBACK[frValue];
+  if (translated) return translated;
+  return frValue || enValue;
 }
 
 function mergeSpecs(frSpecs: StrapiSpec[], enSpecs: StrapiSpec[]): { k: Bilingual; v: Bilingual }[] {
@@ -400,8 +454,8 @@ function mergeSpecs(frSpecs: StrapiSpec[], enSpecs: StrapiSpec[]): { k: Bilingua
     const enLabel = en?.label || frLabel;
     const enValue = en?.value || frValue;
     result.push({
-      k: { fr: frLabel, en: fallbackEn(frLabel, enLabel) },
-      v: { fr: frValue, en: fallbackEn(frValue, enValue) },
+      k: { fr: fallbackFr(frLabel, enLabel), en: fallbackEn(frLabel, enLabel) },
+      v: { fr: fallbackFr(frValue, enValue), en: fallbackEn(frValue, enValue) },
     });
   }
   return result;
@@ -412,7 +466,7 @@ function mergeLocalizedItems(frItems: StrapiLocalizedItem[], enItems: StrapiLoca
   return Array.from({ length: len }, (_, i) => {
     const fr = frItems[i]?.text ?? enItems[i]?.text ?? '';
     const en = enItems[i]?.text || fr;
-    return { fr, en: fallbackEn(fr, en) };
+    return { fr: fallbackFr(fr, en), en: fallbackEn(fr, en) };
   });
 }
 
