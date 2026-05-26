@@ -82,9 +82,14 @@ export function buildVEvent(
   const plateaux = sessions.map((s) => s.plateau_key).join(", ");
   const totalHours = sessions.reduce((sum, s) => sum + (s.hours ?? 0), 0);
 
-  const summary = plateaux
-    ? `${plateaux} — ${booking.client_name}`
-    : `E-Do Studio — ${booking.client_name}`;
+  const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+  const plateauxTitle = sessions.map((s) => capitalize(s.plateau_key)).join(" | ");
+  const titlePrefix = (booking.client_company && booking.client_company.trim())
+    ? booking.client_company.trim()
+    : booking.client_name;
+  const summary = plateauxTitle
+    ? `${titlePrefix} — ${plateauxTitle}`
+    : `E-Do Studio — ${titlePrefix}`;
   const descParts: string[] = [];
   descParts.push(`Référence: ${booking.reference}`);
   descParts.push(`Client: ${booking.client_name}`);
@@ -107,7 +112,6 @@ export function buildVEvent(
     descParts.push("--- Détail des sessions ---");
     for (const s of sessions) {
       const parts = [`${s.plateau_key} (${s.hours ?? "?"}h, ${s.slot_type})`];
-      if (s.cyclo_mode) parts.push(`  Cyclo: ${s.cyclo_mode}`);
       if (s.product_type) parts.push(`  Produit: ${s.product_type}`);
       if (s.method) parts.push(`  Méthode: ${s.method}${s.submethod ? ` / ${s.submethod}` : ""}`);
       if (s.quantity && s.quantity > 1) parts.push(`  Quantité: ${s.quantity}`);
