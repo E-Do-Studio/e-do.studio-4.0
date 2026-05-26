@@ -487,7 +487,7 @@ const ProjectRow = ({ project, lang, style }: { project: GalleryProject; lang: L
   const plateauLabel = PLATEAU_LABELS[project.plateau]?.[lang] ?? project.plateau;
   const ariaLabel = `${project.brand} — ${plateauLabel}`;
   return (
-    <div className="edo-list-row grid gap-px bg-edo-pure-black grid-cols-gallery-row-mobile md:grid-cols-gallery-row" style={style}>
+    <div className="edo-list-row group grid gap-px bg-edo-pure-black grid-cols-gallery-row-mobile md:grid-cols-gallery-row" style={style}>
       <ProjectLabel project={project} lang={lang} to={to} ariaLabel={ariaLabel} />
       {[0, 1, 2].map((imageIndex) => (
         <ProjectImage
@@ -531,7 +531,7 @@ const ProjectLabel = ({
     "edo-focus-ring relative flex cursor-pointer flex-col items-center justify-between overflow-hidden border-0 bg-white px-2.5 py-3.5 text-left font-sans no-underline text-inherit";
   const content = (
     <>
-      <span className="max-w-full self-start truncate font-mono text-micro uppercase tracking-code text-muted-foreground">
+      <span className="max-w-full self-start truncate font-mono text-micro uppercase tracking-code text-muted-foreground transition-colors group-hover:text-primary">
         {plateauLabel}
       </span>
       <div className="flex min-h-0 flex-1 items-center justify-center py-2 edo-writing-vertical rotate-180">
