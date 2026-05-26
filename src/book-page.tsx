@@ -1,6 +1,6 @@
 import React, { useState as useStateBook, useMemo as useMemoBook, useCallback as useCallbackBook } from 'react';
 import { usePageContext } from './router';
-import { CellLabel, EmptyState, IconArrowRight, PageHeader, Wordmark } from './ui';
+import { CellLabel, EmptyState, IconArrowRight, PageHeader } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
 import { useStructuredData } from './lib/use-structured-data';
 import { buildWebPageSchema, buildBreadcrumbSchema } from './lib/structured-data';
@@ -677,11 +677,11 @@ const BookPageV2 = () => {
   return (
     <div className="edo-page-enter grid w-full gap-px bg-edo-pure-black md:h-full md:overflow-hidden md:grid-cols-book md:grid-rows-app">
 
-      {/* Mobile header */}
+      {/* Unified header spans cols 1-3 — col 4 hosts the dark "Your Quote" label aligned with the quote panel below */}
       <PageHeader
         lang={lang}
         title={bookingMsg.title[lang]}
-        className="col-span-full h-14 md:hidden"
+        className="col-span-full h-14 md:col-start-1 md:col-end-4 md:row-start-1 md:h-full"
         onMenuClick={openMenu}
         onLogoClick={()=>goto('home')}
         onLangToggle={()=>setLang(lang==='fr'?'en':'fr')}
@@ -689,29 +689,6 @@ const BookPageV2 = () => {
           { id: 'help', label: bookingMsg.needHelp[lang], onClick: () => goto('contact') },
         ]}
       />
-
-      {/* Desktop col 1 – logo */}
-      <div className="hidden md:flex h-full gap-px bg-foreground md:col-start-1 md:row-start-1">
-        <button onClick={()=>goto('home')} aria-label="E-Do Studio home" className="edo-focus-ring flex h-full min-w-0 flex-1 cursor-pointer items-center justify-center border-0 bg-background p-2 transition-colors hover:bg-muted">
-          <Wordmark size={32} />
-        </button>
-      </div>
-
-      {/* Desktop col 2 – title */}
-      <div className="hidden md:flex h-full min-w-0 items-center bg-background px-6 md:col-start-2 md:row-start-1">
-        <CellLabel className="shrink-0 text-primary">{bookingMsg.title[lang]}</CellLabel>
-      </div>
-
-      {/* Desktop col 3 – help + lang toggle */}
-      <div className="hidden md:flex h-full gap-px bg-foreground md:col-start-3 md:row-start-1">
-        <button onClick={()=>goto('contact')} className="edo-focus-ring flex h-full flex-1 cursor-pointer items-center justify-center gap-2 border-0 bg-background px-5 font-mono text-label tracking-ui uppercase text-foreground no-underline transition-colors hover:bg-muted">
-          <span className="whitespace-nowrap">{bookingMsg.needHelp[lang]}</span>
-          <IconArrowRight width={12} height={12} />
-        </button>
-        <button onClick={()=>setLang(lang==='fr'?'en':'fr')} className="edo-focus-ring flex h-full basis-header flex-none cursor-pointer items-center justify-center border-0 bg-background p-0 transition-colors hover:bg-muted">
-          <span className="font-mono text-label tracking-meta text-foreground">{common.langToggleLabel[lang]}</span>
-        </button>
-      </div>
 
       {/* Desktop col 4 – dark label matching quote panel below */}
       <div className="hidden md:flex h-full items-center bg-foreground px-6 md:col-start-4 md:row-start-1">

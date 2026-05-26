@@ -9,7 +9,7 @@ import { buildGalleryCollectionSchema, buildBreadcrumbSchema } from "./lib/struc
 import { useGalleryProjects, useGalleryCategories } from "./lib/use-strapi";
 import type { GalleryProject } from "./lib/strapi";
 import type { Lang } from "./types";
-import { EmptyState, Loader, PageHeader, IconArrowRight, CellLabel, Wordmark } from "./ui";
+import { EmptyState, Loader, PageHeader } from "./ui";
 import { Chip } from "./ui/chip";
 import { cn } from "./ui/cn";
 import { common, galleryPage } from "./i18n/messages";
@@ -724,49 +724,21 @@ const GalleryPageV3 = () => {
   }
 
   return (
-    <div className="edo-page-enter grid w-full gap-px bg-edo-pure-black md:h-full md:grid-cols-gallery-full md:grid-rows-page md:overflow-hidden">
+    <div className="edo-page-enter grid w-full gap-px bg-edo-pure-black md:h-full md:grid-cols-gallery-shell md:grid-rows-page md:overflow-hidden">
 
       <PageHeader
         lang={lang}
         title={common.gallery[lang]}
-        className="col-span-full h-14 md:hidden"
+        className="col-span-full h-14 md:col-span-full md:row-start-1 md:h-full"
         onMenuClick={openMenu}
         onLogoClick={() => goto("home")}
         onLangToggle={() => setLang(lang === "fr" ? "en" : "fr")}
         actions={[
+          { id: "postprod", label: "Post-prod", onClick: () => goto("postprod"), className: "hidden md:flex" },
+          { id: "stages", label: common.stages[lang], onClick: () => goto("plateau-live"), className: "hidden md:flex" },
           { id: "book", label: common.book[lang], onClick: () => goto("book"), variant: "primary" },
         ]}
       />
-
-      <div className="hidden md:flex h-full gap-px bg-foreground md:col-start-1 md:row-start-1">
-        <button onClick={() => goto("home")} aria-label="E-Do Studio home" className="edo-focus-ring flex h-full min-w-0 flex-1 cursor-pointer items-center justify-center border-0 bg-background p-2 transition-colors hover:bg-muted">
-          <Wordmark size={32} />
-        </button>
-      </div>
-
-      <div className="hidden md:flex h-full min-w-0 items-center bg-background px-2 md:col-start-2 md:row-start-1">
-        <CellLabel className="shrink-0 text-primary truncate">{common.gallery[lang]}</CellLabel>
-      </div>
-
-      <button onClick={() => goto("postprod")} className="edo-focus-ring hidden md:flex h-full cursor-pointer items-center justify-center gap-2 border-0 bg-background px-5 font-mono text-label tracking-ui uppercase text-foreground no-underline transition-colors hover:bg-muted md:col-start-3 md:row-start-1">
-        <span className="whitespace-nowrap">Post-prod</span>
-        <IconArrowRight width={12} height={12} />
-      </button>
-
-      <button onClick={() => goto("plateau-live")} className="edo-focus-ring hidden md:flex h-full cursor-pointer items-center justify-center gap-2 border-0 bg-background px-5 font-mono text-label tracking-ui uppercase text-foreground no-underline transition-colors hover:bg-muted md:col-start-4 md:row-start-1">
-        <span className="whitespace-nowrap">{common.stages[lang]}</span>
-        <IconArrowRight width={12} height={12} />
-      </button>
-
-      <div className="hidden md:flex h-full gap-px bg-foreground md:col-start-5 md:row-start-1">
-        <button onClick={() => goto("book")} className="edo-focus-ring flex h-full flex-1 cursor-pointer items-center justify-center gap-2 border-0 bg-primary px-5 font-mono text-label tracking-ui uppercase text-white no-underline transition-colors hover:bg-foreground">
-          <span className="whitespace-nowrap">{common.book[lang]}</span>
-          <IconArrowRight width={12} height={12} className="text-white" />
-        </button>
-        <button onClick={() => setLang(lang === "fr" ? "en" : "fr")} className="edo-focus-ring flex h-full basis-header flex-none cursor-pointer items-center justify-center border-0 bg-background p-0 transition-colors hover:bg-muted">
-          <span className="font-mono text-label tracking-meta text-foreground">{common.langToggleLabel[lang]}</span>
-        </button>
-      </div>
 
       <div className="grid grid-cols-1 gap-px bg-edo-pure-black md:col-span-full md:row-start-2 md:min-h-0 md:overflow-hidden md:grid-cols-gallery-shell">
         <MobileFilterStrip
