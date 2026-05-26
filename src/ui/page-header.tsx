@@ -115,12 +115,7 @@ const PageHeader = ({
       </button>
     </div>
 
-    <div
-      className={cn(
-        'flex min-w-0 flex-1 items-center bg-background px-4 md:px-6',
-        subtitle ? 'justify-start' : 'justify-center',
-      )}
-    >
+    <div className="flex min-w-0 flex-1 items-center justify-start bg-background px-4 md:px-6">
       <div
         className={cn(
           'flex min-w-0 items-baseline overflow-hidden',
