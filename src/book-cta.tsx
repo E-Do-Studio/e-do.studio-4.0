@@ -1,4 +1,4 @@
-import { common } from './i18n/messages';
+import { common, home as homeMsg } from './i18n/messages';
 import type { Lang } from './types';
 import { IconArrowRight, cn } from './ui';
 
@@ -20,9 +20,14 @@ const BookCTATile = ({ lang, onClick, className }: BookCTAProps) => (
       className,
     )}
   >
-    <span className="min-w-0 text-base font-normal tracking-headline leading-tight text-white transition-transform duration-150 group-hover:scale-102 md:text-tile-title">
-      {common.book[lang]}
-    </span>
+    <div className="flex min-w-0 flex-col gap-1 transition-transform duration-150 group-hover:scale-102">
+      <span className="hidden font-mono text-label uppercase tracking-label text-white md:block">
+        {homeMsg.requestQuoteOr[lang]}
+      </span>
+      <span className="text-base font-normal tracking-headline leading-tight text-white md:text-tile-title">
+        {common.book[lang]}
+      </span>
+    </div>
     <IconArrowRight
       className="flex-shrink-0 transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5 group-hover:scale-110"
       width="16"
