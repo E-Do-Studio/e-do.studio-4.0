@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from '@tanstack/react-router';
-import { CellLabel, IconArrowRight, PageHeader } from './ui';
+import { BottomSheet, CellLabel, IconArrowRight, PageHeader } from './ui';
 import { cn } from './ui/cn';
 import { VideoLoop } from './ui/video-loop';
 import { useDocumentMeta } from './lib/use-document-meta';
@@ -249,6 +249,7 @@ const PlateauPage = ({ slug }: { slug: string }) => {
     ),
   ]);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [navSheetOpen, setNavSheetOpen] = useState(false);
   if (loading || !plateaux) return null;
   const p = plateaux[slug] || plateaux.cyclorama;
   if (!p) return null;
@@ -260,18 +261,19 @@ const PlateauPage = ({ slug }: { slug: string }) => {
   const goPrev = () => setActiveIndex((i) => i - 1);
   const goNext = () => setActiveIndex((i) => i + 1);
 
-  // Mobile navigation between plateaux: tap on a pill = immediate route change.
-  // Labels are kept clean (no "01 · ") to match EDO-261 (post-prod) — the
-  // numbered prefix only survives on the desktop sidebar where ordering is
-  // already visually conveyed by the vertical column.
-  const plateauOptions = order.flatMap((m) => {
-    const cfg = plateaux[m];
-    return cfg ? [{ k: m, label: cfg.name }] : [];
-  });
+  // Mobile navigation between plateaux: a sticky row at the top of the page
+  // shows the currently selected plateau (number · name · tagline · arrow);
+  // tapping it opens a BottomSheet listing all plateaux. Tapping a row in the
+  // sheet navigates immediately and closes the sheet.
   const navigateToPlateau = (key: string) => {
-    if (key === slug) return;
+    if (key === slug) {
+      setNavSheetOpen(false);
+      return;
+    }
+    setNavSheetOpen(false);
     goto(key === 'cyclorama' ? 'cyclorama' : `plateau-${key}`);
   };
+  const currentNumber = String(Math.max(0, order.indexOf(slug)) + 1).padStart(2, '0');
 
   return (
     /* Mobile: single-column stacked, scrollable. Desktop (md+): 4-column bento */
@@ -292,34 +294,82 @@ const PlateauPage = ({ slug }: { slug: string }) => {
         ]}
       />
 
-      {/* Mobile navigation: sticky inline pills. Tap = immediate route change,
-          mirroring EDO-261 (post-prod). No bottom-sheet, no apply button. */}
-      <nav
-        aria-label={common.stages[lang]}
-        className="sticky top-14 z-30 md:hidden flex gap-2 overflow-x-auto px-4 py-2 bg-white border-b border-border snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      {/* Mobile navigation: sticky single-row trigger showing the current
+          plateau. Tap opens a BottomSheet listing all plateaux; selecting a
+          row in the sheet navigates and closes the sheet immediately. */}
+      <button
+        type="button"
+        onClick={() => setNavSheetOpen(true)}
+        aria-haspopup="dialog"
+        aria-expanded={navSheetOpen}
+        aria-controls="plateau-nav-sheet"
+        className="sticky top-14 z-30 md:hidden flex items-center gap-4 min-h-14 w-full px-4 py-3 bg-white border-b border-border text-left edo-focus-ring cursor-pointer"
       >
-        {plateauOptions.map((o) => {
-          const active = o.k === slug;
-          return (
-            <button
-              key={o.k}
-              type="button"
-              onClick={() => navigateToPlateau(o.k)}
-              aria-pressed={active}
-              className={cn(
-                'snap-start shrink-0 min-h-11 px-4 py-2 whitespace-nowrap',
-                'font-mono uppercase text-label tracking-label',
-                'transition-colors duration-150 ease-edo-out edo-focus-ring',
-                active
-                  ? 'bg-foreground text-background'
-                  : 'bg-white text-foreground border border-border',
-              )}
-            >
-              {o.label}
-            </button>
-          );
-        })}
-      </nav>
+        <span className="font-mono text-label tracking-label text-muted-foreground">
+          {currentNumber}
+        </span>
+        <span className="text-cell tracking-copy-tight font-medium text-foreground truncate">
+          {p.name}
+        </span>
+        <span className="ml-auto font-mono text-micro uppercase tracking-ui text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">
+          {p.tagline[lang]}
+        </span>
+        <IconArrowRight width="16" height="16" className="shrink-0 text-foreground" />
+      </button>
+
+      <BottomSheet
+        id="plateau-nav-sheet"
+        open={navSheetOpen}
+        onClose={() => setNavSheetOpen(false)}
+        title={common.stages[lang]}
+        ariaLabel={common.stages[lang]}
+        closeLabel={common.close[lang]}
+      >
+        <ul className="list-none m-0 p-0 flex flex-col">
+          {order.map((m, i) => {
+            const cfg = plateaux[m];
+            if (!cfg) return null;
+            const active = m === slug;
+            const num = String(i + 1).padStart(2, '0');
+            return (
+              <li key={m}>
+                <button
+                  type="button"
+                  onClick={() => navigateToPlateau(m)}
+                  aria-current={active ? 'page' : undefined}
+                  className={cn(
+                    'w-full flex items-center gap-4 min-h-14 px-4 py-3',
+                    'border-b border-border text-left',
+                    'edo-focus-ring cursor-pointer transition-colors duration-150 ease-edo-out',
+                    active ? 'bg-foreground text-background' : 'bg-white text-foreground',
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'font-mono text-label tracking-label',
+                      active ? 'text-background/70' : 'text-muted-foreground',
+                    )}
+                  >
+                    {num}
+                  </span>
+                  <span className="text-cell tracking-copy-tight font-medium truncate">
+                    {cfg.name}
+                  </span>
+                  <span
+                    className={cn(
+                      'ml-auto font-mono text-micro uppercase tracking-ui whitespace-nowrap overflow-hidden text-ellipsis',
+                      active ? 'text-background/70' : 'text-muted-foreground',
+                    )}
+                  >
+                    {cfg.tagline[lang]}
+                  </span>
+                  <IconArrowRight width="16" height="16" className="shrink-0" />
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </BottomSheet>
 
       {/* Desktop sidebar: vertical list, hidden on mobile (replaced by inline pill nav). */}
       <div className="hidden bg-white md:col-start-1 md:row-start-2 md:row-span-4 md:flex md:flex-col md:overflow-x-hidden md:overflow-y-auto">
