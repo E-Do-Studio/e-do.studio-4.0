@@ -1115,11 +1115,11 @@ const Step2Date = ({ lang, p, viewY, viewM, months, days, calCells, selected, se
         ].join(' ')}>
         <span className={[
           'text-detail sm:text-cell tabular-nums leading-none',
-          sel ? 'font-semibold text-white' : tdy ? 'font-bold text-primary' : past ? 'font-normal' : 'font-medium',
+          sel ? 'font-semibold text-white' : partial ? 'font-medium text-foreground' : tdy ? 'font-bold text-primary' : past ? 'font-normal' : 'font-medium',
         ].join(' ')}>{d}</span>
-        {tdy && !sel && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"/>}
+        {tdy && !sel && !partial && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"/>}
         {!past && av!=='unavailable' && !weekendBlocked && (
-          <span className={`font-mono text-nano sm:text-micro tracking-caption uppercase mt-auto ${sel ? 'text-white/70' : tdy ? 'text-primary/70' : 'text-muted-foreground'}`}>
+          <span className={`font-mono text-nano sm:text-micro tracking-caption uppercase mt-auto ${sel ? 'text-white/70' : partial ? 'text-muted-foreground' : tdy ? 'text-primary/70' : 'text-muted-foreground'}`}>
             {partial ? bookingMsg.calPartial[lang] : (fr ? 'libre' : 'free')}
           </span>
         )}
