@@ -276,7 +276,7 @@ export interface PlateauSpec {
   rates: { k: Bilingual; v: string | Bilingual }[];
   ratesNote?: Bilingual;
   visual: string;
-  machineImage?: { url: string; alt: Bilingual };
+  machineImage?: MediaItem;
   media: MediaItem[];
   seo?: Bilingual<SeoMeta>;
 }
@@ -415,13 +415,20 @@ function mergeLocalizedItems(frItems: StrapiLocalizedItem[], enItems: StrapiLoca
 function buildMachineImage(
   fr: StrapiMedia | null | undefined,
   en: StrapiMedia | null | undefined,
-): { url: string; alt: Bilingual } | undefined {
+): MediaItem | undefined {
   const source = fr ?? en ?? undefined;
-  const url = resolveStrapiMediaUrl(source);
-  if (!url) return undefined;
+  if (!source?.url) return undefined;
   const altFr = fr?.alternativeText ?? en?.alternativeText ?? '';
   const altEn = en?.alternativeText ?? altFr;
-  return { url, alt: { fr: altFr, en: altEn } };
+  const alt: Bilingual = { fr: altFr, en: altEn };
+  if (source.mime?.startsWith('video/')) {
+    const url = resolveRawMediaUrl(source);
+    if (!url) return undefined;
+    return { kind: 'video', url, alt };
+  }
+  const url = resolveStrapiMediaUrl(source);
+  if (!url) return undefined;
+  return { kind: 'image', url, alt };
 }
 
 function mediaListToItems(items: StrapiMedia[] | undefined): MediaItem[] {

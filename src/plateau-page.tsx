@@ -1,5 +1,6 @@
 import { useParams } from '@tanstack/react-router';
 import { CellLabel, IconArrowRight, PageHeader } from './ui';
+import { VideoLoop } from './ui/video-loop';
 import { useDocumentMeta } from './lib/use-document-meta';
 import { useStructuredData } from './lib/use-structured-data';
 import { buildPlateauServiceSchema, buildBreadcrumbSchema } from './lib/structured-data';
@@ -32,7 +33,11 @@ const PlateauPage = ({ slug }: { slug: string }) => {
   const p = plateaux[slug] || plateaux.cyclorama;
   const order = ['live','eclipse','horizontal','vertical','cyclorama'];
   const hero = p.machineImage;
-  const demoMedia = p.media.slice(0, 4);
+  // Carousel below the hero. The "main media" (machineImage) is included as
+  // the first tile so the carousel surfaces it alongside the demo items; the
+  // hero still anchors it visually above. Capped at 4 tiles total to keep the
+  // strip readable.
+  const demoMedia = (hero ? [hero, ...p.media] : p.media).slice(0, 4);
 
   return (
     /* Mobile: single-column stacked, scrollable. Desktop (md+): 4-column bento */
@@ -71,41 +76,56 @@ const PlateauPage = ({ slug }: { slug: string }) => {
         })}
       </div>
 
-      {/* Hero machine image — skipped entirely when no machineImage is set
-          on the entry (no SVG placeholder, no cream filler). */}
+      {/* Hero media — image OR video (autoplay/muted/loop). Skipped when no
+          machineImage is set on the entry (no SVG placeholder). */}
       {hero && (
         <div className="relative overflow-hidden bg-white min-h-56 md:col-start-2 md:col-span-2 md:row-start-2 md:row-span-2 md:min-h-0">
-          <img
-            src={hero.url}
-            alt={hero.alt[lang] || p.name}
-            loading="eager"
-            decoding="async"
-            className="absolute inset-0 h-full w-full object-contain"
-          />
+          {hero.kind === 'video' ? (
+            <VideoLoop
+              src={hero.url}
+              poster={hero.poster}
+              objectFit="contain"
+              className="absolute inset-0 h-full w-full"
+            />
+          ) : (
+            <img
+              src={hero.url}
+              alt={hero.alt[lang] || p.name}
+              loading="eager"
+              decoding="async"
+              className="absolute inset-0 h-full w-full object-contain"
+            />
+          )}
         </div>
       )}
 
-      {/* Demo grid — only renders as many tiles as the entry has media
-          (capped at 4). No empty placeholder cells, no SVG fallback. */}
+      {/* Demo carousel — images OR videos (autoplay/muted/loop). Only renders
+          as many tiles as the entry has media (capped at 4). */}
       {demoMedia.length > 0 && (
         <div
           className="grid gap-px bg-edo-pure-black md:col-start-2 md:col-span-2 md:row-start-4 md:min-h-0"
           style={{ gridTemplateColumns: `repeat(${demoMedia.length}, minmax(0, 1fr))` }}
         >
-          {demoMedia.map((item, i) => {
-            const src = item.kind === 'image' ? item.url : (item.poster ?? item.url);
-            return (
-              <div key={`${item.url}-${i}`} className="relative overflow-hidden bg-white">
+          {demoMedia.map((item, i) => (
+            <div key={`${item.url}-${i}`} className="relative overflow-hidden bg-white">
+              {item.kind === 'video' ? (
+                <VideoLoop
+                  src={item.url}
+                  poster={item.poster}
+                  objectFit="cover"
+                  className="absolute inset-0 h-full w-full"
+                />
+              ) : (
                 <img
-                  src={src}
+                  src={item.url}
                   alt={item.alt[lang] || ''}
                   loading="lazy"
                   decoding="async"
                   className="absolute inset-0 h-full w-full object-cover"
                 />
-              </div>
-            );
-          })}
+              )}
+            </div>
+          ))}
         </div>
       )}
 

@@ -102,8 +102,8 @@
     "machineImage": {
       "type": "media",
       "multiple": false,
-      "allowedTypes": ["images"],
-      "description": "Image hero de la machine, présentée en haut de la page Plateau (object-fit: contain — l'image entière est visible, lettrée si besoin sur le fond crème). Optionnelle : si vide, le diagramme SVG de la machine est affiché à la place."
+      "allowedTypes": ["images", "videos"],
+      "description": "Média hero de la machine (image OU vidéo, ex: MP4 en boucle), présenté en haut de la page Plateau (object-fit: contain). Optionnel : si vide, la cellule n'est pas rendue. Les vidéos sont jouées en autoplay/muted/loop."
     },
     "media": {
       "type": "media",
