@@ -203,7 +203,7 @@ async function seedCyclorama() {
     ],
   };
 
-  const amenities = {
+  const usages = {
     fr: [
       { text: 'Campagne & éditorial' },
       { text: 'Film publicitaire' },
@@ -226,7 +226,7 @@ async function seedCyclorama() {
       pricing: '650€ / 5h · 880€ / 10h · Sur demande / 10h éditorial',
       pricingDescription: 'Remise en blanc 110 € · Électricité 1,40 €/kWh',
       specs: specs.fr,
-      amenities: amenities.fr,
+      usages: usages.fr,
     },
     {
       title: 'Cyclorama',
@@ -236,7 +236,7 @@ async function seedCyclorama() {
       pricing: '€650 / 5 hours · €880 / 10 hours · On request / 10 hours editorial',
       pricingDescription: 'Repaint €110 · Electricity €1.40/kWh',
       specs: specs.en,
-      amenities: amenities.en,
+      usages: usages.en,
     },
   );
 }

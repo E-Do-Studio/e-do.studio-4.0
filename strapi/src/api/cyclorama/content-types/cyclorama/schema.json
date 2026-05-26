@@ -55,11 +55,11 @@
       "repeatable": true,
       "description": "Caractéristiques techniques (label / valeur)."
     },
-    "amenities": {
+    "usages": {
       "type": "component",
       "component": "shared.localized-item",
       "repeatable": true,
-      "description": "Cas d'usage / équipements présentés sous forme de liste."
+      "description": "Cas d'usage du plateau (« Usages » sur la page front), présentés sous forme de liste."
     },
     "pricing": {
       "type": "string",
