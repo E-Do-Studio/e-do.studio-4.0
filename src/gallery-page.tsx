@@ -9,10 +9,10 @@ import { buildGalleryCollectionSchema, buildBreadcrumbSchema } from "./lib/struc
 import { useGalleryProjects, useGalleryCategories } from "./lib/use-strapi";
 import type { GalleryProject } from "./lib/strapi";
 import type { Lang } from "./types";
-import { EmptyState, Loader, PageHeader } from "./ui";
-import { Chip } from "./ui/chip";
+import { EmptyState, Loader, MobileNavStrip, PageHeader } from "./ui";
+import type { StripGroup } from "./ui";
 import { cn } from "./ui/cn";
-import { common, galleryPage } from "./i18n/messages";
+import { common, galleryPage, mobileNav } from "./i18n/messages";
 
 const PLATEAU_LABELS: Record<string, { fr: string; en: string }> = {
   cyclorama: { fr: "Cyclorama", en: "Cyclorama" },
@@ -173,102 +173,6 @@ const GalleryFilters = ({
   );
 };
 
-const MobileFilterStrip = ({
-  lang,
-  cat,
-  plateau,
-  setCat,
-  setPlateau,
-  categories,
-  plateauOptions,
-  catToPlateaux,
-  plateauToCats,
-}: Omit<GalleryFiltersProps, "projects">) => {
-  const hasFilters = cat !== "all" || plateau !== "all";
-  const chipClass =
-    "shrink-0 min-h-10 px-2.5 py-1.5 text-label tracking-caption";
-
-  return (
-    <div
-      className="sticky top-14 z-30 flex items-center gap-1.5 overflow-x-auto overflow-y-hidden border-b border-border bg-white px-3 py-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:hidden"
-      role="toolbar"
-      aria-label={galleryPage.categories[lang]}
-    >
-      <span className="shrink-0 pr-0.5 font-mono text-micro uppercase tracking-label text-muted-foreground">
-        {galleryPage.categories[lang]}
-      </span>
-      <Chip
-        active={cat === "all"}
-        onClick={() => setCat("all")}
-        className={chipClass}
-      >
-        {common.all[lang]}
-      </Chip>
-      {categories.map((category) => {
-        const dimmed =
-          plateau !== "all" &&
-          !(plateauToCats[plateau] ?? []).includes(category.k);
-        return (
-          <Chip
-            key={category.k}
-            active={cat === category.k}
-            onClick={() => {
-              if (dimmed) setPlateau("all");
-              setCat(category.k);
-            }}
-            className={cn(chipClass, dimmed && "opacity-40")}
-          >
-            {category[lang]}
-          </Chip>
-        );
-      })}
-
-      <span className="shrink-0 mx-1 h-5 w-px bg-border" aria-hidden />
-
-      <span className="shrink-0 pr-0.5 font-mono text-micro uppercase tracking-label text-muted-foreground">
-        {common.stages[lang]}
-      </span>
-      <Chip
-        active={plateau === "all"}
-        onClick={() => setPlateau("all")}
-        className={chipClass}
-      >
-        {common.all[lang]}
-      </Chip>
-      {plateauOptions.map((option) => {
-        const dimmed =
-          cat !== "all" && !(catToPlateaux[cat] ?? []).includes(option.k);
-        return (
-          <Chip
-            key={option.k}
-            active={plateau === option.k}
-            onClick={() => {
-              if (dimmed) setCat("all");
-              setPlateau(option.k);
-            }}
-            className={cn(chipClass, dimmed && "opacity-40")}
-          >
-            {option[lang]}
-          </Chip>
-        );
-      })}
-
-      {hasFilters && (
-        <button
-          onClick={() => {
-            setCat("all");
-            setPlateau("all");
-          }}
-          className="edo-focus-ring shrink-0 cursor-pointer border border-border bg-white px-2.5 py-1.5 font-mono text-label uppercase tracking-caption text-foreground transition-colors hover:bg-muted"
-          aria-label={common.reset[lang]}
-        >
-          ↺ {common.reset[lang]}
-        </button>
-      )}
-    </div>
-  );
-};
-
 const FilterHeader = ({ label }: { label: string }) => (
   <div className="flex shrink-0 items-center border-b border-border bg-white px-3.5 pb-1 pt-2">
     <span className="font-mono text-micro uppercase tracking-label text-muted-foreground">
@@ -315,140 +219,6 @@ const FilterCell = ({
     )}
   </button>
 );
-
-const MobileFilterCell = ({
-  label,
-  active,
-  onClick,
-  count,
-  dimmed,
-}: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-  count: number;
-  dimmed?: boolean;
-}) => (
-  <button
-    onClick={onClick}
-    className={cn(
-      "edo-focus-ring flex h-12 shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap border-0 border-r border-b-2 border-r-border px-3.5 text-detail tracking-copy-tight text-foreground transition-colors",
-      active
-        ? "border-b-primary bg-muted font-medium"
-        : "border-b-transparent bg-white font-normal hover:bg-muted",
-      dimmed && "opacity-30",
-    )}
-  >
-    <span>{label}</span>
-    {count != null && (
-      <span
-        className={cn(
-          "font-mono text-label tracking-caption",
-          active ? "text-primary" : "text-muted-foreground",
-        )}
-      >
-        {count}
-      </span>
-    )}
-  </button>
-);
-
-const MobileFilterGroupLabel = ({ label }: { label: string }) => (
-  <span className="flex h-12 shrink-0 items-center border-r border-border bg-white px-3.5 font-mono text-micro uppercase tracking-label text-muted-foreground">
-    {label}
-  </span>
-);
-
-const GalleryFiltersMobile = ({
-  lang,
-  cat,
-  plateau,
-  setCat,
-  setPlateau,
-  categories,
-  plateauOptions,
-  projects,
-  catToPlateaux,
-  plateauToCats,
-}: GalleryFiltersProps) => {
-  const countCat = (key: string) =>
-    key === "all"
-      ? projects.length
-      : projects.filter((p) => p.cat === key).length;
-  const countPlateau = (key: string) =>
-    key === "all"
-      ? projects.length
-      : projects.filter((p) => p.plateau === key).length;
-  const hasFilters = cat !== "all" || plateau !== "all";
-
-  return (
-    <div className="overflow-x-auto bg-white md:hidden">
-      <div className="flex h-12 min-w-max items-stretch">
-        <MobileFilterGroupLabel label={galleryPage.categories[lang]} />
-        <MobileFilterCell
-          label={common.all[lang]}
-          active={cat === "all"}
-          count={countCat("all")}
-          onClick={() => setCat("all")}
-        />
-        {categories.map((category) => {
-          const dimmed =
-            plateau !== "all" &&
-            !(plateauToCats[plateau] ?? []).includes(category.k);
-          return (
-            <MobileFilterCell
-              key={category.k}
-              label={category[lang]}
-              active={cat === category.k}
-              count={countCat(category.k)}
-              dimmed={dimmed}
-              onClick={() => {
-                if (dimmed) setPlateau("all");
-                setCat(category.k);
-              }}
-            />
-          );
-        })}
-        <MobileFilterGroupLabel label={common.stages[lang]} />
-        <MobileFilterCell
-          label={common.all[lang]}
-          active={plateau === "all"}
-          count={countPlateau("all")}
-          onClick={() => setPlateau("all")}
-        />
-        {plateauOptions.map((option) => {
-          const dimmed =
-            cat !== "all" &&
-            !(catToPlateaux[cat] ?? []).includes(option.k);
-          return (
-            <MobileFilterCell
-              key={option.k}
-              label={option[lang]}
-              active={plateau === option.k}
-              count={countPlateau(option.k)}
-              dimmed={dimmed}
-              onClick={() => {
-                if (dimmed) setCat("all");
-                setPlateau(option.k);
-              }}
-            />
-          );
-        })}
-        {hasFilters && (
-          <button
-            onClick={() => {
-              setCat("all");
-              setPlateau("all");
-            }}
-            className="edo-focus-ring flex h-12 shrink-0 cursor-pointer items-center whitespace-nowrap border-0 border-l border-border bg-white px-3.5 font-mono text-label uppercase tracking-label text-primary transition-colors hover:bg-muted"
-          >
-            ↺ {common.reset[lang]}
-          </button>
-        )}
-      </div>
-    </div>
-  );
-};
 
 interface GalleryContentProps {
   lang: Lang;
@@ -719,6 +489,108 @@ const GalleryPageV3 = () => {
     setFilters({ cat: null, plateau: null });
   };
 
+  const catLabelMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const c of categories) map[c.k] = c[lang];
+    return map;
+  }, [categories, lang]);
+
+  const plateauLabelMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const p of plateauOptions) map[p.k] = p[lang];
+    return map;
+  }, [plateauOptions, lang]);
+
+  const mobileGroups: StripGroup[] = useMemo(() => {
+    const allLabel = common.all[lang];
+    const catGroupOptions = [
+      {
+        k: "all",
+        label: allLabel,
+        count: projects.length,
+      },
+      ...categories.map((category) => ({
+        k: category.k,
+        label: category[lang],
+        count: projects.filter((p) => p.cat === category.k).length,
+        dimmed:
+          plateau !== "all" &&
+          !(plateauToCats[plateau] ?? []).includes(category.k),
+      })),
+    ];
+
+    const plateauGroupOptions = [
+      {
+        k: "all",
+        label: allLabel,
+        count: projects.length,
+      },
+      ...plateauOptions.map((option) => ({
+        k: option.k,
+        label: option[lang],
+        count: projects.filter((p) => p.plateau === option.k).length,
+        dimmed:
+          cat !== "all" && !(catToPlateaux[cat] ?? []).includes(option.k),
+      })),
+    ];
+
+    return [
+      {
+        key: "cat",
+        label: galleryPage.categories[lang],
+        options: catGroupOptions,
+        value: cat,
+        onSelect: setCat,
+      },
+      {
+        key: "plateau",
+        label: common.stages[lang],
+        options: plateauGroupOptions,
+        value: plateau,
+        onSelect: setPlateau,
+      },
+    ];
+  }, [
+    lang,
+    projects,
+    categories,
+    plateauOptions,
+    cat,
+    plateau,
+    catToPlateaux,
+    plateauToCats,
+  ]);
+
+  const activeFilterCount =
+    (cat !== "all" ? 1 : 0) + (plateau !== "all" ? 1 : 0);
+  const hasActiveFilters = activeFilterCount > 0;
+
+  const filterSummary = useMemo(() => {
+    const parts: string[] = [];
+    if (cat !== "all") parts.push(catLabelMap[cat] ?? cat);
+    if (plateau !== "all") parts.push(plateauLabelMap[plateau] ?? plateau);
+    return parts.length > 0 ? parts.join(", ") : common.all[lang];
+  }, [cat, plateau, catLabelMap, plateauLabelMap, lang]);
+
+  const mobileCountFor = (draft: Record<string, string>) => {
+    const draftCat = draft.cat ?? "all";
+    const draftPlateau = draft.plateau ?? "all";
+    return projects.filter(
+      (project) =>
+        (draftCat === "all" || project.cat === draftCat) &&
+        (draftPlateau === "all" || project.plateau === draftPlateau),
+    ).length;
+  };
+
+  const applyMobileFilters = (draft: Record<string, string>) => {
+    const nextCat = draft.cat ?? "all";
+    const nextPlateau = draft.plateau ?? "all";
+    setFilters({
+      cat: nextCat === "all" ? null : nextCat,
+      plateau: nextPlateau === "all" ? null : nextPlateau,
+    });
+  };
+
   if (projectsLoading) {
     return <Loader lang={lang} size="page" />;
   }
@@ -741,16 +613,16 @@ const GalleryPageV3 = () => {
       />
 
       <div className="grid grid-cols-1 gap-px bg-edo-pure-black md:col-span-full md:row-start-2 md:min-h-0 md:overflow-hidden md:grid-cols-gallery-shell">
-        <MobileFilterStrip
+        <MobileNavStrip
+          triggerLabel={mobileNav.filters[lang].toUpperCase()}
+          groups={mobileGroups}
+          hasActive={hasActiveFilters}
+          activeCount={activeFilterCount}
+          summary={filterSummary}
+          ariaLabel={lang === "fr" ? "Filtrer la galerie" : "Filter the gallery"}
           lang={lang}
-          cat={cat}
-          plateau={plateau}
-          setCat={setCat}
-          setPlateau={setPlateau}
-          categories={categories}
-          plateauOptions={plateauOptions}
-          catToPlateaux={catToPlateaux}
-          plateauToCats={plateauToCats}
+          countFor={mobileCountFor}
+          onApply={applyMobileFilters}
         />
         <div className="hidden bg-white md:block md:overflow-y-auto">
           <GalleryFilters
