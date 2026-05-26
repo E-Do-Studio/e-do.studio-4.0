@@ -6,7 +6,7 @@ export type { ButtonProps, ButtonSize, ButtonVariant } from './button';
 export { CellLabel, CellTitle, Eyebrow } from './typography';
 export type { CellLabelProps, CellTitleProps, EyebrowProps } from './typography';
 
-export { IconMenu, IconX, IconArrowRight, IconGlobe, IconPlay, IconChat } from './icons';
+export { IconMenu, IconX, IconArrowRight, IconGlobe, IconPlay, IconChat, IconLock } from './icons';
 export type { IconProps } from './icons';
 
 export { Wordmark, LangSwitch, Clock } from './brand';

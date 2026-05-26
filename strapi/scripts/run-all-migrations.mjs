@@ -46,7 +46,7 @@ const TASKS = [
   ],
   [
     'migrate-pricing-to-rows.mjs',
-    'machine/cyclorama/post-prod pricing strings → pricing-row component',
+    'machine/post-prod pricing strings → pricing-row component',
     ['STRAPI_URL', 'STRAPI_TOKEN'],
     null,
   ],

@@ -21,7 +21,8 @@
     "migrate:blog-camel": "node scripts/migrate-blog-post-snake-to-camel.mjs",
     "migrate:gallery-brands": "node scripts/backfill-gallery-brands-from-titles.mjs",
     "audit:required": "node scripts/audit-required-candidates.mjs",
-    "seed": "node scripts/seed-content.mjs"
+    "seed": "node scripts/seed-content.mjs",
+    "setup:r2-cors": "node scripts/setup-r2-cors.mjs"
   },
   "dependencies": {
     "@strapi/plugin-cloud": "5.39.0",

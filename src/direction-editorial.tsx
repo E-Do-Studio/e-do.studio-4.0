@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState } from 'react';
-import { CellLabel, IconArrowRight, IconChat, IconX, ImageCrossfade, PageHeader, VideoLoop, cn } from './ui';
+import { CellLabel, IconArrowRight, IconChat, IconLock, IconX, ImageCrossfade, PageHeader, VideoLoop, cn } from './ui';
 import { SocialClientsBar } from './social-clients-bar';
 
 const AssistantChat = lazy(() => import('./assistant-chat'));
@@ -339,25 +339,33 @@ const DirectionA = () => {
           width="16" height="16"        />
       </button>
 
-      {/* ── Row 6 left (desktop) / mobile row D (full-width): Discovery CTA ── */}
+      {/* ── Row 6 left: Discovery CTA (Coming soon) ── */}
       <button
-        onClick={() => goto('discovery')}
-        className="edo-focus-ring group relative col-span-2 h-20 flex cursor-pointer items-center justify-between gap-3 border-0 bg-foreground px-4 py-3 text-left text-white transition-[color,background-color,opacity] duration-150 ease-edo-out hover:text-primary md:col-start-1 md:col-end-4 md:row-start-6 md:h-21"
+        type="button"
+        disabled
+        aria-disabled="true"
+        aria-label={`Discovery — ${homeMsg.comingSoon[lang]}`}
+        tabIndex={-1}
+        className="pointer-events-none cursor-not-allowed group relative col-span-1 h-20 flex items-center justify-between gap-3 border-0 bg-foreground px-4 py-3 text-left text-white md:col-start-1 md:col-end-4 md:row-start-6 md:h-21"
       >
         <svg viewBox="0 0 200 84" preserveAspectRatio="none" className="absolute inset-0 h-full w-full opacity-20">
           {[...Array(7)].map((_, i) => (<line key={'h' + i} x1="0" y1={i * 14} x2="200" y2={i * 14} stroke="currentColor" strokeWidth="0.3" />))}
           {[...Array(14)].map((_, i) => (<line key={'v' + i} x1={i * 14} y1="0" x2={i * 14} y2="84" stroke="currentColor" strokeWidth="0.3" />))}
         </svg>
-        <div className="relative flex min-w-0 flex-col gap-1 transition-transform duration-150 group-hover:scale-102">
+        <div className="relative flex min-w-0 flex-col gap-1">
           <CellLabel className="text-white/70">Discovery</CellLabel>
-          <div className="text-tile-title font-normal tracking-headline leading-tight text-white">
+          <div className="text-tile-title font-normal tracking-headline leading-tight text-white/60">
             {homeMsg.tellMeMore[lang]}
           </div>
         </div>
-        <div className="relative flex-shrink-0">
-          <IconArrowRight
-            className="transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5 group-hover:scale-110"
-            width="16" height="16"          />
+        <div className="relative flex flex-shrink-0 items-center gap-2">
+          <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 font-mono text-label uppercase tracking-ui text-white/80">
+            <IconLock width="11" height="11" />
+            {homeMsg.comingSoon[lang]}
+          </span>
+          <span className="sm:hidden inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 p-1.5 text-white/80" aria-hidden="true">
+            <IconLock width="12" height="12" />
+          </span>
         </div>
       </button>
 

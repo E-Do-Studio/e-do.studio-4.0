@@ -52,10 +52,18 @@ With both keys still active:
    loads from `CF_PUBLIC_URL`.
 3. Re-run CORS setup if it has drifted:
    ```
-   cd strapi/scripts
+   cd strapi
    CF_ACCOUNT_ID=... CF_ACCESS_KEY_ID=... CF_ACCESS_SECRET=... \
-     node setup-r2-cors.mjs
+     npm run setup:r2-cors
    ```
+   The script's default `AllowedOrigins` already covers prod
+   (`cms.e-do.studio`, `e-do.studio`, `www.e-do.studio`), the Coolify
+   sslip.io fallback, and the localhost dev origins. Pass
+   `CORS_ALLOWED_ORIGINS="https://a,https://b"` to override (e.g. to add a
+   preview URL temporarily) without editing the script. Note: the admin
+   origin `cms.e-do.studio` is mandatory — the Media Library crop modal
+   loads images with `crossOrigin="anonymous"` and silently fails to
+   initialise the cropper if R2 does not echo that origin (EDO-247).
 
 ### 4. Revoke the old key
 

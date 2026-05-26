@@ -31,8 +31,6 @@ const CANDIDATES = [
   ['blog_posts', 'title', 'title', 'major'],
   ['blog_posts', 'cover_image_id', 'coverImage', 'critical'],
   ['blog_posts', 'excerpt', 'excerpt', 'minor'],
-  ['cycloramas', 'title', 'title', 'major'],
-  ['cycloramas', 'image_id', 'image', 'critical'],
   ['gallery_brands', 'logo_id', 'logo', 'critical'],
   ['gallery_brands', 'url', 'url', 'minor'],
   ['gallery_categories', 'name', 'name', 'major'],
