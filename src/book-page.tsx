@@ -1099,17 +1099,19 @@ const Step2Date = ({ lang, p, viewY, viewM, months, days, calCells, selected, se
   return (<div>
     <div className="px-6 border-b border-foreground flex items-center h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local"><span className="edo-cell-label text-primary whitespace-nowrap">{`06 · ${fr ? 'Choisir une date' : 'Pick a date'}`}</span></div>
 
-    <div className="border-b border-foreground bg-white px-6 py-3 flex items-center justify-between gap-4 flex-wrap">
-      <div className="flex items-center gap-3">
-        <button onClick={prevMonth} className="w-8 h-8 flex items-center justify-center border border-input bg-white cursor-pointer font-mono text-detail text-foreground hover:bg-muted transition-colors duration-100">{"←"}</button>
-        <h2 className="m-0 text-page-title font-light tracking-headline min-w-36 text-center">{months[viewM]} <span className="text-muted-foreground">{viewY}</span></h2>
-        <button onClick={nextMonth} className="w-8 h-8 flex items-center justify-center border border-input bg-white cursor-pointer font-mono text-detail text-foreground hover:bg-muted transition-colors duration-100">{"→"}</button>
+    <div className="flex min-w-0 gap-px bg-foreground border-b border-foreground">
+      <div className="flex min-w-0 flex-1 items-baseline gap-x-6 gap-y-2 bg-white px-6 py-3 flex-wrap">
+        <h2 className="m-0 text-page-title font-light tracking-headline shrink-0">{months[viewM]} <span className="text-muted-foreground">{viewY}</span></h2>
+        <div className="flex items-center gap-4 font-mono text-label tracking-ui uppercase text-muted-foreground flex-wrap">
+          {availLoading && <span className="text-primary animate-pulse">{bookingMsg.calLoading[lang]}</span>}
+          <span className="inline-flex items-center gap-2"><span aria-hidden className="inline-block w-2.5 h-2.5 bg-white border border-foreground"/>{bookingMsg.calFreeLegend[lang]}</span>
+          <span className="inline-flex items-center gap-2"><span aria-hidden className="inline-block w-2.5 h-2.5 bg-edo-sand border border-edo-sand"/>{bookingMsg.calPartialLegend[lang]}</span>
+          <span className="inline-flex items-center gap-2"><span aria-hidden className="inline-block w-2.5 h-2.5 bg-edo-gray-50 border border-input"/>{bookingMsg.calUnavailableLegend[lang]}</span>
+          <span className="inline-flex items-center gap-2"><span aria-hidden className="inline-block w-2.5 h-2.5 bg-primary border border-primary"/>{bookingMsg.calSelectedLegend[lang]}</span>
+        </div>
       </div>
-      <div className="flex gap-4 font-mono text-label tracking-ui uppercase text-muted-foreground flex-wrap items-center">
-        {availLoading && <span className="text-primary animate-pulse">{fr ? 'Chargement…' : 'Loading…'}</span>}
-        <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-white border border-foreground"/>{fr ? ' Libre' : ' Free'}</span>
-        <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 bg-muted border border-input"/>{fr ? ' Complet' : ' Booked'}</span>
-      </div>
+      <button onClick={prevMonth} aria-label={bookingMsg.calPrevMonth[lang]} className="edo-focus-ring flex basis-header flex-none cursor-pointer items-center justify-center border-0 bg-white font-mono text-detail text-foreground transition-colors hover:bg-muted">{"←"}</button>
+      <button onClick={nextMonth} aria-label={bookingMsg.calNextMonth[lang]} className="edo-focus-ring flex basis-header flex-none cursor-pointer items-center justify-center border-0 bg-white font-mono text-detail text-foreground transition-colors hover:bg-muted">{"→"}</button>
     </div>
 
     <div className="grid grid-cols-7 border-b border-foreground w-full">
@@ -1122,6 +1124,7 @@ const Step2Date = ({ lang, p, viewY, viewM, months, days, calCells, selected, se
       const av = weekendBlocked ? 'unavailable' : (availMap[d] || 'free'); const past = isPast(d); const sel = isSelected(d);
       const clickable = !past && av!=='unavailable';
       const tdy = isToday(d);
+      const partial = !sel && !past && av==='free' && !weekendBlocked && !!bookedHoursMap[d] && bookedHoursMap[d].size > 0;
       return (<button key={i} disabled={!clickable} onClick={()=>setSelected({y:viewY,m:viewM,d})}
         title={weekendBlocked ? (fr ? `Week-end : journée complète uniquement` : 'Weekend: full-day booking only') : tdy ? (fr ? "Aujourd'hui" : 'Today') : ''}
         className={[
@@ -1129,6 +1132,7 @@ const Step2Date = ({ lang, p, viewY, viewM, months, days, calCells, selected, se
           sel ? 'bg-primary text-white cursor-pointer hover:bg-primary/85' :
           past ? 'bg-edo-gray-50 text-muted-foreground/30 cursor-not-allowed' :
           av==='unavailable' ? 'bg-edo-gray-50 text-muted-foreground/40 cursor-not-allowed' :
+          partial ? 'bg-edo-sand text-foreground cursor-pointer hover:bg-edo-warm' :
           tdy ? 'bg-primary/8 text-foreground cursor-pointer hover:bg-primary/15' :
           'bg-white text-foreground cursor-pointer hover:bg-edo-gray-100',
         ].join(' ')}>
@@ -1139,7 +1143,7 @@ const Step2Date = ({ lang, p, viewY, viewM, months, days, calCells, selected, se
         {tdy && !sel && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"/>}
         {!past && av!=='unavailable' && !weekendBlocked && (
           <span className={`font-mono text-nano sm:text-micro tracking-caption uppercase mt-auto ${sel ? 'text-white/70' : tdy ? 'text-primary/70' : 'text-muted-foreground'}`}>
-            {fr ? 'libre' : 'free'}
+            {partial ? bookingMsg.calPartial[lang] : (fr ? 'libre' : 'free')}
           </span>
         )}
         {weekendBlocked && !past && (
