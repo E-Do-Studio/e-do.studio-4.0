@@ -6,6 +6,7 @@ import { cn } from '../ui/cn';
 import { EmptyState } from '../ui';
 import { cellBase, labelBase } from './styles';
 import { discoveryPage } from '../i18n/messages';
+import { renderInlineMarkdown } from '../lib/render-markdown';
 
 interface ArticleCardProps {
   post: DiscoveryPost;
@@ -35,23 +36,37 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({ post, lang, onOpen, he
       )}
     </div>
 
-    <div className={cn(
-      'flex min-w-0 origin-left flex-col overflow-hidden transition-transform duration-200 ease-edo-out group-hover:scale-102',
-      headline ? 'gap-1 px-cell pb-3 pt-2.5' : 'gap-1 px-cell pb-4 pt-3.5'
-    )}>
-      <ArticleMeta post={post} lang={lang} />
-      <h3 className={cn(
-        'm-0 edo-line-clamp-2 text-balance text-foreground',
-        headline
-          ? 'edo-line-clamp-3 text-tile-title font-light leading-tight tracking-headline'
-          : 'text-cell font-normal leading-snug tracking-copy-tight'
-      )}>
-        {post.title[lang]}
-      </h3>
-      <span className="font-mono text-micro tracking-ui text-muted-foreground">
-        {post.author} · {post.date[lang]}
-      </span>
-    </div>
+    {headline ? (
+      <div className="flex min-h-0 min-w-0 origin-left flex-col justify-between gap-3.5 overflow-hidden px-7 py-6 transition-transform duration-200 ease-edo-out group-hover:scale-102">
+        <span className={cn(labelBase, 'text-primary')}>
+          {post.tag[lang]} · {post.read}
+        </span>
+        <div className="flex min-w-0 flex-col gap-2.5">
+          <h3 className="m-0 edo-line-clamp-3 text-balance text-page-title font-light leading-tight tracking-headline text-foreground">
+            {post.title[lang]}
+          </h3>
+          {post.sub?.[lang] && (
+            <p
+              className="edo-line-clamp-3 m-0 text-detail leading-normal text-muted-foreground [&_a]:text-primary [&_em]:italic [&_strong]:font-semibold [&_strong]:text-foreground"
+              dangerouslySetInnerHTML={{ __html: renderInlineMarkdown(post.sub[lang]) }}
+            />
+          )}
+        </div>
+        <span className="inline-flex items-center gap-2 font-mono text-label uppercase tracking-label text-foreground">
+          {discoveryPage.readArticle[lang]} <span className="text-detail">→</span>
+        </span>
+      </div>
+    ) : (
+      <div className="flex min-w-0 origin-left flex-col gap-1 overflow-hidden px-cell pb-4 pt-3.5 transition-transform duration-200 ease-edo-out group-hover:scale-102">
+        <ArticleMeta post={post} lang={lang} />
+        <h3 className="m-0 edo-line-clamp-2 text-balance text-cell font-normal leading-snug tracking-copy-tight text-foreground">
+          {post.title[lang]}
+        </h3>
+        <span className="font-mono text-micro tracking-ui text-muted-foreground">
+          {post.author} · {post.date[lang]}
+        </span>
+      </div>
+    )}
   </button>
 );
 
