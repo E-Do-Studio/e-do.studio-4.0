@@ -29,14 +29,10 @@ export const DiscoveryBentoGrid: React.FC<DiscoveryBentoGridProps> = ({ lang, go
     () => allPosts.find(p => p !== featuredPost && !p.featured) ?? allPosts[3] ?? null,
     [allPosts, featuredPost]
   );
-  // "Plus d'articles" is a browse-the-rest list. Keep the split article in it
-  // so the section isn't empty when there are only a couple of posts — same
-  // post showing up in the split tile AND in the list is the standard blog
-  // pattern (hero + archive list both reference the latest).
-  const morePosts = useMemo(
-    () => allPosts.filter(p => p !== featuredPost),
-    [allPosts, featuredPost]
-  );
+  // "Plus d'articles" = full archive (every published post, including the
+  // ones already shown in the featured / split tiles). Hero + archive
+  // referencing the same posts is the standard blog pattern.
+  const morePosts = allPosts;
 
   return (
     <>
