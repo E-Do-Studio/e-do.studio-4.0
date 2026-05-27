@@ -113,7 +113,12 @@ const ThumbStrip = ({ items, lang, plateauName, activeIndex, onSelect, className
 
   const hasOverflow = items.length > VISIBLE_TILES;
   const visible = Math.min(items.length, VISIBLE_TILES);
-  const tileBasis = `${100 / visible}%`;
+  // Account for the 1px gaps between tiles so that exactly `visible` tiles fit
+  // in the container with no leftover horizontal overflow. A plain `100/N%`
+  // basis would sum to `100% + (N-1)px` with gap-px, producing a tiny scroll
+  // and a few pixels of drift when scrollIntoView fires on index change.
+  const tileBasis =
+    visible <= 1 ? '100%' : `calc((100% - ${visible - 1}px) / ${visible})`;
 
   const updateScrollState = useCallback(() => {
     const el = stripRef.current;
@@ -138,9 +143,13 @@ const ThumbStrip = ({ items, lang, plateauName, activeIndex, onSelect, className
   }, [updateScrollState, items.length]);
 
   // Keep the active tile in view when the cover moves via the overlay arrows.
+  // Skip when the strip has no horizontal overflow — there is nowhere to scroll
+  // to, and calling scrollIntoView on a fully-visible tile can still nudge
+  // sub-pixel rounding under smooth-scroll, producing a visible shift.
   useEffect(() => {
     const el = stripRef.current;
     if (!el) return;
+    if (el.scrollWidth <= el.clientWidth + 1) return;
     const tile = el.querySelector<HTMLElement>(`[data-tile-index="${activeIndex}"]`);
     tile?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
   }, [activeIndex]);
