@@ -43,7 +43,7 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({ post, lang, onOpen, he
       <h3 className={cn(
         'm-0 edo-line-clamp-2 text-balance text-foreground',
         headline
-          ? 'edo-line-clamp-3 text-tile-title font-light leading-tight tracking-headline'
+          ? 'edo-line-clamp-3 text-tile-title font-light leading-snug tracking-headline'
           : 'text-cell font-normal leading-snug tracking-copy-tight'
       )}>
         {post.title[lang]}

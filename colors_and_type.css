@@ -397,11 +397,11 @@
 }
 
 @utility grid-rows-article-headline {
-  grid-template-rows: 1fr 86px;
+  grid-template-rows: 1fr 96px;
 }
 
 @utility grid-rows-article-headline-lg {
-  grid-template-rows: 1fr 70px;
+  grid-template-rows: 1fr 84px;
 }
 
 @utility grid-rows-article-auto {
