@@ -4,7 +4,7 @@ import { PageHeader, buildMainNav, IconArrowRight, cn } from '../ui';
 import { useDocumentMeta } from '../lib/use-document-meta';
 import { useStructuredData } from '../lib/use-structured-data';
 import { buildWebPageSchema, buildBreadcrumbSchema } from '../lib/structured-data';
-import { bookPicker, booking, common } from '../i18n/messages';
+import { bookPicker, booking } from '../i18n/messages';
 import { configuratorPath, manualPath } from './book-routes';
 import type { Lang } from '../types';
 
@@ -140,16 +140,6 @@ const BookPicker = () => {
           />
         </div>
 
-        <div className="bg-white px-6 py-8 md:px-12 md:py-10">
-          <span className="font-mono text-label tracking-meta uppercase text-muted-foreground">
-            {lang === 'fr' ? 'Réponse sous 24h ouvrées' : 'Reply within 1 business day'}
-          </span>
-          <span className="ml-3 text-detail text-muted-foreground">
-            {lang === 'fr'
-              ? `· ${common.bookNow.fr} en quelques minutes.`
-              : `· ${common.bookNow.en} in a few minutes.`}
-          </span>
-        </div>
       </div>
     </div>
   );
