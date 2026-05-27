@@ -125,9 +125,9 @@ interface EcommerceKeywordsCellProps {
 }
 
 const EcommerceKeywordsCell = ({ lang, onOpenService }: EcommerceKeywordsCellProps) => (
-  <div className="grid h-full grid-rows-3 gap-px bg-white">
+  <div className="grid h-full grid-rows-3 gap-hairline bg-white">
     {[0, 2, 4].map((start, r) => (
-      <div key={r} className="grid grid-cols-2 gap-px bg-white">
+      <div key={r} className="grid grid-cols-2 gap-hairline bg-white">
         {KW.slice(start, start + 2).map((kw, i) => (
           <ServiceTile
             key={kw.key}
@@ -257,7 +257,7 @@ const ContactCell = ({ lang }: ContactCellProps) => {
           )}
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-px border-t border-foreground bg-white">
+      <div className="grid grid-cols-2 gap-hairline border-t border-hairline bg-white">
         {[
           { label: common.contactUs[lang], href: '/contact' },
           { label: common.legal[lang], href: '/legal' },
@@ -346,7 +346,7 @@ const ChatCell = ({ lang }: ChatCellProps) => {
           value={input}
           onChange={e => setInput(e.target.value)}
           placeholder={assistantMsg.chatPlaceholder[lang]}
-          className="flex-1 border-b border-foreground bg-transparent pb-1 text-detail text-foreground outline-none"
+          className="flex-1 border-b border-hairline bg-transparent pb-1 text-detail text-foreground outline-none"
         />
         <button type="submit" aria-label="send" className="edo-focus-ring cursor-pointer border-0 bg-transparent text-muted-foreground">
           <IconArrowRight width="16" height="16" />
@@ -372,7 +372,7 @@ const GalleryCell = ({ columns = 3, rows = 1, onOpen, seeds = null, palette = 'e
   const actualSeeds = seeds || Array.from({ length: total }, (_, i) => i + 1);
   return (
     <div
-      className="grid h-full gap-px bg-white"
+      className="grid h-full gap-hairline bg-white"
       style={{ gridTemplateColumns: `repeat(${columns}, 1fr)`, gridTemplateRows: `repeat(${rows}, 1fr)` }}
     >
       {actualSeeds.slice(0, total).map((s, i) => (
@@ -487,8 +487,8 @@ interface BrandStackCellProps {
 }
 
 const BrandStackCell = ({ lang, setLang, onMenu, onLogo, onVideo }: BrandStackCellProps) => (
-  <div className="grid h-full grid-rows-subgrid gap-px bg-white" style={{ gridRow: '1 / -1' }}>
-    <div className="grid grid-cols-brand-stack gap-px bg-white">
+  <div className="grid h-full grid-rows-subgrid gap-hairline bg-white" style={{ gridRow: '1 / -1' }}>
+    <div className="grid grid-cols-brand-stack gap-hairline bg-white">
       <button
         onClick={onMenu}
         aria-label="Menu"

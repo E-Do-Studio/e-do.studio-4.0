@@ -54,7 +54,7 @@ export const NewsletterCard: React.FC<NewsletterCardProps> = ({ lang, className,
   <section className={cn(cellBase, 'order-5 flex min-h-36 flex-col justify-between gap-2.5 bg-white px-cell-lg py-cell text-foreground lg:min-h-0', className)}>
     {badge != null && <CellBadge n={badge} />}
     <span className={cn(labelBase, 'text-primary')}>Newsletter</span>
-    <form onSubmit={(event) => event.preventDefault()} className="flex items-center gap-2 border-b border-foreground pb-1.5">
+    <form onSubmit={(event) => event.preventDefault()} className="flex items-center gap-2 border-b border-hairline pb-1.5">
       <input
         placeholder={discoveryPage.emailPlaceholder[lang]}
         className="edo-focus-ring min-w-0 flex-1 border-0 bg-transparent py-1 font-sans text-detail text-foreground outline-none placeholder:text-muted-foreground"
@@ -169,7 +169,7 @@ interface BookBackstageStackProps {
 }
 
 export const BookBackstageStack: React.FC<BookBackstageStackProps> = ({ lang, goto, className }) => (
-  <div className={cn(cellBase, 'order-7 flex min-h-104 flex-col gap-px bg-white lg:min-h-0', className)}>
+  <div className={cn(cellBase, 'order-7 flex min-h-104 flex-col gap-hairline bg-white lg:min-h-0', className)}>
     <BookCtaTile lang={lang} goto={goto} />
     <VisualTile tone="warm" seed={9} label={discoveryPage.behindScenes[lang]} className="order-none flex-1" />
   </div>

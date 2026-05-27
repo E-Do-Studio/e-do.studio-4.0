@@ -34,8 +34,8 @@ export type { ToggleProps } from './toggle';
 export { HeaderAction, HeaderActionText } from './header-action';
 export type { HeaderActionProps, HeaderActionTextProps } from './header-action';
 
-export { PageHeader } from './page-header';
-export type { PageHeaderAction, PageHeaderProps } from './page-header';
+export { PageHeader, buildMainNav } from './page-header';
+export type { PageHeaderAction, PageHeaderProps, MainNavId } from './page-header';
 
 export { SocialIcon } from './social-icon';
 export type { SocialIconProps } from './social-icon';

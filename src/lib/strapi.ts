@@ -4,10 +4,8 @@ import { getPreviewState } from './preview-mode';
 
 const STRAPI_URL = import.meta.env.VITE_STRAPI_URL || 'https://cms.e-do.studio';
 const STRAPI_TOKEN = import.meta.env.VITE_STRAPI_TOKEN || '';
-// Optional dedicated token with read-draft permission. Falls back to the
-// public token when not configured (assuming that token also has draft scope
-// in the Strapi role).
 const STRAPI_PREVIEW_TOKEN = import.meta.env.VITE_STRAPI_PREVIEW_TOKEN || '';
+const API_ORIGIN = import.meta.env.DEV ? '' : STRAPI_URL;
 
 // ─── Generic fetcher ────────────────────────────────────────────────────────
 
@@ -15,7 +13,7 @@ const cache = new Map<string, { data: unknown; ts: number }>();
 const CACHE_TTL = 5 * 60 * 1000;
 
 async function fetchStrapi<T>(path: string, params?: Record<string, string>): Promise<T> {
-  const url = new URL(`/api/${path}`, STRAPI_URL);
+  const url = new URL(`/api/${path}`, API_ORIGIN || window.location.origin);
   if (params) {
     Object.entries(params).forEach(([k, v]) => {
       if (k === 'populate' && v.includes(',')) {

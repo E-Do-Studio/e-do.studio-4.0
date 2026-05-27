@@ -3,8 +3,8 @@
 // preview/test scripts.
 //
 // Design reference: brand "DA" lives in colors_and_type.css.
-//   - Body face: ABC Favorit (brand) → Space Grotesk webfont fallback → system
-//   - Mono UI face: IBM Plex Mono with Courier fallback
+//   - Body face: ABC Favorit (brand) → system fallback
+//   - Mono UI face: ABC Favorit Mono with Courier fallback
 //   - Mono UPPERCASE labels with 0.2em tracking
 //   - Single orange accent (#E2641A); brand black (#0d0d0d) for body
 //   - Hairlines used as horizontal row separators only — no per-cell borders
@@ -67,15 +67,13 @@ const C_ORANGE = "#E2641A";
 const C_GRAY = "#666666";
 const C_BG = "#f4f4f4";
 
-// Brand body face: ABC Favorit (paid, not in email) → Space Grotesk via Google
-// Fonts → system fallback. Most modern email clients (Apple Mail, iCloud,
-// Gmail web/iOS/Android, Outlook 365) load remote fonts; older Outlook
-// desktop falls back to the system stack which still reads as a clean
-// neo-grotesque.
+// Brand body face: ABC Favorit (loaded via @font-face on site; in email
+// most modern clients support remote fonts, older ones fall back to the
+// system stack which still reads as a clean neo-grotesque).
 // Single-quoted font names so the resulting inline style="..." attribute
 // doesn't get terminated mid-declaration by the family's own double quotes.
-const FONT_SANS = `'ABC Favorit', 'Space Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif`;
-const FONT_MONO = `'IBM Plex Mono', 'Courier New', Courier, monospace`;
+const FONT_SANS = `'ABC Favorit', 'Helvetica Neue', Helvetica, Arial, sans-serif`;
+const FONT_MONO = `'ABC Favorit Mono', 'Courier New', Courier, monospace`;
 
 const LABEL_STYLE =
   `font-family:${FONT_MONO};font-size:11px;line-height:1;letter-spacing:0.18em;` +

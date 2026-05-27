@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { FormEvent, InputHTMLAttributes, TextareaHTMLAttributes } from 'react';
-import { Button, CellLabel, IconArrowRight, PageHeader, SocialIcon, cn } from './ui';
+import { Button, CellLabel, IconArrowRight, PageHeader, SocialIcon, buildMainNav, cn } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
 import { useStructuredData } from './lib/use-structured-data';
 import { buildContactPageSchema, buildBreadcrumbSchema } from './lib/structured-data';
@@ -245,7 +245,7 @@ const UnavailableNote = ({ lang }: { lang: Lang }) => (
 );
 
 const SocialGrid = () => (
-  <div className="grid grid-cols-2 gap-px border-t border-border bg-border">
+  <div className="grid grid-cols-2 gap-hairline border-t border-border bg-border">
     {SOCIAL_LINKS.map((social) => (
       <a
         key={social.k}
@@ -297,7 +297,7 @@ interface ContactFormProps {
 const ContactForm = ({ lang, form, setForm, submit, sending, sendError, subjects }: ContactFormProps) => (
   <form
     onSubmit={submit}
-    className="grid h-full grid-cols-2 grid-rows-contact-form gap-px bg-border"
+    className="grid h-full grid-cols-2 grid-rows-contact-form gap-hairline bg-border"
   >
     <div className="col-span-2 flex flex-col justify-center bg-white px-5 py-2.5">
       <span className="edo-cell-label text-primary">{contactMsg.writeToUs[lang]}</span>
@@ -451,8 +451,8 @@ interface ContactRightColumnProps {
 }
 
 const ContactRightColumn = ({ lang, contact, team }: ContactRightColumnProps) => (
-  <aside className="grid grid-rows-2 gap-px overflow-hidden bg-hairline md:col-start-4 md:row-start-2 min-h-72 md:min-h-0">
-    <ContactMap lang={lang} contact={contact} />
+  <aside className="grid grid-rows-2 overflow-hidden md:col-start-4 md:row-start-2 min-h-72 md:min-h-0">
+    <ContactMap lang={lang} contact={contact} className="border-b border-hairline" />
     <TeamPanel lang={lang} members={team} />
   </aside>
 );
@@ -470,9 +470,10 @@ function buildMapsDirections(fullAddress?: string, street?: string, postalCode?:
 interface ContactMapProps {
   lang: Lang;
   contact: { data: ContactInfo | null; loading: boolean; error: Error | null };
+  className?: string;
 }
 
-const ContactMap = ({ lang, contact }: ContactMapProps) => {
+const ContactMap = ({ lang, contact, className }: ContactMapProps) => {
   const c = contact.data;
   const showFallback = !contact.loading && (contact.error || !c);
   const embedUrl = c?.mapsEmbedUrl
@@ -480,7 +481,7 @@ const ContactMap = ({ lang, contact }: ContactMapProps) => {
   const directionsUrl = c?.googleMapsUrl
     || buildMapsDirections(c?.fullAddress, c?.address.street, c?.address.postalCode, c?.address.city);
   return (
-    <section className="relative overflow-hidden bg-edo-warm">
+    <section className={cn('relative overflow-hidden bg-edo-warm', className)}>
       {showFallback ? (
         <div className="absolute inset-0 flex items-center justify-center p-6">
           <UnavailableNote lang={lang} />
@@ -592,7 +593,7 @@ const ContactPage = () => {
   };
 
   return (
-    <div className="edo-page-enter grid w-full gap-px bg-edo-pure-black md:h-full md:grid-cols-contact-shell md:grid-rows-page md:overflow-hidden">
+    <div className="edo-page-enter grid w-full edo-hairline md:h-full md:grid-cols-contact-shell md:grid-rows-page md:overflow-hidden">
       {/* Unified header — compact right-aligned actions on all breakpoints */}
       <PageHeader
         lang={lang}
@@ -601,10 +602,7 @@ const ContactPage = () => {
         onMenuClick={openMenu}
         onLogoClick={() => goto('home')}
         onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
-        actions={[
-          { id: 'stages', label: common.stages[lang], onClick: () => goto('plateau-live'), className: 'hidden md:flex' },
-          { id: 'book', label: common.book[lang], onClick: () => goto('book'), variant: 'primary' },
-        ]}
+        actions={buildMainNav({ lang, goto, exclude: 'contact' })}
       />
       <ContactRail lang={lang} contact={contact} hours={hours} closures={closures} />
       <ContactFormPanel lang={lang} form={form} sent={sent} sending={sending} sendError={sendError} setForm={setForm} setSent={setSent} submit={submit} goto={goto} subjects={subjects} />

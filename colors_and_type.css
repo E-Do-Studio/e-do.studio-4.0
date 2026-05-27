@@ -7,31 +7,9 @@
    ============================================================ */
 
 /* ---- Web fonts -----------------------------------------------
-   ABCFavorit is the brand face; we have no rights to redistribute
-   so we load Google Fonts substitutes (see README). Swap the
-   @font-face blocks below in if/when you ship real files.
+   ABCFavorit is the brand sans-serif face (loaded in src/styles.css).
+   ABCFavoritMono is the brand monospace face (loaded in src/styles.css).
 --------------------------------------------------------------- */
-/* When you add real ABC Favorit files:
-@font-face {
-  font-family: "ABC Favorit";
-  src: url("./fonts/ABCFavorit-Light.woff2") format("woff2");
-  font-weight: 300; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: "ABC Favorit";
-  src: url("./fonts/ABCFavorit-Regular.woff2") format("woff2");
-  font-weight: 400; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: "ABC Favorit";
-  src: url("./fonts/ABCFavorit-RegularItalic.woff2") format("woff2");
-  font-weight: 400; font-style: italic; font-display: swap;
-}
-@font-face {
-  font-family: "ABC Favorit";
-  src: url("./fonts/ABCFavorit-Bold.woff2") format("woff2");
-  font-weight: 700; font-style: normal; font-display: swap;
-} */
 
 :root {
   /* ---------- Palette (monochrome + single accent) ---------- */
@@ -68,7 +46,7 @@
 
   /* ---------- Geometry ------------------------------------- */
   --radius: 0;                /* ZERO — Swiss rule */
-  --hairline: 1px;
+  --hairline: 1.5px;
   --bento-gap: 1px;           /* grid gap == hairline */
 
   /* ---------- Z-index scale -------------------------------- */
@@ -79,8 +57,8 @@
   --z-toast:    400;
 
   /* ---------- Type families -------------------------------- */
-  --font-sans:  "ABC Favorit", "Space Grotesk", ui-sans-serif, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
-  --font-mono:  "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-sans:  "ABC Favorit", ui-sans-serif, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --font-mono:  "ABC Favorit Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 
   /* ---------- Base sizing (Swiss Typography Scale) --------- */
   --font-size-display: clamp(4rem,   12vw, 10rem);
@@ -145,6 +123,9 @@
   --color-border: var(--input);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  /* Hairline color — pure black, matches `.edo-hairline`. Use `border-hairline`
+     when adding cell-level borders that must align with the hairline grid. */
+  --color-hairline: var(--border);
 
   /* ---------- brand palette tokens --------------------------- */
   --color-edo-white: var(--edo-white);
@@ -169,8 +150,8 @@
   --color-edo-limited: oklch(0.91 0.055 76);
 
   /* ---------- type families ---------------------------------- */
-  --font-sans: "ABC Favorit", "Space Grotesk", ui-sans-serif, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-sans: "ABC Favorit", ui-sans-serif, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "ABC Favorit Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 
   /* ---------- type scale ------------------------------------- */
   --text-nano: 0.5rem;
@@ -227,7 +208,6 @@
   --radius-none: 0;
   --radius-switch: 999px;
   --shadow-toggle: 0 1px 3px rgb(0 0 0 / 0.2);
-  --shadow-hairline: inset 0 0 0 1px var(--edo-pure-black);
 
   /* ---------- motion ----------------------------------------- */
   --ease-edo-out: var(--ease-out);
@@ -235,9 +215,67 @@
 }
 
 @layer utilities {
+  /* Single source of truth for hairline width: tweak `--hairline` (top of
+     the file) and every hairline-style border on the site scales with it.
+     Three vectors are centralized below:
+       1. `.edo-hairline` grid rules (outer + child borders)
+       2. Tailwind `border*` width utilities (default 1px → var(--hairline))
+       3. `gap-hairline` for grids using CSS gap as a separator
+     Color stays `var(--border)` = pure black for visual consistency with
+     `border-hairline`. */
+  .edo-hairline {
+    gap: 0;
+  }
+  .edo-hairline:where(:not(.edo-hairline *)) {
+    border-top: var(--hairline) solid var(--border);
+    border-left: var(--hairline) solid var(--border);
+  }
+  .edo-hairline > *:not(.edo-hairline) {
+    border-right: var(--hairline) solid var(--border);
+    border-bottom: var(--hairline) solid var(--border);
+  }
+  /* Tailwind utility widths driven by --hairline so a single token controls
+     every hairline-style border (overrides Tailwind's default 1px). */
+  .border { border-width: var(--hairline); }
+  .border-t { border-top-width: var(--hairline); }
+  .border-r { border-right-width: var(--hairline); }
+  .border-b { border-bottom-width: var(--hairline); }
+  .border-l { border-left-width: var(--hairline); }
+  .border-x { border-inline-width: var(--hairline); }
+  .border-y { border-block-width: var(--hairline); }
+  /* Arbitrary `[&>*:not(:last-child)]:border-*` variants compile to a separate
+     Tailwind rule with hardcoded 1px — override here so they also follow
+     --hairline. The escaped selectors match Tailwind's emitted class names. */
+  .\[\&\>\*\:not\(\:last-child\)\]\:border-r > *:not(:last-child) { border-right-width: var(--hairline); }
+  .\[\&\>\*\:not\(\:last-child\)\]\:border-b > *:not(:last-child) { border-bottom-width: var(--hairline); }
+  .\[\&\>\*\:not\(\:last-child\)\]\:border-t > *:not(:last-child) { border-top-width: var(--hairline); }
+  .\[\&\>\*\:not\(\:last-child\)\]\:border-l > *:not(:last-child) { border-left-width: var(--hairline); }
+  /* Responsive variants (md:border-r, md:border-b, sm:border-l, …) also emit
+     a hardcoded 1px — keep them in sync with --hairline. Sized variants like
+     md:border-l-2 keep their explicit width (intentionally non-hairline). */
+  @media (width >= 40rem) {
+    .sm\:border { border-width: var(--hairline); }
+    .sm\:border-t { border-top-width: var(--hairline); }
+    .sm\:border-r { border-right-width: var(--hairline); }
+    .sm\:border-b { border-bottom-width: var(--hairline); }
+    .sm\:border-l { border-left-width: var(--hairline); }
+  }
+  @media (width >= 48rem) {
+    .md\:border { border-width: var(--hairline); }
+    .md\:border-t { border-top-width: var(--hairline); }
+    .md\:border-r { border-right-width: var(--hairline); }
+    .md\:border-b { border-bottom-width: var(--hairline); }
+    .md\:border-l { border-left-width: var(--hairline); }
+  }
+  @media (width >= 64rem) {
+    .lg\:border { border-width: var(--hairline); }
+    .lg\:border-t { border-top-width: var(--hairline); }
+    .lg\:border-r { border-right-width: var(--hairline); }
+    .lg\:border-b { border-bottom-width: var(--hairline); }
+    .lg\:border-l { border-left-width: var(--hairline); }
+  }
   .gap-hairline { gap: var(--hairline); }
   .font-inherit { font-family: inherit; }
-  .bg-hairline { background: var(--edo-pure-black); }
   .text-balance { text-wrap: balance; }
   .text-pretty { text-wrap: pretty; }
   .edo-writing-vertical { writing-mode: vertical-rl; }

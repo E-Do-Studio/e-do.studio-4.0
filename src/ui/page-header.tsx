@@ -97,8 +97,8 @@ const PageHeader = ({
   onLogoClick,
   onLangToggle,
 }: PageHeaderProps) => (
-  <header className={cn('sticky top-0 z-40 flex min-w-0 gap-px bg-foreground shadow-[0_1px_0_0_var(--color-foreground)]', className)}>
-    <div className="flex h-full flex-none basis-44 gap-px bg-foreground md:basis-nav">
+  <header className={cn('sticky top-0 z-40 flex min-w-0 bg-background [&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-hairline', className)}>
+    <div className="flex h-full flex-none basis-44 md:basis-nav [&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-hairline">
       <button
         onClick={onMenuClick}
         aria-label="Open menu"
@@ -146,5 +146,32 @@ const PageHeader = ({
   </header>
 );
 
-export { PageHeader };
-export type { PageHeaderAction, PageHeaderProps };
+type MainNavId = 'stages' | 'postprod' | 'gallery' | 'contact' | 'book';
+
+interface BuildMainNavOpts {
+  lang: Lang;
+  goto: (screen: string) => void;
+  exclude?: MainNavId;
+}
+
+const buildMainNav = ({ lang, goto, exclude }: BuildMainNavOpts): PageHeaderAction[] => {
+  const items: { id: MainNavId; label: string; screen: string; primary?: boolean }[] = [
+    { id: 'stages',   label: common.stages[lang],    screen: 'plateau-live' },
+    { id: 'postprod', label: common.postProd[lang],  screen: 'postprod' },
+    { id: 'gallery',  label: common.gallery[lang],   screen: 'gallery' },
+    { id: 'contact',  label: common.contactUs[lang], screen: 'contact' },
+    { id: 'book',     label: common.book[lang],      screen: 'book', primary: true },
+  ];
+  return items
+    .filter((it) => it.id !== exclude)
+    .map((it) => ({
+      id: it.id,
+      label: it.label,
+      onClick: () => goto(it.screen),
+      variant: it.primary ? 'primary' : 'default',
+      className: it.primary ? undefined : 'hidden md:flex',
+    }));
+};
+
+export { PageHeader, buildMainNav };
+export type { PageHeaderAction, PageHeaderProps, MainNavId };
