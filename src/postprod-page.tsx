@@ -433,9 +433,6 @@ const PostprodPage = () => {
           <h1 className={`hidden md:block m-0 text-hero font-light tracking-display leading-none ${fgCls}`}>
             {cat[lang]}
           </h1>
-          <span className={`hidden md:block font-mono text-caption tracking-code uppercase ${mutedCls}`}>
-            {cat.tagline[lang]}
-          </span>
           <ul className="mt-2 p-0 list-none flex flex-col gap-1.5">
             {cat.features[lang].map(f=>(
               <li key={f} className={`text-detail flex gap-2 items-start leading-snug ${fgCls}`}>
