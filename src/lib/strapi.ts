@@ -139,6 +139,7 @@ interface StrapiBlogPost {
   // yet but is no longer authoritative (EDO-256).
   articleDate?: string | null;
   publishedAt?: string | null;
+  createdAt?: string | null;
   categories?: { id: number; title: string; slug: string }[];
 }
 
@@ -758,17 +759,28 @@ function resolveRawMediaUrl(media?: StrapiMedia | null): string | undefined {
 }
 
 export async function fetchDiscoveryPosts(): Promise<DiscoveryPost[]> {
-  // Sort by the editorial `articleDate` (EDO-256). `publishedAt` is the
-  // system field driving draft/publish state — sorting/filtering against it
-  // hid posts whose editorial date had been overwritten by the publish
-  // action. We keep it as a fallback for the displayed date below.
+  // EDO-269: sort server-side on `createdAt` (a Strapi system field that is
+  // always present and sortable) instead of the editorial `articleDate`. The
+  // EDO-256 rename moved the editorial date column from `published_at` to
+  // `article_date`; on environments where the schema sync hadn't fully
+  // propagated, `sort=articleDate:desc` returned a 400 and the SPA threw —
+  // wiping every article from the discovery page. We re-sort client-side
+  // below to preserve editorial intent.
   const resBI = await fetchStrapiBilingual<{ data: StrapiBlogPost[] }>('blog-posts', {
     'populate': 'categories,coverImage,bodyBlocks',
-    'sort': 'articleDate:desc',
+    'sort': 'createdAt:desc',
     'pagination[pageSize]': '50',
   });
 
-  const frPosts = resBI.fr.data;
+  // Re-sort by `articleDate` (editor's intent) with a `publishedAt` fallback
+  // for posts that predate EDO-256 or whose editor never filled the field,
+  // and `createdAt` as the last resort so the order stays deterministic.
+  function sortKey(p: StrapiBlogPost): number {
+    const raw = p.articleDate ?? p.publishedAt ?? p.createdAt ?? '';
+    const t = raw ? Date.parse(raw) : NaN;
+    return Number.isNaN(t) ? 0 : t;
+  }
+  const frPosts = [...resBI.fr.data].sort((a, b) => sortKey(b) - sortKey(a));
   const enPosts = resBI.en.data;
 
   return frPosts.map((pFr, i) => {

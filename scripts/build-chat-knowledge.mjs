@@ -333,12 +333,20 @@ async function buildPostProdChunks() {
 
 async function buildBlogChunks() {
   try {
+    // EDO-269: sort on `createdAt` server-side; the editorial `articleDate`
+    // is post-processed below so a missing/renamed column on Strapi can't
+    // 400 the request and drop every blog chunk silently (see strapi.ts).
     const res = await fetchBilingual('blog-posts', {
       populate: 'categories,bodyBlocks',
-      sort: 'articleDate:desc',
+      sort: 'createdAt:desc',
       'pagination[pageSize]': 50,
     });
-    const frList = res.fr?.data ?? [];
+    const sortKey = (p) => {
+      const raw = p?.articleDate ?? p?.publishedAt ?? p?.createdAt ?? '';
+      const t = raw ? Date.parse(raw) : NaN;
+      return Number.isNaN(t) ? 0 : t;
+    };
+    const frList = [...(res.fr?.data ?? [])].sort((a, b) => sortKey(b) - sortKey(a));
     const enList = res.en?.data ?? [];
     const chunks = [];
     for (const pFr of frList) {
