@@ -34,9 +34,12 @@ const Cover = ({ items, lang, plateauName, index, onPrev, onNext, className }: C
   if (items.length === 0) return null;
   const item = items[index];
   const hasMultiple = items.length > 1;
+  const total = items.length;
+  const counterCurrent = String(index + 1).padStart(2, '0');
+  const counterTotal = String(total).padStart(2, '0');
 
   const arrowBtn =
-    'edo-focus-ring absolute top-1/2 z-10 -translate-y-1/2 flex h-8 w-8 cursor-pointer items-center justify-center bg-foreground/5 text-foreground transition-colors duration-150 hover:bg-foreground/10';
+    'edo-focus-ring absolute top-1/2 z-10 -translate-y-1/2 flex h-10 w-10 items-center justify-center cursor-pointer bg-white text-foreground border border-border transition-colors duration-150 ease-edo-out hover:bg-foreground hover:text-background';
 
   return (
     <div
@@ -70,7 +73,7 @@ const Cover = ({ items, lang, plateauName, index, onPrev, onNext, className }: C
             type="button"
             onClick={onPrev}
             aria-label={common.prevImage[lang]}
-            className={cn(arrowBtn, 'left-3 md:left-4')}
+            className={cn(arrowBtn, 'left-4')}
           >
             <IconArrowRight width="16" height="16" className="rotate-180" />
           </button>
@@ -78,12 +81,20 @@ const Cover = ({ items, lang, plateauName, index, onPrev, onNext, className }: C
             type="button"
             onClick={onNext}
             aria-label={common.nextImage[lang]}
-            className={cn(arrowBtn, 'right-3 md:right-4')}
+            className={cn(arrowBtn, 'right-4')}
           >
             <IconArrowRight width="16" height="16" />
           </button>
+          <div
+            aria-hidden="true"
+            className="absolute bottom-4 right-4 z-10 flex items-center gap-1 bg-white border border-border px-2 py-1 font-mono text-micro uppercase tracking-ui text-foreground"
+          >
+            <span>{counterCurrent}</span>
+            <span className="text-muted-foreground">/</span>
+            <span className="text-muted-foreground">{counterTotal}</span>
+          </div>
           <span aria-live="polite" className="sr-only">
-            {`${index + 1} / ${items.length}`}
+            {`${index + 1} / ${total}`}
           </span>
         </>
       )}
@@ -102,7 +113,8 @@ interface ThumbStripProps {
 
 // Thumbnail strip — up to 4 tiles visible at a time. Clicking a tile sets it
 // as the cover. When there are more than 4 items the strip scrolls horizontally
-// and surfaces prev/next arrows; the active tile is outlined.
+// and surfaces prev/next arrows. Inactive tiles are dimmed; the active tile
+// shows a primary-color top accent.
 const ThumbStrip = ({ items, lang, plateauName, activeIndex, onSelect, className }: ThumbStripProps) => {
   const stripRef = useRef<HTMLDivElement>(null);
   const [canPrev, setCanPrev] = useState(false);
@@ -162,7 +174,7 @@ const ThumbStrip = ({ items, lang, plateauName, activeIndex, onSelect, className
   if (items.length === 0) return null;
 
   const arrowBtn =
-    'edo-focus-ring absolute top-1/2 z-10 -translate-y-1/2 flex h-8 w-8 cursor-pointer items-center justify-center bg-foreground/5 text-foreground transition-[opacity,background-color] duration-150 hover:bg-foreground/10 disabled:cursor-default disabled:opacity-0 disabled:pointer-events-none';
+    'edo-focus-ring absolute top-1/2 z-10 -translate-y-1/2 flex h-8 w-8 items-center justify-center cursor-pointer bg-white text-foreground border border-border transition-[opacity,background-color,color] duration-150 ease-edo-out hover:bg-foreground hover:text-background disabled:cursor-default disabled:opacity-0 disabled:pointer-events-none';
 
   return (
     <div className={cn('relative edo-hairline h-28 md:h-full', className)}>
@@ -181,8 +193,8 @@ const ThumbStrip = ({ items, lang, plateauName, activeIndex, onSelect, className
               aria-label={`${item.alt[lang] || plateauName} — ${i + 1} / ${items.length}`}
               aria-current={isActive ? 'true' : undefined}
               className={cn(
-                'edo-focus-ring relative h-full shrink-0 snap-start overflow-hidden bg-white border-0 p-0 cursor-pointer',
-                isActive && '[outline-style:solid] [outline-width:var(--hairline)] outline-hairline [outline-offset:calc(var(--hairline)*-1)]',
+                'edo-focus-ring group relative h-full shrink-0 snap-start overflow-hidden bg-white border-0 p-0 cursor-pointer transition-opacity duration-150 ease-edo-out',
+                isActive ? 'opacity-100' : 'opacity-60 hover:opacity-100',
               )}
               style={{ flexBasis: tileBasis }}
             >
@@ -200,6 +212,12 @@ const ThumbStrip = ({ items, lang, plateauName, activeIndex, onSelect, className
                   loading="lazy"
                   decoding="async"
                   className="absolute inset-0 h-full w-full object-cover"
+                />
+              )}
+              {isActive && (
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-primary"
                 />
               )}
             </button>
