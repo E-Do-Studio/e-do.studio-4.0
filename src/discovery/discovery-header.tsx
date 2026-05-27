@@ -15,6 +15,7 @@ export const DiscoveryHeader: React.FC<DiscoveryHeaderProps> = ({ lang, setLang,
     lang={lang}
     title="Discovery"
     className="row-start-1"
+    subgrid={false}
     onMenuClick={openMenu}
     onLogoClick={() => goto('home')}
     onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}

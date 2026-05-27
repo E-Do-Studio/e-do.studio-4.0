@@ -117,6 +117,7 @@ const DirectionA = () => {
         lang={lang}
         title={homeMsg.monSatHours[lang]}
         className="col-span-2 h-14 md:col-start-1 md:col-span-12 md:row-start-1 md:h-full"
+        subgrid={false}
         onMenuClick={openMenu}
         onLogoClick={() => goto('home')}
         onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
