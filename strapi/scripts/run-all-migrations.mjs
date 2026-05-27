@@ -63,12 +63,6 @@ const TASKS = [
     null,
   ],
   [
-    'migrate-blog-post-snake-to-camel.mjs',
-    'blog-post cta_* (snake_case) → ctaXxx (camelCase)',
-    ['STRAPI_URL', 'STRAPI_TOKEN'],
-    null,
-  ],
-  [
     'backfill-gallery-brands-from-titles.mjs',
     'gallery-project.title → gallery-brand entries + project.brand link',
     ['STRAPI_URL', 'STRAPI_TOKEN'],

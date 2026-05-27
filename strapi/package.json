@@ -18,7 +18,6 @@
     "migrate:pricing": "node scripts/migrate-pricing-to-rows.mjs",
     "migrate:hours": "node scripts/migrate-hours-to-component.mjs",
     "migrate:address": "node scripts/migrate-address-to-component.mjs",
-    "migrate:blog-camel": "node scripts/migrate-blog-post-snake-to-camel.mjs",
     "migrate:gallery-brands": "node scripts/backfill-gallery-brands-from-titles.mjs",
     "audit:required": "node scripts/audit-required-candidates.mjs",
     "seed": "node scripts/seed-content.mjs",

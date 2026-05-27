@@ -31,7 +31,7 @@
     },
     "articleDate": {
       "type": "datetime",
-      "description": "Date de publication éditoriale affichée sur l'article (indépendante du publish state Strapi). Remplace l'ancien `publishedAt` qui shadow le champ système draftAndPublish (EDO-256)."
+      "description": "Date de publication éditoriale affichée sur l'article (indépendante du publish state Strapi)."
     },
     "categories": {
       "type": "relation",
@@ -54,7 +54,7 @@
           "localized": true
         }
       },
-      "description": "Chapeau / résumé court de l'article (≤ 300 caractères)."
+      "description": "Chapeau / résumé court de l'article (≤ 300 caractères). Supporte `*italic*`, `_italic_`, `**bold**`, `__bold__`, `[lien](url)` et `` `code` ``."
     },
     "body": {
       "type": "richtext",
@@ -63,98 +63,7 @@
           "localized": true
         }
       },
-      "description": "DEPRECATED — utiliser `bodyBlocks` (éditeur structuré Strapi 5). Conservé en fallback tant que la migration n'est pas faite."
-    },
-    "bodyBlocks": {
-      "type": "blocks",
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "description": "Contenu principal de l'article (éditeur structuré Strapi 5 — paragraphes, listes, liens, images). Remplace `body` (richtext markdown legacy)."
-    },
-    "cta_text": {
-      "type": "string",
-      "maxLength": 200,
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "description": "DEPRECATED — utiliser `ctaText` (camelCase). Ce champ sera supprimé en Phase 5 après migration des données."
-    },
-    "cta_label": {
-      "type": "string",
-      "maxLength": 60,
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "description": "DEPRECATED — utiliser `ctaLabel`."
-    },
-    "cta_url": {
-      "type": "string",
-      "regex": "^(https?://|/).+",
-      "description": "DEPRECATED — utiliser `ctaUrl`."
-    },
-    "ctaText": {
-      "type": "string",
-      "maxLength": 200,
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "description": "Texte d'accroche du call-to-action (optionnel). Remplace `cta_text` (snake_case)."
-    },
-    "ctaLabel": {
-      "type": "string",
-      "maxLength": 60,
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "description": "Libellé du bouton CTA (ex: « Réserver », « En savoir plus »). Remplace `cta_label`."
-    },
-    "ctaUrl": {
-      "type": "string",
-      "regex": "^(https?://|/).+",
-      "description": "URL cible du CTA. Doit commencer par http(s):// ou /. Remplace `cta_url`."
-    },
-    "seo_title": {
-      "type": "string",
-      "maxLength": 60,
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "description": "DEPRECATED — utiliser le composant `seo` (shared.seo-meta) ou les champs camelCase."
-    },
-    "seo_description": {
-      "type": "text",
-      "maxLength": 160,
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "description": "DEPRECATED — utiliser le composant `seo`."
-    },
-    "seo_image": {
-      "type": "media",
-      "multiple": false,
-      "allowedTypes": ["images"],
-      "description": "DEPRECATED — utiliser le composant `seo`."
-    },
-    "seo": {
-      "type": "component",
-      "component": "shared.seo-meta",
-      "repeatable": false,
-      "description": "Métadonnées SEO mutualisées. Préférer ce champ aux `seo_*` legacy snake_case (à supprimer en Phase 4 après migration des données)."
+      "description": "Contenu de l'article en Markdown. Supporte titres (#, ##, ###), gras (**…** / __…__), italique (*…* / _…_), liens, images, citations (>), listes (-), séparateurs (---), code inline (`…`)."
     }
   },
   "pluginOptions": {
