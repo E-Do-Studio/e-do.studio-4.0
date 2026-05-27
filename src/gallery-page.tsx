@@ -9,7 +9,7 @@ import { buildGalleryCollectionSchema, buildBreadcrumbSchema } from "./lib/struc
 import { useGalleryProjects, useGalleryCategories } from "./lib/use-strapi";
 import type { GalleryProject } from "./lib/strapi";
 import type { Lang } from "./types";
-import { EmptyState, Loader, MobileNavStrip, PageHeader } from "./ui";
+import { EmptyState, Loader, MobileNavStrip, PageHeader, buildMainNav } from "./ui";
 import type { StripGroup } from "./ui";
 import { cn } from "./ui/cn";
 import { common, galleryPage, mobileNav } from "./i18n/messages";
@@ -231,8 +231,8 @@ const GalleryContent = ({
   filtered,
   resetFilters,
 }: GalleryContentProps) => (
-  <div className="min-h-0 overflow-y-auto bg-white">
-    <div className="flex flex-col gap-px bg-edo-pure-black">
+  <div className="min-h-0 overflow-y-auto bg-white edo-hairline">
+    <div className="flex flex-col [&>*:not(:last-child)]:border-b [&>*:not(:last-child)]:border-hairline">
       {filtered.length === 0 ? (
         <EmptyState
           label={galleryPage.noResults[lang]}
@@ -257,7 +257,7 @@ const ProjectRow = ({ project, lang, style }: { project: GalleryProject; lang: L
   const plateauLabel = PLATEAU_LABELS[project.plateau]?.[lang] ?? project.plateau;
   const ariaLabel = `${project.brand} — ${plateauLabel}`;
   return (
-    <div className="edo-list-row group grid gap-px bg-edo-pure-black grid-cols-gallery-row-mobile md:grid-cols-gallery-row" style={style}>
+    <div className="edo-list-row group grid grid-cols-gallery-row-mobile md:grid-cols-gallery-row [&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-hairline" style={style}>
       <ProjectLabel project={project} lang={lang} to={to} ariaLabel={ariaLabel} />
       {[0, 1, 2].map((imageIndex) => (
         <ProjectImage
@@ -596,7 +596,7 @@ const GalleryPageV3 = () => {
   }
 
   return (
-    <div className="edo-page-enter grid w-full gap-px bg-edo-pure-black md:h-full md:grid-cols-gallery-shell md:grid-rows-page md:overflow-hidden">
+    <div className="edo-page-enter grid w-full edo-hairline md:h-full md:grid-cols-gallery-shell md:grid-rows-page md:overflow-hidden">
 
       <PageHeader
         lang={lang}
@@ -605,14 +605,10 @@ const GalleryPageV3 = () => {
         onMenuClick={openMenu}
         onLogoClick={() => goto("home")}
         onLangToggle={() => setLang(lang === "fr" ? "en" : "fr")}
-        actions={[
-          { id: "postprod", label: "Post-prod", onClick: () => goto("postprod"), className: "hidden md:flex" },
-          { id: "stages", label: common.stages[lang], onClick: () => goto("plateau-live"), className: "hidden md:flex" },
-          { id: "book", label: common.book[lang], onClick: () => goto("book"), variant: "primary" },
-        ]}
+        actions={buildMainNav({ lang, goto, exclude: "gallery" })}
       />
 
-      <div className="grid grid-cols-1 gap-px bg-edo-pure-black md:col-span-full md:row-start-2 md:min-h-0 md:overflow-hidden md:grid-cols-gallery-shell">
+      <div className="grid grid-cols-1 edo-hairline md:col-span-full md:row-start-2 md:min-h-0 md:overflow-hidden md:grid-cols-gallery-shell">
         <MobileNavStrip
           triggerLabel={mobileNav.filters[lang].toUpperCase()}
           groups={mobileGroups}

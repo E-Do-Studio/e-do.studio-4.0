@@ -40,7 +40,7 @@ export const MobileAssistantFab = ({ lang }: MobileAssistantFabProps) => {
           open ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0',
         )}
       >
-        <div className="flex shrink-0 items-center justify-between border-b border-foreground px-4 py-3">
+        <div className="flex shrink-0 items-center justify-between border-b border-hairline px-4 py-3">
           <CellLabel>{cellsMsg.assistant[lang]}</CellLabel>
           <button
             type="button"

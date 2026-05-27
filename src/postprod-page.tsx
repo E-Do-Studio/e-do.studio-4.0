@@ -7,6 +7,7 @@ import {
   IconArrowRight,
   IconSelector,
   PageHeader,
+  buildMainNav,
   cn,
 } from './ui';
 import { useDocumentMeta, type SeoOverride } from './lib/use-document-meta';
@@ -286,7 +287,7 @@ const PostprodPage = () => {
 
   return (
     /* Mobile: single-column scrollable. Desktop (md+): sidebar + workspace */
-    <div className="edo-page-enter grid w-full grid-cols-[minmax(0,1fr)] gap-px bg-edo-pure-black md:h-full md:grid-cols-plateau md:grid-rows-app md:overflow-hidden">
+    <div className="edo-page-enter grid w-full grid-cols-[minmax(0,1fr)] edo-hairline md:h-full md:grid-cols-plateau md:grid-rows-app md:overflow-hidden">
 
       {/* Unified header — compact right-aligned actions on all breakpoints */}
       <PageHeader
@@ -296,10 +297,7 @@ const PostprodPage = () => {
         onMenuClick={openMenu}
         onLogoClick={()=>goto('home')}
         onLangToggle={()=>setLang(lang==='fr'?'en':'fr')}
-        actions={[
-          { id: 'gallery', label: common.gallery[lang], onClick: () => goto('gallery'), className: 'hidden md:flex' },
-          { id: 'book', label: common.book[lang], onClick: () => goto('book'), variant: 'primary' },
-        ]}
+        actions={buildMainNav({ lang, goto, exclude: 'postprod' })}
       />
 
       {/* Mobile navigation: sticky single-row trigger showing the current
@@ -468,9 +466,17 @@ const PostprodPage = () => {
       </div>
 
       {/* Sample media grid — images + videos (EDO-222) */}
-      <div className="grid grid-cols-3 gap-px bg-edo-pure-black md:col-start-3 md:col-span-2 md:row-start-2 md:grid-rows-double md:min-h-0">
+      <div className="grid grid-cols-3 md:col-start-3 md:col-span-2 md:row-start-2 md:grid-rows-double md:min-h-0">
         {cat.samples.slice(0, 6).map((sample, i) => (
-          <div key={i} className={`${bgCls} relative overflow-hidden aspect-portrait md:aspect-auto md:h-full`}>
+          <div
+            key={i}
+            className={cn(
+              bgCls,
+              'relative overflow-hidden aspect-portrait md:aspect-auto md:h-full',
+              i % 3 !== 2 && 'border-r border-hairline',
+              i < 3 && 'border-b border-hairline',
+            )}
+          >
             <SampleImage
               sample={sample}
               label={cat.brands?.[i] || `${cat.k.toUpperCase()} · ${String(i + 1).padStart(2, '0')}`}

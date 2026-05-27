@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from '@tanstack/react-router';
-import { BottomSheet, CellLabel, IconArrowRight, IconSelector, PageHeader } from './ui';
+import { BottomSheet, CellLabel, IconArrowRight, IconSelector, PageHeader, buildMainNav } from './ui';
 import { cn } from './ui/cn';
 import { VideoLoop } from './ui/video-loop';
 import { useDocumentMeta } from './lib/use-document-meta';
@@ -159,10 +159,10 @@ const ThumbStrip = ({ items, lang, plateauName, activeIndex, onSelect, className
     'edo-focus-ring absolute top-1/2 z-10 -translate-y-1/2 flex h-8 w-8 cursor-pointer items-center justify-center bg-foreground/5 text-foreground transition-[opacity,background-color] duration-150 hover:bg-foreground/10 disabled:cursor-default disabled:opacity-0 disabled:pointer-events-none';
 
   return (
-    <div className={cn('relative', className)}>
+    <div className={cn('relative edo-hairline', className)}>
       <div
         ref={stripRef}
-        className="flex h-full gap-px overflow-x-auto bg-edo-pure-black snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex h-full edo-hairline overflow-x-auto snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {items.map((item, i) => {
           const isActive = i === activeIndex;
@@ -176,7 +176,7 @@ const ThumbStrip = ({ items, lang, plateauName, activeIndex, onSelect, className
               aria-current={isActive ? 'true' : undefined}
               className={cn(
                 'edo-focus-ring relative shrink-0 snap-start overflow-hidden bg-white border-0 p-0 cursor-pointer',
-                isActive && 'outline outline-2 outline-primary outline-offset-[-2px]',
+                isActive && '[outline-style:solid] [outline-width:var(--hairline)] outline-hairline [outline-offset:calc(var(--hairline)*-1)]',
               )}
               style={{ flexBasis: tileBasis }}
             >
@@ -277,7 +277,7 @@ const PlateauPage = ({ slug }: { slug: string }) => {
 
   return (
     /* Mobile: single-column stacked, scrollable. Desktop (md+): 4-column bento */
-    <div className="edo-page-enter grid w-full gap-px bg-edo-pure-black md:h-full md:grid-cols-plateau md:grid-rows-plateau md:overflow-hidden">
+    <div className="edo-page-enter grid w-full edo-hairline md:h-full md:grid-cols-plateau md:grid-rows-plateau md:overflow-hidden">
 
       {/* Unified header — compact right-aligned actions on all breakpoints */}
       <PageHeader
@@ -287,11 +287,7 @@ const PlateauPage = ({ slug }: { slug: string }) => {
         onMenuClick={openMenu}
         onLogoClick={()=>goto('home')}
         onLangToggle={()=>setLang(lang==='fr'?'en':'fr')}
-        actions={[
-          { id: 'postprod', label: 'Post-prod', onClick: () => goto('postprod'), className: 'hidden md:flex' },
-          { id: 'gallery', label: common.gallery[lang], onClick: () => goto('gallery'), className: 'hidden md:flex' },
-          { id: 'contact', label: common.contactUs[lang], onClick: () => goto('contact') },
-        ]}
+        actions={buildMainNav({ lang, goto, exclude: 'stages' })}
       />
 
       {/* Mobile navigation: sticky single-row trigger showing the current

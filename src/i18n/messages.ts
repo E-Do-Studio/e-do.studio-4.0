@@ -14,6 +14,7 @@ export const common = {
   gallery: { fr: 'Galerie', en: 'Gallery' } as B,
   galleryArrow: { fr: 'Galerie →', en: 'Gallery →' } as B,
   stages: { fr: 'Plateaux', en: 'Stages' } as B,
+  postProd: { fr: 'Post-prod', en: 'Post-prod' } as B,
   legal: { fr: 'Légal', en: 'Legal' } as B,
   reset: { fr: 'Réinitialiser', en: 'Reset' } as B,
   onRequest: { fr: 'Sur demande', en: 'On request' } as B,

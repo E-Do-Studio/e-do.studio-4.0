@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BottomSheet, Button, IconArrowRight, IconSelector, PageHeader, cn } from './ui';
+import { BottomSheet, Button, IconArrowRight, IconSelector, PageHeader, buildMainNav, cn } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
 import { useStructuredData } from './lib/use-structured-data';
 import { buildWebPageSchema, buildBreadcrumbSchema } from './lib/structured-data';
@@ -174,7 +174,7 @@ const LegalPage = () => {
   const articleCount = strapiBody.filter((s) => tryParseArticle(s.title[lang])).length;
 
   return (
-    <div className="edo-page-enter grid w-full gap-px bg-edo-pure-black md:grid-cols-contact-shell md:grid-rows-app md:h-full md:overflow-hidden">
+    <div className="edo-page-enter grid w-full edo-hairline md:grid-cols-contact-shell md:grid-rows-app md:h-full md:overflow-hidden">
 
       {/* Unified header — compact right-aligned actions on all breakpoints */}
       <PageHeader
@@ -184,9 +184,7 @@ const LegalPage = () => {
         onMenuClick={openMenu}
         onLogoClick={() => goto('home')}
         onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
-        actions={[
-          { id: 'contact', label: common.contactUs[lang], onClick: () => goto('contact') },
-        ]}
+        actions={buildMainNav({ lang, goto })}
       />
 
       {/* Mobile navigation: sticky single-row trigger showing the current legal
@@ -277,7 +275,7 @@ const LegalPage = () => {
           <p className="text-caption text-muted-foreground leading-normal mb-3">
             {legalPage.writeDirectly[lang]}
           </p>
-          <a href="mailto:contact@e-do.studio" className="edo-focus-ring inline-flex items-center gap-2 text-caption text-foreground no-underline border-b border-foreground pb-0.5">contact@e-do.studio <IconArrowRight width="10" height="10" /></a>
+          <a href="mailto:contact@e-do.studio" className="edo-focus-ring inline-flex items-center gap-2 text-caption text-foreground no-underline border-b border-hairline pb-0.5">contact@e-do.studio <IconArrowRight width="10" height="10" /></a>
         </div>
         <div className="flex-1" />
       </div>

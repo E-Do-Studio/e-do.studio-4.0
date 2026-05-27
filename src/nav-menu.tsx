@@ -33,7 +33,7 @@ interface NavHeaderProps {
 }
 
 const NavHeader = ({ onClose, lang }: NavHeaderProps) => (
-  <div className="grid grid-cols-fluid-auto border-b border-foreground">
+  <div className="grid grid-cols-fluid-auto border-b border-hairline">
     <div className="flex items-center px-4 py-3.5">
       <CellLabel>Navigation</CellLabel>
     </div>
@@ -41,7 +41,7 @@ const NavHeader = ({ onClose, lang }: NavHeaderProps) => (
       type="button"
       onClick={onClose}
       aria-label={common.close[lang]}
-      className="edo-focus-ring flex h-12 w-12 cursor-pointer items-center justify-center border-0 border-l border-foreground bg-white transition-colors hover:bg-muted"
+      className="edo-focus-ring flex h-12 w-12 cursor-pointer items-center justify-center border-0 border-l border-hairline bg-white transition-colors hover:bg-muted"
     >
       <IconX width="20" height="20" aria-hidden="true" />
     </button>
@@ -63,7 +63,7 @@ const NavItemLink = ({ item, index, onClose, navigate }: NavItemLinkProps) => (
       onClose();
       navigate({ to: item.href });
     }}
-    className="edo-focus-ring relative flex min-h-13 cursor-pointer flex-col justify-between gap-1 border-b border-foreground px-4 py-2.5 no-underline transition-colors hover:bg-muted"
+    className="edo-focus-ring relative flex min-h-13 cursor-pointer flex-col justify-between gap-1 border-b border-hairline px-4 py-2.5 no-underline transition-colors hover:bg-muted"
   >
     <CellLabel>{String(index + 1).padStart(2, "0")}</CellLabel>
     <span className="mt-auto text-cell font-light text-foreground">
@@ -83,7 +83,7 @@ const NavExternalLink = ({ href, label, index }: NavExternalLinkProps) => (
     href={href}
     target="_blank"
     rel="noopener noreferrer"
-    className="edo-focus-ring relative flex min-h-13 cursor-pointer flex-col justify-between gap-1 border-b border-foreground px-4 py-2.5 no-underline transition-colors hover:bg-muted"
+    className="edo-focus-ring relative flex min-h-13 cursor-pointer flex-col justify-between gap-1 border-b border-hairline px-4 py-2.5 no-underline transition-colors hover:bg-muted"
   >
     <CellLabel>{String(index + 1).padStart(2, "0")}</CellLabel>
     <span className="mt-auto flex items-baseline gap-1.5 text-cell font-light text-foreground">
@@ -104,8 +104,8 @@ const SocialLink = ({ item, index }: SocialLinkProps) => (
     target="_blank"
     rel="noopener noreferrer"
     className={cn(
-      "edo-focus-ring flex cursor-pointer items-center justify-center border-b border-foreground px-4 py-3 font-mono text-caption uppercase tracking-label text-muted-foreground no-underline transition-colors hover:bg-muted",
-      index % 2 === 0 && "border-r border-foreground",
+      "edo-focus-ring flex cursor-pointer items-center justify-center border-b border-hairline px-4 py-3 font-mono text-caption uppercase tracking-label text-muted-foreground no-underline transition-colors hover:bg-muted",
+      index % 2 === 0 && "border-r border-hairline",
     )}
   >
     {item.label}
@@ -131,10 +131,10 @@ const NavFooter = ({ lang, setLang, onClose, navigate }: NavFooterProps) => {
   const bookingHref = lang === "fr" ? "/fr/reserver" : "/en/book";
 
   return (
-    <div className="grid grid-cols-auto-fluid border-t border-foreground">
+    <div className="grid grid-cols-auto-fluid border-t border-hairline">
       <button
         onClick={() => setLang(lang === "fr" ? "en" : "fr")}
-        className="edo-focus-ring h-12 w-12 cursor-pointer border-0 border-r border-foreground bg-white font-mono text-caption uppercase tracking-label transition-colors hover:bg-muted"
+        className="edo-focus-ring h-12 w-12 cursor-pointer border-0 border-r border-hairline bg-white font-mono text-caption uppercase tracking-label transition-colors hover:bg-muted"
       >
         {common.langToggleLabel[lang]}
       </button>
@@ -174,7 +174,7 @@ const NavMenu = ({ lang, isOpen, onClose, setLang }: NavMenuProps) => {
         aria-hidden={isOpen ? undefined : true}
         {...({ inert: isOpen ? undefined : '' } as Record<string, unknown>)}
         className={cn(
-          "fixed left-0 top-0 z-sheet flex h-full w-72 flex-col border-r border-foreground bg-white transition-transform duration-300 ease-edo-out",
+          "fixed left-0 top-0 z-sheet flex h-full w-72 flex-col border-r border-hairline bg-white transition-transform duration-300 ease-edo-out",
           isOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >

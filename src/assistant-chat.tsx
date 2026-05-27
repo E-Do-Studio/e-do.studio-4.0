@@ -251,7 +251,7 @@ const AssistantInput = ({ input, setInput, loading, lang, onSend, inputRef }: As
       event.preventDefault();
       onSend(input);
     }}
-    className="mt-auto flex shrink-0 items-center gap-2.5 border-t border-foreground pt-2.5"
+    className="mt-auto flex shrink-0 items-center gap-2.5 border-t border-hairline pt-2.5"
   >
     <input
       ref={inputRef}
