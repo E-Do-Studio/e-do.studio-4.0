@@ -280,7 +280,7 @@ export const booking = {
   needHelp: { fr: "Besoin d'aide", en: 'Need help' } as B,
   yourQuote: { fr: 'Votre devis', en: 'Your quote' } as B,
   manualOr: { fr: 'Choix manuel — ou ', en: 'Manual mode — or ' } as B,
-  letUsGuide: { fr: '← laissez-vous guider', en: '← let us guide you' } as B,
+  letUsGuide: { fr: '← passer au configurateur', en: '← switch to configurator' } as B,
   configurator: { fr: 'Configurateur', en: 'Configurator' } as B,
   stage: { fr: 'Plateau', en: 'Stage' } as B,
   multiSelect: { fr: 'Sélection multiple possible', en: 'Multi-select possible' } as B,

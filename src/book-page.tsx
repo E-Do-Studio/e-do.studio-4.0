@@ -791,7 +791,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                 ↻ {common.reset[lang]}
               </button>
               <button type="button" onClick={()=>goToStep(0, 'config')}
-                className="edo-focus-ring bg-transparent border-l border-hairline px-5 cursor-pointer font-mono text-micro tracking-code uppercase text-muted-foreground whitespace-nowrap leading-normal inline-flex items-center justify-center md:flex-1 transition-colors duration-150 hover:text-foreground hover:bg-white">
+                className="edo-focus-ring bg-primary border-l border-hairline px-5 cursor-pointer font-mono text-label tracking-code uppercase text-white whitespace-nowrap leading-normal font-semibold inline-flex items-center justify-center md:flex-1 transition-all duration-150 hover:opacity-90">
                 ← {bookingMsg.configurator[lang]}
               </button>
             </div>
@@ -837,8 +837,49 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
           total={priceBreakdown.total}
           contact={contact}
         />
+        {step===0 && canNext() && (() => {
+          const recs = configSessions.map(s => ({ session: s, ...recommendSession(s, configGlobal) }));
+          return (
+            <div className="bg-foreground text-white shrink-0">
+              <div className="flex items-stretch border-b border-white/10">
+                <span className="font-mono text-label tracking-meta uppercase tracking-label text-primary self-center pl-6 pr-3 py-2 flex-1 min-w-0">{lang==='fr'?'Récap — recommandation':'Recap — recommendation'}</span>
+                <span className="font-mono text-micro tracking-ui text-white/45 self-center px-5 py-2 md:w-1/2 md:border-l md:border-white/10">{lang==='fr'?'estimation, ajustable':'estimate, tweakable'}</span>
+              </div>
+              {recs.map((r, i) => {
+                const px = BOOK_PLATEAUX.find(x => x.k === r.plateau) || BOOK_PLATEAUX[0];
+                const pr = PRODUCTS.find(x => x.k === r.session.product);
+                const productLabel = r.session.projectType === 'cyclorama' ? (lang==='fr'?'Cyclorama':'Cyclorama') : (pr?.[lang] || '');
+                const totalHours = r.estimatedHours || r.hours || 0;
+                let dur: string;
+                if (r.onRequest) { dur = lang==='fr' ? 'sur demande' : 'on request'; }
+                else if (totalHours <= 16) { dur = `${totalHours}h`; }
+                else {
+                  const d = Math.floor(totalHours / 8); const h = totalHours - d * 8;
+                  const dLbl = lang==='fr' ? (d > 1 ? 'jours' : 'jour') : (d > 1 ? 'days' : 'day');
+                  dur = h > 0 ? `${d} ${dLbl} ${lang==='fr'?'et':'+'} ${h}h (${totalHours}h)` : `${d} ${dLbl} (${totalHours}h)`;
+                }
+                return (
+                  <div key={i} className="px-6 py-2 border-b border-white/10 grid grid-cols-auto-fluid gap-5 items-baseline">
+                    <span className="font-mono text-label tracking-meta uppercase tracking-label text-white/50">{String(i+1).padStart(2,'0')}</span>
+                    <div>
+                      <div className="text-detail font-normal tracking-headline mb-px">{px[lang]} <span className="text-white/50 text-caption">· {dur}</span></div>
+                      <div className="font-mono text-micro tracking-caption text-white/55">{productLabel}{r.session.projectType==='cyclorama' ? '' : ` · ${r.session.quantity} ${lang==='fr'?'produits':'products'}`}{r.session.projectType==='cyclorama' ? '' : (() => { const q = Number(r.session.quantity)||0; const vc = Number(r.session.viewsCount)||0; const vLen = (r.session.views||[]).length; const v = vc || vLen || 0; const n = q * v; return n > 0 ? ` · ${n} ${lang==='fr'?'images':'images'}` : ''; })()}{r.cadence ? ` · ${lang==='fr'?`Estimation : ${r.cadence} produits/jour`:`Estimate: ${r.cadence} products/day`}` : ''}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
+        {step===0 && (
+          <div className="flex items-stretch min-h-control shrink-0">
+            <button type="button" onClick={applyConfig} disabled={!canNext()} className={`edo-focus-ring bg-primary border-0 cursor-pointer text-white font-mono text-caption tracking-meta uppercase px-5 inline-flex items-center justify-center gap-2 flex-1 min-w-0 transition-opacity duration-150 hover:opacity-90${canNext() ? '' : ' opacity-30 cursor-not-allowed'}`}>
+              {lang==='fr'?'Continuer vers la réservation':'Continue to booking'} <IconArrowRight width="14" height="14"/>
+            </button>
+          </div>
+        )}
         {step>0 && (
-        <div className="border-t border-border flex items-stretch shrink-0 bg-white h-18">
+        <div className="border-t border-border flex items-stretch shrink-0 bg-white min-h-control">
           {(() => {
             const idx = STEPS.findIndex(s=>s.n===step); const isFirst = idx <= 0; const prevN = idx > 0 ? STEPS[idx-1].n : null; const nextN = idx > -1 && idx < STEPS.length-1 ? STEPS[idx+1].n : null;
             const dateList = plateaus && plateaus.length > 0 ? plateaus : (plateau ? [plateau] : []); const isMultiDate = step===6 && dateList.length > 1;
@@ -848,7 +889,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
             const handleSubNext = () => { if (isMultiDate && !onLastDateSub && currentDateValid) { setDateIdx(safeDateIdx + 1); return true; } return false; };
             const backBtnCls = "edo-focus-ring bg-white border-0 cursor-pointer font-mono text-caption tracking-meta uppercase text-foreground px-5 inline-flex items-center justify-start gap-2 transition-colors duration-150 flex-1 min-w-0 hover:bg-muted";
             const navBtnSecondaryCls = "edo-focus-ring bg-white border-l border-hairline cursor-pointer font-mono text-caption tracking-meta uppercase text-foreground px-5 inline-flex items-center justify-center gap-2 transition-colors duration-150 md:flex-1 min-w-0 hover:bg-muted";
-            const navBtnPrimaryCls = "edo-focus-ring bg-foreground border-l border-hairline cursor-pointer text-white font-mono text-caption tracking-meta uppercase px-5 inline-flex items-center justify-center gap-2 transition-colors duration-150 md:flex-1 min-w-0 hover:text-primary";
+            const navBtnPrimaryCls = "edo-focus-ring bg-primary border-l border-hairline cursor-pointer text-white font-mono text-caption tracking-meta uppercase px-5 inline-flex items-center justify-center gap-2 transition-opacity duration-150 md:flex-1 min-w-0 hover:opacity-90";
             const navBtnOrangeCls = "edo-focus-ring bg-primary border-l border-hairline cursor-pointer text-white font-mono text-caption tracking-meta uppercase px-5 inline-flex items-center justify-center gap-2 transition-opacity duration-150 md:flex-1 min-w-0 hover:opacity-90";
             return (<>
           <button type="button" onClick={handleBack} disabled={isFirst && onFirstDateSub} className={backBtnCls + (isFirst && onFirstDateSub ? ' opacity-30 cursor-not-allowed' : '')}>
@@ -856,8 +897,8 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
           </button>
           <div className="flex items-stretch flex-none md:w-1/2">
           {step<5 ? (
-            <button type="button" onClick={()=>canNext()&&nextN!==null&&goToStep(nextN)} disabled={!canNext()} className={navBtnPrimaryCls + (canNext() ? '' : ' opacity-30 cursor-not-allowed')}>
-              {lang==='fr'?'Continuer':'Continue'} <IconArrowRight width="14" height="14"/>
+            <button type="button" onClick={()=>{ if (!canNext()) return; if (step===0) { applyConfig(); } else if (nextN !== null) { goToStep(nextN); } }} disabled={!canNext()} className={navBtnPrimaryCls + (canNext() ? '' : ' opacity-30 cursor-not-allowed')}>
+              {step===0 ? (lang==='fr'?'Continuer vers la réservation':'Continue to booking') : (lang==='fr'?'Continuer':'Continue')} <IconArrowRight width="14" height="14"/>
             </button>
           ) : p.isCyclo ? (
             step===5 ? (
@@ -1092,8 +1133,6 @@ const Step0Configurator = ({ lang, global, setGlobal, sessions, setSessions, act
       {S.projectType === 'ecom' && S.product && sessionValid(S) && (accQ('postprod', <><div className="px-5 sm:px-6 border-b border-hairline flex items-center min-h-control py-4 sm:py-0 gap-3 box-border"><span className="edo-cell-label text-primary">{lang==='fr'?'Post-production':'Post-production'}</span></div><div className="grid gap-hairline bg-edo-pure-black border-b border-hairline" style={{gridTemplateColumns:((S.media||[]).includes('video') && S.postprod) ? '1fr 1fr' : '1fr'}}><div className="bg-white px-4 sm:px-3.5 py-4 sm:py-2.5 flex items-center justify-between gap-3"><div><div className="text-detail font-medium tracking-copy-tight">{lang==='fr'?'Post-production par E-DO ?':'Post-production by E-DO?'}</div><div className={`font-mono text-label text-muted-foreground mt-0.5`}>{lang==='fr'?'Prix estimatif affiché — ajusté après brief':'Estimated price shown — adjusted after brief'}</div></div><Toggle on={S.postprod} onClick={()=>setSession({postprod:!S.postprod, postprodVideo: S.postprod ? false : S.postprodVideo})}/></div>{((S.media||[]).includes('video')) && S.postprod && (<div className="bg-white px-4 sm:px-3.5 py-4 sm:py-2.5 flex items-center justify-between gap-3"><div><div className="text-detail font-medium tracking-copy-tight">{lang==='fr'?'Montage vidéo ?':'Video editing?'}</div><div className={`font-mono text-label text-muted-foreground mt-0.5`}>{lang==='fr'?'Uniquement pour les projets vidéo':'Only for video projects'}</div></div><Toggle on={S.postprodVideo} onClick={()=>setSession({postprodVideo:!S.postprodVideo})}/></div>)}</div></>))}
       {S.projectType === 'cyclorama' && (<div className="bg-muted p-5 border-t border-b border-hairline text-center"><div className="text-cell font-normal tracking-headline mb-2">{lang==='fr'?'Cyclorama / Production libre':'Cyclorama / Free production'}</div><div className="text-detail text-muted-foreground max-w-xl mx-auto leading-normal">{lang==='fr'?"Besoin sur-mesure, nous établissons un devis personnalisé.":"Custom needs — we'll prepare a tailored quote based on stage, duration and technical resources."}</div></div>)}
       {sessionValid(active) && activeIdx === sessions.length - 1 && (<div className="px-6 py-1.5 flex justify-center items-center bg-white"><button type="button" onClick={addSession} className="edo-focus-ring bg-white border border-border px-4 py-1.5 cursor-pointer font-mono text-label tracking-meta uppercase text-foreground flex items-center gap-2 h-7">+ {lang==='fr'?'Ajouter une autre session produit':'Add another product session'}</button></div>)}
-      <div className="h-0 bg-white"/>
-      {allValid && recs && (<div className="m-0 bg-foreground text-white"><div className="flex items-stretch border-b border-white/10"><span className={`font-mono text-label tracking-meta uppercase tracking-label text-primary self-center pl-6 pr-3 py-2 flex-1 min-w-0`}>{lang==='fr'?'Récap — recommandation':'Recap — recommendation'}</span><span className={`font-mono text-micro tracking-ui text-white/45 self-center px-5 py-2 md:w-1/2 md:border-l md:border-white/10`}>{lang==='fr'?'estimation, ajustable':'estimate, tweakable'}</span></div>{recs.map((r, i) => { const px = BOOK_PLATEAUX.find(x => x.k === r.plateau) || BOOK_PLATEAUX[0]; const p = PRODUCTS.find(x => x.k === r.session.product); const productLabel = r.session.projectType === 'cyclorama' ? (lang==='fr'?'Cyclorama':'Cyclorama') : (p?.[lang] || ''); const totalHours = r.estimatedHours || r.hours || 0; let dur; if (r.onRequest) { dur = lang==='fr' ? 'sur demande' : 'on request'; } else if (totalHours <= 16) { dur = `${totalHours}h`; } else { const d = Math.floor(totalHours / 8); const h = totalHours - d * 8; const dLbl = lang==='fr' ? (d > 1 ? 'jours' : 'jour') : (d > 1 ? 'days' : 'day'); dur = h > 0 ? `${d} ${dLbl} ${lang==='fr'?'et':'+'} ${h}h (${totalHours}h)` : `${d} ${dLbl} (${totalHours}h)`; } return (<div key={i} className="px-6 py-2 border-b border-white/10 grid grid-cols-auto-fluid gap-5 items-baseline"><span className={`font-mono text-label tracking-meta uppercase tracking-label text-white/50`}>{String(i+1).padStart(2,'0')}</span><div><div className="text-detail font-normal tracking-headline mb-px">{px[lang]} <span className="text-white/50 text-caption">· {dur}</span></div><div className={`font-mono text-micro tracking-caption text-white/55`}>{productLabel}{r.session.projectType==='cyclorama' ? '' : ` · ${r.session.quantity} ${lang==='fr'?'produits':'products'}`}{r.session.projectType==='cyclorama' ? '' : (() => { const q = Number(r.session.quantity)||0; const vc = Number(r.session.viewsCount)||0; const vLen = (r.session.views||[]).length; const v = vc || vLen || 0; const n = q * v; return n > 0 ? ` · ${n} ${lang==='fr'?'images':'images'}` : ''; })()}{r.cadence ? ` · ${lang==='fr'?`Estimation : ${r.cadence} produits/jour`:`Estimate: ${r.cadence} products/day`}` : ''}</div></div></div>); })}<div className="flex items-stretch border-t border-white/10"><div className="flex-1 min-w-0"/><div className="flex items-stretch md:w-1/2"><button type="button" onClick={onApply} className="edo-focus-ring bg-primary border-l border-white/10 text-white py-3 px-5 cursor-pointer font-mono text-label tracking-meta uppercase tracking-label inline-flex items-center justify-center gap-2.5 md:flex-1 min-w-0 transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90">{lang==='fr'?'Continuer vers la réservation':'Continue to booking'}<IconArrowRight width="12" height="12"/></button></div></div></div>)}
       <div className="h-4 bg-white"/>
     </div>
   );
