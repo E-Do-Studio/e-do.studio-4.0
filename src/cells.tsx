@@ -341,8 +341,9 @@ const ChatCell = ({ lang }: ChatCellProps) => {
           {msg.slice(0, shown)}{shown < msg.length && <span className="animate-pulse">|</span>}
         </p>
       </div>
-      <form onSubmit={submit} className="flex items-center gap-2">
+      <form name="assistant-chat-cell" aria-label="Assistant chat" onSubmit={submit} className="flex items-center gap-2">
         <input
+          name="message"
           value={input}
           onChange={e => setInput(e.target.value)}
           placeholder={assistantMsg.chatPlaceholder[lang]}

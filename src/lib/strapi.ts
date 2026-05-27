@@ -130,7 +130,6 @@ interface StrapiBlogPost {
   slug: string;
   excerpt: string;
   body?: string;
-  bodyBlocks?: BlockNode[];
   coverImage?: StrapiMedia;
   // Editorial date set by the editor (independent of Strapi's publish state).
   // `publishedAt` is kept as a fallback for posts that haven't been migrated
@@ -757,22 +756,16 @@ function resolveRawMediaUrl(media?: StrapiMedia | null): string | undefined {
 }
 
 export async function fetchDiscoveryPosts(): Promise<DiscoveryPost[]> {
-  // EDO-269: sort server-side on `createdAt` (a Strapi system field that is
-  // always present and sortable) instead of the editorial `articleDate`. The
-  // EDO-256 rename moved the editorial date column from `published_at` to
-  // `article_date`; on environments where the schema sync hadn't fully
-  // propagated, `sort=articleDate:desc` returned a 400 and the SPA threw —
-  // wiping every article from the discovery page. We re-sort client-side
-  // below to preserve editorial intent.
+  // Sort server-side on `createdAt` (always present, always sortable) and
+  // re-sort by editorial `articleDate` below — sorting on `articleDate`
+  // server-side fails with 400 on envs where the schema rename (EDO-256)
+  // hadn't propagated yet, and a single 400 wipes the whole discovery page.
   const resBI = await fetchStrapiBilingual<{ data: StrapiBlogPost[] }>('blog-posts', {
-    'populate': 'categories,coverImage,bodyBlocks',
+    'populate': 'categories,coverImage',
     'sort': 'createdAt:desc',
     'pagination[pageSize]': '50',
   });
 
-  // Re-sort by `articleDate` (editor's intent) with a `publishedAt` fallback
-  // for posts that predate EDO-256 or whose editor never filled the field,
-  // and `createdAt` as the last resort so the order stays deterministic.
   function sortKey(p: StrapiBlogPost): number {
     const raw = p.articleDate ?? p.publishedAt ?? p.createdAt ?? '';
     const t = raw ? Date.parse(raw) : NaN;
@@ -787,8 +780,6 @@ export async function fetchDiscoveryPosts(): Promise<DiscoveryPost[]> {
     const catEn = pEn.categories?.[0];
     const bodyFr = pFr.body ?? '';
     const bodyEn = pEn.body ?? '';
-    const blocksFr = Array.isArray(pFr.bodyBlocks) ? pFr.bodyBlocks : [];
-    const blocksEn = Array.isArray(pEn.bodyBlocks) ? pEn.bodyBlocks : blocksFr;
     const readingTime = estimateReadingTime(bodyFr || bodyEn);
     const displayDate = pFr.articleDate ?? pFr.publishedAt ?? '';
     return {
@@ -799,7 +790,6 @@ export async function fetchDiscoveryPosts(): Promise<DiscoveryPost[]> {
       title: { fr: pFr.title, en: pEn.title },
       sub: { fr: pFr.excerpt, en: pEn.excerpt },
       body: { fr: bodyFr, en: bodyEn },
-      bodyBlocks: blocksFr.length > 0 || blocksEn.length > 0 ? { fr: blocksFr, en: blocksEn } : undefined,
       date: formatStrapiDate(displayDate),
       read: `${readingTime} min`,
       author: 'Studio',

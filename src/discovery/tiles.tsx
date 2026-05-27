@@ -6,6 +6,7 @@ import { cn } from '../ui/cn';
 import { EmptyState } from '../ui';
 import { cellBase, labelBase } from './styles';
 import { common, discoveryPage } from '../i18n/messages';
+import { renderInlineMarkdown } from '../lib/render-markdown';
 
 interface VisualTileProps {
   tone?: string;
@@ -54,8 +55,11 @@ export const NewsletterCard: React.FC<NewsletterCardProps> = ({ lang, className,
   <section className={cn(cellBase, 'order-5 flex min-h-36 flex-col justify-between gap-2.5 bg-white px-cell-lg py-cell text-foreground lg:min-h-0', className)}>
     {badge != null && <CellBadge n={badge} />}
     <span className={cn(labelBase, 'text-primary')}>Newsletter</span>
-    <form onSubmit={(event) => event.preventDefault()} className="flex items-center gap-2 border-b border-hairline pb-1.5">
+    <form name="newsletter" aria-label="Newsletter" onSubmit={(event) => event.preventDefault()} className="flex items-center gap-2 border-b border-hairline pb-1.5">
       <input
+        name="email"
+        type="email"
+        autoComplete="email"
         placeholder={discoveryPage.emailPlaceholder[lang]}
         className="edo-focus-ring min-w-0 flex-1 border-0 bg-transparent py-1 font-sans text-detail text-foreground outline-none placeholder:text-muted-foreground"
       />
@@ -95,9 +99,16 @@ export const SplitArticleCard: React.FC<SplitArticleCardProps> = ({ post, lang, 
         <h3 className="m-0 text-balance text-page-title font-light leading-tight tracking-headline text-foreground">
           {post.title[lang]}
         </h3>
-        <p className="edo-line-clamp-3 m-0 text-detail leading-normal text-muted-foreground">
-          {post.sub?.[lang] || discoveryPage.readFallback[lang]}
-        </p>
+        {post.sub?.[lang] ? (
+          <p
+            className="edo-line-clamp-3 m-0 text-detail leading-normal text-muted-foreground [&_a]:text-primary [&_em]:italic [&_strong]:font-semibold [&_strong]:text-foreground"
+            dangerouslySetInnerHTML={{ __html: renderInlineMarkdown(post.sub[lang]) }}
+          />
+        ) : (
+          <p className="edo-line-clamp-3 m-0 text-detail leading-normal text-muted-foreground">
+            {discoveryPage.readFallback[lang]}
+          </p>
+        )}
       </div>
       <span className="inline-flex items-center gap-2 font-mono text-label uppercase tracking-label text-foreground">
         {discoveryPage.readArticle[lang]} <span className="text-detail">→</span>

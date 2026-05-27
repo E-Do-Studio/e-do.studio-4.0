@@ -208,8 +208,8 @@ export const home = {
     en: 'The studio that powers your',
   } as B,
   studioHeadlineAccent: {
-    fr: 'e-commerce.',
-    en: 'e-commerce.',
+    fr: 'e-commerce',
+    en: 'e-commerce',
   } as B,
   studioSubtitleLead: {
     fr: 'Photo, vidéo et retouche pour vos catalogues en ligne — ',

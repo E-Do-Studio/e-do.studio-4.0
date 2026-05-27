@@ -33,7 +33,6 @@ const PUBLIC_SINGLE_TYPES = [
  * uncluttered without losing the data.
  */
 const HIDDEN_FIELDS_BY_CT: Record<string, string[]> = {
-  'api::blog-post.blog-post': ['cta_text', 'cta_label', 'cta_url', 'seo_title', 'seo_description', 'seo_image'],
   'api::machine.machine': ['pricing', 'operatorPricing'],
   'api::post-production-type.post-production-type': ['price'],
   'api::site-setting.site-setting': [

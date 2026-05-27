@@ -4,7 +4,7 @@ import { PageHeader, buildMainNav, IconArrowRight, cn } from '../ui';
 import { useDocumentMeta } from '../lib/use-document-meta';
 import { useStructuredData } from '../lib/use-structured-data';
 import { buildWebPageSchema, buildBreadcrumbSchema } from '../lib/structured-data';
-import { bookPicker, booking, common } from '../i18n/messages';
+import { bookPicker, booking } from '../i18n/messages';
 import { configuratorPath, manualPath } from './book-routes';
 import type { Lang } from '../types';
 
@@ -100,7 +100,7 @@ const BookPicker = () => {
         actions={buildMainNav({ lang, goto, exclude: 'book' })}
       />
 
-      <div className="md:row-start-2 md:overflow-y-auto md:min-h-0">
+      <div className="grid edo-hairline md:row-start-2 md:overflow-y-auto md:min-h-0">
         <div className="bg-white px-6 py-10 md:px-12 md:py-14">
           <h1 className="m-0 text-hero font-light tracking-display leading-solid text-balance text-foreground">
             {bookPicker.title[lang]}
@@ -110,7 +110,7 @@ const BookPicker = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-hairline bg-border md:grid-cols-3">
+        <div className="grid edo-hairline grid-cols-1 md:grid-cols-3">
           <PickerTile
             index={1}
             label={bookPicker.configuratorLabel[lang]}
@@ -140,16 +140,6 @@ const BookPicker = () => {
           />
         </div>
 
-        <div className="bg-white px-6 py-8 md:px-12 md:py-10">
-          <span className="font-mono text-label tracking-meta uppercase text-muted-foreground">
-            {lang === 'fr' ? 'Réponse sous 24h ouvrées' : 'Reply within 1 business day'}
-          </span>
-          <span className="ml-3 text-detail text-muted-foreground">
-            {lang === 'fr'
-              ? `· ${common.bookNow.fr} en quelques minutes.`
-              : `· ${common.bookNow.en} in a few minutes.`}
-          </span>
-        </div>
       </div>
     </div>
   );

@@ -140,29 +140,30 @@ const DirectionA = () => {
 
       {/* ── Rows 3-4 left: E-commerce section ── */}
       <div className="col-span-2 min-h-72 flex flex-col overflow-hidden bg-white md:col-start-1 md:col-end-7 md:row-start-3 md:row-end-5 md:min-h-0">
-        <div className="flex flex-shrink-0 flex-col gap-3 px-5 pt-6 pb-5 md:px-7 md:pt-7 md:pb-6">
-          <h2 className="m-0 text-balance text-[clamp(1.625rem,3vw,2.5rem)] font-light tracking-display leading-tight text-foreground">
+        <div className="flex flex-shrink-0 flex-col gap-4 px-5 pt-6 pb-5 md:px-7 md:pt-7 md:pb-6">
+          <h2 className="m-0 text-balance text-[clamp(1.5rem,2.2vw,2rem)] font-light tracking-display leading-tight text-foreground">
             {homeMsg.studioHeadlineLead[lang]}{' '}
             <span className="italic text-primary">
               {homeMsg.studioHeadlineAccent[lang]}
             </span>
+            .
           </h2>
-          <p className="m-0 text-balance text-detail leading-snug text-muted-foreground">
+          <p className="m-0 text-pretty font-mono text-detail leading-relaxed text-muted-foreground">
             {homeMsg.studioSubtitleLead[lang]}
-            <strong className="font-semibold text-foreground">
+            <span className="text-foreground">
               {homeMsg.studioSubtitleStrong[lang]}
-            </strong>
+            </span>
           </p>
         </div>
 
         <div className="flex flex-1 min-h-0 overflow-hidden bg-white">
-          <div className="grid flex-1 grid-cols-2 content-end bg-white md:grid-cols-4">
+          <div className="grid flex-1 grid-cols-2 content-end bg-white md:grid-cols-4 md:auto-rows-fr">
             {ecomMachines.map((m, i) => (
               <button
                 key={m.slug}
                 onClick={() => goto('plateau-' + m.slug)}
                 className={cn(
-                  'edo-focus-ring group flex aspect-[4/3] min-w-0 cursor-pointer flex-col justify-between bg-white px-3 py-3 text-left text-foreground transition-colors duration-150 hover:bg-muted md:aspect-square md:px-4 md:py-4',
+                  'edo-focus-ring group flex aspect-[4/3] min-w-0 cursor-pointer flex-col justify-between bg-white px-3 py-3 text-left text-foreground transition-colors duration-150 hover:bg-muted md:aspect-auto md:px-4 md:py-4',
                   // Hairline gray rules: top edge separates the card row from
                   // the empty area above, left edge separates adjacent cards.
                   'border-t border-l border-edo-gray-200',

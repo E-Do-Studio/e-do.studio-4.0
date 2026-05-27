@@ -29,10 +29,10 @@ export const DiscoveryBentoGrid: React.FC<DiscoveryBentoGridProps> = ({ lang, go
     () => allPosts.find(p => p !== featuredPost && !p.featured) ?? allPosts[3] ?? null,
     [allPosts, featuredPost]
   );
-  const morePosts = useMemo(
-    () => allPosts.filter(p => p !== featuredPost && p !== splitPost),
-    [allPosts, featuredPost, splitPost]
-  );
+  // "Plus d'articles" = full archive (every published post, including the
+  // ones already shown in the featured / split tiles). Hero + archive
+  // referencing the same posts is the standard blog pattern.
+  const morePosts = allPosts;
 
   return (
     <>

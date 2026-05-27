@@ -247,6 +247,8 @@ interface AssistantInputProps {
 
 const AssistantInput = ({ input, setInput, loading, lang, onSend, inputRef }: AssistantInputProps) => (
   <form
+    name="assistant-chat"
+    aria-label="Assistant chat"
     onSubmit={(event) => {
       event.preventDefault();
       onSend(input);
@@ -255,6 +257,7 @@ const AssistantInput = ({ input, setInput, loading, lang, onSend, inputRef }: As
   >
     <input
       ref={inputRef}
+      name="message"
       value={input}
       onChange={(event) => setInput(event.target.value.slice(0, MAX_INPUT_CHARS))}
       disabled={loading}

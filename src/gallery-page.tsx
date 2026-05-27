@@ -13,6 +13,7 @@ import { EmptyState, Loader, MobileNavStrip, PageHeader, buildMainNav } from "./
 import type { StripGroup } from "./ui";
 import { cn } from "./ui/cn";
 import { common, galleryPage, mobileNav } from "./i18n/messages";
+import { GalleryLightbox } from "./gallery-lightbox";
 
 const PLATEAU_LABELS: Record<string, { fr: string; en: string }> = {
   cyclorama: { fr: "Cyclorama", en: "Cyclorama" },
@@ -224,12 +225,14 @@ interface GalleryContentProps {
   lang: Lang;
   filtered: GalleryProject[];
   resetFilters: () => void;
+  onOpenLightbox: (projectId: number, imageIndex: number) => void;
 }
 
 const GalleryContent = ({
   lang,
   filtered,
   resetFilters,
+  onOpenLightbox,
 }: GalleryContentProps) => (
   <div className="min-h-0 overflow-y-auto bg-white edo-hairline md:col-start-2 md:col-span-4">
     <div className="flex flex-col [&>*:not(:last-child)]:border-b [&>*:not(:last-child)]:border-hairline">
@@ -245,6 +248,7 @@ const GalleryContent = ({
             key={project.id}
             project={project}
             lang={lang}
+            onOpenLightbox={onOpenLightbox}
           />
         ))
       )}
@@ -252,7 +256,17 @@ const GalleryContent = ({
   </div>
 );
 
-const ProjectRow = ({ project, lang, style }: { project: GalleryProject; lang: Lang; style?: CSSProperties }) => {
+const ProjectRow = ({
+  project,
+  lang,
+  style,
+  onOpenLightbox,
+}: {
+  project: GalleryProject;
+  lang: Lang;
+  style?: CSSProperties;
+  onOpenLightbox: (projectId: number, imageIndex: number) => void;
+}) => {
   const to = resolvePlateauPath(project.plateau, lang);
   const plateauLabel = PLATEAU_LABELS[project.plateau]?.[lang] ?? project.plateau;
   const ariaLabel = `${project.brand} — ${plateauLabel}`;
@@ -264,8 +278,8 @@ const ProjectRow = ({ project, lang, style }: { project: GalleryProject; lang: L
           key={imageIndex}
           project={project}
           imageIndex={imageIndex}
-          to={to}
           ariaLabel={ariaLabel}
+          onOpen={() => onOpenLightbox(project.id, imageIndex)}
         />
       ))}
     </div>
@@ -327,13 +341,13 @@ const ProjectLabel = ({
 const ProjectImage = ({
   project,
   imageIndex,
-  to,
   ariaLabel,
+  onOpen,
 }: {
   project: GalleryProject;
   imageIndex: number;
-  to: string | null;
   ariaLabel: string;
+  onOpen: () => void;
 }) => {
   const reducedMotion = usePrefersReducedMotion();
   const item = project.media[imageIndex];
@@ -373,11 +387,16 @@ const ProjectImage = ({
     );
   }
 
-  if (to) {
+  if (item) {
     return (
-      <Link to={to} aria-label={ariaLabel} className={wrapperClass}>
+      <button
+        type="button"
+        onClick={onOpen}
+        aria-label={ariaLabel}
+        className={cn(wrapperClass, "cursor-pointer border-0 p-0 text-left")}
+      >
         {inner}
-      </Link>
+      </button>
     );
   }
   return <div className={wrapperClass}>{inner}</div>;
@@ -446,6 +465,12 @@ const GalleryPageV3 = () => {
 
   const projects = strapiProjects ?? [];
   const categories = strapiCategories ?? [];
+
+  const [lightbox, setLightbox] = useState<{ projectId: number; imageIndex: number } | null>(null);
+  const lightboxProject = useMemo(
+    () => (lightbox ? projects.find((p) => p.id === lightbox.projectId) ?? null : null),
+    [lightbox, projects],
+  );
   useStructuredData('gallery', [
     buildGalleryCollectionSchema(projects, categories, lang, '/galerie'),
     buildBreadcrumbSchema(
@@ -640,8 +665,24 @@ const GalleryPageV3 = () => {
           lang={lang}
           filtered={filtered}
           resetFilters={resetFilters}
+          onOpenLightbox={(projectId, imageIndex) =>
+            setLightbox({ projectId, imageIndex })
+          }
         />
       </div>
+
+      {lightboxProject && lightbox && (
+        <GalleryLightbox
+          project={lightboxProject}
+          initialIndex={lightbox.imageIndex}
+          lang={lang}
+          onClose={() => setLightbox(null)}
+          onBook={() => {
+            setLightbox(null);
+            goto("book");
+          }}
+        />
+      )}
     </div>
   );
 };

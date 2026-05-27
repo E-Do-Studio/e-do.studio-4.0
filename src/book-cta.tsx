@@ -6,12 +6,13 @@ interface BookCTAProps {
   lang: Lang;
   onClick: () => void;
   className?: string;
+  label?: string;
 }
 
 // The orange "Réserver" tile. Single definition of the booking CTA, used at
 // two render sites: the mobile social row (SocialClientsBar) and the desktop
 // bento at row 5 (DirectionA). Same DOM, same brand language in both.
-const BookCTATile = ({ lang, onClick, className }: BookCTAProps) => (
+const BookCTATile = ({ lang, onClick, className, label }: BookCTAProps) => (
   <button
     type="button"
     onClick={onClick}
@@ -25,7 +26,7 @@ const BookCTATile = ({ lang, onClick, className }: BookCTAProps) => (
         {homeMsg.requestQuoteOr[lang]}
       </span>
       <span className="text-base font-normal tracking-headline leading-tight text-white md:text-tile-title">
-        {common.book[lang]}
+        {label ?? common.book[lang]}
       </span>
     </div>
     <IconArrowRight

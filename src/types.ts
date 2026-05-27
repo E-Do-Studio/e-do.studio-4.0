@@ -27,7 +27,6 @@ export interface DiscoveryPost {
   title: Bilingual;
   sub: Bilingual;
   body: Bilingual;
-  bodyBlocks?: Bilingual<unknown[]>;
   date: Bilingual;
   read: string;
   author: string;
