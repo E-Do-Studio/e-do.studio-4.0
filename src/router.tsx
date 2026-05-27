@@ -168,16 +168,112 @@ const contactRoute = createRoute({
   component: lazyRouteComponent(() => import('./contact-page'), 'ContactPage'),
 });
 
-const bookFrRoute = createRoute({
+const bookPickerFrRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/reserver',
-  component: lazyRouteComponent(() => import('./book-page'), 'BookPageV2'),
+  component: lazyRouteComponent(() => import('./book/book-picker'), 'BookPicker'),
 });
 
-const bookEnRoute = createRoute({
+const bookPickerEnRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/book',
-  component: lazyRouteComponent(() => import('./book-page'), 'BookPageV2'),
+  component: lazyRouteComponent(() => import('./book/book-picker'), 'BookPicker'),
+});
+
+const ConfigStep0 = lazyRouteComponent(() => import('./book/book-step-routes'), 'ConfigStep0');
+const ConfigStep2 = lazyRouteComponent(() => import('./book/book-step-routes'), 'ConfigStep2');
+const ConfigStep3 = lazyRouteComponent(() => import('./book/book-step-routes'), 'ConfigStep3');
+const ConfigStep5 = lazyRouteComponent(() => import('./book/book-step-routes'), 'ConfigStep5');
+const ConfigStep6 = lazyRouteComponent(() => import('./book/book-step-routes'), 'ConfigStep6');
+const ManualBook = lazyRouteComponent(() => import('./book/book-step-routes'), 'ManualBook');
+const BookConfirmation = lazyRouteComponent(() => import('./book/book-confirmation'), 'BookConfirmation');
+
+const bookContactRedirect = (lang: Lang) => () => {
+  throw redirect({ to: '/$lang/contact', params: { lang } });
+};
+
+const configFrRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: '/reserver/configurateur',
+  component: ConfigStep0,
+});
+const configFrPlateauRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: '/reserver/configurateur/plateau',
+  component: ConfigStep2,
+});
+const configFrEquipeRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: '/reserver/configurateur/equipe',
+  component: ConfigStep3,
+});
+const configFrCoordonneesRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: '/reserver/configurateur/coordonnees',
+  component: ConfigStep5,
+});
+const configFrDatesRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: '/reserver/configurateur/dates',
+  component: ConfigStep6,
+});
+const manualFrRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: '/reserver/manuel',
+  component: ManualBook,
+});
+const bookFrContactRedirect = createRoute({
+  getParentRoute: () => langRoute,
+  path: '/reserver/contact',
+  beforeLoad: bookContactRedirect('fr'),
+  component: () => null,
+});
+const confirmationFrRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: '/reserver/confirmation',
+  component: BookConfirmation,
+});
+
+const configEnRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: '/book/configurator',
+  component: ConfigStep0,
+});
+const configEnStageRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: '/book/configurator/stage',
+  component: ConfigStep2,
+});
+const configEnTeamRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: '/book/configurator/team',
+  component: ConfigStep3,
+});
+const configEnDetailsRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: '/book/configurator/details',
+  component: ConfigStep5,
+});
+const configEnDatesRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: '/book/configurator/dates',
+  component: ConfigStep6,
+});
+const manualEnRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: '/book/manual',
+  component: ManualBook,
+});
+const bookEnContactRedirect = createRoute({
+  getParentRoute: () => langRoute,
+  path: '/book/contact',
+  beforeLoad: bookContactRedirect('en'),
+  component: () => null,
+});
+const confirmationEnRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: '/book/confirmation',
+  component: BookConfirmation,
 });
 
 const legalRoute = createRoute({
@@ -205,8 +301,24 @@ const routeTree = rootRoute.addChildren([
     postprodRoute,
     galleryRoute,
     contactRoute,
-    bookFrRoute,
-    bookEnRoute,
+    configFrRoute,
+    configFrPlateauRoute,
+    configFrEquipeRoute,
+    configFrCoordonneesRoute,
+    configFrDatesRoute,
+    manualFrRoute,
+    bookFrContactRedirect,
+    confirmationFrRoute,
+    bookPickerFrRoute,
+    configEnRoute,
+    configEnStageRoute,
+    configEnTeamRoute,
+    configEnDetailsRoute,
+    configEnDatesRoute,
+    manualEnRoute,
+    bookEnContactRedirect,
+    confirmationEnRoute,
+    bookPickerEnRoute,
     legalRoute,
     devMobileNavStripRoute,
   ]),

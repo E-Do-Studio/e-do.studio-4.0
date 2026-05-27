@@ -1,4 +1,5 @@
 import React, { useState as useStateBook, useMemo as useMemoBook, useCallback as useCallbackBook } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { usePageContext } from './router';
 import { CellLabel, EmptyState, IconArrowRight, PageHeader, buildMainNav } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
@@ -12,10 +13,10 @@ import { useAvailability, isHourBlocked, clearAvailabilityCache } from './lib/av
 import type { Lang } from './types';
 import type { BookingSessionData } from './lib/bookings';
 import { common, booking as bookingMsg } from './i18n/messages';
+import { pathForStep, confirmationPath, type BookMode } from './book/book-routes';
+import { saveConfirmation, type ConfirmationMode } from './book/confirmation-snapshot';
 
 type BilingualText = Record<Lang, string>;
-type BookMode = 'config' | 'manual';
-type SentMode = false | 'request' | 'quote' | 'booking';
 type AnyProps = Record<string, any>;
 
 interface BookRates {
@@ -350,8 +351,14 @@ const isSessionValid = (s: BookingSession) => {
   return true;
 };
 
-const BookPageV2 = () => {
+interface BookPageV2Props {
+  forcedStep?: number;
+  forceManual?: boolean;
+}
+
+const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
   const { lang, setLang, openMenu, goto } = usePageContext();
+  const navigate = useNavigate();
   useDocumentMeta('book', lang);
   const bookPathname = lang === 'fr' ? '/reserver' : '/book';
   useStructuredData('book', [
@@ -374,11 +381,20 @@ const BookPageV2 = () => {
   ]);
   const today = new Date();
   const [draft] = useStateBook(() => loadDraft());
-  const [step, setStep] = useStateBook<number>(() => { if (draft) return draft.step; try { if (localStorage.getItem('edo-book-plateau')) return 1; } catch(e){} return 1; });
+  const [step, setStep] = useStateBook<number>(() => {
+    if (forcedStep != null) return forcedStep;
+    if (draft) return draft.step;
+    try { if (localStorage.getItem('edo-book-plateau')) return 1; } catch(e){}
+    return 1;
+  });
   const [configGlobal, setConfigGlobal] = useStateBook<ConfigGlobal>(() => draft ? draft.configGlobal as ConfigGlobal : { projectType: 'ecom', urgency: 'flex', postprod: false });
   const [configSessions, setConfigSessions] = useStateBook<BookingSession[]>(() => draft ? draft.configSessions as BookingSession[] : [makeBlankSession()]);
   const [activeSessionIdx, setActiveSessionIdx] = useStateBook<number>(() => draft ? draft.activeSessionIdx : 0);
-  const [configApplied, setConfigApplied] = useStateBook<boolean>(() => draft ? draft.configApplied : false);
+  const [configApplied, setConfigApplied] = useStateBook<boolean>(() => {
+    if (forceManual) return false;
+    if (forcedStep != null && forcedStep !== 0 && forcedStep !== 1) return true;
+    return draft ? draft.configApplied : false;
+  });
   const [plateau, setPlateau] = useStateBook<string | null>(() => { if (draft) return draft.plateau; try { const pre = localStorage.getItem('edo-book-plateau'); if (pre) { localStorage.removeItem('edo-book-plateau'); return pre; } } catch(e){} return null; });
   const [plateaus, setPlateaus] = useStateBook<string[]>(() => draft ? draft.plateaus : (plateau ? [plateau] : []));
   const [perPlateau, setPerPlateau] = useStateBook<Record<string, PerPlateauState>>(() => {
@@ -409,17 +425,30 @@ const BookPageV2 = () => {
   const [pp, setPp] = useStateBook<Record<string, unknown>>(() => draft ? draft.pp : {});
   const [contact, setContact] = useStateBook<ContactState>(() => draft ? { ...(draft.contact as unknown as ContactState), cgvAccepted: false } : { marque:'', societe:'', siren:'', adresseFacturation:'', nom:'', prenom:'', email:'', tel:'', typesArticles:[], quantiteArticles:'', vuesParArticle:'', autresInfos:'', cgvAccepted:false });
   const [contactErrors, setContactErrors] = useStateBook<ContactFormErrors>({});
-  const [sent, setSent] = useStateBook<SentMode>(false);
   const [saving, setSaving] = useStateBook<boolean>(false);
   const [saveError, setSaveError] = useStateBook<string | null>(null);
   const [availRefreshKey, setAvailRefreshKey] = useStateBook(0);
-  const [savedRef, setSavedRef] = useStateBook<string | null>(null);
   const saveDraft = useBookingDraftSaver(() => ({
     step, configGlobal, configSessions, activeSessionIdx, configApplied,
     plateau, plateaus, perPlateau, slotType, hours, cycloMode, paint, kwh,
     team, pp, contact: contact as unknown as Record<string, unknown>, selected, arrivalHour, dateIdx, viewY, viewM,
   }));
   React.useEffect(saveDraft, [step, configGlobal, configSessions, activeSessionIdx, configApplied, plateau, plateaus, perPlateau, slotType, hours, cycloMode, paint, kwh, team, pp, contact, selected, arrivalHour, dateIdx, viewY, viewM, saveDraft]);
+  React.useEffect(() => {
+    if (forcedStep == null) return;
+    if (step !== forcedStep) setStep(forcedStep);
+  }, [forcedStep]);
+  React.useEffect(() => {
+    if (forceManual && configApplied) setConfigApplied(false);
+  }, [forceManual]);
+  const goToStep = useCallbackBook((n: number, modeOverride?: BookMode) => {
+    setStep(n);
+    const nextMode: BookMode = modeOverride ?? (forceManual ? 'manual' : (configApplied || n === 0 ? 'config' : 'manual'));
+    const target = pathForStep(lang, nextMode, n);
+    if (typeof window !== 'undefined' && window.location.pathname !== target) {
+      navigate({ to: target });
+    }
+  }, [lang, configApplied, forceManual, navigate]);
   const months = lang==='fr' ? MONTHS_FR : MONTHS_EN;
   const days = lang==='fr' ? DAYS_FR : DAYS_EN;
   const p = BOOK_PLATEAUX.find(x=>x.k===plateau) || {k:'', fr:'—', en:'—', desc:{fr:'',en:''}, rates:{hour:0,half:0,full:0}, hdUnit:'half', fdUnit:'full'};
@@ -509,7 +538,7 @@ const BookPageV2 = () => {
   };
   const handleContactNext = (nextN: number | null) => {
     if (!runContactValidation()) return;
-    if (nextN !== null) setStep(nextN);
+    if (nextN !== null) goToStep(nextN);
   };
   const canNext = () => {
     if (step===0) return (configSessions || []).length > 0 && configSessions.every(isSessionValid);
@@ -576,9 +605,10 @@ const BookPageV2 = () => {
       if (s.postprod) { briefLines.push(` ${bookingMsg.postProduction[lang]} : ${bookingMsg.yes[lang]}${s.postprodVideo ? ` + ${bookingMsg.videoEdit[lang]}` : ''}`); }
     });
     setContact(c => ({ ...c, typesArticles: productLabels, quantiteArticles: String(totalSKUs || ''), vuesParArticle: '', autresInfos: c.autresInfos || '' }));
-    setConfigApplied(true); setStep(2);
+    setConfigApplied(true);
+    goToStep(2, 'config');
   };
-  const skipConfig = () => { setConfigApplied(false); setStep(1); };
+  const skipConfig = () => { setConfigApplied(false); goToStep(1, 'manual'); };
   React.useEffect(() => { if (!configApplied) return; seedFromConfig(); }, [configSessions, configGlobal, configApplied]);
   const contentScrollRef = React.useRef<HTMLDivElement | null>(null);
   const innerScrollRef = React.useRef<HTMLDivElement | null>(null);
@@ -651,9 +681,23 @@ const BookPageV2 = () => {
         preferredDate: firstDate,
         arrivalHour: arrivalHour ?? null,
       });
-      setSavedRef(result.reference);
+      saveConfirmation({
+        mode: submitMode as ConfirmationMode,
+        savedRef: result.reference ?? null,
+        plateauKey: p.k || null,
+        plateauName: { fr: p.fr, en: p.en },
+        selected: firstDate,
+        arrivalHour: arrivalHour ?? null,
+        rentalHours,
+        plateaus,
+        perPlateau: perPlateau as Record<string, unknown>,
+        contact: contact as unknown as Record<string, unknown>,
+        total: priceBreakdown.total,
+        rows: priceBreakdown.rows as unknown[],
+        isCyclo: !!p.isCyclo,
+      });
       clearDraft();
-      setSent(submitMode);
+      navigate({ to: confirmationPath(lang) });
     } catch (err) {
       const msg = err instanceof Error ? err.message : '';
       if (msg.includes('réservé') || msg.includes('already booked')) {
@@ -664,15 +708,7 @@ const BookPageV2 = () => {
     } finally {
       setSaving(false);
     }
-  }, [buildSessionsData, selected, plateaus, perPlateau, contact, configGlobal, priceBreakdown, arrivalHour, lang]);
-
-  if (sent) {
-    return <Confirmation lang={lang} openMenu={openMenu} goto={goto} setLang={setLang}
-             plateau={p} selected={selected} arrivalHour={arrivalHour} rentalHours={rentalHours}
-             plateaus={plateaus} perPlateau={perPlateau}
-             total={priceBreakdown.total} rows={priceBreakdown.rows}
-             contact={contact} months={months} mode={sent} savedRef={savedRef}/>;
-  }
+  }, [buildSessionsData, selected, plateaus, perPlateau, contact, configGlobal, priceBreakdown, arrivalHour, lang, p, rentalHours, navigate]);
 
   return (
     <div className="edo-page-enter grid w-full edo-hairline md:h-full md:overflow-hidden md:grid-cols-book md:grid-rows-app">
@@ -700,7 +736,7 @@ const BookPageV2 = () => {
           const done = curIdx > -1 && i < curIdx;
           const clickable = done || active || (i === curIdx + 1 && canNext()) || s.n===0;
           return (
-            <button key={s.n} onClick={()=>{ if(clickable) setStep(s.n); }}
+            <button key={s.n} onClick={()=>{ if(clickable) goToStep(s.n); }}
               className={`edo-focus-ring flex-none ${active ? 'bg-muted border-b-2 border-b-primary md:border-b-0 md:border-l-3 md:border-l-primary' : 'bg-transparent border-b-2 border-b-transparent md:border-b-0 md:border-l-3 md:border-l-transparent'} ${i<STEPS.length-1 ? 'md:border-b md:border-b-border' : 'md:border-b-0'} px-4 h-12 md:px-6 md:h-control ${clickable ? 'cursor-pointer' : 'cursor-not-allowed'} text-left flex items-center gap-3.5 transition-all duration-150 ${clickable ? 'opacity-100' : 'opacity-35'}`}>
               <span className={`font-mono text-label tracking-meta ${active ? 'text-primary' : done ? 'text-foreground' : 'text-muted-foreground'} min-w-5.5`}>
                 {done ? '✓' : String(i+1).padStart(2,'0')}
@@ -719,11 +755,11 @@ const BookPageV2 = () => {
               <span className="text-foreground">{bookingMsg.letUsGuide[lang]}</span>
             </span>
             <div className="flex items-center gap-2 flex-none">
-              <button onClick={()=>{ setPlateau(null); setPlateaus([]); setPerPlateau({}); setSlotType('hour'); setHours(1); setCycloMode('halfH'); setPaint(false); setKwh(0); setTeam({}); setPp({}); setSelected(null); setStep(1); }}
+              <button onClick={()=>{ setPlateau(null); setPlateaus([]); setPerPlateau({}); setSlotType('hour'); setHours(1); setCycloMode('halfH'); setPaint(false); setKwh(0); setTeam({}); setPp({}); setSelected(null); goToStep(1, 'manual'); }}
                 className="edo-focus-ring bg-transparent border border-border px-2 py-1 cursor-pointer font-mono text-micro tracking-code uppercase text-foreground whitespace-nowrap leading-normal">
                 ↻ {common.reset[lang]}
               </button>
-              <button onClick={()=>setStep(0)}
+              <button onClick={()=>goToStep(0, 'config')}
                 className="edo-focus-ring bg-transparent border border-border px-2 py-1 cursor-pointer font-mono text-micro tracking-code uppercase text-muted-foreground whitespace-nowrap leading-normal transition-colors duration-150 hover:text-foreground hover:border-foreground">
                 ← {bookingMsg.configurator[lang]}
               </button>
@@ -732,7 +768,7 @@ const BookPageV2 = () => {
         )}
         <div ref={innerScrollRef} className="flex-1 overflow-y-auto">
           {step===0 && <Step0Configurator lang={lang} global={configGlobal} setGlobal={setConfigGlobal} sessions={configSessions} setSessions={setConfigSessions} activeIdx={activeSessionIdx} setActiveIdx={setActiveSessionIdx} onApply={applyConfig} onSkip={skipConfig} onReset={()=>{ setPlateau(null); setPlateaus([]); setPerPlateau({}); setSlotType('hour'); setHours(1); setCycloMode('halfH'); setPaint(false); setKwh(0); setTeam({}); setPp({}); setSelected(null); setConfigApplied(false); }}/>}
-          {step===1 && <Step1Plateau lang={lang} plateau={plateau} setPlateau={setPlateau} plateaus={plateaus} togglePlateau={togglePlateau} setCycloMode={setCycloMode} setSlotType={setSlotType} setHours={setHours} onConfigurator={()=>setStep(0)}/>}
+          {step===1 && <Step1Plateau lang={lang} plateau={plateau} setPlateau={setPlateau} plateaus={plateaus} togglePlateau={togglePlateau} setCycloMode={setCycloMode} setSlotType={setSlotType} setHours={setHours} onConfigurator={()=>goToStep(0, 'config')}/>}
           {step===2 && <MultiPlateauStep lang={lang} plateaus={plateaus.length?plateaus:(plateau?[plateau]:[])} perPlateau={perPlateau} setPerPlateau={setPerPlateau} fallback={{slotType,hours,cycloMode,setSlotType,setHours,setCycloMode}} topBanner={(() => { const list = plateaus.length?plateaus:(plateau?[plateau]:[]); const allVisite = list.length>0 && list.every(k => BOOK_PLATEAUX.find(x=>x.k===k)?.isVisite); if (allVisite) return null; return (<div className="px-6 border-b border-hairline flex items-center h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local"><span className="edo-cell-label text-primary whitespace-nowrap">02 · {bookingMsg.rentalDuration[lang]}</span><span className="font-mono text-label tracking-caption text-muted-foreground">{list.length > 1 ? bookingMsg.chooseDurationEach[lang] : bookingMsg.chooseDurationSingle[lang]}</span></div>); })()} renderOne={(px: AnyProps, st: AnyProps, setSt: (patch: AnyProps) => void) => (<Step3Slot lang={lang} p={px} slotType={st.slotType||'hour'} setSlotType={(v: string)=>setSt({slotType:v})} hours={st.hours||1} setHours={(v: number)=>setSt({hours:v})} cycloMode={st.cycloMode||'halfH'} setCycloMode={(v: string)=>setSt({cycloMode:v})}/>)}/>}
           {step===3 && <MultiPlateauStep lang={lang} plateaus={plateaus.length?plateaus:(plateau?[plateau]:[])} perPlateau={perPlateau} setPerPlateau={setPerPlateau} fallback={{team,setTeam}} topBanner={<div className="px-6 border-b border-hairline flex items-center h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local"><span className="edo-cell-label text-primary whitespace-nowrap">03 · {bookingMsg.teamOptional[lang]}</span></div>} renderOne={(px: AnyProps, st: AnyProps, setSt: (patch: AnyProps) => void) => (<Step5Team lang={lang} p={px} team={st.team || {}} configSessions={configSessions} setTeam={(updater: any) => { const next = typeof updater === 'function' ? updater(st.team || {}) : updater; setSt({team: next}); }}/>)}/>}
           {step===4 && <MultiPlateauStep lang={lang} plateaus={plateaus.length?plateaus:(plateau?[plateau]:[])} perPlateau={perPlateau} setPerPlateau={setPerPlateau} fallback={{postprod:{},setPostprod:()=>{}}} topBanner={<div className="px-6 border-b border-hairline flex items-center h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local"><span className="edo-cell-label text-primary whitespace-nowrap">04 · {bookingMsg.postProdOptional[lang]}</span></div>} renderOne={(px: AnyProps, st: AnyProps, setSt: (patch: AnyProps) => void) => (<Step6Postprod lang={lang} plateauKey={px && px.k} postprod={st.postprod || {}} setPostprod={(v: AnyProps) => setSt({postprod: v})}/>)}/>}
@@ -763,7 +799,7 @@ const BookPageV2 = () => {
             const dateList = plateaus && plateaus.length > 0 ? plateaus : (plateau ? [plateau] : []); const isMultiDate = step===6 && dateList.length > 1;
             const safeDateIdx = Math.max(0, Math.min(dateIdx, dateList.length - 1)); const onLastDateSub = !isMultiDate || safeDateIdx >= dateList.length - 1; const onFirstDateSub = !isMultiDate || safeDateIdx <= 0;
             const currentDateK = isMultiDate ? dateList[safeDateIdx] : null; const currentDateValid = !isMultiDate || (currentDateK != null && perPlateau[currentDateK] && perPlateau[currentDateK].date);
-            const handleBack = () => { if (isMultiDate && !onFirstDateSub) { setDateIdx(safeDateIdx - 1); return; } if (prevN !== null) setStep(prevN); };
+            const handleBack = () => { if (isMultiDate && !onFirstDateSub) { setDateIdx(safeDateIdx - 1); return; } if (prevN !== null) goToStep(prevN); };
             const handleSubNext = () => { if (isMultiDate && !onLastDateSub && currentDateValid) { setDateIdx(safeDateIdx + 1); return true; } return false; };
             const navBtnCls = "edo-focus-ring bg-white border border-border cursor-pointer font-mono text-caption tracking-meta uppercase text-foreground px-5 h-control inline-flex items-center gap-2 transition-all duration-150 hover:scale-102 hover:border-foreground";
             const navBtnPrimaryCls = "edo-focus-ring bg-foreground border-0 cursor-pointer text-white font-mono text-caption tracking-meta uppercase px-cell-lg h-control inline-flex items-center gap-2 transition-all duration-150 hover:scale-102 hover:text-primary";
@@ -773,7 +809,7 @@ const BookPageV2 = () => {
             ← {lang==='fr'?'Retour':'Back'}
           </button>
           {step<5 ? (
-            <button onClick={()=>canNext()&&nextN!==null&&setStep(nextN)} disabled={!canNext()} className={navBtnPrimaryCls + (canNext() ? '' : ' opacity-30 cursor-not-allowed')}>
+            <button onClick={()=>canNext()&&nextN!==null&&goToStep(nextN)} disabled={!canNext()} className={navBtnPrimaryCls + (canNext() ? '' : ' opacity-30 cursor-not-allowed')}>
               {lang==='fr'?'Continuer':'Continue'} <IconArrowRight width="14" height="14"/>
             </button>
           ) : p.isCyclo ? (
@@ -1273,48 +1309,5 @@ const Toggle = ({ on, onClick }: AnyProps) => (
     <span className={`absolute top-1 left-toggle-thumb ${on ? 'translate-x-5' : 'translate-x-0'} w-5 h-5 bg-white rounded-full transition-transform duration-150 shadow-toggle`}/>
   </button>
 );
-
-const Confirmation = ({ lang, openMenu, goto, setLang, plateau, selected, arrivalHour, rentalHours, plateaus, perPlateau, total, rows, contact, months, mode, savedRef }: AnyProps) => {
-  const isMultiPlateau = (plateaus || []).filter(Boolean).length > 1;
-  const fmtTime = (h) => `${String(h).padStart(2,'0')}:00`;
-  const ref = savedRef || React.useMemo(()=>{ const prefix = mode==='quote' ? 'EDO-Q-' : mode==='booking' ? 'EDO-R-' : 'EDO-'; return prefix + Math.random().toString(36).substr(2,6).toUpperCase(); },[mode]);
-  const copy = (() => {
-    if (mode==='quote') return { tag: lang==='fr'?'Devis envoyé':'Quote sent', status: lang==='fr'?'Devis':'Quote', title: lang==='fr'?'Votre devis arrive.':'Your quote is on its way.', body: lang==='fr' ? `Nous vous envoyons votre devis détaillé pour le plateau ${plateau[lang]} par e-mail sous 24h (jours ouvrés). Aucune date n'est pas bloquée à ce stade — vous restez libre de réserver ensuite.` : `We're sending your detailed quote for the ${plateau[lang]} stage by email within 24h (working days). No date is held yet — you stay free to book later.` };
-    if (mode==='booking') return { tag: lang==='fr'?'Réservation confirmée':'Booking confirmed', status: lang==='fr'?'Réservée':'Booked', title: lang==='fr'?"C'est réservé.":"You're booked.", body: lang==='fr' ? `Nous avons bien enregistré votre réservation pour le plateau ${plateau[lang]}. Un membre de l'équipe vous recontacte sous 24h (jours ouvrés) pour confirmer les modalités de paiement.` : `We've locked in your booking for the ${plateau[lang]} stage. A team member will contact you within 24h (working days) to confirm payment terms.` };
-    return { tag: lang==='fr'?'Demande envoyée':'Request sent', status: lang==='fr'?'Confirmée':'Confirmed', title: (lang==='fr'?'Merci, ':'Thank you, ')+(contact.prenom||contact.nom||''), body: lang==='fr' ? "Nous avons bien reçu votre demande pour le cyclorama. Un membre de l'équipe vous recontacte sous 24h (jours ouvrés) pour confirmer les détails." : "We've received your cyclorama request. A team member will contact you within 24h (working days) to confirm details." };
-  })();
-  const navBtnCls = "edo-focus-ring bg-white border border-border cursor-pointer font-mono text-caption tracking-meta uppercase text-foreground px-5 h-control inline-flex items-center gap-2 transition-all duration-150 hover:scale-102 hover:border-foreground";
-  const navBtnPrimaryCls = "edo-focus-ring bg-foreground border-0 cursor-pointer text-white font-mono text-caption tracking-meta uppercase px-cell-lg h-control inline-flex items-center gap-2 transition-all duration-150 hover:scale-102 hover:text-primary";
-  const navBtnOrangeCls = "edo-focus-ring bg-primary border-0 cursor-pointer text-white font-mono text-caption tracking-meta uppercase px-cell-lg h-control inline-flex items-center gap-2 transition-all duration-150 hover:scale-102 hover:opacity-90";
-  return (<div className="grid w-full edo-hairline md:h-full md:grid-cols-app md:grid-rows-app md:overflow-hidden">
-    <PageHeader
-      lang={lang}
-      title={lang==='fr'?'Réservation':'Booking'}
-      subtitle={copy.tag}
-      className="col-span-full h-14 md:col-start-1 md:col-span-2 md:row-start-1 md:h-full"
-      onMenuClick={openMenu}
-      onLogoClick={()=>goto('home')}
-      onLangToggle={()=>setLang(lang==='fr'?'en':'fr')}
-      actions={buildMainNav({ lang, goto, exclude: 'book' })}
-    />
-    <div className="overflow-auto flex flex-col edo-hairline md:col-span-2 md:row-start-2 md:min-h-0">
-      <div className="grid edo-hairline grid-cols-1 md:grid-cols-confirmation-hero">
-        <div className="bg-white pt-7 px-12 pb-6 flex flex-col gap-2.5 min-h-44"><div className="inline-flex items-center gap-2.5 py-1.5 px-3 bg-primary text-white font-mono text-micro tracking-label uppercase self-start">● {copy.status}</div><h1 className="m-0 text-hero font-light tracking-display leading-solid text-balance">{copy.title}</h1><p className="m-0 text-detail text-muted-foreground leading-normal max-w-xl text-pretty">{copy.body}</p></div>
-        <div className="bg-white p-6 flex flex-col justify-between gap-3.5 min-h-44"><div className="flex flex-col gap-3.5"><div><div className="edo-cell-label text-muted-foreground mb-1">{lang==='fr'?'Référence':'Reference'}</div><div className="font-mono text-cell tracking-ui text-foreground">{ref}</div></div><div><div className="edo-cell-label text-muted-foreground mb-1">{lang==='fr'?'Émis le':'Issued'}</div><div className="font-mono text-caption text-foreground">{new Date().toLocaleDateString(lang==='fr'?'fr-FR':'en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div></div></div><div><div className="edo-cell-label text-muted-foreground mb-1">{lang==='fr'?'Contact':'Contact'}</div><div className="text-detail font-medium tracking-copy-tight">{[contact.prenom,contact.nom].filter(Boolean).join(' ')||'—'}</div><div className="text-caption text-muted-foreground">{contact.email||'—'}</div></div></div>
-      </div>
-      <div className="grid grid-cols-4 edo-hairline">
-        <div className="bg-white px-5 py-3"><div className="edo-cell-label text-muted-foreground mb-1">{lang==='fr'?'Plateau':'Stage'}</div><div className="text-cell font-medium tracking-headline">{isMultiPlateau ? plateaus.map(k => { const px = BOOK_PLATEAUX.find(x=>x.k===k); return px?px[lang]:k; }).join(' · ') : plateau[lang]}</div></div>
-        <div className="bg-white px-5 py-3"><div className="edo-cell-label text-muted-foreground mb-1">{isMultiPlateau ? (lang==='fr'?'Dates':'Dates') : (lang==='fr'?'Date':'Date')}</div>{isMultiPlateau ? (<div className="flex flex-col gap-1">{plateaus.map(k => { const px = BOOK_PLATEAUX.find(x => x.k === k); const st = (perPlateau || {})[k] || {}; const d = st.date; const ah = st.arrivalHour != null ? st.arrivalHour : 10; const stHours = st.hours != null ? st.hours : (st.slotType==='hour' ? 1 : st.slotType==='half' ? 4 : 8); const stRH = px && px.isCyclo ? ((st.cycloMode||'halfH')==='halfH' ? 5 : 10) : px && px.isVisite ? 1 : stHours; return (<div key={k} className="flex justify-between gap-2 text-caption font-mono tracking-caption"><span className="text-muted-foreground">{px?px[lang]:k}</span><span className={`${d ? 'text-foreground' : 'text-edo-gray-500'} tabular-nums`}>{d ? `${d.d} ${months[d.m]} · ${fmtTime(ah)}–${fmtTime(ah+stRH)}` : (mode==='quote'?(lang==='fr'?'Non fixée':'Not set'):'—')}</span></div>); })}</div>) : (<div className={`text-cell font-medium tracking-headline ${selected?'text-foreground':'text-muted-foreground'}`}>{selected ? `${selected.d} ${months[selected.m]} ${selected.y} · ${fmtTime(arrivalHour||10)}–${fmtTime((arrivalHour||10)+(rentalHours||0))}` : (mode==='quote'?(lang==='fr'?'Non fixée':'Not set'):'—')}</div>)}</div>
-        <div className="bg-white px-5 py-3"><div className="edo-cell-label text-muted-foreground mb-1">{lang==='fr'?'Société':'Company'}</div><div className="text-detail font-medium tracking-copy-tight">{contact.societe||'—'}</div></div>
-        <div className="bg-white px-5 py-3"><div className="edo-cell-label text-muted-foreground mb-1">SIREN</div><div className="font-mono text-caption tracking-caption">{contact.siren||'—'}</div></div>
-      </div>
-      <div className="bg-white px-12 py-cell pb-5 flex-1"><div className="edo-cell-label text-muted-foreground mb-2.5">{lang==='fr'?'Détail du devis*':'Quote breakdown*'}</div><div className="flex flex-col">{rows.map((r,i)=>(<div key={i} className={`flex flex-col py-1.5 gap-0.5 ${i===rows.length-1 ? '' : 'border-b border-b-border'}`}><div className="flex justify-between items-baseline text-caption"><span className="tracking-copy-tight">{(() => { const idx = r.lbl.indexOf(' · '); if (idx === -1) return <span className="text-foreground">{r.lbl}</span>; return (<><span className="text-muted-foreground">{r.lbl.slice(0, idx)}</span><span className="text-foreground">{r.lbl.slice(idx)}</span></>); })()}</span><span className="font-mono tabular-nums text-foreground">{r.onReq ? (lang==='fr'?'sur demande':'on request') : `${fmtEUR(r.amt)} €`}</span></div>{r.breakdown && r.breakdown.length > 0 && (<div className="flex flex-col gap-hairline mt-0.5">{r.breakdown.map((b, bi) => { const viewLbl = b.labels ? b.labels[lang] : null; const formula = b.imagesPerSku && b.imagesPerSku > 1 ? `${b.qty} × ${b.imagesPerSku} × ${fmtEUR(b.unit)} €` : `${b.qty} × ${fmtEUR(b.unit)} €`; const line = viewLbl ? `${viewLbl} · ${formula}` : formula; return (<div key={bi} className="flex justify-between gap-2 font-mono text-label text-muted-foreground tracking-caption"><span>→ {line}</span><span className="tabular-nums">{fmtEUR(b.subtotal)} €</span></div>); })}</div>)}</div>))}<div className="flex justify-between items-baseline mt-3 pt-2.5 border-t-2 border-t-foreground"><span className="font-mono text-caption tracking-meta uppercase">Total HT*</span><span className="text-page-title font-light tracking-display tabular-nums">{fmtEUR(total)} €</span></div><div className="font-mono text-label text-muted-foreground mt-2.5 tracking-caption leading-copy pt-2 border-t border-t-border">{lang==='fr' ? '* Les montants affichés sont une estimation indicative basée sur les éléments renseignés et ne constituent pas un devis définitif. Le devis final, contractuel et signable, vous sera adressé par e-mail après brief avec notre équipe et pourra être ajusté selon le volume réel, la complexité, les vues additionnelles ou la post-production.' : '* The amounts shown are an indicative estimate based on the information provided and do not constitute a final quote. The final, contractual and signable quote will be sent by email after a brief with our team and may be adjusted based on actual volume, complexity, additional views or post-production.'}</div></div></div>
-      <div className="grid grid-cols-2 edo-hairline">
-        <div className="bg-white px-5 py-3 flex items-center"><button onClick={()=>goto('home')} className={navBtnCls.replace('bg-white','bg-transparent').replace('border border-border','border-0').replace('px-5','px-0')}>← {lang==='fr'?"Retour à l'accueil":'Back home'}</button></div>
-        <div className="bg-white px-5 py-3 flex items-center justify-end"><button onClick={()=>window.location.reload()} className={navBtnOrangeCls}>{lang==='fr'?'Nouvelle demande':'New request'} <IconArrowRight width="14" height="14"/></button></div>
-      </div>
-    </div>
-  </div>);
-};
 
 export { BookPageV2 };
