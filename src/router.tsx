@@ -14,6 +14,7 @@ import { NavMenu } from './nav-menu';
 import { CookieBanner } from './cookie-banner';
 import { PreviewBanner } from './preview-banner';
 import { useGoogleAnalytics } from './lib/use-google-analytics';
+import { useGoogleTagManager } from './lib/use-google-tag-manager';
 import { DirectionA } from './direction-editorial';
 
 const VALID_LANGS: Lang[] = ['fr', 'en'];
@@ -70,6 +71,7 @@ function LangLayout() {
   const langSegment = pathname.split('/')[1];
   const lang: Lang = VALID_LANGS.includes(langSegment as Lang) ? (langSegment as Lang) : DEFAULT_LANG;
   useGoogleAnalytics();
+  useGoogleTagManager();
 
   const setLang = (newLang: Lang) => {
     persistLang(newLang);
