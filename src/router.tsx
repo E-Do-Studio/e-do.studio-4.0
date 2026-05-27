@@ -8,13 +8,16 @@ import {
   redirect,
   lazyRouteComponent,
 } from '@tanstack/react-router';
-import { createContext, useContext, useState } from 'react';
+import { useState } from 'react';
 import type { Lang } from './types';
 import { NavMenu } from './nav-menu';
 import { CookieBanner } from './cookie-banner';
 import { PreviewBanner } from './preview-banner';
 import { useGoogleAnalytics } from './lib/use-google-analytics';
 import { DirectionA } from './direction-editorial';
+import { PageContext, type PageContextValue } from './lib/page-context';
+
+export { usePageContext } from './lib/page-context';
 
 const VALID_LANGS: Lang[] = ['fr', 'en'];
 const DEFAULT_LANG: Lang = 'fr';
@@ -31,21 +34,6 @@ function persistLang(lang: Lang) {
   try {
     localStorage.setItem('edo-lang', lang);
   } catch {}
-}
-
-interface PageContextValue {
-  lang: Lang;
-  setLang: (lang: Lang) => void;
-  openMenu: () => void;
-  goto: (screen: string) => void;
-}
-
-const PageContext = createContext<PageContextValue | null>(null);
-
-export function usePageContext(): PageContextValue {
-  const ctx = useContext(PageContext);
-  if (!ctx) throw new Error('usePageContext must be used inside LangLayout');
-  return ctx;
 }
 
 export const SCREEN_TO_PATH: Record<string, (lang: Lang) => string> = {
