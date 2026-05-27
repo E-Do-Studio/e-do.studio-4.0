@@ -118,6 +118,26 @@ const META: Record<string, Record<Lang, PageMeta>> = {
       description: 'Book your slot at E-Do Studio. Select a stage, date and configure your photo or video session.',
     },
   },
+  'book-picker': {
+    fr: {
+      title: 'Réserver — E-Do Studio Paris',
+      description: 'Choisissez votre mode de réservation : configurateur guidé, formulaire manuel ou prise de contact directe avec notre équipe.',
+    },
+    en: {
+      title: 'Book — E-Do Studio Paris',
+      description: 'Pick how to book: guided configurator, manual form or direct contact with our team.',
+    },
+  },
+  'book-confirmation': {
+    fr: {
+      title: 'Confirmation — E-Do Studio Paris',
+      description: 'Votre demande de réservation a bien été enregistrée.',
+    },
+    en: {
+      title: 'Confirmation — E-Do Studio Paris',
+      description: 'Your booking request has been recorded.',
+    },
+  },
   legal: {
     fr: {
       title: 'Mentions légales — E-Do Studio',
