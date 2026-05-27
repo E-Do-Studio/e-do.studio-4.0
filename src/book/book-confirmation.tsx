@@ -104,6 +104,7 @@ const ConfirmedView = ({
         title={booking.title[lang]}
         subtitle={copy.tag}
         className="col-span-full h-14 md:col-start-1 md:col-span-2 md:row-start-1 md:h-full"
+        subgrid={false}
         onMenuClick={onMenuClick}
         onLogoClick={onLogoClick}
         onLangToggle={onLangToggle}
@@ -254,6 +255,7 @@ const BookConfirmation = () => {
           lang={lang}
           title={booking.title[lang]}
           className="col-span-full h-14 md:row-start-1 md:h-full"
+          subgrid={false}
           onMenuClick={openMenu}
           onLogoClick={() => goto('home')}
           onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}

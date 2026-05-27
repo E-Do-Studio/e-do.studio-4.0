@@ -27,8 +27,9 @@ interface CoverCarouselProps {
 
 // Cover — renders the currently selected media item full-cell with prev/next
 // arrows overlaid inside the image. Arrows are hidden when only one media item.
-// Media renders inside a fixed-aspect inner box so the visible width stays
-// stable across portrait images and wider videos (no width "jump" on swap).
+// The asset fills the grid cell in `object-contain` so portrait, square and
+// landscape sources all use as much of the available space as possible without
+// cropping.
 const Cover = ({ items, lang, plateauName, index, onPrev, onNext, className }: CoverCarouselProps) => {
   if (items.length === 0) return null;
   const item = items[index];
@@ -44,28 +45,24 @@ const Cover = ({ items, lang, plateauName, index, onPrev, onNext, className }: C
       aria-roledescription={hasMultiple ? 'carousel' : undefined}
       aria-label={hasMultiple ? common.imageCarousel[lang] : undefined}
     >
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="relative aspect-[3/4] h-full max-w-full max-h-full">
-          {item.kind === 'video' ? (
-            <VideoLoop
-              key={item.url}
-              src={item.url}
-              poster={item.poster}
-              objectFit="contain"
-              className="absolute inset-0 h-full w-full"
-            />
-          ) : (
-            <img
-              key={item.url}
-              src={item.url}
-              alt={item.alt[lang] || `${plateauName} — ${index + 1}`}
-              loading="eager"
-              decoding="async"
-              className="absolute inset-0 h-full w-full object-contain"
-            />
-          )}
-        </div>
-      </div>
+      {item.kind === 'video' ? (
+        <VideoLoop
+          key={item.url}
+          src={item.url}
+          poster={item.poster}
+          objectFit="contain"
+          className="absolute inset-0 h-full w-full"
+        />
+      ) : (
+        <img
+          key={item.url}
+          src={item.url}
+          alt={item.alt[lang] || `${plateauName} — ${index + 1}`}
+          loading="eager"
+          decoding="async"
+          className="absolute inset-0 h-full w-full object-contain"
+        />
+      )}
 
       {hasMultiple && (
         <>
@@ -168,7 +165,7 @@ const ThumbStrip = ({ items, lang, plateauName, activeIndex, onSelect, className
     'edo-focus-ring absolute top-1/2 z-10 -translate-y-1/2 flex h-8 w-8 cursor-pointer items-center justify-center bg-foreground/5 text-foreground transition-[opacity,background-color] duration-150 hover:bg-foreground/10 disabled:cursor-default disabled:opacity-0 disabled:pointer-events-none';
 
   return (
-    <div className={cn('relative edo-hairline', className)}>
+    <div className={cn('relative edo-hairline h-28 md:h-full', className)}>
       <div
         ref={stripRef}
         className="flex h-full edo-hairline overflow-x-auto snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
@@ -184,7 +181,7 @@ const ThumbStrip = ({ items, lang, plateauName, activeIndex, onSelect, className
               aria-label={`${item.alt[lang] || plateauName} — ${i + 1} / ${items.length}`}
               aria-current={isActive ? 'true' : undefined}
               className={cn(
-                'edo-focus-ring relative shrink-0 snap-start overflow-hidden bg-white border-0 p-0 cursor-pointer',
+                'edo-focus-ring relative h-full shrink-0 snap-start overflow-hidden bg-white border-0 p-0 cursor-pointer',
                 isActive && '[outline-style:solid] [outline-width:var(--hairline)] outline-hairline [outline-offset:calc(var(--hairline)*-1)]',
               )}
               style={{ flexBasis: tileBasis }}

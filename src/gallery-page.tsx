@@ -231,7 +231,7 @@ const GalleryContent = ({
   filtered,
   resetFilters,
 }: GalleryContentProps) => (
-  <div className="min-h-0 overflow-y-auto bg-white edo-hairline">
+  <div className="min-h-0 overflow-y-auto bg-white edo-hairline md:col-start-2 md:col-span-4">
     <div className="flex flex-col [&>*:not(:last-child)]:border-b [&>*:not(:last-child)]:border-hairline">
       {filtered.length === 0 ? (
         <EmptyState
@@ -602,6 +602,8 @@ const GalleryPageV3 = () => {
         lang={lang}
         title={common.gallery[lang]}
         className="col-span-full h-14 md:col-span-full md:row-start-1 md:h-full"
+        titleClassName="lg:col-start-2 lg:col-span-3"
+        rightBlockClassName="lg:col-start-5"
         onMenuClick={openMenu}
         onLogoClick={() => goto("home")}
         onLangToggle={() => setLang(lang === "fr" ? "en" : "fr")}

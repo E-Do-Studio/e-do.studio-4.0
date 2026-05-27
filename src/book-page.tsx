@@ -713,11 +713,15 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
   return (
     <div className="edo-page-enter grid w-full edo-hairline md:h-full md:overflow-hidden md:grid-cols-book md:grid-rows-app">
 
-      {/* Unified header spans cols 1-3 — col 4 hosts the dark "Your Quote" label aligned with the quote panel below */}
+      {/* Unified header spans cols 1-3 — col 4 hosts the dark "Your Quote"
+          label aligned with the quote panel below. Within the header subgrid
+          (cols 1-3), the title sits in col 2 and the right block in col 3. */}
       <PageHeader
         lang={lang}
         title={bookingMsg.title[lang]}
         className="col-span-full h-14 md:col-start-1 md:col-end-4 md:row-start-1 md:h-full"
+        titleClassName="lg:col-start-2 lg:col-span-1"
+        rightBlockClassName="lg:col-start-3"
         onMenuClick={openMenu}
         onLogoClick={()=>goto('home')}
         onLangToggle={()=>setLang(lang==='fr'?'en':'fr')}
