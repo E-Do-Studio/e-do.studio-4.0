@@ -1,5 +1,6 @@
 import React, { useState as useStateBook, useMemo as useMemoBook, useCallback as useCallbackBook } from 'react';
 import { useNavigate } from '@tanstack/react-router';
+import { useQueryState, parseAsInteger } from 'nuqs';
 import { usePageContext } from './router';
 import { CellLabel, EmptyState, IconArrowRight, PageHeader, buildMainNav } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
@@ -381,7 +382,17 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
   ]);
   const today = new Date();
   const [draft] = useStateBook(() => loadDraft());
+  // Manual mode keeps a single URL (/reserver/manuel) and tracks the current
+  // step via nuqs (`?step=N`) instead of routing per step. This way back /
+  // forward navigation works and reloading the page keeps the user on the
+  // step they were on. Configurator mode uses TanStack routes per step and
+  // ignores this query parameter.
+  const [manualStepQuery, setManualStepQuery] = useQueryState(
+    'step',
+    parseAsInteger,
+  );
   const [step, setStep] = useStateBook<number>(() => {
+    if (forceManual && manualStepQuery != null) return manualStepQuery;
     if (forcedStep != null) return forcedStep;
     if (draft) return draft.step;
     try { if (localStorage.getItem('edo-book-plateau')) return 1; } catch(e){}
@@ -441,6 +452,21 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
   React.useEffect(() => {
     if (forceManual && configApplied) setConfigApplied(false);
   }, [forceManual]);
+  // Manual mode: sync the URL ?step= ↔ internal step state. The pair of
+  // effects below stops looping once the two sides agree (the equality
+  // guards short-circuit on the second pass).
+  React.useEffect(() => {
+    if (!forceManual) return;
+    if (manualStepQuery != null && manualStepQuery !== step) {
+      setStep(manualStepQuery);
+    }
+  }, [manualStepQuery, forceManual]);
+  React.useEffect(() => {
+    if (!forceManual) return;
+    if (step !== manualStepQuery) {
+      setManualStepQuery(step);
+    }
+  }, [step, forceManual]);
   const goToStep = useCallbackBook((n: number, modeOverride?: BookMode) => {
     setStep(n);
     const nextMode: BookMode = modeOverride ?? (forceManual ? 'manual' : (configApplied || n === 0 ? 'config' : 'manual'));
