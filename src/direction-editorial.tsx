@@ -156,14 +156,14 @@ const DirectionA = () => {
           </p>
         </div>
 
-        <div className="flex flex-1 min-h-0 overflow-hidden bg-white">
-          <div className="grid flex-1 grid-cols-2 content-end bg-white md:grid-cols-4 md:auto-rows-fr">
+        <div className="flex flex-1 min-h-0 overflow-hidden bg-white md:items-end">
+          <div className="grid flex-1 grid-cols-2 content-end bg-white md:grid-cols-4">
             {ecomMachines.map((m, i) => (
               <button
                 key={m.slug}
                 onClick={() => goto('plateau-' + m.slug)}
                 className={cn(
-                  'edo-focus-ring group flex aspect-[4/3] min-w-0 cursor-pointer flex-col justify-between bg-white px-3 py-3 text-left text-foreground transition-colors duration-150 hover:bg-muted md:aspect-auto md:px-4 md:py-4',
+                  'edo-focus-ring group flex aspect-[4/3] min-w-0 cursor-pointer flex-col justify-between bg-white px-3 py-3 text-left text-foreground transition-colors duration-150 hover:bg-muted md:aspect-square md:px-4 md:py-4',
                   // Hairline gray rules: top edge separates the card row from
                   // the empty area above, left edge separates adjacent cards.
                   'border-t border-l border-edo-gray-200',
