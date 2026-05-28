@@ -611,4 +611,4 @@ const ContactPage = () => {
   );
 };
 
-export { ContactPage };
+export { ContactPage, ContactRail, ContactRightColumn };

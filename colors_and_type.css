@@ -46,7 +46,7 @@
 
   /* ---------- Geometry ------------------------------------- */
   --radius: 0;                /* ZERO — Swiss rule */
-  --hairline: 1.5px;
+  --hairline: 1px;
   --bento-gap: 1px;           /* grid gap == hairline */
 
   /* ---------- Z-index scale -------------------------------- */
@@ -198,7 +198,7 @@
   --spacing-header: 3.375rem;      /* 54px */
   --spacing-header-sm: 3.25rem;    /* 52px */
   --spacing-footer: 2.75rem;       /* 44px */
-  --spacing-nav: 11.875rem;        /* 190px */
+  --spacing-nav: 15rem;            /* 240px */
   --spacing-quote-panel: 18.75rem; /* 300px */
   --spacing-control: 2.625rem;     /* 42px */
   --spacing-cell: 1.125rem;        /* 18px */
@@ -322,23 +322,23 @@
 }
 
 @utility grid-cols-app {
-  grid-template-columns: 190px minmax(0, 1fr);
+  grid-template-columns: 240px minmax(0, 1fr);
 }
 
 @utility grid-cols-book-shell {
-  grid-template-columns: 190px minmax(0, 1fr) 300px;
+  grid-template-columns: 240px minmax(0, 1fr) 300px;
 }
 
 @utility grid-cols-book {
-  grid-template-columns: 190px minmax(0, 1fr) minmax(0, 1fr) 300px;
+  grid-template-columns: 240px minmax(0, 1fr) minmax(0, 1fr) 300px;
 }
 
 @utility grid-cols-gallery-shell {
-  grid-template-columns: 190px 80px minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: 240px 80px minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
 }
 
 @utility grid-cols-gallery-full {
-  grid-template-columns: 190px 80px repeat(3, minmax(0, 1fr));
+  grid-template-columns: 240px 80px repeat(3, minmax(0, 1fr));
 }
 
 @utility grid-cols-machine-row {
@@ -406,7 +406,7 @@
 }
 
 @utility grid-cols-plateau {
-  grid-template-columns: 190px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);
+  grid-template-columns: 240px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);
 }
 
 @utility grid-cols-contact-shell {

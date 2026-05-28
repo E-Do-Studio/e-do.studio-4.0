@@ -6,13 +6,19 @@ import { useStructuredData } from '../lib/use-structured-data';
 import { buildWebPageSchema, buildBreadcrumbSchema } from '../lib/structured-data';
 import { bookPicker, booking } from '../i18n/messages';
 import { configuratorPath, manualPath } from './book-routes';
+import { ContactRail, ContactRightColumn } from '../contact-page';
+import {
+  useContact,
+  useStudioHours,
+  useTeamMembers,
+  useSiteBusinessInfo,
+} from '../lib/use-strapi';
 import type { Lang } from '../types';
 
 interface TileProps {
   index: number;
   label: string;
   description: string;
-  href: string;
   variant: 'primary' | 'foreground' | 'surface';
   onClick: () => void;
   lang: Lang;
@@ -33,7 +39,7 @@ const PickerTile = ({ index, label, description, variant, onClick, lang }: TileP
       type="button"
       onClick={onClick}
       className={cn(
-        'edo-focus-ring group flex flex-1 min-h-44 cursor-pointer flex-col gap-3 border-0 px-6 py-7 text-left transition-[color,background-color,opacity] duration-150 ease-edo-out md:min-h-72 md:px-8 md:py-9',
+        'edo-focus-ring group flex flex-1 min-h-40 cursor-pointer flex-col gap-3 border-0 px-6 py-7 text-left transition-[color,background-color,opacity] duration-150 ease-edo-out md:px-8 md:py-8',
         palette,
       )}
     >
@@ -81,6 +87,13 @@ const BookPicker = () => {
     ),
   ]);
 
+  const contact = useContact();
+  const hours = useStudioHours();
+  const teamState = useTeamMembers();
+  const team = teamState.data ?? [];
+  const businessState = useSiteBusinessInfo();
+  const closures = businessState.data?.closures ?? [];
+
   const configHref = configuratorPath(lang, 0);
   const manualHref = manualPath(lang);
 
@@ -88,19 +101,18 @@ const BookPicker = () => {
   const goManual = () => navigate({ to: manualHref });
 
   return (
-    <div className="edo-page-enter flex min-h-svh w-full flex-col edo-hairline md:grid md:h-full md:min-h-0 md:grid-rows-app">
+    <div className="edo-page-enter grid w-full edo-hairline md:h-full md:grid-cols-contact-shell md:grid-rows-page md:overflow-hidden">
       <PageHeader
         lang={lang}
         title={booking.title[lang]}
-        className="col-span-full h-14 md:row-start-1 md:h-full"
-        subgrid={false}
+        className="col-span-full h-14 md:col-span-full md:row-start-1 md:h-full"
         onMenuClick={openMenu}
         onLogoClick={() => goto('home')}
         onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
         actions={buildMainNav({ lang, goto, exclude: 'book' })}
       />
 
-      <div className="flex min-h-0 flex-1 flex-col edo-hairline md:row-start-2 md:grid md:overflow-y-auto">
+      <main className="flex flex-col overflow-auto bg-white md:col-start-2 md:col-span-2 md:row-start-2 edo-hairline">
         <div className="bg-white px-6 py-10 md:px-12 md:py-14">
           <h1 className="m-0 text-hero font-light tracking-display leading-solid text-balance text-foreground">
             {bookPicker.title[lang]}
@@ -110,13 +122,12 @@ const BookPicker = () => {
           </p>
         </div>
 
-        <div className="flex flex-1 flex-col edo-hairline md:grid md:grid-cols-3">
+        <div className="flex flex-1 flex-col edo-hairline">
           <PickerTile
             index={1}
             label={bookPicker.configuratorLabel[lang]}
             description={bookPicker.configuratorDesc[lang]}
             variant="primary"
-            href={configHref}
             onClick={goConfigurator}
             lang={lang}
           />
@@ -125,7 +136,6 @@ const BookPicker = () => {
             label={bookPicker.manualLabel[lang]}
             description={bookPicker.manualDesc[lang]}
             variant="foreground"
-            href={manualHref}
             onClick={goManual}
             lang={lang}
           />
@@ -134,13 +144,15 @@ const BookPicker = () => {
             label={bookPicker.contactLabel[lang]}
             description={bookPicker.contactDesc[lang]}
             variant="surface"
-            href={SCREEN_TO_PATH.contact(lang)}
             onClick={() => goto('contact')}
             lang={lang}
           />
         </div>
+      </main>
 
-      </div>
+      <ContactRail lang={lang} contact={contact} hours={hours} closures={closures} />
+
+      <ContactRightColumn lang={lang} contact={contact} team={team} />
     </div>
   );
 };
