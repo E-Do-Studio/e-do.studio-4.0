@@ -27,19 +27,19 @@ interface TileProps {
 const PickerTile = ({ index, label, description, variant, onClick, lang }: TileProps) => {
   const palette =
     variant === 'primary'
-      ? 'bg-primary text-white hover:opacity-90'
+      ? 'bg-white text-foreground hover:bg-muted'
       : variant === 'foreground'
-      ? 'bg-foreground text-white hover:opacity-90'
-      : 'bg-white text-foreground hover:bg-muted';
-  const labelMutedTone = variant === 'surface' ? 'text-muted-foreground' : 'text-white/60';
-  const descTone = variant === 'surface' ? 'text-muted-foreground' : 'text-white/70';
-  const idxTone = variant === 'surface' ? 'text-muted-foreground' : 'text-white/55';
+      ? 'bg-edo-gray-50 text-foreground hover:bg-muted'
+      : 'bg-muted text-foreground hover:bg-edo-gray-200';
+  const labelMutedTone = 'text-muted-foreground';
+  const descTone = 'text-muted-foreground';
+  const idxTone = 'text-muted-foreground';
   return (
     <button
       type="button"
       onClick={onClick}
       className={cn(
-        'edo-focus-ring group flex flex-1 min-h-40 cursor-pointer flex-col gap-3 border-0 px-6 py-7 text-left transition-[color,background-color,opacity] duration-150 ease-edo-out md:px-8 md:py-8',
+        'edo-focus-ring group flex flex-1 min-h-40 cursor-pointer flex-col gap-3 border-0 px-6 py-7 text-left transition-[color,background-color,opacity] duration-150 ease-edo-out md:aspect-square md:min-h-0 md:border-t md:border-edo-pure-black md:px-8 md:py-8',
         palette,
       )}
     >
@@ -112,7 +112,7 @@ const BookPicker = () => {
         actions={buildMainNav({ lang, goto, exclude: 'book' })}
       />
 
-      <main className="flex flex-col overflow-auto bg-white md:col-start-2 md:col-span-2 md:row-start-2 edo-hairline">
+      <main className="flex flex-col overflow-auto bg-white md:col-start-2 md:col-span-2 md:row-start-2">
         <div className="bg-white px-6 py-10 md:px-12 md:py-14">
           <h1 className="m-0 text-hero font-light tracking-display leading-solid text-balance text-foreground">
             {bookPicker.title[lang]}
@@ -122,7 +122,7 @@ const BookPicker = () => {
           </p>
         </div>
 
-        <div className="flex flex-1 flex-col edo-hairline">
+        <div className="flex flex-1 flex-col edo-hairline md:flex-row md:items-end md:border-t-0">
           <PickerTile
             index={1}
             label={bookPicker.configuratorLabel[lang]}
