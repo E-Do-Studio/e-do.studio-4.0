@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { CellLabel, IconArrowRight, IconLock, ImageCrossfade, MobileAssistantFab, PageHeader, VideoLoop, cn } from './ui';
+import { CellLabel, HoverMarquee, IconArrowRight, IconLock, ImageCrossfade, MobileAssistantFab, PageHeader, VideoLoop, cn } from './ui';
 import { BookCTATile } from './book-cta';
 import { SocialClientsBar } from './social-clients-bar';
 
@@ -54,12 +54,12 @@ const MachineRow = ({ idx, m, lang, onClick, isLast }: MachineRowProps) => (
       {String(idx + 1).padStart(2, '0')}
     </span>
     <div className="min-w-0 overflow-hidden">
-      <div className="truncate text-cell font-medium tracking-headline leading-cell">
+      <HoverMarquee className="text-cell font-medium tracking-headline leading-cell">
         {m[lang].t}
-      </div>
-      <div className="truncate mt-1 text-label font-mono text-muted-foreground uppercase tracking-caption">
+      </HoverMarquee>
+      <HoverMarquee className="mt-1 text-label font-mono text-muted-foreground uppercase tracking-caption">
         {m[lang].sub}
-      </div>
+      </HoverMarquee>
     </div>
     <IconArrowRight className="text-muted-foreground transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5" width="16" height="16" />
   </button>
@@ -180,8 +180,8 @@ const DirectionA = () => {
                   />
                 </div>
                 <div className="transition-transform duration-200 ease-edo-out group-hover:-translate-y-0.5">
-                  <div className="truncate text-cell font-medium tracking-headline leading-tight text-foreground">{m[lang].t}</div>
-                  <div className="truncate mt-1 text-micro font-mono uppercase tracking-caption text-muted-foreground transition-colors duration-200 group-hover:text-foreground">{m[lang].sub}</div>
+                  <HoverMarquee className="text-cell font-medium tracking-headline leading-tight text-foreground">{m[lang].t}</HoverMarquee>
+                  <HoverMarquee className="mt-1 text-micro font-mono uppercase tracking-caption text-muted-foreground transition-colors duration-200 group-hover:text-foreground">{m[lang].sub}</HoverMarquee>
                 </div>
               </button>
             ))}

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import type { FormEvent } from 'react';
-import { CellLabel, CellTitle, IconArrowRight, IconPlay, IconMenu, Wordmark, LangSwitch, cn } from './ui';
+import { CellLabel, CellTitle, HoverMarquee, IconArrowRight, IconPlay, IconMenu, Wordmark, LangSwitch, cn } from './ui';
 import { useMachines, useContact } from './lib/use-strapi';
 import { BRANDS } from './lib/brands';
 import type { Lang, MachineInfo } from './types';
@@ -222,8 +222,8 @@ const MachineListCell = ({ lang, onSelect }: MachineListCellProps) => {
         <div className="flex min-w-0 items-center gap-3">
           <span className="font-mono text-label text-edo-gray-500 tracking-label">{String(i + 1).padStart(2, '0')}</span>
           <div className="min-w-0">
-            <div className="truncate text-detail font-medium tracking-copy-tight text-foreground">{m[lang].t}</div>
-            <div className="truncate text-caption text-muted-foreground">{m[lang].sub}</div>
+            <HoverMarquee className="text-detail font-medium tracking-copy-tight text-foreground">{m[lang].t}</HoverMarquee>
+            <HoverMarquee className="text-caption text-muted-foreground">{m[lang].sub}</HoverMarquee>
           </div>
         </div>
         <IconArrowRight className="flex-shrink-0 text-muted-foreground" width="14" height="14" />

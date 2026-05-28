@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BottomSheet, Button, IconArrowRight, IconSelector, PageHeader, buildMainNav, cn } from './ui';
+import { BottomSheet, Button, HoverMarquee, IconArrowRight, IconSelector, PageHeader, buildMainNav, cn } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
 import { useStructuredData } from './lib/use-structured-data';
 import { buildWebPageSchema, buildBreadcrumbSchema } from './lib/structured-data';
@@ -202,9 +202,9 @@ const LegalPage = () => {
           <span className="font-mono text-label tracking-label text-muted-foreground">
             {currentNumber}
           </span>
-          <span className="text-cell tracking-copy-tight font-medium text-foreground truncate">
+          <HoverMarquee className="text-cell tracking-copy-tight font-medium text-foreground">
             {active[lang]}
-          </span>
+          </HoverMarquee>
           <IconSelector width="16" height="16" className="ml-auto shrink-0 text-foreground" />
         </button>
       )}
@@ -242,9 +242,9 @@ const LegalPage = () => {
                   >
                     {num}
                   </span>
-                  <span className="text-cell tracking-copy-tight font-medium truncate">
+                  <HoverMarquee className="text-cell tracking-copy-tight font-medium">
                     {s[lang]}
-                  </span>
+                  </HoverMarquee>
                   <IconArrowRight width="16" height="16" className="ml-auto shrink-0" />
                 </button>
               </li>

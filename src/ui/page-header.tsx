@@ -3,6 +3,7 @@ import type { Lang } from '../types';
 import { CellLabel } from './typography';
 import { cn } from './cn';
 import { Wordmark } from './brand';
+import { HoverMarquee } from './hover-marquee';
 import { IconArrowRight, IconMenu } from './icons';
 import { common } from '../i18n/messages';
 
@@ -66,7 +67,7 @@ const PageHeaderActionButton = ({
   );
   const content = (
     <>
-      <span className="min-w-0 truncate">{label}</span>
+      <HoverMarquee className="min-w-0">{label}</HoverMarquee>
       {showArrow && (
         <IconArrowRight
           width={isPrimary ? 14 : 12}
@@ -147,11 +148,13 @@ const PageHeader = ({
           subtitle ? 'gap-3.5' : 'gap-0',
         )}
       >
-        <CellLabel className="min-w-0 truncate text-primary md:shrink-0">{title}</CellLabel>
+        <CellLabel className="min-w-0 text-primary md:shrink-0">
+          <HoverMarquee>{title}</HoverMarquee>
+        </CellLabel>
         {subtitle && (
-          <span className="truncate font-mono text-label tracking-ui text-muted-foreground">
+          <HoverMarquee className="font-mono text-label tracking-ui text-muted-foreground">
             {subtitle}
-          </span>
+          </HoverMarquee>
         )}
       </div>
     </div>

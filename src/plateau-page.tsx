@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from '@tanstack/react-router';
 import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
-import { BottomSheet, CellLabel, IconArrowRight, IconSelector, PageHeader, buildMainNav } from './ui';
+import { BottomSheet, CellLabel, HoverMarquee, IconArrowRight, IconSelector, PageHeader, buildMainNav } from './ui';
 import { cn } from './ui/cn';
 import { VideoLoop } from './ui/video-loop';
 import { useDocumentMeta } from './lib/use-document-meta';
@@ -330,12 +330,12 @@ const PlateauPage = ({ slug }: { slug: string }) => {
         <span className="font-mono text-label tracking-label text-muted-foreground">
           {currentNumber}
         </span>
-        <span className="text-cell tracking-copy-tight font-medium text-foreground truncate">
+        <HoverMarquee className="text-cell tracking-copy-tight font-medium text-foreground">
           {p.name}
-        </span>
-        <span className="ml-auto font-mono text-micro uppercase tracking-ui text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">
+        </HoverMarquee>
+        <HoverMarquee className="ml-auto font-mono text-micro uppercase tracking-ui text-muted-foreground">
           {p.tagline[lang]}
-        </span>
+        </HoverMarquee>
         <IconSelector width="16" height="16" className="shrink-0 text-foreground" />
       </button>
 
@@ -374,17 +374,17 @@ const PlateauPage = ({ slug }: { slug: string }) => {
                   >
                     {num}
                   </span>
-                  <span className="text-cell tracking-copy-tight font-medium truncate">
+                  <HoverMarquee className="text-cell tracking-copy-tight font-medium">
                     {cfg.name}
-                  </span>
-                  <span
+                  </HoverMarquee>
+                  <HoverMarquee
                     className={cn(
-                      'ml-auto font-mono text-micro uppercase tracking-ui whitespace-nowrap overflow-hidden text-ellipsis',
+                      'ml-auto font-mono text-micro uppercase tracking-ui',
                       active ? 'text-background/70' : 'text-muted-foreground',
                     )}
                   >
                     {cfg.tagline[lang]}
-                  </span>
+                  </HoverMarquee>
                   <IconArrowRight width="16" height="16" className="shrink-0" />
                 </button>
               </li>

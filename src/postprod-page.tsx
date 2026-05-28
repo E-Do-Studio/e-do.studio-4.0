@@ -4,6 +4,7 @@ import {
   BottomSheet,
   Button,
   EmptyState,
+  HoverMarquee,
   IconArrowRight,
   IconSelector,
   PageHeader,
@@ -321,12 +322,12 @@ const PostprodPage = () => {
           {currentNumber}
         </span>
         <span className="flex-1 min-w-0 flex flex-col gap-0.5">
-          <span className="text-cell tracking-copy-tight font-medium text-foreground truncate">
+          <HoverMarquee className="text-cell tracking-copy-tight font-medium text-foreground">
             {cat[lang]}
-          </span>
-          <span className="font-mono text-micro uppercase tracking-ui text-muted-foreground truncate">
+          </HoverMarquee>
+          <HoverMarquee className="font-mono text-micro uppercase tracking-ui text-muted-foreground">
             {cat.tagline[lang]}
-          </span>
+          </HoverMarquee>
         </span>
         <IconSelector width="16" height="16" className="shrink-0 text-foreground" />
       </button>
@@ -365,17 +366,17 @@ const PostprodPage = () => {
                     {num}
                   </span>
                   <span className="flex-1 min-w-0 flex flex-col gap-0.5">
-                    <span className="text-cell tracking-copy-tight font-medium truncate">
+                    <HoverMarquee className="text-cell tracking-copy-tight font-medium">
                       {c[lang]}
-                    </span>
-                    <span
+                    </HoverMarquee>
+                    <HoverMarquee
                       className={cn(
-                        'font-mono text-micro uppercase tracking-ui truncate',
+                        'font-mono text-micro uppercase tracking-ui',
                         active ? 'text-background/70' : 'text-muted-foreground',
                       )}
                     >
                       {c.tagline[lang]}
-                    </span>
+                    </HoverMarquee>
                   </span>
                   <IconArrowRight width="16" height="16" className="shrink-0" />
                 </button>

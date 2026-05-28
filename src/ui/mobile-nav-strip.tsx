@@ -3,6 +3,7 @@ import type { Lang } from '../types';
 import { mobileNav, resultsCount } from '../i18n/messages';
 import { BottomSheet } from './bottom-sheet';
 import { cn } from './cn';
+import { HoverMarquee } from './hover-marquee';
 import { IconArrowRight, IconChevronDown } from './icons';
 
 type StripOption = {
@@ -143,9 +144,9 @@ const MobileNavStrip = ({
             {triggerLabel}
           </span>
           {summary ? (
-            <span className="truncate font-mono text-label uppercase tracking-caption text-muted-foreground">
+            <HoverMarquee className="font-mono text-label uppercase tracking-caption text-muted-foreground">
               · {summary}
-            </span>
+            </HoverMarquee>
           ) : null}
           <span className="ml-auto flex shrink-0 items-center gap-2">
             {badgeCount > 1 ? (

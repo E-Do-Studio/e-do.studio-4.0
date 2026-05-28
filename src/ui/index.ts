@@ -66,3 +66,6 @@ export type {
 } from './mobile-nav-strip';
 
 export { MobileAssistantFab } from './mobile-assistant-fab';
+
+export { HoverMarquee } from './hover-marquee';
+export type { HoverMarqueeProps } from './hover-marquee';

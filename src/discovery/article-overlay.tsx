@@ -4,7 +4,7 @@ import { DiscoveryCover } from './discovery-cover';
 import { useEscapeKey } from './hooks';
 import { ArticleMeta, ArrowIcon } from './shared';
 import { renderMarkdown } from '../lib/render-markdown';
-import { EmptyState } from '../ui';
+import { EmptyState, HoverMarquee } from '../ui';
 import { discoveryPage } from '../i18n/messages';
 import { useStructuredData } from '../lib/use-structured-data';
 import { buildBlogPostingSchema } from '../lib/structured-data';
@@ -35,9 +35,9 @@ export const ArticleOverlay: React.FC<ArticleOverlayProps> = ({ post, lang, onCl
         </button>
         <div className="flex min-w-0 flex-1 items-center gap-3.5 bg-white px-4 md:px-6">
           <span className="edo-cell-label text-primary">{post.tag[lang]}</span>
-          <span className="truncate font-mono text-label tracking-ui text-muted-foreground">
+          <HoverMarquee className="font-mono text-label tracking-ui text-muted-foreground">
             {post.read} · {post.author} · {post.date[lang]}
-          </span>
+          </HoverMarquee>
         </div>
         <button onClick={onClose} className="edo-focus-ring flex basis-header-sm cursor-pointer items-center justify-center border-0 bg-white transition-colors hover:bg-muted">
           <span className="text-cell font-light text-foreground">×</span>
