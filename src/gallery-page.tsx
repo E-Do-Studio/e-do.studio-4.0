@@ -312,14 +312,14 @@ const ProjectLabel = ({
 }) => {
   const plateauLabel = PLATEAU_LABELS[project.plateau]?.[lang] ?? project.plateau;
   const className =
-    "edo-focus-ring relative flex cursor-pointer flex-col items-center justify-between overflow-hidden border-0 bg-white px-2.5 py-3.5 text-left font-sans no-underline text-inherit";
+    "edo-focus-ring relative flex cursor-pointer flex-col items-center justify-between overflow-hidden border-0 bg-white px-2 py-2 md:px-2.5 md:py-3.5 text-left font-sans no-underline text-inherit";
   const content = (
     <>
       <span className="max-w-full self-start truncate font-mono text-micro uppercase tracking-code text-muted-foreground transition-colors group-hover:text-primary">
         {plateauLabel}
       </span>
-      <div className="flex min-h-0 flex-1 items-center justify-center py-2 edo-writing-vertical rotate-180">
-        <span className="whitespace-nowrap text-detail md:text-tile-large font-medium leading-none tracking-headline text-foreground">
+      <div className="flex min-h-0 min-w-0 flex-1 items-center justify-center overflow-hidden py-1 md:py-2 edo-writing-vertical rotate-180">
+        <span className="block max-h-full overflow-hidden text-ellipsis whitespace-nowrap text-micro md:text-tile-large font-medium leading-none tracking-headline text-foreground">
           {project.brand}
         </span>
       </div>

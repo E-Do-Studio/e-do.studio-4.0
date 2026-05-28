@@ -259,6 +259,12 @@
     .sm\:border-r { border-right-width: var(--hairline); }
     .sm\:border-b { border-bottom-width: var(--hairline); }
     .sm\:border-l { border-left-width: var(--hairline); }
+    .sm\:border-t-0 { border-top-width: 0; }
+    .sm\:border-r-0 { border-right-width: 0; }
+    .sm\:border-b-0 { border-bottom-width: 0; }
+    .sm\:border-l-0 { border-left-width: 0; }
+    .sm\:border-x-0 { border-inline-width: 0; }
+    .sm\:border-y-0 { border-block-width: 0; }
   }
   @media (width >= 48rem) {
     .md\:border { border-width: var(--hairline); }
@@ -266,6 +272,15 @@
     .md\:border-r { border-right-width: var(--hairline); }
     .md\:border-b { border-bottom-width: var(--hairline); }
     .md\:border-l { border-left-width: var(--hairline); }
+    /* Restore Tailwind's `*-0` resets at this breakpoint — they share the same
+       specificity as the hairline overrides above and must appear later in the
+       source to win when both are present (e.g. `border-t md:border-t-0`). */
+    .md\:border-t-0 { border-top-width: 0; }
+    .md\:border-r-0 { border-right-width: 0; }
+    .md\:border-b-0 { border-bottom-width: 0; }
+    .md\:border-l-0 { border-left-width: 0; }
+    .md\:border-x-0 { border-inline-width: 0; }
+    .md\:border-y-0 { border-block-width: 0; }
   }
   @media (width >= 64rem) {
     .lg\:border { border-width: var(--hairline); }
@@ -273,6 +288,12 @@
     .lg\:border-r { border-right-width: var(--hairline); }
     .lg\:border-b { border-bottom-width: var(--hairline); }
     .lg\:border-l { border-left-width: var(--hairline); }
+    .lg\:border-t-0 { border-top-width: 0; }
+    .lg\:border-r-0 { border-right-width: 0; }
+    .lg\:border-b-0 { border-bottom-width: 0; }
+    .lg\:border-l-0 { border-left-width: 0; }
+    .lg\:border-x-0 { border-inline-width: 0; }
+    .lg\:border-y-0 { border-block-width: 0; }
   }
   .gap-hairline { gap: var(--hairline); }
   .font-inherit { font-family: inherit; }

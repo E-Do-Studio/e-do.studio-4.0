@@ -112,7 +112,7 @@ const ConfirmedView = ({
       />
       <div className="overflow-auto flex flex-col edo-hairline md:col-span-2 md:row-start-2 md:min-h-0">
         <div className="grid edo-hairline grid-cols-1 md:grid-cols-confirmation-hero">
-          <div className="bg-white pt-7 px-12 pb-6 flex flex-col gap-2.5 min-h-44">
+          <div className="bg-white pt-6 md:pt-7 px-5 md:px-12 pb-6 flex flex-col gap-2.5 min-h-44">
             <div className="inline-flex items-center gap-2.5 py-1.5 px-3 bg-primary text-white font-mono text-micro tracking-label uppercase self-start">
               ● {copy.status}
             </div>
@@ -123,7 +123,7 @@ const ConfirmedView = ({
               {copy.body}
             </p>
           </div>
-          <div className="bg-white p-6 flex flex-col justify-between gap-3.5 min-h-44">
+          <div className="bg-white px-5 md:px-6 py-5 md:py-6 flex flex-col justify-between gap-3.5 min-h-44">
             <div className="flex flex-col gap-3.5">
               <div>
                 <div className="edo-cell-label text-muted-foreground mb-1">{booking.reference[lang]}</div>
@@ -182,7 +182,7 @@ const ConfirmedView = ({
           </div>
         </div>
 
-        <div className="bg-white px-12 py-cell pb-5 flex-1">
+        <div className="bg-white px-5 md:px-12 py-cell pb-5 flex-1">
           <div className="edo-cell-label text-muted-foreground mb-2.5">{booking.quoteBreakdown[lang]}</div>
           <div className="flex flex-col">
             {(snapshot.rows as { lbl: string; amt: number; onReq?: boolean }[]).map((r, i, arr) => (
@@ -262,7 +262,7 @@ const BookConfirmation = () => {
           actions={buildMainNav({ lang, goto, exclude: 'book' })}
         />
         <div className="md:row-start-2 md:overflow-y-auto md:min-h-0 bg-white">
-          <div className="px-6 py-14 md:px-12">
+          <div className="px-5 py-10 md:px-12 md:py-14">
             <span className="font-mono text-label tracking-meta uppercase text-muted-foreground">
               {bookPicker.confirmationMissingTitle[lang]}
             </span>
