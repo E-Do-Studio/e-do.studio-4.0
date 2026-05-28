@@ -94,6 +94,17 @@
   button {
     color: inherit;
   }
+
+  img,
+  picture,
+  video,
+  source,
+  svg {
+    -webkit-user-drag: none;
+    -webkit-touch-callout: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
 }
 
 .edo-line-clamp-2,
