@@ -33,7 +33,7 @@ const PickerTile = ({ index, label, description, variant, onClick, lang }: TileP
       type="button"
       onClick={onClick}
       className={cn(
-        'edo-focus-ring group flex min-h-44 cursor-pointer flex-col gap-3 border-0 px-6 py-7 text-left transition-[color,background-color,opacity] duration-150 ease-edo-out md:min-h-72 md:px-8 md:py-9',
+        'edo-focus-ring group flex flex-1 min-h-44 cursor-pointer flex-col gap-3 border-0 px-6 py-7 text-left transition-[color,background-color,opacity] duration-150 ease-edo-out md:min-h-72 md:px-8 md:py-9',
         palette,
       )}
     >
@@ -88,7 +88,7 @@ const BookPicker = () => {
   const goManual = () => navigate({ to: manualHref });
 
   return (
-    <div className="edo-page-enter grid w-full edo-hairline md:h-full md:grid-rows-app">
+    <div className="edo-page-enter flex min-h-svh w-full flex-col edo-hairline md:grid md:h-full md:min-h-0 md:grid-rows-app">
       <PageHeader
         lang={lang}
         title={booking.title[lang]}
@@ -100,7 +100,7 @@ const BookPicker = () => {
         actions={buildMainNav({ lang, goto, exclude: 'book' })}
       />
 
-      <div className="grid edo-hairline md:row-start-2 md:overflow-y-auto md:min-h-0">
+      <div className="flex min-h-0 flex-1 flex-col edo-hairline md:row-start-2 md:grid md:overflow-y-auto">
         <div className="bg-white px-6 py-10 md:px-12 md:py-14">
           <h1 className="m-0 text-hero font-light tracking-display leading-solid text-balance text-foreground">
             {bookPicker.title[lang]}
@@ -110,7 +110,7 @@ const BookPicker = () => {
           </p>
         </div>
 
-        <div className="grid edo-hairline grid-cols-1 md:grid-cols-3">
+        <div className="flex flex-1 flex-col edo-hairline md:grid md:grid-cols-3">
           <PickerTile
             index={1}
             label={bookPicker.configuratorLabel[lang]}

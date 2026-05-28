@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import type { GalleryProject } from "./lib/strapi";
 import type { Lang } from "./types";
-import { IconArrowRight, IconX } from "./ui";
 import { common } from "./i18n/messages";
 import { BookCTATile } from "./book-cta";
 
@@ -57,6 +57,9 @@ export const GalleryLightbox = ({
     };
   }, []);
 
+  const ctrlBtn =
+    "edo-focus-ring absolute z-10 flex h-9 w-9 items-center justify-center cursor-pointer bg-black/35 backdrop-blur-md border border-white/20 text-white transition-[transform,background-color] duration-150 ease-edo-out hover:bg-black/50 active:scale-[0.96]";
+
   return (
     <div
       className="fixed inset-0 z-50 bg-background/70 backdrop-blur-xl"
@@ -71,9 +74,9 @@ export const GalleryLightbox = ({
         type="button"
         aria-label={common.close[lang]}
         onClick={onClose}
-        className="edo-focus-ring absolute right-4 top-4 z-10 cursor-pointer border-0 bg-transparent p-1 text-foreground opacity-60 transition-opacity hover:opacity-100"
+        className={`${ctrlBtn} right-3 top-3`}
       >
-        <IconX width={18} height={18} />
+        <X size={18} strokeWidth={1.5} />
       </button>
 
       <div className="pointer-events-none flex h-full w-full items-center justify-center px-4 py-16 md:px-16 md:py-20">
@@ -107,19 +110,17 @@ export const GalleryLightbox = ({
             type="button"
             aria-label={common.prevImage[lang]}
             onClick={prev}
-            className="edo-focus-ring absolute left-4 top-1/2 z-10 -translate-y-1/2 cursor-pointer border-0 bg-transparent p-1 text-foreground opacity-60 transition-opacity hover:opacity-100"
+            className={`${ctrlBtn} left-3 top-1/2 -translate-y-1/2`}
           >
-            <span className="inline-block rotate-180">
-              <IconArrowRight width={20} height={20} />
-            </span>
+            <ChevronLeft size={18} strokeWidth={1.5} />
           </button>
           <button
             type="button"
             aria-label={common.nextImage[lang]}
             onClick={next}
-            className="edo-focus-ring absolute right-4 top-1/2 z-10 -translate-y-1/2 cursor-pointer border-0 bg-transparent p-1 text-foreground opacity-60 transition-opacity hover:opacity-100"
+            className={`${ctrlBtn} right-3 top-1/2 -translate-y-1/2`}
           >
-            <IconArrowRight width={20} height={20} />
+            <ChevronRight size={18} strokeWidth={1.5} />
           </button>
         </>
       )}

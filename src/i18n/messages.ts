@@ -27,6 +27,8 @@ export const common = {
   prevImage: { fr: 'Image précédente', en: 'Previous image' } as B,
   nextImage: { fr: 'Image suivante', en: 'Next image' } as B,
   imageCarousel: { fr: 'Carrousel d’images', en: 'Image carousel' } as B,
+  playVideo: { fr: 'Lire la vidéo', en: 'Play video' } as B,
+  pauseVideo: { fr: 'Mettre en pause', en: 'Pause video' } as B,
 };
 
 export const nav = {

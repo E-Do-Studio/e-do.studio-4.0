@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from '@tanstack/react-router';
+import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import { BottomSheet, CellLabel, IconArrowRight, IconSelector, PageHeader, buildMainNav } from './ui';
 import { cn } from './ui/cn';
 import { VideoLoop } from './ui/video-loop';
@@ -27,23 +28,27 @@ interface CoverCarouselProps {
 
 // Cover — renders the currently selected media item full-cell with prev/next
 // arrows overlaid inside the image. Arrows are hidden when only one media item.
-// The asset fills the grid cell in `object-contain` so portrait, square and
-// landscape sources all use as much of the available space as possible without
-// cropping.
+// Images use `object-contain` (preserve composition); videos use `object-cover`
+// for an immersive feel and expose a discreet pause/play toggle. Controls are
+// frosted-glass squares that fade in on pointer hover (always visible on touch
+// devices where there's no hover).
 const Cover = ({ items, lang, plateauName, index, onPrev, onNext, className }: CoverCarouselProps) => {
+  const [paused, setPaused] = useState(false);
+  useEffect(() => {
+    setPaused(false);
+  }, [index]);
+
   if (items.length === 0) return null;
   const item = items[index];
   const hasMultiple = items.length > 1;
   const total = items.length;
-  const counterCurrent = String(index + 1).padStart(2, '0');
-  const counterTotal = String(total).padStart(2, '0');
 
-  const arrowBtn =
-    'edo-focus-ring absolute top-1/2 z-10 -translate-y-1/2 flex h-10 w-10 items-center justify-center cursor-pointer bg-white text-foreground border border-border transition-colors duration-150 ease-edo-out hover:bg-foreground hover:text-background';
+  const ctrlBtn =
+    'edo-focus-ring absolute z-10 flex h-9 w-9 items-center justify-center cursor-pointer bg-black/35 backdrop-blur-md border border-white/20 text-white transition-[opacity,transform,background-color] duration-150 ease-edo-out hover:bg-black/50 active:scale-[0.96] opacity-100 md:opacity-0 md:scale-95 md:group-hover:opacity-100 md:group-hover:scale-100 md:group-focus-within:opacity-100 md:group-focus-within:scale-100';
 
   return (
     <div
-      className={cn('relative overflow-hidden bg-white min-h-56 md:min-h-0', className)}
+      className={cn('group relative overflow-hidden bg-white min-h-56 md:min-h-0', className)}
       role={hasMultiple ? 'group' : undefined}
       aria-roledescription={hasMultiple ? 'carousel' : undefined}
       aria-label={hasMultiple ? common.imageCarousel[lang] : undefined}
@@ -53,7 +58,8 @@ const Cover = ({ items, lang, plateauName, index, onPrev, onNext, className }: C
           key={item.url}
           src={item.url}
           poster={item.poster}
-          objectFit="contain"
+          objectFit="cover"
+          paused={paused}
           className="absolute inset-0 h-full w-full"
         />
       ) : (
@@ -67,32 +73,36 @@ const Cover = ({ items, lang, plateauName, index, onPrev, onNext, className }: C
         />
       )}
 
+      {item.kind === 'video' && (
+        <button
+          type="button"
+          onClick={() => setPaused((p) => !p)}
+          aria-label={(paused ? common.playVideo : common.pauseVideo)[lang]}
+          aria-pressed={paused}
+          className={cn(ctrlBtn, 'bottom-3 right-3')}
+        >
+          {paused ? <Play size={16} strokeWidth={1.5} /> : <Pause size={16} strokeWidth={1.5} />}
+        </button>
+      )}
+
       {hasMultiple && (
         <>
           <button
             type="button"
             onClick={onPrev}
             aria-label={common.prevImage[lang]}
-            className={cn(arrowBtn, 'left-4')}
+            className={cn(ctrlBtn, 'top-1/2 -translate-y-1/2 left-3')}
           >
-            <IconArrowRight width="16" height="16" className="rotate-180" />
+            <ChevronLeft size={18} strokeWidth={1.5} />
           </button>
           <button
             type="button"
             onClick={onNext}
             aria-label={common.nextImage[lang]}
-            className={cn(arrowBtn, 'right-4')}
+            className={cn(ctrlBtn, 'top-1/2 -translate-y-1/2 right-3')}
           >
-            <IconArrowRight width="16" height="16" />
+            <ChevronRight size={18} strokeWidth={1.5} />
           </button>
-          <div
-            aria-hidden="true"
-            className="absolute bottom-4 right-4 z-10 flex items-center gap-1 bg-white border border-border px-2 py-1 font-mono text-micro uppercase tracking-ui text-foreground"
-          >
-            <span>{counterCurrent}</span>
-            <span className="text-muted-foreground">/</span>
-            <span className="text-muted-foreground">{counterTotal}</span>
-          </div>
           <span aria-live="polite" className="sr-only">
             {`${index + 1} / ${total}`}
           </span>
@@ -113,8 +123,8 @@ interface ThumbStripProps {
 
 // Thumbnail strip — up to 4 tiles visible at a time. Clicking a tile sets it
 // as the cover. When there are more than 4 items the strip scrolls horizontally
-// and surfaces prev/next arrows. Inactive tiles are dimmed; the active tile
-// shows a primary-color top accent.
+// and surfaces prev/next arrows. Inactive tiles are dimmed; the active tile is
+// shown at full opacity.
 const ThumbStrip = ({ items, lang, plateauName, activeIndex, onSelect, className }: ThumbStripProps) => {
   const stripRef = useRef<HTMLDivElement>(null);
   const [canPrev, setCanPrev] = useState(false);
@@ -122,12 +132,11 @@ const ThumbStrip = ({ items, lang, plateauName, activeIndex, onSelect, className
 
   const hasOverflow = items.length > VISIBLE_TILES;
   const visible = Math.min(items.length, VISIBLE_TILES);
-  // Account for the 1px gaps between tiles so that exactly `visible` tiles fit
-  // in the container with no leftover horizontal overflow. A plain `100/N%`
-  // basis would sum to `100% + (N-1)px` with gap-px, producing a tiny scroll
-  // and a few pixels of drift when scrollIntoView fires on index change.
-  const tileBasis =
-    visible <= 1 ? '100%' : `calc((100% - ${visible - 1}px) / ${visible})`;
+  // Tiles touch — `edo-hairline` forces `gap: 0` on the strip, and each tile's
+  // 1.5px right-border serves as the visible separator. So `visible` tiles must
+  // sum to exactly 100% of the strip width; any subtraction leaves a gap at
+  // the end and breaks the vertical alignment with the column boundary above.
+  const tileBasis = `${100 / visible}%`;
 
   const updateScrollState = useCallback(() => {
     const el = stripRef.current;
@@ -211,13 +220,7 @@ const ThumbStrip = ({ items, lang, plateauName, activeIndex, onSelect, className
                   alt=""
                   loading="lazy"
                   decoding="async"
-                  className="absolute inset-0 h-full w-full object-cover"
-                />
-              )}
-              {isActive && (
-                <span
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-primary"
+                  className="absolute inset-0 h-full w-full object-contain"
                 />
               )}
             </button>

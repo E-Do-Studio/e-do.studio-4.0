@@ -6,16 +6,21 @@ interface VideoLoopProps {
   poster?: string;
   className?: string;
   objectFit?: 'cover' | 'contain' | 'fill';
+  paused?: boolean;
 }
 
-const VideoLoop = ({ src, poster, className, objectFit = 'cover' }: VideoLoopProps) => {
+const VideoLoop = ({ src, poster, className, objectFit = 'cover', paused = false }: VideoLoopProps) => {
   const ref = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    el.play().catch(() => {});
-  }, [src]);
+    if (paused) {
+      el.pause();
+    } else {
+      el.play().catch(() => {});
+    }
+  }, [src, paused]);
 
   return (
     <video
