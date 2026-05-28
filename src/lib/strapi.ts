@@ -90,9 +90,7 @@ interface StrapiMachine {
   slug: string;
   subtitle: string;
   description: string;
-  pricing: string;
   pricingDescription?: string | null;
-  operatorPricing: string | null;
   specs?: StrapiSpec[];
   usages?: StrapiLocalizedItem[];
   pricingRows?: StrapiPricingRow[];
@@ -106,7 +104,6 @@ interface StrapiPostProdType {
   title: string;
   slug: string;
   description: string;
-  price: string;
   includes?: StrapiLocalizedItem[];
   priceRows?: StrapiPricingRow[];
   media?: StrapiMedia[];
@@ -468,25 +465,6 @@ function mediaListToItems(items: StrapiMedia[] | undefined): MediaItem[] {
   return out;
 }
 
-function parsePricingToRates(pricingFr: string, pricingEn: string): { k: Bilingual; v: string }[] {
-  const frParts = pricingFr?.split(' · ') ?? [];
-  const enParts = pricingEn?.split(' · ') ?? [];
-  const len = Math.max(frParts.length, enParts.length);
-  const rates: { k: Bilingual; v: string }[] = [];
-  for (let i = 0; i < len; i++) {
-    const fr = frParts[i]?.trim() ?? '';
-    const en = enParts[i]?.trim() ?? '';
-    const frMatch = fr.match(/^(.+?)\s*[/:]\s*(.+)$/);
-    const enMatch = en.match(/^(.+?)\s*[/:]\s*(.+)$/);
-    if (frMatch && enMatch) {
-      rates.push({ k: { fr: frMatch[2], en: enMatch[2] }, v: frMatch[1] });
-    } else {
-      rates.push({ k: { fr: fr, en: en }, v: '' });
-    }
-  }
-  return rates;
-}
-
 function formatRowAmount(row: StrapiPricingRow, fallback: Bilingual): string | Bilingual {
   if (row.kind === 'quote' || row.amount == null || row.amount === '') {
     return fallback;
@@ -612,11 +590,7 @@ export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
   // intentionally reversed — its absence now means the page won't render.
   machinesFr.forEach((mFr, i) => {
     const mEn = machinesEn.find(e => e.slug === mFr.slug) ?? mFr;
-    const rows = mFr.pricingRows ?? [];
-    const rowsEn = mEn.pricingRows ?? [];
-    const rates = rows.length > 0
-      ? pricingRowsToRates(rows, rowsEn)
-      : parsePricingToRates(mFr.pricing, mEn.pricing);
+    const rates = pricingRowsToRates(mFr.pricingRows ?? [], mEn.pricingRows ?? []);
     const uses = mFr.usages && mFr.usages.length > 0
       ? mergeLocalizedItems(mFr.usages, mEn.usages ?? mFr.usages)
       : (MACHINE_USES[mFr.slug] ?? []);
@@ -688,7 +662,9 @@ export async function fetchPostProdTypes(): Promise<PPCat[]> {
   return frTypes.map(tFr => {
     const tEn = enTypes.find(e => e.slug === tFr.slug) ?? tFr;
     const firstRow = tFr.priceRows?.[0];
-    const price = firstRow ? priceFromRow(firstRow) : parsePriceText(tFr.price);
+    const price: PPPrice = firstRow
+      ? priceFromRow(firstRow)
+      : { amount: '', from: false, kind: 'unit' };
     // `media` is non-i18n: the FR locale is the source of truth. The schema
     // allows both images and videos — preserve the kind so the gallery can
     // render `<video>` for clips and `<img>` for stills (EDO-222).
@@ -723,16 +699,6 @@ export async function fetchPostProdTypes(): Promise<PPCat[]> {
       seo: buildSeo(tFr.seo, tEn.seo),
     };
   });
-}
-
-function parsePriceText(text: string): PPPrice {
-  const from = text?.startsWith('À partir de') || text?.startsWith('Sur devis');
-  const amountMatch = text?.match(/[\d,]+\s*€/);
-  return {
-    amount: amountMatch?.[0] ?? text,
-    from,
-    kind: text?.includes('devis') ? 'quote' : 'unit',
-  };
 }
 
 const TONES: Array<'warm' | 'mono' | 'dark'> = ['warm', 'mono', 'dark'];

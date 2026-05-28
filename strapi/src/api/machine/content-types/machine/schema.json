@@ -57,26 +57,6 @@
       },
       "description": "Caractéristiques techniques (label / valeur). Localisé : chaque locale a sa propre liste éditable."
     },
-    "pricing": {
-      "type": "string",
-      "maxLength": 200,
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "description": "ATTENTION : actuellement parsé en regex côté front (`split(' · ')`). À refactorer en composant `pricing-row` (Phase 3). Format : « 1 heure / € 120 · Demi-journée / € 410 »."
-    },
-    "operatorPricing": {
-      "type": "string",
-      "maxLength": 200,
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "description": "Tarification avec opérateur (même format que pricing). Optionnel."
-    },
     "pricingRows": {
       "type": "component",
       "component": "shared.pricing-row",
@@ -86,7 +66,7 @@
           "localized": true
         }
       },
-      "description": "Tarification structurée — remplace progressivement le champ `pricing` (texte parsé en regex). Tant que vide, le front continue de lire `pricing`. Localisé : libellés FR/EN indépendants."
+      "description": "Tarification structurée du plateau. Localisé : libellés FR/EN indépendants."
     },
     "pricingDescription": {
       "type": "text",
@@ -118,7 +98,7 @@
           "localized": true
         }
       },
-      "description": "Tarification opérateur structurée — remplace progressivement `operatorPricing`. Localisé : libellés FR/EN indépendants."
+      "description": "Tarification opérateur structurée (avec assistance d'un opérateur de plateau). Localisé : libellés FR/EN indépendants. Optionnel."
     },
     "media": {
       "type": "media",

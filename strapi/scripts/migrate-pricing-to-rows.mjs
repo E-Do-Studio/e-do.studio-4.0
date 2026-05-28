@@ -19,9 +19,13 @@
  * skipped (no double-write).
  *
  * Format expected on the legacy strings:
- *   - Pricing (machine):  "5h / € 650 · 10h / € 880 · 10h éditorial / Sur demande"
- *     (rows separated by ' · ', label/amount split by '/' or ':')
- *   - Price (post-production-type):  "À partir de 7,90€"  or  "Sur devis"
+ *   - Pricing (machine):  rows separated by ' · ', each row "label / amount"
+ *     or "amount / label" (order is auto-detected — the side that looks like
+ *     a price is treated as the value). Examples:
+ *       "650€ / 5h · 880€ / 10h · Sur demande / 10h éditorial"  (prod format)
+ *       "5h / € 650 · 10h / € 880 · 10h éditorial / Sur demande"
+ *   - Price (post-production-type):  "À partir de 7,90€" / "From €7.90" /
+ *     "Sur devis" / "On quote" / "On request"
  */
 
 const STRAPI_URL = process.env.STRAPI_URL || 'http://localhost:1337';
@@ -47,45 +51,57 @@ async function api(path, opts = {}) {
   return res.json();
 }
 
+// True if the text looks like a price expression (e.g. "650€", "€650",
+// "1 120€") or an explicit quote marker ("Sur demande", "On request"…).
+function looksLikePrice(text) {
+  if (!text) return false;
+  const trimmed = String(text).trim();
+  if (/sur\s*(demande|devis)|on\s*request|on\s*quote|to\s*be\s*quoted/i.test(trimmed)) return true;
+  return /[\d][\d\s,.]*\s*€|€\s*[\d][\d\s,.]*/.test(trimmed);
+}
+
 function parseAmount(text) {
   if (!text) return { amount: null, kind: 'quote' };
   const trimmed = String(text).trim();
-  if (/sur\s*(demande|devis)|on\s*request|to\s*be\s*quoted/i.test(trimmed)) {
+  if (/sur\s*(demande|devis)|on\s*request|on\s*quote|to\s*be\s*quoted/i.test(trimmed)) {
     return { amount: null, kind: 'quote' };
   }
-  const m = trimmed.match(/([\d\s]+(?:[.,]\d+)?)\s*€/);
+  const m = trimmed.match(/([\d\s]+(?:[.,]\d+)?)\s*€|€\s*([\d\s]+(?:[.,]\d+)?)/);
   if (!m) return { amount: null, kind: 'unit' };
-  const n = Number(m[1].replace(/\s/g, '').replace(',', '.'));
+  const raw = (m[1] ?? m[2]).replace(/\s/g, '').replace(',', '.');
+  const n = Number(raw);
   return { amount: Number.isFinite(n) ? n : null, kind: 'unit' };
 }
 
 function parsePricingString(pricing) {
-  // "5h / € 650 · 10h / € 880" → [{label: '5h', amount: 650}, ...]
+  // Accepts both "label / price" ("5h / € 650") and "price / label" ("650€ / 5h")
+  // formats — the side that looks like a price is treated as the value, the
+  // other as the label. The current prod data uses price-first.
   if (!pricing) return [];
   const parts = pricing.split(' · ').map((p) => p.trim()).filter(Boolean);
   return parts.map((part) => {
     const m = part.match(/^(.+?)\s*[/:]\s*(.+)$/);
     if (!m) return { label: part, amount: null, kind: 'quote', note: null };
-    const label = m[1].trim();
-    const valueText = m[2].trim();
+    const left = m[1].trim();
+    const right = m[2].trim();
+    const [label, valueText] = looksLikePrice(left) && !looksLikePrice(right)
+      ? [right, left]
+      : [left, right];
     const { amount, kind } = parseAmount(valueText);
-    return {
-      label,
-      amount,
-      kind,
-      note: amount == null ? valueText : null,
-    };
+    return { label, amount, kind, note: null };
   });
 }
 
 function parsePriceString(price) {
-  // "À partir de 7,90€" → [{label: 'À partir de', amount: 7.9}], or "Sur devis" → [{kind: 'quote'}]
+  // "À partir de 7,90€" / "From €7.90" → [{label: 'À partir de', amount: 7.9}]
+  // "Sur devis" / "On quote" / "On request" → [{kind: 'quote', label: <text>}]
   if (!price) return [];
   const trimmed = price.trim();
-  const onQuote = /sur\s*(demande|devis)/i.test(trimmed);
-  if (onQuote) return [{ label: trimmed, amount: null, kind: 'quote', note: null }];
+  if (/sur\s*(demande|devis)|on\s*request|on\s*quote/i.test(trimmed)) {
+    return [{ label: trimmed, amount: null, kind: 'quote', note: null }];
+  }
   const fromMatch = trimmed.match(/^(à partir de|à partir|from)\s*(.+)$/i);
-  const labelGuess = fromMatch ? fromMatch[1].charAt(0).toUpperCase() + fromMatch[1].slice(1) : 'Tarif';
+  const labelGuess = fromMatch ? fromMatch[1].charAt(0).toUpperCase() + fromMatch[1].slice(1).toLowerCase() : 'Tarif';
   const amountText = fromMatch ? fromMatch[2] : trimmed;
   const { amount } = parseAmount(amountText);
   return [{ label: labelGuess, amount, kind: 'unit', note: null }];

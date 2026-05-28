@@ -8,8 +8,7 @@
     "dev": "vite --host 0.0.0.0",
     "typecheck": "tsc --noEmit",
     "build": "vite build",
-    "preview": "vite preview",
-    "chat:reindex": "node scripts/build-chat-knowledge.mjs"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.1",
