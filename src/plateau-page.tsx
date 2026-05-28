@@ -42,6 +42,8 @@ const Cover = ({ items, lang, plateauName, index, onPrev, onNext, className }: C
   const item = items[index];
   const hasMultiple = items.length > 1;
   const total = items.length;
+  const counterCurrent = String(index + 1).padStart(2, '0');
+  const counterTotal = String(total).padStart(2, '0');
 
   const ctrlBtn =
     'edo-focus-ring absolute z-10 flex h-9 w-9 items-center justify-center cursor-pointer bg-black/35 backdrop-blur-md border border-white/20 text-white transition-[opacity,transform,background-color] duration-150 ease-edo-out hover:bg-black/50 active:scale-[0.96] opacity-100 md:opacity-0 md:scale-95 md:group-hover:opacity-100 md:group-hover:scale-100 md:group-focus-within:opacity-100 md:group-focus-within:scale-100';
@@ -103,6 +105,14 @@ const Cover = ({ items, lang, plateauName, index, onPrev, onNext, className }: C
           >
             <ChevronRight size={18} strokeWidth={1.5} />
           </button>
+          <div
+            aria-hidden="true"
+            className="absolute bottom-4 right-4 z-10 flex items-center gap-1 bg-white border border-border px-2 py-1 font-mono text-micro uppercase tracking-ui text-foreground"
+          >
+            <span>{counterCurrent}</span>
+            <span className="text-muted-foreground">/</span>
+            <span className="text-muted-foreground">{counterTotal}</span>
+          </div>
           <span aria-live="polite" className="sr-only">
             {`${index + 1} / ${total}`}
           </span>
@@ -124,7 +134,7 @@ interface ThumbStripProps {
 // Thumbnail strip — up to 4 tiles visible at a time. Clicking a tile sets it
 // as the cover. When there are more than 4 items the strip scrolls horizontally
 // and surfaces prev/next arrows. Inactive tiles are dimmed; the active tile is
-// shown at full opacity.
+// shown at full opacity and gets a primary-color top accent.
 const ThumbStrip = ({ items, lang, plateauName, activeIndex, onSelect, className }: ThumbStripProps) => {
   const stripRef = useRef<HTMLDivElement>(null);
   const [canPrev, setCanPrev] = useState(false);
@@ -221,6 +231,12 @@ const ThumbStrip = ({ items, lang, plateauName, activeIndex, onSelect, className
                   loading="lazy"
                   decoding="async"
                   className="absolute inset-0 h-full w-full object-contain"
+                />
+              )}
+              {isActive && (
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-primary"
                 />
               )}
             </button>
