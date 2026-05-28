@@ -167,6 +167,14 @@
   body {
     background: var(--edo-pure-black);
   }
+
+  /* Every routed page wraps its layout in `.edo-page-enter`. On mobile we
+     force the wrapper to fill at least the dynamic viewport so short pages
+     no longer leave a phantom strip below the last cell. Desktop keeps its
+     own `md:h-full` rule untouched. */
+  .edo-page-enter {
+    min-height: 100dvh;
+  }
 }
 
 /* ── Bottom sheet primitive ──

@@ -99,21 +99,10 @@ const PageHeaderActionButton = ({
 const DEFAULT_TITLE_CLASS = 'lg:col-start-2 lg:col-span-2';
 const DEFAULT_RIGHT_BLOCK_CLASS = 'lg:col-start-4';
 
-const LangButton = ({
-  lang,
-  onLangToggle,
-  className,
-}: {
-  lang: Lang;
-  onLangToggle: () => void;
-  className?: string;
-}) => (
+const LangButton = ({ lang, onLangToggle }: { lang: Lang; onLangToggle: () => void }) => (
   <button
     onClick={onLangToggle}
-    className={cn(
-      'edo-focus-ring flex h-full basis-header flex-none cursor-pointer items-center justify-center border-0 bg-background p-0 transition-colors hover:bg-muted',
-      className,
-    )}
+    className="edo-focus-ring flex h-full basis-header flex-none cursor-pointer items-center justify-center border-0 bg-background p-0 transition-colors hover:bg-muted"
   >
     <span className="font-mono text-label tracking-meta text-foreground">
       {common.langToggleLabel[lang]}
@@ -137,7 +126,7 @@ const PageHeader = ({
   const titleCell = (
     <div
       className={cn(
-        'hidden min-w-0 flex-1 items-center justify-start bg-background px-4 md:flex md:px-6',
+        'flex min-w-0 flex-1 items-center justify-start bg-background px-4 md:px-6',
         subgrid && (titleClassName ?? DEFAULT_TITLE_CLASS),
       )}
     >
@@ -190,7 +179,7 @@ const PageHeader = ({
            grid cell whose width matches the body's rightmost column. */
         <div
           className={cn(
-            'flex min-w-0 border-r border-hairline md:border-r-0 [&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-hairline',
+            'flex min-w-0 [&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-hairline',
             rightBlockClassName ?? DEFAULT_RIGHT_BLOCK_CLASS,
           )}
         >
@@ -199,7 +188,7 @@ const PageHeader = ({
               key={action.id}
               {...action}
               showArrow={false}
-              className={cn(action.className, 'lg:!flex-1 lg:min-w-0 lg:px-2 lg:gap-1.5')}
+              className={cn(action.className, 'lg:flex-1 lg:min-w-0 lg:px-2 lg:gap-1.5')}
             />
           ))}
           <LangButton lang={lang} onLangToggle={onLangToggle} />
@@ -207,20 +196,12 @@ const PageHeader = ({
       ) : (
         /* Flex mode — actions + lang are direct flex children of the header,
            preserving the original natural-width layout for pages that do not
-           opt into subgrid alignment (home, discovery, booking confirmation).
-           LangButton picks up a `border-r` on mobile so its cell is visually
-           closed off from the empty header background to its right. On md+
-           the titleCell `flex-1` absorbs free space, so the border on the
-           last child would sit at the viewport edge and is redundant. */
+           opt into subgrid alignment (home, discovery, booking confirmation). */
         <>
           {actions.map((action) => (
             <PageHeaderActionButton key={action.id} {...action} />
           ))}
-          <LangButton
-            lang={lang}
-            onLangToggle={onLangToggle}
-            className="border-r border-hairline md:border-r-0"
-          />
+          <LangButton lang={lang} onLangToggle={onLangToggle} />
         </>
       )}
     </header>
