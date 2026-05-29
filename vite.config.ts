@@ -11,15 +11,19 @@ import {
 } from './src/lib/seo-meta';
 import type { Lang } from './src/types';
 
-function gtmNoscript(gtmId: string | undefined): Plugin {
+function gtmTags(gtmId: string | undefined): Plugin {
   return {
-    name: 'edo-gtm-noscript',
+    name: 'edo-gtm-tags',
     transformIndexHtml(html) {
       const id = gtmId?.trim();
       if (!id) return html;
       const safeId = id.replace(/"/g, '&quot;');
-      const tag = `<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=${encodeURIComponent(safeId)}" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>`;
-      return html.replace('<body>', `<body>\n${tag}`);
+      const encodedId = encodeURIComponent(safeId);
+      const headScript = `<!-- Google Tag Manager -->\n<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${safeId}');</script>\n<!-- End Google Tag Manager -->`;
+      const bodyTag = `<!-- Google Tag Manager (noscript) --><noscript><iframe src="https://www.googletagmanager.com/ns.html?id=${encodedId}" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript><!-- End Google Tag Manager (noscript) -->`;
+      return html
+        .replace('</head>', `${headScript}\n</head>`)
+        .replace('<body>', `<body>\n${bodyTag}`);
     },
   };
 }
@@ -240,7 +244,7 @@ function edoPrerender(): Plugin {
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
   return {
-    plugins: [react(), tailwindcss(), gtmNoscript(env.VITE_GTM_ID), edoPrerender()],
+    plugins: [react(), tailwindcss(), gtmTags(env.VITE_GTM_ID), edoPrerender()],
     server: {
       proxy: {
         '/api': {
