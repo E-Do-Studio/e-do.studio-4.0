@@ -2,8 +2,80 @@
     root * /srv
     encode zstd gzip
 
+    # ---------- Redirections legacy v3 → v4 (301 permanent) ----------
+
     @root path /
-    redir @root /fr 302
+    redir @root /fr 301
+
+    redir /cyclorama   /fr/cyclorama 301
+    redir /contact     /fr/contact   301
+    redir /legal       /fr/legal     301
+    redir /reservation /fr/reserver  301
+    redir /faq         /fr/discovery 301
+
+    redir /services/horizontal /fr/plateau/horizontal 301
+    redir /services/vertical   /fr/plateau/vertical   301
+    redir /services/eclipse    /fr/plateau/eclipse    301
+    redir /services/live       /fr/plateau/live       301
+
+    redir /post-production/lookbook        /fr/post-production?type=lookbook 301
+    redir /post-production/high_end        /fr/post-production?type=high_end 301
+    redir /post-production/access          /fr/post-production?type=access   301
+    redir /post-production/flat            /fr/post-production?type=flat     301
+    redir /post-production/ghost           /fr/post-production?type=ghost    301
+    redir /post-production/pique           /fr/post-production?type=pique    301
+    redir /post-production/retouche-video  /fr/post-production               301
+    redir /post-production                 /fr/post-production               301
+
+    @galerie_cat {
+        path /galerie
+        query category=*
+    }
+    redir @galerie_cat /fr/galerie?cat={http.request.uri.query.category} 301
+    redir /galerie /fr/galerie 301
+
+    # /en/galerie was the original EN route; renamed to /en/gallery for natural
+    # localization (see EDO SEO audit 4.5). 301 keeps any indexed link alive.
+    redir /en/galerie /en/gallery 301
+
+    # ---------- /Redirections legacy ----------
+
+    # ===== 410 Gone — URLs explicitement retirées =====
+    # Infrastructure prête. À étendre au cas par cas quand on supprime une URL
+    # publique connue (ex: ancien article promu puis dépublié).
+    # @gone path /exemple-url-supprimee
+    # respond @gone "Gone" 410 {
+    #     close
+    # }
+
+    # ===== 503 Maintenance — togglable via env CADDY_MAINTENANCE=true =====
+    # Coupe le site en gardant un message clair pour visiteurs et un Retry-After
+    # pour les crawlers. Activé en posant la variable d'env au lancement Caddy.
+    @maintenance expression `{env.CADDY_MAINTENANCE} == "true"`
+    handle @maintenance {
+        rewrite * /503.html
+        file_server {
+            status 503
+        }
+        header Retry-After "3600"
+    }
+
+    # ===== Top-level inconnu → vrai HTTP 404 =====
+    # Remplace l'ancien @legacy_catchall (qui redirigeait vers /fr en 301 — soft
+    # handling). Toute URL en dehors des préfixes lang/assets/fichiers connus
+    # renvoie un 404 propre, servi par le 404.html FR prerendered (noindex
+    # baked-in). Les routes SPA sous /fr|/en gardent le try_files + soft 404
+    # côté React (NotFoundPage + noindex runtime).
+    @invalid_top_level {
+        not path /fr* /en* /assets/* /fonts/* /index.html /404.html /500.html /503.html /robots.txt /sitemap.xml /favicon.ico /favicon.svg /favicon-16x16.png /favicon-32x32.png /apple-touch-icon.png /site.webmanifest /og-image.png /twitter-card.png
+        not path *.css *.js *.woff2 *.woff *.ttf *.otf *.avif *.webp *.jpg *.jpeg *.png *.svg *.ico *.mp4 *.webm *.json *.xml *.txt
+    }
+    handle @invalid_top_level {
+        rewrite * /fr/404.html
+        file_server {
+            status 404
+        }
+    }
 
     # Vite-hashed bundles — content-addressed, safe for long-lived immutable cache.
     @hashed path /assets/*
@@ -41,8 +113,36 @@
     # the initial HTML response is enough.
     @preview query preview=1
     header @preview -X-Frame-Options
+    # Preview entries must never be indexed if a draft URL ever leaks (Strapi
+    # admin share, internal Slack, etc.). Belt-and-braces alongside the SPA's
+    # in-app banner — non-JS crawlers will only see this header.
+    header @preview X-Robots-Tag "noindex, nofollow"
     header @preview Content-Security-Policy "default-src 'self'; script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://cms.e-do.studio https://www.google-analytics.com; media-src 'self' https://cms.e-do.studio; connect-src 'self' https://cms.e-do.studio https://*.supabase.co https://www.google-analytics.com https://region1.google-analytics.com; frame-ancestors https://cms.e-do.studio; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
 
-    try_files {path} /index.html
+    # Per-route prerendered HTML (emitted by edo-prerender, see vite.config.ts)
+    # is served first; falls through to the SPA shell for routes without a
+    # build-time variant (booking flow, legal, dynamic posts/projects).
+    try_files {path} {path}/index.html /index.html
     file_server
+
+    # ===== handle_errors — fallback générique 4xx / 5xx =====
+    # Belt-and-braces : si une directive en amont émet un 404 (asset cassé,
+    # match orphelin) ou un 5xx (file_server qui plante), on sert la bonne
+    # page d'erreur avec le bon status au lieu de l'erreur Caddy par défaut.
+    handle_errors {
+        @404 expression `{err.status_code} == 404`
+        handle @404 {
+            rewrite * /fr/404.html
+            file_server {
+                status 404
+            }
+        }
+        @5xx expression `{err.status_code} >= 500`
+        handle @5xx {
+            rewrite * /500.html
+            file_server {
+                status 500
+            }
+        }
+    }
 }
