@@ -242,8 +242,8 @@ export interface SeoMeta {
 }
 
 export type MediaItem =
-  | { kind: 'image'; url: string; alt: Bilingual; width?: number; height?: number }
-  | { kind: 'video'; url: string; poster?: string; alt: Bilingual; width?: number; height?: number };
+  | { kind: 'image'; url: string; previewUrl?: string; alt: Bilingual; width?: number; height?: number }
+  | { kind: 'video'; url: string; previewUrl?: string; poster?: string; alt: Bilingual; width?: number; height?: number };
 
 export interface PlateauSpec {
   num: string;
@@ -454,16 +454,17 @@ function mediaListToItems(items: StrapiMedia[] | undefined): MediaItem[] {
   if (!items) return [];
   const out: MediaItem[] = [];
   for (const m of items) {
-    const url = resolveStrapiMediaUrl(m);
+    const previewUrl = resolveStrapiMediaUrl(m);
+    const rawUrl = resolveRawMediaUrl(m);
+    const url = rawUrl ?? previewUrl;
     if (!url) continue;
     const alt: Bilingual = { fr: m.alternativeText ?? '', en: m.alternativeText ?? '' };
     const width = m.width ?? undefined;
     const height = m.height ?? undefined;
     if (m.mime?.startsWith('video/')) {
-      const rawUrl = resolveRawMediaUrl(m) ?? url;
-      out.push({ kind: 'video', url: rawUrl, alt, width, height });
+      out.push({ kind: 'video', url, previewUrl, alt, width, height });
     } else {
-      out.push({ kind: 'image', url, alt, width, height });
+      out.push({ kind: 'image', url, previewUrl, alt, width, height });
     }
   }
   return out;
@@ -1179,6 +1180,7 @@ export async function fetchSiteDefaults(): Promise<SiteDefaults> {
 
 export interface GalleryMedia {
   url: string;
+  previewUrl?: string;
   mime: string;
   alt: string;
 }
@@ -1199,12 +1201,7 @@ export interface GalleryCategory {
   en: string;
 }
 
-function resolveGalleryMediaUrl(m: StrapiMedia): string | undefined {
-  if (!m.url) return undefined;
-  // Videos must be served as the raw upload; images can use the medium
-  // format when available for lighter payloads at the gallery grid scale.
-  const isVideo = m.mime?.startsWith('video/');
-  const path = isVideo ? m.url : (m.formats?.medium?.url ?? m.url);
+function absoluteMediaUrl(path: string): string {
   if (path.startsWith('http')) return path;
   return `${STRAPI_URL}${path}`;
 }
@@ -1223,11 +1220,18 @@ export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
 
   return res.data.map((p, i) => {
     const media: GalleryMedia[] = (p.media ?? [])
-      .map((m) => {
-        const url = resolveGalleryMediaUrl(m);
-        if (!url) return null;
+      .map((m): GalleryMedia | null => {
+        if (!m.url) return null;
+        // Videos must be served raw. For images, expose the original as `url`
+        // (used by the lightbox at full size) and the `medium` derivative as
+        // `previewUrl` (used by the grid thumbnails to keep payloads light).
+        const isVideo = m.mime?.startsWith('video/');
+        const rawUrl = absoluteMediaUrl(m.url);
+        const mediumPath = m.formats?.medium?.url;
+        const previewUrl = !isVideo && mediumPath ? absoluteMediaUrl(mediumPath) : undefined;
         return {
-          url,
+          url: rawUrl,
+          previewUrl,
           mime: m.mime ?? '',
           alt: m.alternativeText ?? '',
         };

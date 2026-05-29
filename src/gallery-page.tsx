@@ -389,7 +389,7 @@ const ProjectImage = ({
     const altText = item.alt || `${project.brand} — ${imageIndex + 1}`;
     inner = (
       <img
-        src={item.url}
+        src={item.previewUrl ?? item.url}
         alt={altText}
         className="absolute inset-0 h-full w-full object-cover pointer-events-none"
         loading="lazy"

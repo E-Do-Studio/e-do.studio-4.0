@@ -166,7 +166,7 @@ const ThumbStrip = ({ items, lang, plateauName, activeIndex, onSelect, className
                 />
               ) : (
                 <img
-                  src={item.url}
+                  src={item.previewUrl ?? item.url}
                   alt=""
                   loading="lazy"
                   decoding="async"
