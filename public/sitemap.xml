@@ -133,15 +133,15 @@
   <url>
     <loc>https://e-do.studio/fr/galerie</loc>
     <xhtml:link rel="alternate" hreflang="fr" href="https://e-do.studio/fr/galerie"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://e-do.studio/en/galerie"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://e-do.studio/en/gallery"/>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
 
   <url>
-    <loc>https://e-do.studio/en/galerie</loc>
+    <loc>https://e-do.studio/en/gallery</loc>
     <xhtml:link rel="alternate" hreflang="fr" href="https://e-do.studio/fr/galerie"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://e-do.studio/en/galerie"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://e-do.studio/en/gallery"/>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -162,20 +162,10 @@
     <priority>0.7</priority>
   </url>
 
-  <url>
-    <loc>https://e-do.studio/fr/reserver</loc>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://e-do.studio/fr/reserver"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://e-do.studio/en/book"/>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://e-do.studio/en/book</loc>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://e-do.studio/fr/reserver"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://e-do.studio/en/book"/>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
+  <!--
+    Booking flow (/fr/reserver, /en/book + wizard) is intentionally excluded:
+    it's a conversion surface, not a discovery surface, and is noindexed at
+    runtime by useDocumentMeta(..., { noIndex: true }).
+  -->
 
 </urlset>

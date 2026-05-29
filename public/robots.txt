@@ -1,4 +1,45 @@
 User-agent: *
 Allow: /
 
+# Explicit allows for AI crawlers so a future opt-out can be per-bot, not blanket.
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+# Error pages — noindex'd in their HTML, but explicit Disallow avoids wasted
+# crawl budget. Static 500/503 served by Caddy handle_errors; 404 prerendered
+# bilingue (dist/{fr,en}/404.html + dist/404.html).
+User-agent: *
+Disallow: /404.html
+Disallow: /500.html
+Disallow: /503.html
+Disallow: /fr/404.html
+Disallow: /en/404.html
+
 Sitemap: https://e-do.studio/sitemap.xml
