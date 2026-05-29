@@ -5,3 +5,6 @@ dist
 .env.local
 .preview
 deno.lock
+.DS_Store
+.playwright-mcp/
+/*.png
