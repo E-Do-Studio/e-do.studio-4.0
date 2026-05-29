@@ -58,20 +58,25 @@ interface ContactRailProps {
   hours: { data: StudioHoursData | null; loading: boolean; error: Error | null };
 }
 
-const ContactRail = ({ lang, contact, hours, closures }: ContactRailProps & { closures: ClosurePeriod[] }) => (
-  <aside className="flex flex-col overflow-auto bg-white md:col-start-1 md:row-start-2">
-    <FindUsSection lang={lang} contact={contact} />
-    <HoursSection lang={lang} hours={hours} />
-    <ClosuresSection lang={lang} closures={closures} />
-    <PhoneSection lang={lang} contact={contact} />
-    <div className="flex-1" />
-    <SocialGrid />
-  </aside>
-);
+const ContactRail = ({ lang, contact, hours, closures }: ContactRailProps & { closures: ClosurePeriod[] }) => {
+  const today = new Date().toISOString().slice(0, 10);
+  const hasClosures = closures.some((c) => c.endsAt >= today);
+  return (
+    <aside className="flex flex-col overflow-auto bg-white md:col-start-1 md:row-start-2 md:grid md:grid-rows-contact-form md:gap-hairline md:overflow-hidden md:bg-border">
+      <FindUsSection lang={lang} contact={contact} className="md:row-[1/5]" />
+      <HoursSection lang={lang} hours={hours} className={hasClosures ? 'md:row-[5/6]' : 'md:row-[5/7]'} />
+      <ClosuresSection lang={lang} closures={closures} className="md:row-[6/7]" />
+      <PhoneSection lang={lang} contact={contact} className="md:row-[7/8]" />
+      <div className="flex-1 md:hidden" />
+      <SocialGrid className="md:row-[8/9]" />
+    </aside>
+  );
+};
 
 interface ClosuresSectionProps {
   lang: Lang;
   closures: ClosurePeriod[];
+  className?: string;
 }
 
 function formatClosureDate(iso: string, lang: Lang): string {
@@ -82,14 +87,14 @@ function formatClosureDate(iso: string, lang: Lang): string {
   return d.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-const ClosuresSection = ({ lang, closures }: ClosuresSectionProps) => {
+const ClosuresSection = ({ lang, closures, className }: ClosuresSectionProps) => {
   const today = new Date().toISOString().slice(0, 10);
   const upcoming = closures
     .filter((c) => c.endsAt >= today)
     .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
   if (upcoming.length === 0) return null;
   return (
-    <section className="border-b border-border p-6">
+    <section className={cn('border-b border-border bg-white p-6 md:border-b-0', className)}>
       <CellLabel className="mb-5 block">
         {lang === 'fr' ? 'Fermetures' : 'Closures'}
       </CellLabel>
@@ -117,9 +122,10 @@ const ClosuresSection = ({ lang, closures }: ClosuresSectionProps) => {
 interface FindUsSectionProps {
   lang: Lang;
   contact: { data: ContactInfo | null; loading: boolean; error: Error | null };
+  className?: string;
 }
 
-const FindUsSection = ({ lang, contact }: FindUsSectionProps) => {
+const FindUsSection = ({ lang, contact, className }: FindUsSectionProps) => {
   const c = contact.data;
   const showFallback = !contact.loading && (contact.error || !c);
   const eyebrowFromEntries = c?.entries && c.entries.length > 0
@@ -127,7 +133,7 @@ const FindUsSection = ({ lang, contact }: FindUsSectionProps) => {
     : null;
   const eyebrow = eyebrowFromEntries || c?.address.complement || 'Parc d’activités Victor Hugo · Bât. 6.7';
   return (
-    <section className="border-b border-border p-6">
+    <section className={cn('border-b border-border bg-white p-6 md:overflow-auto md:border-b-0', className)}>
       <CellLabel className="mb-5 block">{contactMsg.findUs[lang]}</CellLabel>
       {showFallback ? (
         <UnavailableNote lang={lang} />
@@ -181,13 +187,14 @@ const MetroLine = ({ line, label, className }: MetroLineProps) => (
 interface HoursSectionProps {
   lang: Lang;
   hours: { data: StudioHoursData | null; loading: boolean; error: Error | null };
+  className?: string;
 }
 
-const HoursSection = ({ lang, hours }: HoursSectionProps) => {
+const HoursSection = ({ lang, hours, className }: HoursSectionProps) => {
   const h = hours.data;
   const showFallback = !hours.loading && (hours.error || !h);
   return (
-    <section className="border-b border-border p-6">
+    <section className={cn('border-b border-border bg-white p-6 md:border-b-0', className)}>
       <CellLabel className="mb-5 block">{contactMsg.hours[lang]}</CellLabel>
       {showFallback ? (
         <UnavailableNote lang={lang} />
@@ -219,13 +226,14 @@ const HoursRow = ({ label, value, muted = false }: HoursRowProps) => (
 interface PhoneSectionProps {
   lang: Lang;
   contact: { data: ContactInfo | null; loading: boolean; error: Error | null };
+  className?: string;
 }
 
-const PhoneSection = ({ lang, contact }: PhoneSectionProps) => {
+const PhoneSection = ({ lang, contact, className }: PhoneSectionProps) => {
   const c = contact.data;
   const showFallback = !contact.loading && (contact.error || !c);
   return (
-    <section className="p-6">
+    <section className={cn('bg-white p-6', className)}>
       <CellLabel className="mb-5 block">{contactMsg.phone[lang]}</CellLabel>
       {showFallback ? (
         <UnavailableNote lang={lang} />
@@ -244,8 +252,8 @@ const UnavailableNote = ({ lang }: { lang: Lang }) => (
   </span>
 );
 
-const SocialGrid = () => (
-  <div className="grid grid-cols-2 gap-hairline border-t border-border bg-border">
+const SocialGrid = ({ className }: { className?: string }) => (
+  <div className={cn('grid grid-cols-2 gap-hairline border-t border-border bg-border md:border-t-0', className)}>
     {SOCIAL_LINKS.map((social) => (
       <a
         key={social.k}

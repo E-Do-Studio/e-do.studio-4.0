@@ -114,6 +114,8 @@ interface StrapiMedia {
   url: string;
   mime?: string;
   alternativeText?: string | null;
+  width?: number | null;
+  height?: number | null;
   formats?: {
     medium?: { url: string };
     small?: { url: string };
@@ -240,8 +242,8 @@ export interface SeoMeta {
 }
 
 export type MediaItem =
-  | { kind: 'image'; url: string; alt: Bilingual }
-  | { kind: 'video'; url: string; poster?: string; alt: Bilingual };
+  | { kind: 'image'; url: string; alt: Bilingual; width?: number; height?: number }
+  | { kind: 'video'; url: string; poster?: string; alt: Bilingual; width?: number; height?: number };
 
 export interface PlateauSpec {
   num: string;
@@ -455,11 +457,13 @@ function mediaListToItems(items: StrapiMedia[] | undefined): MediaItem[] {
     const url = resolveStrapiMediaUrl(m);
     if (!url) continue;
     const alt: Bilingual = { fr: m.alternativeText ?? '', en: m.alternativeText ?? '' };
+    const width = m.width ?? undefined;
+    const height = m.height ?? undefined;
     if (m.mime?.startsWith('video/')) {
       const rawUrl = resolveRawMediaUrl(m) ?? url;
-      out.push({ kind: 'video', url: rawUrl, alt });
+      out.push({ kind: 'video', url: rawUrl, alt, width, height });
     } else {
-      out.push({ kind: 'image', url, alt });
+      out.push({ kind: 'image', url, alt, width, height });
     }
   }
   return out;

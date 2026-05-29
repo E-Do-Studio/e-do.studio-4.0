@@ -1,0 +1,69 @@
+- generic [ref=e2]:
+  - dialog [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e6]: Navigation
+      - button [ref=e7] [cursor=pointer]:
+        - img [ref=e8]
+    - navigation [ref=e11]:
+      - link [ref=e12] [cursor=pointer]:
+        - /url: /fr
+        - generic [ref=e13]: "01"
+        - generic [ref=e14]: Accueil
+      - link [ref=e15] [cursor=pointer]:
+        - /url: /fr/plateau/live
+        - generic [ref=e16]: "02"
+        - generic [ref=e17]: Plateaux
+      - link [ref=e18] [cursor=pointer]:
+        - /url: /fr/galerie
+        - generic [ref=e19]: "03"
+        - generic [ref=e20]: Galerie
+      - link [ref=e21] [cursor=pointer]:
+        - /url: /fr/discovery
+        - generic [ref=e22]: "04"
+        - generic [ref=e23]: Discovery
+      - link [ref=e24] [cursor=pointer]:
+        - /url: /fr/post-production
+        - generic [ref=e25]: "05"
+        - generic [ref=e26]: Post-production
+      - link [ref=e27] [cursor=pointer]:
+        - /url: /fr/contact
+        - generic [ref=e28]: "06"
+        - generic [ref=e29]: Contact
+      - link [ref=e30] [cursor=pointer]:
+        - /url: /fr/legal
+        - generic [ref=e31]: "07"
+        - generic [ref=e32]: Légal
+      - link [ref=e33] [cursor=pointer]:
+        - /url: https://etouch.e-do.studio
+        - generic [ref=e34]: "08"
+        - generic [ref=e35]:
+          - text: Etouch
+          - generic [ref=e36]: ↗
+      - generic [ref=e37]:
+        - link [ref=e38] [cursor=pointer]:
+          - /url: https://www.instagram.com/edostudio/
+          - text: Instagram
+        - link [ref=e39] [cursor=pointer]:
+          - /url: https://www.linkedin.com/company/e-do/
+          - text: LinkedIn
+        - link [ref=e40] [cursor=pointer]:
+          - /url: https://www.facebook.com/EdoStudioAgency/
+          - text: Facebook
+        - link [ref=e41] [cursor=pointer]:
+          - /url: https://www.tiktok.com/@edostudio
+          - text: TikTok
+    - generic [ref=e42]:
+      - button [ref=e43] [cursor=pointer]: EN
+      - link [ref=e44] [cursor=pointer]:
+        - /url: /fr/reserver
+        - text: Réserver
+  - region "Bandeau de consentement aux cookies" [ref=e45]:
+    - generic [ref=e46]:
+      - generic [ref=e47]:
+        - generic [ref=e48]: Cookies
+        - paragraph [ref=e49]:
+          - text: "Nous utilisons des cookies pour mesurer l'audience du site. Vous pouvez accepter ou refuser. En savoir plus :"
+          - button "politique cookies" [ref=e50] [cursor=pointer]
+      - generic [ref=e51]:
+        - button "Refuser" [ref=e52] [cursor=pointer]
+        - button "Accepter" [ref=e53] [cursor=pointer]

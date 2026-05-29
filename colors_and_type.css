@@ -365,6 +365,10 @@
   grid-template-columns: 1.1fr 1fr;
 }
 
+@utility grid-cols-gallery-overlay {
+  grid-template-columns: 1.4fr 1fr;
+}
+
 @utility grid-cols-postprod-workspace {
   grid-template-columns: 1.15fr 1fr 1fr 1fr;
 }
@@ -414,7 +418,7 @@
 }
 
 @utility grid-rows-plateau {
-  grid-template-rows: 54px 78px minmax(0,1.58fr) minmax(0,0.72fr) minmax(0,0.52fr);
+  grid-template-rows: 54px 78px minmax(0,1.58fr) minmax(0,0.5fr) minmax(0,0.52fr);
 }
 
 @utility grid-rows-article-headline {
@@ -438,7 +442,7 @@
 }
 
 @utility grid-rows-contact-form {
-  grid-template-rows: auto auto auto 64px 64px 64px minmax(0, 1fr) 56px;
+  grid-template-rows: 96px 64px 64px 64px 64px 64px minmax(0, 1fr) 56px;
 }
 
 @utility bg-home-media-gradient {

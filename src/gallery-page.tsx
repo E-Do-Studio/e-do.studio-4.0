@@ -39,6 +39,16 @@ function resolvePlateauPath(plateau: string | undefined, lang: Lang): string | n
   return resolver ? resolver(lang) : null;
 }
 
+function mulberry32(seed: number): () => number {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
 const PROJECT_PALETTES: Record<
   string,
   { bgClass: string; accent: string; soft: string }
@@ -471,6 +481,28 @@ const GalleryPageV3 = () => {
     () => (lightbox ? projects.find((p) => p.id === lightbox.projectId) ?? null : null),
     [lightbox, projects],
   );
+  const lightboxRelated = useMemo(() => {
+    if (!lightboxProject) return [];
+    const samePlateau = projects.filter(
+      (p) => p.plateau === lightboxProject.plateau && p.id !== lightboxProject.id,
+    );
+    const rng = mulberry32(lightboxProject.id);
+    const pool = [...samePlateau];
+    if (pool.length < 3) {
+      const sameCatFill = projects.filter(
+        (p) =>
+          p.cat === lightboxProject.cat &&
+          p.id !== lightboxProject.id &&
+          !pool.some((x) => x.id === p.id),
+      );
+      pool.push(...sameCatFill);
+    }
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    return pool.slice(0, 3);
+  }, [lightboxProject, projects]);
   useStructuredData('gallery', [
     buildGalleryCollectionSchema(projects, categories, lang, '/galerie'),
     buildBreadcrumbSchema(
@@ -681,6 +713,8 @@ const GalleryPageV3 = () => {
             setLightbox(null);
             goto("book");
           }}
+          relatedProjects={lightboxRelated}
+          onSelectProject={(id) => setLightbox({ projectId: id, imageIndex: 0 })}
         />
       )}
     </div>

@@ -1,0 +1,129 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - button "Open menu" [ref=e6] [cursor=pointer]:
+          - img [ref=e7]
+        - button "E-Do Studio home" [ref=e8] [cursor=pointer]:
+          - img "E-Do Studio" [ref=e9]
+      - generic [ref=e10]:
+        - generic:
+          - generic: Post-production
+      - generic [ref=e11]:
+        - button "Réserver" [ref=e12] [cursor=pointer]:
+          - generic [ref=e13]: Réserver
+        - button "EN" [ref=e14] [cursor=pointer]:
+          - generic [ref=e15]: EN
+    - button "01 On model Retouche peau, maquillage, cheveux et nettoyage textile." [ref=e16] [cursor=pointer]:
+      - generic [ref=e17]: "01"
+      - generic [ref=e18]:
+        - generic [ref=e19]: On model
+        - generic [ref=e20]: Retouche peau, maquillage, cheveux et nettoyage textile.
+      - img [ref=e21]
+    - heading "On model" [level=1] [ref=e24]
+    - generic [ref=e25]:
+      - generic [ref=e26]:
+        - generic [ref=e28]: 01 · CATÉGORIE
+        - list [ref=e29]:
+          - listitem [ref=e30]:
+            - generic [ref=e31]: +
+            - generic [ref=e32]: Détourage
+          - listitem [ref=e33]:
+            - generic [ref=e34]: +
+            - generic [ref=e35]: Changement de fond
+          - listitem [ref=e36]:
+            - generic [ref=e37]: +
+            - generic [ref=e38]: Nettoyage peau
+          - listitem [ref=e39]:
+            - generic [ref=e40]: +
+            - generic [ref=e41]: Étalonnage couleur
+          - listitem [ref=e42]:
+            - generic [ref=e43]: +
+            - generic [ref=e44]: Nettoyage textile
+          - listitem [ref=e45]:
+            - generic [ref=e46]: +
+            - generic [ref=e47]: Harmonisation silhouette
+      - generic [ref=e48]:
+        - generic [ref=e49]:
+          - generic [ref=e50]: À partir de
+          - generic [ref=e51]: 7,90€
+        - button "Demander un devis" [ref=e52] [cursor=pointer]:
+          - text: Demander un devis
+          - img [ref=e53]
+    - generic [ref=e55]:
+      - generic [ref=e57]:
+        - img "ON-MODEL · 01" [ref=e58]
+        - generic [ref=e59]: ON-MODEL · 01
+      - generic [ref=e61]:
+        - img "ON-MODEL · 02" [ref=e62]
+        - generic [ref=e63]: ON-MODEL · 02
+      - generic [ref=e65]:
+        - img "ON-MODEL · 03" [ref=e66]
+        - generic [ref=e67]: ON-MODEL · 03
+      - generic [ref=e69]:
+        - img "ON-MODEL · 04" [ref=e70]
+        - generic [ref=e71]: ON-MODEL · 04
+      - generic [ref=e73]:
+        - img "ON-MODEL · 05" [ref=e74]
+        - generic [ref=e75]: ON-MODEL · 05
+      - generic [ref=e77]:
+        - img "ON-MODEL · 06" [ref=e78]
+        - generic [ref=e79]: ON-MODEL · 06
+  - dialog [ref=e80]:
+    - generic [ref=e81]:
+      - generic [ref=e83]: Navigation
+      - button [ref=e84] [cursor=pointer]:
+        - img [ref=e85]
+    - navigation [ref=e88]:
+      - link [ref=e89] [cursor=pointer]:
+        - /url: /fr
+        - generic [ref=e90]: "01"
+        - generic [ref=e91]: Accueil
+      - link [ref=e92] [cursor=pointer]:
+        - /url: /fr/plateau/live
+        - generic [ref=e93]: "02"
+        - generic [ref=e94]: Plateaux
+      - link [ref=e95] [cursor=pointer]:
+        - /url: /fr/galerie
+        - generic [ref=e96]: "03"
+        - generic [ref=e97]: Galerie
+      - link [ref=e98] [cursor=pointer]:
+        - /url: /fr/discovery
+        - generic [ref=e99]: "04"
+        - generic [ref=e100]: Discovery
+      - link [ref=e101] [cursor=pointer]:
+        - /url: /fr/post-production
+        - generic [ref=e102]: "05"
+        - generic [ref=e103]: Post-production
+      - link [ref=e104] [cursor=pointer]:
+        - /url: /fr/contact
+        - generic [ref=e105]: "06"
+        - generic [ref=e106]: Contact
+      - link [ref=e107] [cursor=pointer]:
+        - /url: /fr/legal
+        - generic [ref=e108]: "07"
+        - generic [ref=e109]: Légal
+      - link [ref=e110] [cursor=pointer]:
+        - /url: https://etouch.e-do.studio
+        - generic [ref=e111]: "08"
+        - generic [ref=e112]:
+          - text: Etouch
+          - generic [ref=e113]: ↗
+      - generic [ref=e114]:
+        - link [ref=e115] [cursor=pointer]:
+          - /url: https://www.instagram.com/edostudio/
+          - text: Instagram
+        - link [ref=e116] [cursor=pointer]:
+          - /url: https://www.linkedin.com/company/e-do/
+          - text: LinkedIn
+        - link [ref=e117] [cursor=pointer]:
+          - /url: https://www.facebook.com/EdoStudioAgency/
+          - text: Facebook
+        - link [ref=e118] [cursor=pointer]:
+          - /url: https://www.tiktok.com/@edostudio
+          - text: TikTok
+    - generic [ref=e119]:
+      - button [ref=e120] [cursor=pointer]: EN
+      - link [ref=e121] [cursor=pointer]:
+        - /url: /fr/reserver
+        - text: Réserver

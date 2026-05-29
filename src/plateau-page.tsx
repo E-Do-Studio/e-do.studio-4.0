@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from '@tanstack/react-router';
 import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import { BottomSheet, CellLabel, HoverMarquee, IconArrowRight, IconSelector, PageHeader, buildMainNav } from './ui';
@@ -13,9 +13,6 @@ import { common, plateau as plateauMsg } from './i18n/messages';
 import type { Lang } from './types';
 import type { MediaItem } from './lib/strapi';
 
-// Up to 4 thumbnails visible at once in the strip; the rest reachable via arrows.
-const VISIBLE_TILES = 4;
-
 interface CoverCarouselProps {
   items: MediaItem[];
   lang: Lang;
@@ -28,10 +25,14 @@ interface CoverCarouselProps {
 
 // Cover — renders the currently selected media item full-cell with prev/next
 // arrows overlaid inside the image. Arrows are hidden when only one media item.
-// Images use `object-contain` (preserve composition); videos use `object-cover`
-// for an immersive feel and expose a discreet pause/play toggle. Controls are
-// frosted-glass squares that fade in on pointer hover (always visible on touch
-// devices where there's no hover).
+// object-fit switches per media based on aspect ratio: only clearly landscape
+// sources (aspect > ~1.3, matching the cell's landscape ratio) use
+// `object-cover` to fill cleanly. Square and portrait sources use
+// `object-contain` to preserve the subject — a packshot or square scarf must
+// never be charcuted to fill the wider cell. Falls back to `cover` when
+// natural dims are unknown. Controls are frosted-glass squares fading in on
+// hover (always visible on touch).
+const COVER_ASPECT_THRESHOLD = 1.3;
 const Cover = ({ items, lang, plateauName, index, onPrev, onNext, className }: CoverCarouselProps) => {
   const [paused, setPaused] = useState(false);
   useEffect(() => {
@@ -42,6 +43,9 @@ const Cover = ({ items, lang, plateauName, index, onPrev, onNext, className }: C
   const item = items[index];
   const hasMultiple = items.length > 1;
   const total = items.length;
+  const imageAspect = item.width && item.height ? item.width / item.height : null;
+  const fit: 'cover' | 'contain' =
+    imageAspect != null && imageAspect < COVER_ASPECT_THRESHOLD ? 'contain' : 'cover';
   const ctrlBtn =
     'edo-focus-ring absolute z-10 flex h-9 w-9 items-center justify-center cursor-pointer bg-black/35 backdrop-blur-md border border-white/20 text-white transition-[opacity,transform,background-color] duration-150 ease-edo-out hover:bg-black/50 active:scale-[0.96] opacity-100 md:opacity-0 md:scale-95 md:group-hover:opacity-100 md:group-hover:scale-100 md:group-focus-within:opacity-100 md:group-focus-within:scale-100';
 
@@ -57,7 +61,7 @@ const Cover = ({ items, lang, plateauName, index, onPrev, onNext, className }: C
           key={item.url}
           src={item.url}
           poster={item.poster}
-          objectFit="cover"
+          objectFit={fit}
           paused={paused}
           className="absolute inset-0 h-full w-full"
         />
@@ -68,7 +72,10 @@ const Cover = ({ items, lang, plateauName, index, onPrev, onNext, className }: C
           alt={item.alt[lang] || `${plateauName} — ${index + 1}`}
           loading="eager"
           decoding="async"
-          className="absolute inset-0 h-full w-full object-contain"
+          className={cn(
+            'absolute inset-0 h-full w-full',
+            fit === 'contain' ? 'object-contain' : 'object-cover',
+          )}
         />
       )}
 
@@ -120,88 +127,31 @@ interface ThumbStripProps {
   className?: string;
 }
 
-// Thumbnail strip — up to 4 tiles visible at a time. Clicking a tile sets it
-// as the cover. When there are more than 4 items the strip scrolls horizontally
-// and surfaces prev/next arrows. Inactive tiles are dimmed; the active tile is
-// shown at full opacity.
+// Thumbnail strip — every media item is rendered as a tile and fills 1/n of the
+// strip width, so the full set is visible at once with no scroll and no arrows.
+// Clicking a tile sets it as the cover. Inactive tiles are dimmed; the active
+// tile is shown at full opacity.
 const ThumbStrip = ({ items, lang, plateauName, activeIndex, onSelect, className }: ThumbStripProps) => {
-  const stripRef = useRef<HTMLDivElement>(null);
-  const [canPrev, setCanPrev] = useState(false);
-  const [canNext, setCanNext] = useState(false);
-
-  const hasOverflow = items.length > VISIBLE_TILES;
-  const visible = Math.min(items.length, VISIBLE_TILES);
-  // Tiles touch — `edo-hairline` forces `gap: 0` on the strip, and each tile's
-  // 1.5px right-border serves as the visible separator. So `visible` tiles must
-  // sum to exactly 100% of the strip width; any subtraction leaves a gap at
-  // the end and breaks the vertical alignment with the column boundary above.
-  const tileBasis = `${100 / visible}%`;
-
-  const updateScrollState = useCallback(() => {
-    const el = stripRef.current;
-    if (!el) return;
-    const epsilon = 1;
-    setCanPrev(el.scrollLeft > epsilon);
-    setCanNext(el.scrollLeft + el.clientWidth < el.scrollWidth - epsilon);
-  }, []);
-
-  useEffect(() => {
-    const el = stripRef.current;
-    if (!el) return;
-    updateScrollState();
-    const onScroll = () => updateScrollState();
-    el.addEventListener('scroll', onScroll, { passive: true });
-    const ro = new ResizeObserver(updateScrollState);
-    ro.observe(el);
-    return () => {
-      el.removeEventListener('scroll', onScroll);
-      ro.disconnect();
-    };
-  }, [updateScrollState, items.length]);
-
-  // Keep the active tile in view when the cover moves via the overlay arrows.
-  // Skip when the strip has no horizontal overflow — there is nowhere to scroll
-  // to, and calling scrollIntoView on a fully-visible tile can still nudge
-  // sub-pixel rounding under smooth-scroll, producing a visible shift.
-  useEffect(() => {
-    const el = stripRef.current;
-    if (!el) return;
-    if (el.scrollWidth <= el.clientWidth + 1) return;
-    const tile = el.querySelector<HTMLElement>(`[data-tile-index="${activeIndex}"]`);
-    tile?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
-  }, [activeIndex]);
-
-  const scrollByTile = (dir: 1 | -1) => {
-    const el = stripRef.current;
-    if (!el) return;
-    const firstTile = el.querySelector<HTMLElement>('[data-tile-index]');
-    const step = firstTile?.offsetWidth ?? el.clientWidth / VISIBLE_TILES;
-    el.scrollBy({ left: dir * step, behavior: 'smooth' });
-  };
-
   if (items.length === 0) return null;
-
-  const arrowBtn =
-    'edo-focus-ring absolute top-1/2 z-10 -translate-y-1/2 flex h-8 w-8 items-center justify-center cursor-pointer bg-white text-foreground border border-border transition-[opacity,background-color,color] duration-150 ease-edo-out hover:bg-foreground hover:text-background disabled:cursor-default disabled:opacity-0 disabled:pointer-events-none';
+  // Tiles touch — `edo-hairline` forces `gap: 0` on the strip, and each tile's
+  // 1.5px right-border serves as the visible separator. The bases must sum to
+  // exactly 100% so the last tile aligns with the column boundary above.
+  const tileBasis = `${100 / items.length}%`;
 
   return (
-    <div className={cn('relative edo-hairline h-28 md:h-full', className)}>
-      <div
-        ref={stripRef}
-        className="flex h-full edo-hairline overflow-x-auto snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      >
+    <div className={cn('relative edo-hairline h-16 md:h-full', className)}>
+      <div className="flex h-full edo-hairline overflow-hidden">
         {items.map((item, i) => {
           const isActive = i === activeIndex;
           return (
             <button
               key={`${item.url}-${i}`}
               type="button"
-              data-tile-index={i}
               onClick={() => onSelect(i)}
               aria-label={`${item.alt[lang] || plateauName} — ${i + 1} / ${items.length}`}
               aria-current={isActive ? 'true' : undefined}
               className={cn(
-                'edo-focus-ring group relative h-full shrink-0 snap-start overflow-hidden bg-white border-0 p-0 cursor-pointer transition-opacity duration-150 ease-edo-out',
+                'edo-focus-ring group relative h-full shrink-0 overflow-hidden bg-white border-0 p-0 cursor-pointer transition-opacity duration-150 ease-edo-out',
                 isActive ? 'opacity-100' : 'opacity-60 hover:opacity-100',
               )}
               style={{ flexBasis: tileBasis }}
@@ -211,6 +161,7 @@ const ThumbStrip = ({ items, lang, plateauName, activeIndex, onSelect, className
                   src={item.url}
                   poster={item.poster}
                   objectFit="cover"
+                  paused={isActive}
                   className="absolute inset-0 h-full w-full"
                 />
               ) : (
@@ -219,36 +170,13 @@ const ThumbStrip = ({ items, lang, plateauName, activeIndex, onSelect, className
                   alt=""
                   loading="lazy"
                   decoding="async"
-                  className="absolute inset-0 h-full w-full object-contain"
+                  className="absolute inset-0 h-full w-full object-cover"
                 />
               )}
             </button>
           );
         })}
       </div>
-
-      {hasOverflow && (
-        <>
-          <button
-            type="button"
-            onClick={() => scrollByTile(-1)}
-            disabled={!canPrev}
-            aria-label={common.prevImage[lang]}
-            className={cn(arrowBtn, 'left-2')}
-          >
-            <IconArrowRight width="16" height="16" className="rotate-180" />
-          </button>
-          <button
-            type="button"
-            onClick={() => scrollByTile(1)}
-            disabled={!canNext}
-            aria-label={common.nextImage[lang]}
-            className={cn(arrowBtn, 'right-2')}
-          >
-            <IconArrowRight width="16" height="16" />
-          </button>
-        </>
-      )}
     </div>
   );
 };
@@ -427,8 +355,8 @@ const PlateauPage = ({ slug }: { slug: string }) => {
         />
       )}
 
-      {/* Thumbnail strip — up to 4 tiles visible at once, scrollable when the
-          entry has more media. Clicking a tile sets it as the cover. */}
+      {/* Thumbnail strip — every media item visible at once (1/n width each),
+          no scroll, no arrows. Clicking a tile sets it as the cover. */}
       {coverItems.length > 0 && (
         <ThumbStrip
           items={coverItems}

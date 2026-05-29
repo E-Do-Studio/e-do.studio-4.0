@@ -29,6 +29,11 @@ export const common = {
   imageCarousel: { fr: 'Carrousel d’images', en: 'Image carousel' } as B,
   playVideo: { fr: 'Lire la vidéo', en: 'Play video' } as B,
   pauseVideo: { fr: 'Mettre en pause', en: 'Pause video' } as B,
+  backToGallery: { fr: 'Retour à la galerie', en: 'Back to gallery' } as B,
+  zoomIn: { fr: 'Zoomer', en: 'Zoom in' } as B,
+  zoomOut: { fr: 'Dézoomer', en: 'Zoom out' } as B,
+  resetZoom: { fr: 'Réinitialiser le zoom', en: 'Reset zoom' } as B,
+  alsoOnPlateau: { fr: 'Aussi sur ce plateau', en: 'Also on this stage' } as B,
 };
 
 export const nav = {

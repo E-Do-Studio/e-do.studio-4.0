@@ -1,0 +1,157 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - heading "E-Do Studio — Studio photo et vidéo professionnel à Paris" [level=1] [ref=e4]
+    - banner [ref=e5]:
+      - generic [ref=e6]:
+        - button "Open menu" [ref=e7] [cursor=pointer]:
+          - img [ref=e8]
+        - button "E-Do Studio home" [ref=e9] [cursor=pointer]:
+          - img "E-Do Studio" [ref=e10]
+      - generic [ref=e14]: Lun–Sam · 10—18
+      - button "EN" [ref=e15] [cursor=pointer]:
+        - generic [ref=e16]: EN
+    - generic [ref=e17]:
+      - button "Réserver" [ref=e20] [cursor=pointer]:
+        - generic [ref=e22]: Réserver
+        - img [ref=e23]
+      - generic [ref=e27]:
+        - generic [ref=e28]: JEAN PAUL GAULTIER
+        - generic [ref=e29]: BALENCIAGA
+        - generic [ref=e30]: COPERNI
+        - generic [ref=e31]: CARVEN
+        - generic [ref=e32]: THE KOOPLES
+        - generic [ref=e33]: VUARNET
+        - generic [ref=e34]: GIAMBATTISTA VALLI
+        - generic [ref=e35]: NUMÉRO
+        - generic [ref=e36]: JOHN LOBB
+        - generic [ref=e37]: HARTFORD
+        - generic [ref=e38]: INOUI
+        - generic [ref=e39]: DIPTYQUE
+        - generic [ref=e40]: RIMOWA
+        - generic [ref=e41]: NODALETO
+        - generic [ref=e42]: JEAN PAUL GAULTIER
+        - generic [ref=e43]: BALENCIAGA
+        - generic [ref=e44]: COPERNI
+        - generic [ref=e45]: CARVEN
+        - generic [ref=e46]: THE KOOPLES
+        - generic [ref=e47]: VUARNET
+        - generic [ref=e48]: GIAMBATTISTA VALLI
+        - generic [ref=e49]: NUMÉRO
+        - generic [ref=e50]: JOHN LOBB
+        - generic [ref=e51]: HARTFORD
+        - generic [ref=e52]: INOUI
+        - generic [ref=e53]: DIPTYQUE
+        - generic [ref=e54]: RIMOWA
+        - generic [ref=e55]: NODALETO
+    - generic [ref=e56]:
+      - generic [ref=e57]:
+        - heading "Le studio qui fait tourner votre e-commerce." [level=2] [ref=e58]
+        - paragraph [ref=e59]: Photo, vidéo et retouche pour vos catalogues en ligne — du créateur indépendant à la maison de luxe.
+      - generic [ref=e61]:
+        - button "01 Horizontal Packshot à plat" [ref=e62] [cursor=pointer]:
+          - generic [ref=e63]:
+            - generic [ref=e64]: "01"
+            - img [ref=e65]
+          - generic [ref=e67]:
+            - generic [ref=e68]: Horizontal
+            - generic [ref=e69]: Packshot à plat
+        - button "02 Vertical Packshot ghost / piqué" [ref=e70] [cursor=pointer]:
+          - generic [ref=e71]:
+            - generic [ref=e72]: "02"
+            - img [ref=e73]
+          - generic [ref=e75]:
+            - generic [ref=e76]: Vertical
+            - generic [ref=e77]: Packshot ghost / piqué
+        - button "03 Éclipse Photo et vidéo objets et access" [ref=e78] [cursor=pointer]:
+          - generic [ref=e79]:
+            - generic [ref=e80]: "03"
+            - img [ref=e81]
+          - generic [ref=e83]:
+            - generic [ref=e84]: Éclipse
+            - generic [ref=e85]: Photo et vidéo objets et access
+        - button "04 Live Photo et vidéo Porté" [ref=e86] [cursor=pointer]:
+          - generic [ref=e87]:
+            - generic [ref=e88]: "04"
+            - img [ref=e89]
+          - generic [ref=e91]:
+            - generic [ref=e92]: Live
+            - generic [ref=e93]: Photo et vidéo Porté
+    - button "Galerie" [ref=e94]:
+      - generic [ref=e96]:
+        - generic [ref=e98]: Galerie
+        - img [ref=e100]
+    - button "Service Post-production Retouche · Photo & Vidéo" [ref=e102] [cursor=pointer]:
+      - generic [ref=e103]: Service
+      - generic [ref=e104]:
+        - generic [ref=e105]:
+          - generic [ref=e106]: Post-production
+          - generic [ref=e107]: Retouche · Photo & Vidéo
+        - img [ref=e108]
+    - button "Espace Cyclorama Production libre · Photo & Vidéo" [ref=e110] [cursor=pointer]:
+      - generic [ref=e111]: Espace
+      - generic [ref=e112]:
+        - generic [ref=e113]:
+          - generic [ref=e114]: Cyclorama
+          - generic [ref=e115]: Production libre · Photo & Vidéo
+        - img [ref=e117]
+    - button [ref=e120] [cursor=pointer]
+    - button "Discovery — Bientôt disponible" [disabled]:
+      - img
+      - generic:
+        - generic: Discovery
+        - generic: Dites-m'en plus
+      - generic:
+        - generic:
+          - img
+    - button "Assistant E-Do" [ref=e122] [cursor=pointer]:
+      - img [ref=e123]
+    - dialog:
+      - generic:
+        - generic: Assistant E-Do
+        - button:
+          - img
+  - dialog [ref=e125]:
+    - generic [ref=e126]:
+      - generic [ref=e128]: Navigation
+      - button [ref=e129] [cursor=pointer]:
+        - img [ref=e130]
+    - navigation [ref=e133]:
+      - link [ref=e134] [cursor=pointer]:
+        - /url: /fr
+        - generic [ref=e135]: "01"
+        - generic [ref=e136]: Accueil
+      - link [ref=e137] [cursor=pointer]:
+        - /url: /fr/plateau/live
+        - generic [ref=e138]: "02"
+        - generic [ref=e139]: Plateaux
+      - link [ref=e140] [cursor=pointer]:
+        - /url: /fr/galerie
+        - generic [ref=e141]: "03"
+        - generic [ref=e142]: Galerie
+      - link [ref=e143] [cursor=pointer]:
+        - /url: /fr/discovery
+        - generic [ref=e144]: "04"
+        - generic [ref=e145]: Discovery
+      - link [ref=e146] [cursor=pointer]:
+        - /url: /fr/post-production
+        - generic [ref=e147]: "05"
+        - generic [ref=e148]: Post-production
+      - link [ref=e149] [cursor=pointer]:
+        - /url: /fr/contact
+        - generic [ref=e150]: "06"
+        - generic [ref=e151]: Contact
+      - link [ref=e152] [cursor=pointer]:
+        - /url: /fr/legal
+        - generic [ref=e153]: "07"
+        - generic [ref=e154]: Légal
+      - link [ref=e155] [cursor=pointer]:
+        - /url: https://etouch.e-do.studio
+        - generic [ref=e156]: "08"
+        - generic [ref=e157]:
+          - text: Etouch
+          - generic [ref=e158]: ↗
+    - generic [ref=e159]:
+      - button [ref=e160] [cursor=pointer]: EN
+      - link [ref=e161] [cursor=pointer]:
+        - /url: /fr/reserver
+        - text: Réserver
