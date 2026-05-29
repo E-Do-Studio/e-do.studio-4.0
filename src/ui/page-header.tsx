@@ -138,7 +138,7 @@ const PageHeader = ({
   const titleCell = (
     <div
       className={cn(
-        'flex min-w-0 flex-1 items-center justify-start bg-background px-4 md:px-6',
+        'hidden min-w-0 flex-1 items-center justify-start bg-background md:flex md:px-6',
         subgrid && (titleClassName ?? DEFAULT_TITLE_CLASS),
       )}
     >

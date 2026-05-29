@@ -222,7 +222,6 @@ const PlateauPage = ({ slug }: { slug: string }) => {
       <PageHeader
         lang={lang}
         title={common.stages[lang]}
-        titleClassName="hidden md:flex lg:col-start-2 lg:col-span-2"
         className="col-span-full h-14 md:col-span-full md:row-start-1 md:h-full"
         onMenuClick={openMenu}
         onLogoClick={()=>goto('home')}
