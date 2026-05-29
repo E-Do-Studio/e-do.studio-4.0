@@ -9,7 +9,7 @@ import { buildGalleryCollectionSchema, buildBreadcrumbSchema } from "./lib/struc
 import { useGalleryProjects, useGalleryCategories } from "./lib/use-strapi";
 import type { GalleryProject } from "./lib/strapi";
 import type { Lang } from "./types";
-import { EmptyState, HoverMarquee, Loader, MobileNavStrip, PageHeader, buildMainNav } from "./ui";
+import { EmptyState, HoverMarquee, MobileNavStrip, PageHeader, buildMainNav } from "./ui";
 import type { StripGroup } from "./ui";
 import { cn } from "./ui/cn";
 import { common, galleryPage, mobileNav } from "./i18n/messages";
@@ -460,7 +460,7 @@ const GalleryPageV3 = () => {
   const setPlateau = (p: string) =>
     setFilters({ plateau: p === "all" ? null : p });
 
-  const { data: strapiProjects, loading: projectsLoading } = useGalleryProjects();
+  const { data: strapiProjects } = useGalleryProjects();
   const { data: strapiCategories } = useGalleryCategories();
 
   const projects = strapiProjects ?? [];
@@ -615,10 +615,6 @@ const GalleryPageV3 = () => {
       plateau: nextPlateau === "all" ? null : nextPlateau,
     });
   };
-
-  if (projectsLoading) {
-    return <Loader lang={lang} size="page" />;
-  }
 
   return (
     <div className="edo-page-enter grid w-full edo-hairline md:h-full md:grid-cols-gallery-shell md:grid-rows-page md:overflow-hidden">
