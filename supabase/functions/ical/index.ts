@@ -1,6 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.105.1";
 import {
-  buildVEvent,
+  buildBookingVEvents,
   wrapCalendar,
   type IcalBookingRow,
   type IcalQuoteRow,
@@ -75,8 +75,8 @@ async function handleSingleBooking(
   const quoteRows = (quoteRow?.rows as IcalQuoteRow[]) ?? [];
   const quoteTotal = quoteRow?.total ?? null;
 
-  const vevent = buildVEvent(booking as IcalBookingRow, (sessions ?? []) as IcalSessionRow[], quoteRows, quoteTotal);
-  const ics = wrapCalendar([vevent], `E-Do Studio — ${bookingRef}`);
+  const vevents = buildBookingVEvents(booking as IcalBookingRow, (sessions ?? []) as IcalSessionRow[], quoteRows, quoteTotal);
+  const ics = wrapCalendar(vevents, `E-Do Studio — ${bookingRef}`);
 
   await upsertIcalFeed(supabase, booking.id, bookingRef);
 
@@ -161,10 +161,10 @@ async function handleGlobalFeed(
     );
   }
 
-  const events = filteredBookings.map((b: IcalBookingRow) => {
+  const events = filteredBookings.flatMap((b: IcalBookingRow) => {
     const sessions = sessionsByBooking.get(b.id) ?? [];
     const q = quotesByBooking.get(b.id);
-    return buildVEvent(b, sessions, q?.rows ?? [], q?.total ?? null);
+    return buildBookingVEvents(b, sessions, q?.rows ?? [], q?.total ?? null);
   });
 
   const calName = plateauFilter

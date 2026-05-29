@@ -41,7 +41,6 @@ interface ContactEmailPayload {
   email: string;
   telephone: string;
   societe: string;
-  sujet: string;
   message: string;
 }
 
@@ -284,14 +283,14 @@ async function handleContactEmail(
       fromEmail,
       payload.email,
       `Votre message a bien été reçu — E-Do Studio`,
-      renderContactClient(payload.nom, payload.sujet),
+      renderContactClient(payload.nom),
     ),
     sendResendEmail(
       resendKey,
       fromEmail,
       STUDIO_EMAIL,
-      `Contact : ${payload.sujet} — ${payload.nom}`,
-      renderContactAdmin(payload.nom, payload.email, payload.telephone, payload.societe, payload.sujet, payload.message),
+      `Contact — ${payload.nom}`,
+      renderContactAdmin(payload.nom, payload.email, payload.telephone, payload.societe, payload.message),
       { replyTo: payload.email },
     ),
   ]);
@@ -302,7 +301,6 @@ async function handleContactEmail(
       email: payload.email,
       telephone: payload.telephone,
       societe: payload.societe,
-      sujet: payload.sujet,
       message: payload.message,
     })
   );

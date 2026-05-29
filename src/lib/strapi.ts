@@ -1115,32 +1115,6 @@ export async function fetchLegalDocuments(): Promise<LegalDocumentMeta[]> {
   }));
 }
 
-export interface ContactSubject {
-  k: string;
-  fr: string;
-  en: string;
-}
-
-interface StrapiContactSubject {
-  id: number;
-  key: string;
-  name: string;
-  description?: string;
-}
-
-export async function fetchContactSubjects(): Promise<ContactSubject[]> {
-  const resBI = await fetchStrapiBilingual<{ data: StrapiContactSubject[] }>('contact-subjects', {
-    'sort': 'createdAt:asc',
-    'pagination[pageSize]': '50',
-  });
-  const frSubjects = resBI.fr.data ?? [];
-  const enSubjects = resBI.en.data ?? [];
-  return frSubjects.map((sFr) => {
-    const sEn = enSubjects.find((e) => e.key === sFr.key) ?? sFr;
-    return { k: sFr.key, fr: sFr.name, en: sEn.name };
-  });
-}
-
 export interface TeamMember {
   id: number;
   name: Bilingual;

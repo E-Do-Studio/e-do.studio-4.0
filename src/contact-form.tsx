@@ -1,8 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import type { FormEvent, InputHTMLAttributes, TextareaHTMLAttributes } from 'react';
 import type { ContactFormData, Lang } from './types';
-import type { ContactSubject } from './lib/strapi';
-import { useContactSubjects } from './lib/use-strapi';
 import { submitContactForm } from './lib/contact';
 import { common, contact as contactMsg } from './i18n/messages';
 import { Button, IconArrowRight, cn } from './ui';
@@ -12,7 +10,6 @@ export const INITIAL_FORM: ContactFormData = {
   email: '',
   telephone: '',
   societe: '',
-  sujet: 'general',
   message: '',
 };
 
@@ -48,40 +45,6 @@ export const ContactTextarea = ({ value, onChange, className, ...props }: Contac
   />
 );
 
-interface SubjectButtonProps {
-  subject: ContactSubject;
-  index: number;
-  lang: Lang;
-  active: boolean;
-  onClick: () => void;
-}
-
-export const SubjectButton = ({ subject, index, lang, active, onClick }: SubjectButtonProps) => {
-  const placements = [
-    'col-start-1 row-start-2',
-    'col-start-2 row-start-2',
-    'col-start-1 row-start-3',
-    'col-start-2 row-start-3',
-  ];
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        placements[index],
-        'edo-focus-ring flex min-h-14 cursor-pointer items-center gap-3 border-0 px-5 py-2.5 text-left font-sans transition-colors',
-        active ? 'bg-foreground text-white' : 'bg-white text-foreground hover:bg-muted',
-      )}
-    >
-      <span className={cn('font-mono text-caption tracking-meta', active ? 'text-white/60' : 'text-muted-foreground')}>
-        {String(index + 1).padStart(2, '0')}
-      </span>
-      <span className="text-detail font-normal tracking-copy-tight">{subject[lang]}</span>
-    </button>
-  );
-};
-
 interface ContactFormProps {
   lang: Lang;
   form: ContactFormData;
@@ -89,8 +52,6 @@ interface ContactFormProps {
   submit: (event: FormEvent) => void;
   sending: boolean;
   sendError: string | null;
-  subjects: ContactSubject[];
-  hideSubjectButtons?: boolean;
 }
 
 export const ContactForm = ({
@@ -100,21 +61,11 @@ export const ContactForm = ({
   submit,
   sending,
   sendError,
-  subjects,
-  hideSubjectButtons,
 }: ContactFormProps) => {
-  const compact = !!hideSubjectButtons;
-  const rowsClass = compact ? 'grid-rows-contact-form-compact' : 'grid-rows-contact-form';
-  const nomTelRow = compact ? 'row-start-2' : 'row-start-4';
-  const emailRow = compact ? 'row-start-3' : 'row-start-5';
-  const societeRow = compact ? 'row-start-4' : 'row-start-6';
-  const messageRow = compact ? 'row-start-5' : 'row-start-7';
-  const submitRow = compact ? 'row-start-6' : 'row-start-8';
-
   return (
     <form
       onSubmit={submit}
-      className={cn('grid grid-cols-2 gap-hairline bg-border md:h-full', rowsClass)}
+      className="grid grid-cols-2 grid-rows-contact-form-compact gap-hairline bg-border md:h-full"
     >
       <div className="col-span-2 flex flex-col justify-center bg-white px-5 py-2.5">
         <span className="edo-cell-label text-primary">{contactMsg.writeToUs[lang]}</span>
@@ -123,24 +74,12 @@ export const ContactForm = ({
         </h1>
       </div>
 
-      {!compact &&
-        subjects.slice(0, 4).map((subject, index) => (
-          <SubjectButton
-            key={subject.k}
-            subject={subject}
-            index={index}
-            lang={lang}
-            active={form.sujet === subject.k}
-            onClick={() => setForm({ ...form, sujet: subject.k })}
-          />
-        ))}
-
       <ContactInput
         required
         value={form.nom}
         onChange={(value) => setForm({ ...form, nom: value })}
         placeholder={contactMsg.name[lang]}
-        className={cn('col-start-1', nomTelRow)}
+        className="col-start-1 row-start-2"
       />
       <ContactInput
         required
@@ -148,7 +87,7 @@ export const ContactForm = ({
         value={form.telephone}
         onChange={(value) => setForm({ ...form, telephone: value })}
         placeholder={contactMsg.phonePlaceholder[lang]}
-        className={cn('col-start-2', nomTelRow)}
+        className="col-start-2 row-start-2"
       />
       <ContactInput
         required
@@ -156,21 +95,21 @@ export const ContactForm = ({
         value={form.email}
         onChange={(value) => setForm({ ...form, email: value })}
         placeholder="Email*"
-        className={cn('col-span-2', emailRow)}
+        className="col-span-2 row-start-3"
       />
       <ContactInput
         required
         value={form.societe}
         onChange={(value) => setForm({ ...form, societe: value })}
         placeholder={contactMsg.companyBrand[lang]}
-        className={cn('col-span-2', societeRow)}
+        className="col-span-2 row-start-4"
       />
       <ContactTextarea
         required
         value={form.message}
         onChange={(value) => setForm({ ...form, message: value })}
         placeholder={contactMsg.yourMessage[lang]}
-        className={messageRow}
+        className="row-start-5"
       />
 
       {sendError && (
@@ -182,10 +121,7 @@ export const ContactForm = ({
       <button
         type="submit"
         disabled={sending}
-        className={cn(
-          'edo-focus-ring col-span-2 flex cursor-pointer items-center justify-center gap-3.5 border-0 bg-primary font-mono text-caption uppercase tracking-label text-white transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50',
-          submitRow,
-        )}
+        className="edo-focus-ring col-span-2 row-start-6 flex cursor-pointer items-center justify-center gap-3.5 border-0 bg-primary font-mono text-caption uppercase tracking-label text-white transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {sending ? (
           common.sending[lang]
@@ -230,8 +166,6 @@ export const ContactSuccess = ({ lang, onNewMessage, onContinue, continueLabel }
 
 interface EmbeddedContactFormProps {
   lang: Lang;
-  defaultSubjectKey?: string;
-  hideSubjectButtons?: boolean;
   onClose?: () => void;
   continueLabel?: string;
   className?: string;
@@ -239,31 +173,14 @@ interface EmbeddedContactFormProps {
 
 export const EmbeddedContactForm = ({
   lang,
-  defaultSubjectKey,
-  hideSubjectButtons,
   onClose,
   continueLabel,
   className,
 }: EmbeddedContactFormProps) => {
-  const subjectsState = useContactSubjects();
-  const subjects = subjectsState.data ?? [];
   const [form, setForm] = useState<ContactFormData>(INITIAL_FORM);
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
-  const appliedDefaultRef = useRef(false);
-
-  useEffect(() => {
-    if (appliedDefaultRef.current) return;
-    if (!defaultSubjectKey) return;
-    if (subjects.length === 0) return;
-    const exact = subjects.find((s) => s.k === defaultSubjectKey);
-    const fuzzy = exact ?? subjects.find((s) => /reserv|booking/i.test(s.k));
-    if (fuzzy) {
-      setForm((f) => ({ ...f, sujet: fuzzy.k }));
-      appliedDefaultRef.current = true;
-    }
-  }, [defaultSubjectKey, subjects]);
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -289,15 +206,13 @@ export const EmbeddedContactForm = ({
           submit={submit}
           sending={sending}
           sendError={sendError}
-          subjects={subjects}
-          hideSubjectButtons={hideSubjectButtons}
         />
       ) : (
         <ContactSuccess
           lang={lang}
           onNewMessage={() => {
             setSent(false);
-            setForm({ ...INITIAL_FORM, sujet: form.sujet });
+            setForm(INITIAL_FORM);
           }}
           onContinue={onClose}
           continueLabel={continueLabel}

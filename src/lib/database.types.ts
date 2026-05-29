@@ -9,8 +9,12 @@ export interface Database {
           reference: string;
           status: BookingStatus;
           client_name: string;
+          client_first_name: string | null;
+          client_last_name: string | null;
           client_email: string;
           client_company: string | null;
+          client_brand: string | null;
+          client_billing_address: string | null;
           client_siren: string | null;
           client_phone: string | null;
           project_type: string | null;
@@ -27,8 +31,12 @@ export interface Database {
           reference: string;
           status?: BookingStatus;
           client_name: string;
+          client_first_name?: string | null;
+          client_last_name?: string | null;
           client_email: string;
           client_company?: string | null;
+          client_brand?: string | null;
+          client_billing_address?: string | null;
           client_siren?: string | null;
           client_phone?: string | null;
           project_type?: string | null;
@@ -50,6 +58,8 @@ export interface Database {
           plateau_key: string;
           slot_type: string;
           hours: number | null;
+          session_date: string | null;
+          arrival_hour: number | null;
           cyclo_mode: string | null;
           product_type: string | null;
           method: string | null;
@@ -68,6 +78,8 @@ export interface Database {
           plateau_key: string;
           slot_type: string;
           hours?: number | null;
+          session_date?: string | null;
+          arrival_hour?: number | null;
           cyclo_mode?: string | null;
           product_type?: string | null;
           method?: string | null;
@@ -129,6 +141,10 @@ export interface Database {
           reference: string;
           status: BookingStatus;
           client_name: string;
+          client_first_name: string | null;
+          client_last_name: string | null;
+          client_brand: string | null;
+          client_billing_address: string | null;
           client_email: string;
           client_company: string | null;
           client_phone: string | null;
@@ -143,6 +159,9 @@ export interface Database {
           session_count: number;
           plateau_keys: string[] | null;
           total_hours: number;
+          session_dates: string[] | null;
+          first_session_date: string | null;
+          last_session_date: string | null;
           quote_reference: string | null;
           quote_total: number | null;
           has_ical: boolean;

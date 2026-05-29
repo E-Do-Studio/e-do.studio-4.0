@@ -8,3 +8,4 @@ deno.lock
 .DS_Store
 .playwright-mcp/
 /*.png
+supabase/.temp/

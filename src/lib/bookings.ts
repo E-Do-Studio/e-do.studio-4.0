@@ -20,6 +20,8 @@ export interface BookingSessionData {
   plateauKey: string;
   slotType: string | null;
   hours: number;
+  date: { y: number; m: number; d: number } | null;
+  arrivalHour: number | null;
   cycloMode: string | null;
   productType: string | null;
   method: string | null;
@@ -63,32 +65,35 @@ export interface CreateBookingResult {
   reference: string;
 }
 
-async function checkTimeConflict(
-  preferredDate: string,
-  arrivalHour: number,
-  totalHours: number,
-  plateauKeys: string[]
-): Promise<boolean> {
+interface SessionSlot {
+  plateauKey: string;
+  date: string;
+  arrivalHour: number;
+  hours: number;
+}
+
+function dateToIso(d: { y: number; m: number; d: number }): string {
+  return `${d.y}-${String(d.m + 1).padStart(2, '0')}-${String(d.d).padStart(2, '0')}`;
+}
+
+async function findConflictingSession(slot: SessionSlot): Promise<boolean> {
   const { data, error } = await supabase
-    .from('bookings')
-    .select('arrival_hour, booking_sessions!inner(hours, plateau_key)')
-    .in('status', ['pending', 'confirmed'])
-    .eq('preferred_date', preferredDate)
-    .in('booking_sessions.plateau_key', plateauKeys);
+    .from('booking_sessions')
+    .select('arrival_hour, hours, bookings!inner(status)')
+    .eq('plateau_key', slot.plateauKey)
+    .eq('session_date', slot.date)
+    .in('bookings.status', ['pending', 'confirmed']);
 
   if (error || !data) return false;
 
-  const requestedStart = arrivalHour;
-  const requestedEnd = arrivalHour + totalHours;
+  const reqStart = slot.arrivalHour;
+  const reqEnd = slot.arrivalHour + slot.hours;
 
-  for (const booking of data as any[]) {
-    if (booking.arrival_hour == null) continue;
-    const existingHours = (booking.booking_sessions as any[]).reduce(
-      (sum: number, s: any) => sum + (s.hours || 0), 0
-    );
-    const existingStart = booking.arrival_hour;
-    const existingEnd = existingStart + existingHours;
-    if (requestedStart < existingEnd && requestedEnd > existingStart) return true;
+  for (const row of data as any[]) {
+    if (row.arrival_hour == null || row.hours == null) continue;
+    const exStart = row.arrival_hour;
+    const exEnd = row.arrival_hour + row.hours;
+    if (reqStart < exEnd && reqEnd > exStart) return true;
   }
   return false;
 }
@@ -97,33 +102,50 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
   const reference = generateReference(input.mode);
   const quoteRef = input.mode === 'booking' ? generateReference('quote') : reference;
 
-  const preferredDate = input.preferredDate
-    ? `${input.preferredDate.y}-${String(input.preferredDate.m + 1).padStart(2, '0')}-${String(input.preferredDate.d).padStart(2, '0')}`
-    : null;
+  const fallbackDate = input.preferredDate ? dateToIso(input.preferredDate) : null;
+  const fallbackHour = input.arrivalHour;
 
-  if (preferredDate && input.arrivalHour != null && input.sessions.length > 0) {
-    const totalHours = input.sessions.reduce((sum, s) => sum + s.hours, 0);
-    const plateauKeys = [...new Set(input.sessions.map(s => s.plateauKey))];
-    const conflict = await checkTimeConflict(preferredDate, input.arrivalHour, totalHours, plateauKeys);
+  const resolvedSessions = input.sessions.map(s => {
+    const date = s.date ? dateToIso(s.date) : fallbackDate;
+    const arrivalHour = s.arrivalHour ?? fallbackHour;
+    return { session: s, date, arrivalHour };
+  });
+
+  for (const r of resolvedSessions) {
+    if (!r.date || r.arrivalHour == null) continue;
+    const conflict = await findConflictingSession({
+      plateauKey: r.session.plateauKey,
+      date: r.date,
+      arrivalHour: r.arrivalHour,
+      hours: r.session.hours,
+    });
     if (conflict) {
       throw new Error('Ce créneau est déjà réservé. Veuillez choisir un autre horaire.');
     }
   }
 
+  const primary = resolvedSessions[0];
+  const headerDate = primary?.date ?? fallbackDate;
+  const headerHour = primary?.arrivalHour ?? fallbackHour;
+
   const bookingData: BookingInsert = {
     reference,
     status: input.mode === 'booking' ? 'pending' : 'draft',
     client_name: [input.contact.prenom, input.contact.nom].filter(Boolean).join(' '),
+    client_first_name: input.contact.prenom || null,
+    client_last_name: input.contact.nom || null,
     client_email: input.contact.email,
     client_company: input.contact.societe || null,
+    client_brand: input.contact.marque || null,
+    client_billing_address: input.contact.adresseFacturation || null,
     client_siren: input.contact.siren || null,
     client_phone: input.contact.tel || null,
     project_type: input.projectType,
     urgency: input.urgency,
     total_estimate: input.quote.total,
     notes: input.contact.autresInfos || null,
-    preferred_date: preferredDate,
-    arrival_hour: input.arrivalHour,
+    preferred_date: headerDate,
+    arrival_hour: headerHour,
   };
 
   const { data: booking, error: bookingError } = await supabase
@@ -137,11 +159,13 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
   }
 
   if (input.sessions.length > 0) {
-    const sessionRows: BookingSessionInsert[] = input.sessions.map(s => ({
+    const sessionRows: BookingSessionInsert[] = resolvedSessions.map(({ session: s, date, arrivalHour }) => ({
       booking_id: booking.id,
       plateau_key: s.plateauKey,
       slot_type: s.slotType ?? 'hour',
       hours: s.hours,
+      session_date: date,
+      arrival_hour: arrivalHour,
       cyclo_mode: s.cycloMode,
       product_type: s.productType,
       method: s.method,

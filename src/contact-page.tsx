@@ -4,8 +4,8 @@ import { CellLabel, PageHeader, SocialIcon, buildMainNav, cn } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
 import { useStructuredData } from './lib/use-structured-data';
 import { buildContactPageSchema, buildBreadcrumbSchema } from './lib/structured-data';
-import { useContact, useStudioHours, useTeamMembers, useContactSubjects, useSiteBusinessInfo } from './lib/use-strapi';
-import type { ContactInfo, StudioHours as StudioHoursData, TeamMember as StrapiTeamMember, ContactSubject, ClosurePeriod } from './lib/strapi';
+import { useContact, useStudioHours, useTeamMembers, useSiteBusinessInfo } from './lib/use-strapi';
+import type { ContactInfo, StudioHours as StudioHoursData, TeamMember as StrapiTeamMember, ClosurePeriod } from './lib/strapi';
 import type { Lang, ContactFormData, Bilingual } from './types';
 import { usePageContext } from './router';
 import { submitContactForm } from './lib/contact';
@@ -27,8 +27,6 @@ function parseMetroLabel(label: string): { line: string | null; name: string } {
   if (m) return { line: m[1], name: m[2].trim() };
   return { line: null, name: label };
 }
-
-type Subject = ContactSubject;
 
 interface SocialLinkEntry {
   k: string;
@@ -271,13 +269,12 @@ interface ContactFormPanelProps {
   setSent: (sent: boolean) => void;
   submit: (event: FormEvent) => void;
   goto: (screen: string) => void;
-  subjects: Subject[];
 }
 
-const ContactFormPanel = ({ lang, form, sent, sending, sendError, setForm, setSent, submit, goto, subjects }: ContactFormPanelProps) => (
+const ContactFormPanel = ({ lang, form, sent, sending, sendError, setForm, setSent, submit, goto }: ContactFormPanelProps) => (
   <main className="overflow-hidden bg-white md:col-start-2 md:col-span-2 md:row-start-2">
     {!sent ? (
-      <ContactForm lang={lang} form={form} setForm={setForm} submit={submit} sending={sending} sendError={sendError} subjects={subjects} />
+      <ContactForm lang={lang} form={form} setForm={setForm} submit={submit} sending={sending} sendError={sendError} />
     ) : (
       <ContactSuccess
         lang={lang}
@@ -417,8 +414,6 @@ const ContactPage = () => {
   const hours = useStudioHours();
   const teamState = useTeamMembers();
   const team = teamState.data ?? [];
-  const subjectsState = useContactSubjects();
-  const subjects = subjectsState.data ?? [];
   const businessState = useSiteBusinessInfo();
   const closures = businessState.data?.closures ?? [];
   const [form, setForm] = useState<ContactFormData>(INITIAL_FORM);
@@ -454,7 +449,7 @@ const ContactPage = () => {
         actions={buildMainNav({ lang, goto, exclude: 'contact' })}
       />
       <ContactRail lang={lang} contact={contact} hours={hours} closures={closures} />
-      <ContactFormPanel lang={lang} form={form} sent={sent} sending={sending} sendError={sendError} setForm={setForm} setSent={setSent} submit={submit} goto={goto} subjects={subjects} />
+      <ContactFormPanel lang={lang} form={form} sent={sent} sending={sending} sendError={sendError} setForm={setForm} setSent={setSent} submit={submit} goto={goto} />
       <ContactRightColumn lang={lang} contact={contact} team={team} />
     </div>
   );

@@ -169,7 +169,7 @@ const PageHeader = ({
         className,
       )}
     >
-      <div className="flex h-full flex-none basis-44 md:basis-nav lg:col-start-1 [&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-hairline">
+      <div className="flex h-full flex-none basis-28 md:basis-nav lg:col-start-1 [&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-hairline">
         <button
           onClick={onMenuClick}
           aria-label="Open menu"
@@ -182,7 +182,12 @@ const PageHeader = ({
           aria-label="E-Do Studio home"
           className="edo-focus-ring flex h-full min-w-0 flex-1 cursor-pointer items-center justify-center border-0 bg-background p-2 transition-colors hover:bg-muted"
         >
-          <Wordmark size={32} />
+          <span className="flex md:hidden">
+            <Wordmark size={32} variant="mark" />
+          </span>
+          <span className="hidden md:flex">
+            <Wordmark size={32} variant="full" />
+          </span>
         </button>
       </div>
 

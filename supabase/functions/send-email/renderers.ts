@@ -13,6 +13,8 @@ export interface BookingSession {
   plateau_key: string;
   slot_type: string;
   hours: number | null;
+  session_date?: string | null;
+  arrival_hour?: number | null;
   cyclo_mode?: string | null;
   product_type?: string | null;
   method?: string | null;
@@ -41,9 +43,13 @@ export interface QuoteData {
 export interface BookingData {
   reference: string;
   client_name: string;
+  client_first_name?: string | null;
+  client_last_name?: string | null;
   client_email: string;
   client_phone: string | null;
   client_company: string | null;
+  client_brand?: string | null;
+  client_billing_address?: string | null;
   client_siren: string | null;
   project_type: string | null;
   urgency: string | null;
@@ -231,23 +237,67 @@ function calloutBlock(title: string, content: string): string {
   </table>`;
 }
 
+function sessionSlot(s: BookingSession, b: BookingData): { date: string | null; hour: number | null } {
+  return {
+    date: s.session_date ?? b.preferred_date,
+    hour: s.arrival_hour ?? b.arrival_hour,
+  };
+}
+
+function sessionsShareOneSlot(sessions: BookingSession[], b: BookingData): boolean {
+  if (sessions.length === 0) return true;
+  const first = sessionSlot(sessions[0], b);
+  return sessions.every((s) => {
+    const slot = sessionSlot(s, b);
+    return slot.date === first.date && slot.hour === first.hour;
+  });
+}
+
+function formatPlateauLine(s: BookingSession, b: BookingData): string {
+  const slot = sessionSlot(s, b);
+  const hours = s.hours ?? 0;
+  const parts: string[] = [`<strong style="font-weight:600;">${escapeHtml(s.plateau_key)}</strong>`];
+  if (slot.date) parts.push(escapeHtml(dateFmt(slot.date)));
+  if (slot.hour != null && hours > 0) {
+    const start = `${String(slot.hour).padStart(2, "0")}:00`;
+    const end = `${String(slot.hour + hours).padStart(2, "0")}:00`;
+    parts.push(`${start} → ${end}`);
+  }
+  parts.push(`<span style="color:${C_GRAY};">${hours || "?"}h · ${escapeHtml(s.slot_type)}</span>`);
+  return parts.join(" · ");
+}
+
 function bookingRows(b: BookingData, sessions: BookingSession[], opts: { admin: boolean }): string {
   const rows: Array<[string, string]> = [];
   if (opts.admin) {
     rows.push(["Client", `<strong style="font-weight:600;">${escapeHtml(b.client_name)}</strong>`]);
+    if (b.client_first_name) rows.push(["Prénom", escapeHtml(b.client_first_name)]);
+    if (b.client_last_name) rows.push(["Nom", escapeHtml(b.client_last_name)]);
     rows.push(["Email", `<a href="mailto:${escapeHtml(b.client_email)}" style="color:${C_BLACK};text-decoration:underline;">${escapeHtml(b.client_email)}</a>`]);
     if (b.client_phone) rows.push(["Téléphone", escapeHtml(b.client_phone)]);
     if (b.client_company) rows.push(["Société", escapeHtml(b.client_company)]);
+    if (b.client_brand) rows.push(["Marque", escapeHtml(b.client_brand)]);
     if (b.client_siren) rows.push(["SIREN", escapeHtml(b.client_siren)]);
+    if (b.client_billing_address) rows.push(["Adresse de facturation", escapeHtml(b.client_billing_address)]);
   } else {
     rows.push(["Email", escapeHtml(b.client_email)]);
     if (b.client_phone) rows.push(["Téléphone", escapeHtml(b.client_phone)]);
     if (b.client_company) rows.push(["Société", escapeHtml(b.client_company)]);
+    if (b.client_brand) rows.push(["Marque", escapeHtml(b.client_brand)]);
+    if (b.client_billing_address) rows.push(["Adresse de facturation", escapeHtml(b.client_billing_address)]);
   }
-  const plateaux = sessions.map((s) => `${s.plateau_key} (${s.hours ?? "?"}h, ${s.slot_type})`).join(", ");
-  if (plateaux) rows.push(["Plateau(x)", escapeHtml(plateaux)]);
-  if (b.preferred_date) rows.push(["Date souhaitée", escapeHtml(dateFmt(b.preferred_date))]);
-  if (b.arrival_hour != null) rows.push(["Heure d'arrivée", `${b.arrival_hour} h`]);
+  const sharedSlot = sessionsShareOneSlot(sessions, b);
+  if (sessions.length > 0) {
+    if (sharedSlot) {
+      const plateaux = sessions.map((s) => `${s.plateau_key} (${s.hours ?? "?"}h, ${s.slot_type})`).join(", ");
+      rows.push(["Plateau(x)", escapeHtml(plateaux)]);
+      if (b.preferred_date) rows.push(["Date souhaitée", escapeHtml(dateFmt(b.preferred_date))]);
+      if (b.arrival_hour != null) rows.push(["Heure d'arrivée", `${b.arrival_hour} h`]);
+    } else {
+      const lines = sessions.map((s) => formatPlateauLine(s, b)).join("<br>");
+      rows.push(["Plateaux & créneaux", lines]);
+    }
+  }
   if (b.project_type) rows.push(["Type de projet", escapeHtml(b.project_type)]);
   if (opts.admin && b.urgency) rows.push(["Urgence", escapeHtml(b.urgency)]);
   const totalStr = b.total_estimate != null ? `${b.total_estimate.toLocaleString("fr-FR")} € HT` : "Sur demande";
@@ -291,11 +341,11 @@ export function renderBookingAdmin(
   return emailWrap("Nouvelle réservation", b.reference, body);
 }
 
-export function renderContactClient(nom: string, sujet: string): string {
+export function renderContactClient(nom: string): string {
   const body = `${intro(
     `<p style="margin:0 0 14px;font-size:16px;line-height:1.5;color:${C_BLACK};">Bonjour <strong style="font-weight:600;">${escapeHtml(nom)}</strong>,</p>
     <p style="margin:0 0 14px;font-size:14px;line-height:1.65;color:${C_GRAY};">
-      Nous avons bien reçu votre message concernant <strong style="color:${C_BLACK};font-weight:600;">${escapeHtml(sujet)}</strong>. L'équipe vous répondra sous <strong style="color:${C_BLACK};font-weight:600;">48 h ouvrées</strong>.
+      Nous avons bien reçu votre message. L'équipe vous répondra sous <strong style="color:${C_BLACK};font-weight:600;">48 h ouvrées</strong>.
     </p>`,
   )}<div style="padding:24px 32px 28px;background:${C_WHITE};font-family:${FONT_SANS};">
     <p style="margin:0;font-size:14px;color:${C_BLACK};">
@@ -311,14 +361,12 @@ export function renderContactAdmin(
   email: string,
   telephone: string,
   societe: string,
-  sujet: string,
   message: string,
 ): string {
   const safeNom = escapeHtml(nom);
   const safeEmail = escapeHtml(email);
   const safeTel = escapeHtml(telephone);
   const safeSociete = escapeHtml(societe);
-  const safeSujet = escapeHtml(sujet);
   const safeMsg = escapeHtml(message);
 
   const rows: Array<[string, string]> = [
@@ -327,7 +375,6 @@ export function renderContactAdmin(
   ];
   if (telephone) rows.push(["Téléphone", safeTel]);
   if (societe) rows.push(["Société", safeSociete]);
-  rows.push(["Sujet", safeSujet]);
 
   const body = `${dataGrid(rows)}${calloutBlock("Message", safeMsg)}`;
   return emailWrap("Contact", null, body);
@@ -370,11 +417,16 @@ function statusChangeRows(
   const rows: Array<[string, string]> = [];
   if (admin) {
     rows.push(["Client", `<strong style="font-weight:600;">${escapeHtml(b.client_name)}</strong>`]);
+    if (b.client_first_name) rows.push(["Prénom", escapeHtml(b.client_first_name)]);
+    if (b.client_last_name) rows.push(["Nom", escapeHtml(b.client_last_name)]);
     rows.push(["Email", `<a href="mailto:${escapeHtml(b.client_email)}" style="color:${C_BLACK};text-decoration:underline;">${escapeHtml(b.client_email)}</a>`]);
     if (b.client_phone) rows.push(["Téléphone", escapeHtml(b.client_phone)]);
     if (b.client_company) rows.push(["Société", escapeHtml(b.client_company)]);
+    if (b.client_brand) rows.push(["Marque", escapeHtml(b.client_brand)]);
+    if (b.client_billing_address) rows.push(["Adresse de facturation", escapeHtml(b.client_billing_address)]);
   } else {
     if (b.client_company) rows.push(["Société", escapeHtml(b.client_company)]);
+    if (b.client_brand) rows.push(["Marque", escapeHtml(b.client_brand)]);
   }
   const plateaux = sessions.map((s) => `${s.plateau_key} (${s.hours ?? "?"}h, ${s.slot_type})`).join(", ");
   if (plateaux) rows.push(["Plateau(x)", escapeHtml(plateaux)]);
@@ -429,10 +481,14 @@ export function renderStatusChangeAdmin(
 
   const rows: Array<[string, string]> = [];
   rows.push(["Client", `<strong style="font-weight:600;">${escapeHtml(b.client_name)}</strong>`]);
+  if (b.client_first_name) rows.push(["Prénom", escapeHtml(b.client_first_name)]);
+  if (b.client_last_name) rows.push(["Nom", escapeHtml(b.client_last_name)]);
   rows.push(["Email", `<a href="mailto:${escapeHtml(b.client_email)}" style="color:${C_BLACK};text-decoration:underline;">${escapeHtml(b.client_email)}</a>`]);
   if (b.client_phone) rows.push(["Téléphone", escapeHtml(b.client_phone)]);
   if (b.client_company) rows.push(["Société", escapeHtml(b.client_company)]);
+  if (b.client_brand) rows.push(["Marque", escapeHtml(b.client_brand)]);
   if (b.client_siren) rows.push(["SIREN", escapeHtml(b.client_siren)]);
+  if (b.client_billing_address) rows.push(["Adresse de facturation", escapeHtml(b.client_billing_address)]);
   const plateaux = sessions.map((s) => `${s.plateau_key} (${s.hours ?? "?"}h, ${s.slot_type})`).join(", ");
   if (plateaux) rows.push(["Plateau(x)", escapeHtml(plateaux)]);
   rows.push(["Motif", `<strong style="font-weight:600;color:${C_ORANGE};">${escapeHtml(labels.title)}</strong>`]);

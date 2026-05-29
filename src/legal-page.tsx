@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useQueryState, parseAsStringLiteral } from 'nuqs';
 import { BottomSheet, Button, HoverMarquee, IconArrowRight, IconSelector, PageHeader, buildMainNav, cn } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
 import { useStructuredData } from './lib/use-structured-data';
@@ -132,6 +133,8 @@ const StrapiSectionsRenderer = ({ sections, lang }: SectionRendererProps) => (
   </>
 );
 
+const LEGAL_DOC_KEYS = ['mentions', 'cgv', 'cgu', 'privacy', 'cookies'] as const satisfies readonly LegalDocumentKey[];
+
 const LegalPage = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
   useDocumentMeta('legal', lang);
@@ -153,7 +156,12 @@ const LegalPage = () => {
       lang,
     ),
   ]);
-  const [sec, setSec] = useState<LegalDocumentKey>('mentions');
+  const [sec, setSec] = useQueryState(
+    'doc',
+    parseAsStringLiteral(LEGAL_DOC_KEYS)
+      .withDefault('mentions')
+      .withOptions({ clearOnDefault: true }),
+  );
   const [navSheetOpen, setNavSheetOpen] = useState(false);
   const { data: legalDocs } = useLegalDocuments();
   const { data: legalSectionsByDoc } = useLegalSections();

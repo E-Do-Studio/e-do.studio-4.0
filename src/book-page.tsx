@@ -643,6 +643,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
 
   const buildSessionsData = useCallbackBook((): BookingSessionData[] => {
     const keys = plateaus && plateaus.length > 0 ? plateaus : (plateau ? [plateau] : []);
+    const isMulti = keys.length > 1;
     if (configApplied && configSessions.length > 0) {
       return configSessions.filter(s => s.projectType === 'cyclorama' || (s.projectType === 'ecom' && s.product && Number(s.quantity) > 0)).map(s => {
         const rec = recommendSession(s, configGlobal);
@@ -650,6 +651,8 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
           plateauKey: rec.plateau,
           slotType: rec.slotType,
           hours: rec.hours || 1,
+          date: selected,
+          arrivalHour: arrivalHour ?? null,
           cycloMode: rec.cycloMode,
           productType: s.projectType,
           method: s.method,
@@ -665,10 +668,16 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
     }
     return keys.map(k => {
       const st = perPlateau[k] || {};
+      const stDate = isMulti ? (st.date ?? null) : selected;
+      const stArrival = isMulti
+        ? (stDate ? (st.arrivalHour != null ? st.arrivalHour : 10) : null)
+        : (arrivalHour ?? null);
       return {
         plateauKey: k,
         slotType: st.slotType ?? 'hour',
         hours: st.hours || 1,
+        date: stDate,
+        arrivalHour: stArrival,
         cycloMode: st.cycloMode ?? null,
         productType: configGlobal.projectType || null,
         method: null,
@@ -681,7 +690,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
         postprodVideo: !!(st.postprod as PostprodState)?.video,
       };
     });
-  }, [plateaus, plateau, perPlateau, configApplied, configSessions, configGlobal, contact.quantiteArticles]);
+  }, [plateaus, plateau, perPlateau, configApplied, configSessions, configGlobal, contact.quantiteArticles, selected, arrivalHour]);
 
   const handleSubmit = useCallbackBook(async (submitMode: 'quote' | 'booking' | 'request') => {
     if (!runContactValidation()) return;
@@ -1427,7 +1436,7 @@ const Step7Contact = ({ lang, contact, setContact, p, configMode, errors = {} }:
         <BentoField label={lang==='fr'?'Vues / article *':'Views / item *'} error={errors.vuesParArticle}><BentoInput name="views_per_item" value={contact.vuesParArticle} type="number" onChange={v=>setContact({...contact,vuesParArticle:v})} placeholder="—"/></BentoField>
       </>)}
       <div className="bg-white px-3 py-1.5 col-span-1 sm:col-span-2 flex flex-col gap-0.5 min-h-control"><span className="edo-cell-label text-muted-foreground text-micro tracking-meta">{lang==='fr'?'Autres informations':'Other information'}</span><textarea name="message" value={contact.autresInfos||''} onChange={e=>setContact({...contact,autresInfos:e.target.value})} placeholder={lang==='fr'?'Contraintes, inspirations, références… (facultatif)':'Constraints, inspirations, references… (optional)'} className="w-full box-border bg-transparent border-0 outline-none p-0 font-inherit text-caption min-h-7 resize-y text-foreground"/></div>
-      <label className={`col-span-1 sm:col-span-2 bg-white px-3 py-1.5 flex flex-col gap-0.5 cursor-pointer min-h-control ${errors.cgvAccepted ? 'ring-1 ring-inset ring-red-400' : ''}`}><span className="edo-cell-label text-muted-foreground text-micro tracking-meta">CGV *</span><div className="flex items-center gap-2"><input type="checkbox" name="cgv_accepted" checked={!!contact.cgvAccepted} onChange={e=>setContact({...contact,cgvAccepted:e.target.checked})} className="w-3.5 h-3.5 accent-primary cursor-pointer shrink-0"/><span className="text-caption leading-snug text-foreground">{lang==='fr' ? <>J'accepte les <a href="#" onClick={e=>e.preventDefault()} className="text-primary underline">conditions générales de vente</a> et les modalités de paiement.</> : <>I accept the <a href="#" onClick={e=>e.preventDefault()} className="text-primary underline">terms and conditions of sale</a> and payment terms.</>}</span></div>{errors.cgvAccepted && <span className="text-red-500 text-micro leading-tight">{errors.cgvAccepted}</span>}</label>
+      <label className={`col-span-1 sm:col-span-2 bg-white px-3 py-1.5 flex flex-col gap-0.5 cursor-pointer min-h-control ${errors.cgvAccepted ? 'ring-1 ring-inset ring-red-400' : ''}`}><span className="edo-cell-label text-muted-foreground text-micro tracking-meta">CGV *</span><div className="flex items-center gap-2"><input type="checkbox" name="cgv_accepted" checked={!!contact.cgvAccepted} onChange={e=>setContact({...contact,cgvAccepted:e.target.checked})} className="w-3.5 h-3.5 accent-primary cursor-pointer shrink-0"/><span className="text-caption leading-snug text-foreground">{lang==='fr' ? <>J'accepte les <a href={`/${lang}/legal?doc=cgv`} target="_blank" rel="noopener noreferrer" className="text-primary underline">conditions générales de vente</a> et les modalités de paiement.</> : <>I accept the <a href={`/${lang}/legal?doc=cgv`} target="_blank" rel="noopener noreferrer" className="text-primary underline">terms and conditions of sale</a> and payment terms.</>}</span></div>{errors.cgvAccepted && <span className="text-red-500 text-micro leading-tight">{errors.cgvAccepted}</span>}</label>
     </div>
   </div>);
 };
@@ -1440,7 +1449,7 @@ const SidePanel = ({ lang, p, selected, months, slotType, hours, cycloMode, rows
 
 const Toggle = ({ on, onClick }: AnyProps) => (
   <button type="button" onClick={onClick} className={`w-11.5 h-6.5 ${on ? 'bg-primary' : 'bg-border'} border-0 rounded-full relative cursor-pointer transition-colors duration-150`}>
-    <span className={`absolute top-1 left-toggle-thumb ${on ? 'translate-x-5' : 'translate-x-0'} w-5 h-5 bg-white rounded-full transition-transform duration-150 shadow-toggle`}/>
+    <span className={`absolute top-[3px] left-toggle-thumb ${on ? 'translate-x-5' : 'translate-x-0'} w-5 h-5 bg-white rounded-full transition-transform duration-150 shadow-toggle`}/>
   </button>
 );
 

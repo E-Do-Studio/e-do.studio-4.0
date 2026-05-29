@@ -13,7 +13,6 @@ import {
   fetchGalleryProjects,
   fetchGalleryCategories,
   fetchTeamMembers,
-  fetchContactSubjects,
   fetchSiteBusinessInfo,
   fetchLegalDocuments,
   fetchLegalSectionsByDocument,
@@ -26,7 +25,6 @@ import {
   type StudioHours,
   type SiteDefaults,
   type TeamMember,
-  type ContactSubject,
   type SiteBusinessInfo,
   type LegalDocumentMeta,
   type LegalSectionsByDocument,
@@ -186,10 +184,6 @@ export function useGalleryCategories() {
 
 export function useTeamMembers() {
   return useAsync<TeamMember[]>(fetchTeamMembers, 'teamMembers');
-}
-
-export function useContactSubjects() {
-  return useAsync<ContactSubject[]>(fetchContactSubjects, 'contactSubjects');
 }
 
 export function useSiteBusinessInfo() {

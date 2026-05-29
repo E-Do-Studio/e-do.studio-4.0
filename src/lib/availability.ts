@@ -3,10 +3,11 @@ import { supabase } from './supabase';
 
 export type AvailabilityState = 'free' | 'unavailable';
 
-interface BookingWithSessions {
-  preferred_date: string | null;
+interface SessionAvailabilityRow {
+  session_date: string | null;
   arrival_hour: number | null;
-  booking_sessions: { hours: number | null }[];
+  hours: number | null;
+  bookings: { status: string } | null;
 }
 
 const STUDIO_OPEN = 9;
@@ -71,13 +72,13 @@ export function useAvailability(
     const endDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
 
     supabase
-      .from('bookings')
-      .select('preferred_date, arrival_hour, booking_sessions!inner(hours)')
-      .in('status', ['pending', 'confirmed'])
-      .not('preferred_date', 'is', null)
-      .gte('preferred_date', startDate)
-      .lte('preferred_date', endDate)
-      .eq('booking_sessions.plateau_key', plateauKey)
+      .from('booking_sessions')
+      .select('session_date, arrival_hour, hours, bookings!inner(status)')
+      .eq('plateau_key', plateauKey)
+      .not('session_date', 'is', null)
+      .gte('session_date', startDate)
+      .lte('session_date', endDate)
+      .in('bookings.status', ['pending', 'confirmed'])
       .then(({ data, error }) => {
         if (controller.signal.aborted) return;
 
@@ -87,12 +88,11 @@ export function useAvailability(
         }
 
         const occupiedPerDay: Record<number, Set<number>> = {};
-        for (const booking of data as unknown as BookingWithSessions[]) {
-          if (!booking.preferred_date || booking.arrival_hour == null) continue;
-          const day = new Date(booking.preferred_date + 'T00:00:00').getDate();
+        for (const session of data as unknown as SessionAvailabilityRow[]) {
+          if (!session.session_date || session.arrival_hour == null || session.hours == null) continue;
+          const day = new Date(session.session_date + 'T00:00:00').getDate();
           if (!occupiedPerDay[day]) occupiedPerDay[day] = new Set();
-          const totalHours = booking.booking_sessions.reduce((sum, s) => sum + (s.hours || 0), 0);
-          for (const h of getOccupiedHours(booking.arrival_hour, totalHours)) {
+          for (const h of getOccupiedHours(session.arrival_hour, session.hours)) {
             occupiedPerDay[day].add(h);
           }
         }

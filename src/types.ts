@@ -63,7 +63,6 @@ export interface ContactFormData {
   email: string;
   telephone: string;
   societe: string;
-  sujet: string;
   message: string;
 }
 

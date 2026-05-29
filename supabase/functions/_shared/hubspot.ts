@@ -125,7 +125,6 @@ export interface SyncContactFormParams {
   email: string;
   telephone: string;
   societe: string;
-  sujet: string;
   message: string;
 }
 
@@ -147,7 +146,7 @@ export async function syncContactForm(
   });
 
   const noteBody = [
-    `<strong>Formulaire de contact — ${params.sujet}</strong>`,
+    `<strong>Formulaire de contact</strong>`,
     `<br><br>`,
     `<strong>Nom :</strong> ${params.nom}<br>`,
     `<strong>Email :</strong> ${params.email}<br>`,

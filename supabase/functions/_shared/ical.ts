@@ -6,9 +6,13 @@ export interface IcalBookingRow {
   reference: string;
   status: string;
   client_name: string;
+  client_first_name?: string | null;
+  client_last_name?: string | null;
   client_email: string;
   client_phone: string | null;
   client_company: string | null;
+  client_brand?: string | null;
+  client_billing_address?: string | null;
   client_siren: string | null;
   project_type: string | null;
   urgency: string | null;
@@ -25,6 +29,8 @@ export interface IcalSessionRow {
   plateau_key: string;
   slot_type: string;
   hours: number | null;
+  session_date?: string | null;
+  arrival_hour?: number | null;
   cyclo_mode?: string | null;
   product_type?: string | null;
   method?: string | null;
@@ -69,58 +75,53 @@ export function formatIcalTimestamp(date: Date): string {
   return date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
 }
 
-export function buildVEvent(
+export function buildSessionVEvent(
   booking: IcalBookingRow,
-  sessions: IcalSessionRow[],
+  session: IcalSessionRow,
   quoteRows: IcalQuoteRow[] = [],
   quoteTotal: number | null = null,
+  opts: { sequence?: number } = {},
 ): string {
-  const uid = `${booking.reference}@e-do.studio`;
+  const uid = `${booking.reference}-${session.id}@e-do.studio`;
   const now = formatIcalTimestamp(new Date());
   const created = formatIcalTimestamp(new Date(booking.created_at));
 
-  const plateaux = sessions.map((s) => s.plateau_key).join(", ");
-  const totalHours = sessions.reduce((sum, s) => sum + (s.hours ?? 0), 0);
+  const sessionDate = session.session_date ?? booking.preferred_date;
+  const arrivalHour = session.arrival_hour ?? booking.arrival_hour;
+  const hours = session.hours ?? 0;
 
   const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-  const plateauxTitle = sessions.map((s) => capitalize(s.plateau_key)).join(" | ");
   const titlePrefix = (booking.client_company && booking.client_company.trim())
     ? booking.client_company.trim()
     : booking.client_name;
-  const summary = plateauxTitle
-    ? `${titlePrefix} — ${plateauxTitle}`
-    : `E-Do Studio — ${titlePrefix}`;
+  const summary = `${titlePrefix} — ${capitalize(session.plateau_key)}`;
+
   const descParts: string[] = [];
   descParts.push(`Référence: ${booking.reference}`);
   descParts.push(`Client: ${booking.client_name}`);
+  if (booking.client_first_name) descParts.push(`Prénom: ${booking.client_first_name}`);
+  if (booking.client_last_name) descParts.push(`Nom: ${booking.client_last_name}`);
   if (booking.client_email) descParts.push(`Email: ${booking.client_email}`);
   if (booking.client_phone) descParts.push(`Téléphone: ${booking.client_phone}`);
   if (booking.client_company) descParts.push(`Société: ${booking.client_company}`);
+  if (booking.client_brand) descParts.push(`Marque: ${booking.client_brand}`);
   if (booking.client_siren) descParts.push(`SIREN: ${booking.client_siren}`);
-  if (plateaux) descParts.push(`Plateau(x): ${plateaux}`);
-  if (totalHours > 0) descParts.push(`Durée totale: ${totalHours}h`);
-  if (booking.arrival_hour != null) descParts.push(`Heure d'arrivée: ${booking.arrival_hour}h`);
-  if (booking.preferred_date) {
-    const pd = new Date(booking.preferred_date);
-    descParts.push(`Date souhaitée: ${pd.toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}`);
+  if (booking.client_billing_address) descParts.push(`Adresse de facturation: ${booking.client_billing_address}`);
+  descParts.push(`Plateau: ${session.plateau_key} (${hours || "?"}h, ${session.slot_type})`);
+  if (arrivalHour != null) descParts.push(`Heure d'arrivée: ${arrivalHour}h`);
+  if (sessionDate) {
+    const pd = new Date(sessionDate);
+    descParts.push(`Date: ${pd.toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}`);
   }
+  if (session.product_type) descParts.push(`Produit: ${session.product_type}`);
+  if (session.method) descParts.push(`Méthode: ${session.method}${session.submethod ? ` / ${session.submethod}` : ""}`);
+  if (session.quantity && session.quantity > 1) descParts.push(`Quantité: ${session.quantity}`);
+  if (session.media && session.media.length > 0) descParts.push(`Médias: ${session.media.join(", ")}`);
+  if (session.views && session.views.length > 0) descParts.push(`Vues: ${session.views.join(", ")} (${session.views_count ?? session.views.length})`);
+  if (session.postprod_enabled) descParts.push(`Post-prod: oui${session.postprod_video ? " (vidéo)" : ""}`);
   if (booking.project_type) descParts.push(`Type de projet: ${booking.project_type}`);
   if (booking.urgency) descParts.push(`Urgence: ${booking.urgency}`);
-  if (booking.total_estimate) descParts.push(`Estimation: ${booking.total_estimate}€ HT`);
-  if (sessions.length > 0) {
-    descParts.push("");
-    descParts.push("--- Détail des sessions ---");
-    for (const s of sessions) {
-      const parts = [`${s.plateau_key} (${s.hours ?? "?"}h, ${s.slot_type})`];
-      if (s.product_type) parts.push(`  Produit: ${s.product_type}`);
-      if (s.method) parts.push(`  Méthode: ${s.method}${s.submethod ? ` / ${s.submethod}` : ""}`);
-      if (s.quantity && s.quantity > 1) parts.push(`  Quantité: ${s.quantity}`);
-      if (s.media && s.media.length > 0) parts.push(`  Médias: ${s.media.join(", ")}`);
-      if (s.views && s.views.length > 0) parts.push(`  Vues: ${s.views.join(", ")} (${s.views_count ?? s.views.length})`);
-      if (s.postprod_enabled) parts.push(`  Post-prod: oui${s.postprod_video ? " (vidéo)" : ""}`);
-      descParts.push(parts.join("\n"));
-    }
-  }
+  if (booking.total_estimate) descParts.push(`Estimation totale: ${booking.total_estimate}€ HT`);
   if (quoteRows.length > 0) {
     descParts.push("");
     descParts.push("--- Devis ---");
@@ -144,18 +145,18 @@ export function buildVEvent(
     `DESCRIPTION:${description}`,
     "LOCATION:E-Do Studio\\, Paris",
     `STATUS:${booking.status === "confirmed" ? "CONFIRMED" : "TENTATIVE"}`,
+    `SEQUENCE:${opts.sequence ?? 0}`,
   ];
 
-  if (booking.preferred_date) {
-    if (booking.arrival_hour != null) {
-      const dtStart = formatIcalDate(booking.preferred_date, booking.arrival_hour);
+  if (sessionDate) {
+    if (arrivalHour != null) {
+      const dtStart = formatIcalDate(sessionDate, arrivalHour);
       lines.push(`DTSTART;TZID=Europe/Paris:${dtStart}`);
-
-      const endHour = booking.arrival_hour + (totalHours || 4);
-      const dtEnd = formatIcalDate(booking.preferred_date, endHour);
+      const endHour = arrivalHour + (hours || 4);
+      const dtEnd = formatIcalDate(sessionDate, endHour);
       lines.push(`DTEND;TZID=Europe/Paris:${dtEnd}`);
     } else {
-      const dt = formatIcalDate(booking.preferred_date);
+      const dt = formatIcalDate(sessionDate);
       lines.push(`DTSTART;VALUE=DATE:${dt}`);
       lines.push(`DTEND;VALUE=DATE:${dt}`);
     }
@@ -163,6 +164,17 @@ export function buildVEvent(
 
   lines.push("END:VEVENT");
   return lines.join("\r\n");
+}
+
+export function buildBookingVEvents(
+  booking: IcalBookingRow,
+  sessions: IcalSessionRow[],
+  quoteRows: IcalQuoteRow[] = [],
+  quoteTotal: number | null = null,
+  opts: { sequence?: number } = {},
+): string[] {
+  if (sessions.length === 0) return [];
+  return sessions.map((s) => buildSessionVEvent(booking, s, quoteRows, quoteTotal, opts));
 }
 
 export function wrapCalendar(events: string[], calName: string): string {
@@ -201,7 +213,8 @@ export function buildBookingIcs(
   sessions: IcalSessionRow[],
   quoteRows: IcalQuoteRow[] = [],
   quoteTotal: number | null = null,
+  opts: { sequence?: number } = {},
 ): string {
-  const vevent = buildVEvent(booking, sessions, quoteRows, quoteTotal);
-  return wrapCalendar([vevent], `E-Do Studio — ${booking.reference}`);
+  const vevents = buildBookingVEvents(booking, sessions, quoteRows, quoteTotal, opts);
+  return wrapCalendar(vevents, `E-Do Studio — ${booking.reference}`);
 }

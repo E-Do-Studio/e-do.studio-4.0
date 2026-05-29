@@ -57,20 +57,34 @@ export function useBookingDraftSaver(getState: () => Omit<BookingDraft, 'v' | 't
   const getStateRef = useRef(getState);
   getStateRef.current = getState;
 
+  const writeNow = useCallback(() => {
+    try {
+      const state = getStateRef.current();
+      const draft: BookingDraft = { v: DRAFT_VERSION, ts: Date.now(), ...state };
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    } catch {}
+  }, []);
+
   const save = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
-      try {
-        const state = getStateRef.current();
-        const draft: BookingDraft = { v: DRAFT_VERSION, ts: Date.now(), ...state };
-        localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-      } catch {}
+      timerRef.current = null;
+      writeNow();
     }, DEBOUNCE_MS);
-  }, []);
+  }, [writeNow]);
 
+  // Flush any pending save synchronously on unmount so route transitions
+  // (e.g. configurator step 0 → step 2) don't lose freshly-set state like
+  // configApplied, which the next route reads from localStorage on mount.
   useEffect(() => {
-    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-  }, []);
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+        writeNow();
+      }
+    };
+  }, [writeNow]);
 
   return save;
 }
