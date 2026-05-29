@@ -12,7 +12,6 @@ dist
 deno.lock
 package-lock.json
 *.png
-brand
 docs
 strapi
 supabase
