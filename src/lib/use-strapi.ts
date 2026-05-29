@@ -4,6 +4,7 @@ import {
   fetchMachines,
   fetchPostProdTypes,
   fetchDiscoveryPosts,
+  fetchDiscoveryPost,
   fetchDiscoveryCategories,
   fetchSocialLinks,
   fetchContact,
@@ -94,6 +95,42 @@ function useAsync<T>(fetcher: () => Promise<T>, swrKey?: string): AsyncState<T> 
   return state;
 }
 
+// Same SWR contract as useAsync but the effect re-fires when `deps` change,
+// e.g. when the route slug switches between articles.
+function useAsyncWithKey<T>(fetcher: () => Promise<T>, swrKey: string | undefined, deps: ReadonlyArray<unknown>): AsyncState<T> {
+  const canHydrate = !!swrKey && !isPreviewActive();
+  const [state, setState] = useState<AsyncState<T>>(() => {
+    if (canHydrate) {
+      const cached = readSWR<T>(swrKey!);
+      if (cached !== null) return { data: cached, loading: false, error: null };
+    }
+    return { data: null, loading: true, error: null };
+  });
+  useEffect(() => {
+    let cancelled = false;
+    if (canHydrate) {
+      const cached = readSWR<T>(swrKey!);
+      if (cached !== null) setState({ data: cached, loading: false, error: null });
+      else setState(prev => ({ data: prev.data, loading: true, error: null }));
+    } else {
+      setState(prev => ({ data: prev.data, loading: true, error: null }));
+    }
+    fetcher()
+      .then(data => {
+        if (cancelled) return;
+        setState({ data, loading: false, error: null });
+        if (canHydrate) writeSWR(swrKey!, data);
+      })
+      .catch(error => {
+        if (cancelled) return;
+        setState(prev => ({ data: prev.data, loading: false, error }));
+      });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps);
+  return state;
+}
+
 export function usePlateaux() {
   return useAsync<Record<string, PlateauSpec>>(fetchPlateaux, 'plateaux');
 }
@@ -108,6 +145,15 @@ export function usePostProdTypes() {
 
 export function useDiscoveryPosts() {
   return useAsync<DiscoveryPost[]>(fetchDiscoveryPosts, 'discoveryPosts');
+}
+
+export function useDiscoveryPost(slug: string | undefined) {
+  // Per-slug SWR key so cached posts don't bleed across navigation.
+  return useAsyncWithKey<DiscoveryPost | null>(
+    () => (slug ? fetchDiscoveryPost(slug) : Promise.resolve(null)),
+    slug ? `discoveryPost:${slug}` : undefined,
+    [slug],
+  );
 }
 
 export function useDiscoveryCategories() {

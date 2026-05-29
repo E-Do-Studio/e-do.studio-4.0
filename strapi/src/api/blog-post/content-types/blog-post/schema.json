@@ -65,6 +65,12 @@
         }
       },
       "description": "Contenu de l'article en Markdown. Supporte titres (#, ##, ###), gras (**…** / __…__), italique (*…* / _…_), liens, images, citations (>), listes (-), séparateurs (---), code inline (`…`)."
+    },
+    "seo": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.seo-meta",
+      "description": "Métadonnées SEO de la page article. Si vides, le titre et l'extrait sont utilisés en fallback."
     }
   },
   "pluginOptions": {

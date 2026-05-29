@@ -69,7 +69,7 @@ const PickerTile = ({ index, label, description, variant, onClick, lang }: TileP
 const BookPicker = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
   const navigate = useNavigate();
-  useDocumentMeta('book-picker', lang);
+  useDocumentMeta('book-picker', lang, { noIndex: true });
   const bookPathname = lang === 'fr' ? '/reserver' : '/book';
   useStructuredData('book-picker', [
     buildWebPageSchema({
@@ -122,7 +122,7 @@ const BookPicker = () => {
           </p>
         </div>
 
-        <div className="flex flex-1 flex-col edo-hairline md:flex-row md:items-end md:border-t-0">
+        <div className="flex flex-1 flex-col edo-hairline border-t border-hairline md:flex-row md:items-end md:border-t-0">
           <PickerTile
             index={1}
             label={bookPicker.configuratorLabel[lang]}

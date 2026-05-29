@@ -14,7 +14,7 @@ interface ImageCrossfadeProps {
   priority?: boolean;
 }
 
-const DEFAULT_SLIDE_MS = 10000;
+const DEFAULT_SLIDE_MS = 5000;
 const DEFAULT_FADE_MS = 900;
 
 const usePrefersReducedMotion = (): boolean => {

@@ -10,6 +10,7 @@ export {
   IconMenu,
   IconX,
   IconArrowRight,
+  IconArrowLeft,
   IconGlobe,
   IconPlay,
   IconChat,
@@ -69,3 +70,6 @@ export { MobileAssistantFab } from './mobile-assistant-fab';
 
 export { HoverMarquee } from './hover-marquee';
 export type { HoverMarqueeProps } from './hover-marquee';
+
+export { CarouselNav } from './carousel-nav';
+export type { CarouselNavProps } from './carousel-nav';

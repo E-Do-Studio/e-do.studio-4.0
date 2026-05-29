@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  ChevronLeft,
-  ChevronRight,
+  ArrowLeft as IconArrowLeft,
+  ArrowRight as IconArrowRight,
   Maximize2,
   Minus,
   Plus,
@@ -10,7 +10,6 @@ import {
 import type { GalleryProject } from "./lib/strapi";
 import type { Lang } from "./types";
 import { common } from "./i18n/messages";
-import { BookCTATile } from "./book-cta";
 import { cn } from "./ui";
 
 const PLATEAU_LABELS: Record<string, { fr: string; en: string }> = {
@@ -34,8 +33,7 @@ interface GalleryLightboxProps {
   lang: Lang;
   onClose: () => void;
   onBook: () => void;
-  relatedProjects?: GalleryProject[];
-  onSelectProject?: (projectId: number) => void;
+  onContact: () => void;
 }
 
 export const GalleryLightbox = ({
@@ -44,8 +42,7 @@ export const GalleryLightbox = ({
   lang,
   onClose,
   onBook,
-  relatedProjects = [],
-  onSelectProject,
+  onContact,
 }: GalleryLightboxProps) => {
   const total = project.media.length;
   const [index, setIndex] = useState(() =>
@@ -69,8 +66,13 @@ export const GalleryLightbox = ({
   const [tx, setTx] = useState(0);
   const [ty, setTy] = useState(0);
   const [animate, setAnimate] = useState(false);
+  const [aspect, setAspect] = useState<number | null>(null);
   const surfaceRef = useRef<HTMLDivElement | null>(null);
   const animateTimer = useRef<number | null>(null);
+
+  useEffect(() => {
+    setAspect(null);
+  }, [item?.url]);
 
   const resetTransform = useCallback(() => {
     setScale(1);
@@ -192,50 +194,37 @@ export const GalleryLightbox = ({
     };
   }, []);
 
-  const arrowBtn =
-    "edo-focus-ring absolute z-10 flex h-9 w-9 items-center justify-center cursor-pointer bg-black/35 backdrop-blur-md border border-white/20 text-white transition-[transform,background-color] duration-150 ease-edo-out hover:bg-black/50 active:scale-[0.96]";
+  const onBackdropMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) onClose();
+  };
 
   const zoomBtn =
     "edo-focus-ring flex h-8 w-8 items-center justify-center cursor-pointer text-white transition-[background-color,opacity] duration-150 ease-edo-out hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent active:scale-[0.96]";
-
-  const thumbsLabel =
-    lang === "fr" ? `Médias · ${total}` : `Media · ${total}`;
-
-  const related = relatedProjects.slice(0, 3);
-  const hasRelated = related.length > 0 && !!onSelectProject;
-
-  const gridRowsClass =
-    hasMultiple && hasRelated
-      ? "grid-rows-[auto_auto_auto_auto_auto_1fr_auto]"
-      : hasMultiple
-        ? "grid-rows-[auto_auto_auto_1fr_auto]"
-        : hasRelated
-          ? "grid-rows-[auto_auto_auto_1fr_auto]"
-          : "grid-rows-[auto_1fr_auto]";
 
   const canReset = scale !== MIN_SCALE || tx !== 0 || ty !== 0;
 
   return (
     <div
-      className="fixed inset-0 z-50 grid grid-rows-page edo-hairline overflow-hidden"
       role="dialog"
       aria-modal="true"
       aria-label={`${project.brand} — ${plateauLabel}`}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 backdrop-blur-sm p-4 md:p-6 lg:p-8"
+      onMouseDown={onBackdropMouseDown}
     >
-      <div className="row-start-1 flex edo-hairline">
-        <div className="min-w-0 flex-1 bg-white" aria-hidden="true" />
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label={common.close[lang]}
-          className="edo-focus-ring flex basis-header-sm cursor-pointer items-center justify-center border-0 bg-white transition-colors hover:bg-muted"
-        >
-          <X size={18} strokeWidth={1.5} className="text-foreground" />
-        </button>
-      </div>
-
-      <div className="row-start-2 grid min-h-0 grid-cols-1 grid-rows-[1fr_auto] edo-hairline overflow-hidden md:grid-cols-gallery-overlay md:grid-rows-1">
-        <div className="relative min-h-0 overflow-hidden bg-background">
+      <div
+        onMouseDown={(e) => e.stopPropagation()}
+        className="relative flex flex-col edo-hairline border border-hairline overflow-hidden bg-white h-full max-h-[900px] max-w-full shadow-2xl"
+        style={{ aspectRatio: aspect ? `${aspect}` : "4 / 5" }}
+      >
+        <div className="group relative flex-1 min-h-0 overflow-hidden bg-background">
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={common.close[lang]}
+            className="edo-focus-ring absolute right-3 top-3 z-30 flex h-8 w-8 cursor-pointer items-center justify-center text-white opacity-0 mix-blend-exclusion transition-opacity duration-200 ease-edo-out group-hover:opacity-100 focus-visible:opacity-100"
+          >
+            <X size={18} strokeWidth={1.5} />
+          </button>
           <div
             ref={surfaceRef}
             onClick={onSurfaceClick}
@@ -257,7 +246,12 @@ export const GalleryLightbox = ({
                   muted
                   playsInline
                   controls
-                  className="pointer-events-auto absolute inset-0 h-full w-full object-contain"
+                  onLoadedMetadata={(e) => {
+                    const v = e.currentTarget;
+                    if (v.videoWidth && v.videoHeight)
+                      setAspect(v.videoWidth / v.videoHeight);
+                  }}
+                  className="pointer-events-auto absolute inset-0 h-full w-full object-cover"
                   aria-label={item.alt || `${project.brand} — ${index + 1}`}
                 >
                   <source src={item.url} type={item.mime} />
@@ -267,39 +261,21 @@ export const GalleryLightbox = ({
                   src={item.url}
                   alt={item.alt || `${project.brand} — ${index + 1}`}
                   draggable={false}
-                  className="pointer-events-none absolute left-1/2 top-1/2 max-h-full max-w-full object-contain"
+                  onLoad={(e) => {
+                    const img = e.currentTarget;
+                    if (img.naturalWidth && img.naturalHeight)
+                      setAspect(img.naturalWidth / img.naturalHeight);
+                  }}
+                  className="pointer-events-none absolute inset-0 h-full w-full object-cover"
                   style={{
-                    transform: `translate(-50%, -50%) translate(${tx}px, ${ty}px) scale(${scale})`,
+                    transform: `translate(${tx}px, ${ty}px) scale(${scale})`,
                     transformOrigin: "center",
-                    transition: animate
-                      ? "transform 200ms ease-out"
-                      : "none",
+                    transition: animate ? "transform 200ms ease-out" : "none",
                   }}
                 />
               )
             ) : null}
           </div>
-
-          {hasMultiple && (
-            <>
-              <button
-                type="button"
-                aria-label={common.prevImage[lang]}
-                onClick={prev}
-                className={`${arrowBtn} left-3 top-1/2 -translate-y-1/2`}
-              >
-                <ChevronLeft size={18} strokeWidth={1.5} />
-              </button>
-              <button
-                type="button"
-                aria-label={common.nextImage[lang]}
-                onClick={next}
-                className={`${arrowBtn} right-3 top-1/2 -translate-y-1/2`}
-              >
-                <ChevronRight size={18} strokeWidth={1.5} />
-              </button>
-            </>
-          )}
 
           {!isVideo && (
             <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 bg-black/35 backdrop-blur-md border border-white/20 px-1.5 py-1">
@@ -338,183 +314,44 @@ export const GalleryLightbox = ({
           )}
         </div>
 
-        <aside
-          className={cn(
-            "hidden min-h-0 overflow-y-auto bg-white edo-hairline md:grid",
-            gridRowsClass,
-          )}
+        <div
+          className="grid shrink-0 edo-hairline bg-white"
+          style={{ gridTemplateColumns: "auto 1fr 1fr auto" }}
         >
-          <div className="flex flex-col gap-2 bg-white px-6 py-7 md:px-cell-lg md:py-8">
-            <span className="edo-cell-label text-primary">
-              {plateauLabel} · {project.year}
-            </span>
-            <h2 className="m-0 text-balance text-hero font-light leading-none tracking-display text-foreground">
-              {project.brand}
-            </h2>
-          </div>
-
-          {hasMultiple && (
-            <>
-              <div className="bg-white px-6 py-3 md:px-cell-lg">
-                <span className="edo-cell-label text-muted-foreground">
-                  {thumbsLabel}
-                </span>
-              </div>
-              <div className="grid grid-cols-3 bg-white edo-hairline">
-                {project.media.map((m, i) => (
-                  <button
-                    key={m.url}
-                    type="button"
-                    onClick={() => setIndex(i)}
-                    aria-label={`${project.brand} — ${i + 1}/${total}`}
-                    aria-current={i === index}
-                    className={cn(
-                      "edo-focus-ring relative aspect-square cursor-pointer overflow-hidden bg-muted transition-opacity duration-200 ease-edo-out",
-                      i === index
-                        ? "opacity-100"
-                        : "opacity-40 hover:opacity-100",
-                    )}
-                  >
-                    {m.mime.startsWith("video/") ? (
-                      <video
-                        src={m.url}
-                        muted
-                        playsInline
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <img
-                        src={m.url}
-                        alt=""
-                        className="h-full w-full object-cover"
-                      />
-                    )}
-                    <span className="absolute left-1.5 top-1.5 font-mono text-micro uppercase tracking-code text-white mix-blend-difference">
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-
-          {hasRelated && (
-            <>
-              <div className="bg-muted px-6 py-3 md:px-cell-lg">
-                <span className="edo-cell-label text-muted-foreground">
-                  {common.alsoOnPlateau[lang]}
-                </span>
-              </div>
-              <div className="grid grid-cols-3 bg-muted edo-hairline">
-                {related.map((p) => {
-                  const cover = p.media[0];
-                  return (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => onSelectProject?.(p.id)}
-                      aria-label={`${p.brand} — ${plateauLabel}`}
-                      className="edo-focus-ring group flex cursor-pointer flex-col bg-white text-left transition-colors duration-200 ease-edo-out hover:bg-muted/60"
-                    >
-                      <div className="relative aspect-[4/5] overflow-hidden bg-muted">
-                        {cover ? (
-                          cover.mime.startsWith("video/") ? (
-                            <video
-                              src={cover.url}
-                              muted
-                              playsInline
-                              className="h-full w-full object-cover transition-transform duration-300 ease-edo-out group-hover:scale-[1.02]"
-                            />
-                          ) : (
-                            <img
-                              src={cover.url}
-                              alt=""
-                              className="h-full w-full object-cover transition-transform duration-300 ease-edo-out group-hover:scale-[1.02]"
-                            />
-                          )
-                        ) : null}
-                      </div>
-                      <div className="flex items-baseline justify-between gap-2 border-t border-border px-2.5 py-1.5">
-                        <span className="truncate font-mono text-micro uppercase tracking-label text-foreground">
-                          {p.brand}
-                        </span>
-                        <span className="shrink-0 font-mono text-micro uppercase tracking-code text-muted-foreground">
-                          {p.year}
-                        </span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </>
-          )}
-
-          <div className="bg-white" aria-hidden="true" />
-
-          <BookCTATile
-            lang={lang}
+          <button
+            type="button"
+            onClick={prev}
+            disabled={!hasMultiple}
+            aria-label={common.prevImage[lang]}
+            className="edo-focus-ring flex h-14 w-14 md:h-16 md:w-16 cursor-pointer items-center justify-center bg-white text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-white"
+          >
+            <IconArrowLeft size={20} strokeWidth={1.5} />
+          </button>
+          <button
+            type="button"
+            onClick={onContact}
+            className="edo-focus-ring flex h-14 md:h-16 cursor-pointer items-center justify-center gap-2 bg-white font-mono uppercase text-detail tracking-code text-foreground transition-colors hover:bg-muted"
+          >
+            {common.contactUs[lang]}
+            <IconArrowRight size={14} strokeWidth={1.5} />
+          </button>
+          <button
+            type="button"
             onClick={onBook}
-            label={common.bookThisStage[lang]}
-            className="w-full"
-          />
-        </aside>
-
-        <div className="grid bg-white edo-hairline md:hidden">
-          <div className="flex flex-col gap-1.5 bg-white px-4 py-4">
-            <div className="flex items-baseline justify-between gap-2">
-              <span className="edo-cell-label text-primary">
-                {plateauLabel} · {project.year}
-              </span>
-              {hasMultiple && (
-                <span className="edo-cell-label text-muted-foreground">
-                  {index + 1}/{total}
-                </span>
-              )}
-            </div>
-            <h2 className="m-0 truncate text-balance text-hero font-light leading-none tracking-display text-foreground">
-              {project.brand}
-            </h2>
-          </div>
-
-          {hasMultiple && (
-            <div className="flex gap-0 overflow-x-auto bg-white edo-hairline [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {project.media.map((m, i) => (
-                <button
-                  key={m.url}
-                  type="button"
-                  onClick={() => setIndex(i)}
-                  aria-label={`${project.brand} — ${i + 1}/${total}`}
-                  aria-current={i === index}
-                  className={cn(
-                    "edo-focus-ring relative h-20 w-20 shrink-0 cursor-pointer overflow-hidden bg-muted transition-opacity duration-200 ease-edo-out",
-                    i === index ? "opacity-100" : "opacity-40",
-                  )}
-                >
-                  {m.mime.startsWith("video/") ? (
-                    <video
-                      src={m.url}
-                      muted
-                      playsInline
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <img
-                      src={m.url}
-                      alt=""
-                      className="h-full w-full object-cover"
-                    />
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
-
-          <BookCTATile
-            lang={lang}
-            onClick={onBook}
-            label={common.bookThisStage[lang]}
-            className="h-auto w-full py-3 pb-[max(env(safe-area-inset-bottom,0px),0.75rem)] [&_span:first-child]:block"
-          />
+            className="edo-focus-ring flex h-14 md:h-16 cursor-pointer items-center justify-center gap-2 bg-primary font-mono uppercase text-detail tracking-code text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            {common.book[lang]}
+            <IconArrowRight size={14} strokeWidth={1.5} />
+          </button>
+          <button
+            type="button"
+            onClick={next}
+            disabled={!hasMultiple}
+            aria-label={common.nextImage[lang]}
+            className="edo-focus-ring flex h-14 w-14 md:h-16 md:w-16 cursor-pointer items-center justify-center bg-white text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-white"
+          >
+            <IconArrowRight size={20} strokeWidth={1.5} />
+          </button>
         </div>
       </div>
     </div>

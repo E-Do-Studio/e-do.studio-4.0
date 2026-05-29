@@ -33,7 +33,6 @@ export const common = {
   zoomIn: { fr: 'Zoomer', en: 'Zoom in' } as B,
   zoomOut: { fr: 'Dézoomer', en: 'Zoom out' } as B,
   resetZoom: { fr: 'Réinitialiser le zoom', en: 'Reset zoom' } as B,
-  alsoOnPlateau: { fr: 'Aussi sur ce plateau', en: 'Also on this stage' } as B,
 };
 
 export const nav = {
@@ -50,7 +49,7 @@ export const nav = {
     en: [
       { label: 'Home', href: '/en' },
       { label: 'Stages', href: '/en/plateau/live' },
-      { label: 'Gallery', href: '/en/galerie' },
+      { label: 'Gallery', href: '/en/gallery' },
       { label: 'Discovery', href: '/en/discovery' },
       { label: 'Post-production', href: '/en/post-production' },
       { label: 'Contact', href: '/en/contact' },
@@ -219,8 +218,8 @@ export const home = {
     en: 'e-commerce',
   } as B,
   studioSubtitleLead: {
-    fr: 'Photo, vidéo et retouche pour vos catalogues en ligne — ',
-    en: 'Photo, video and retouching for your online catalogues — ',
+    fr: 'Photo, vidéo et retouche — ',
+    en: 'Photo, video and retouching — ',
   } as B,
   studioSubtitleStrong: {
     fr: 'du créateur indépendant à la maison de luxe.',

@@ -137,6 +137,7 @@ interface StrapiBlogPost {
   publishedAt?: string | null;
   createdAt?: string | null;
   categories?: { id: number; title: string; slug: string }[];
+  seo?: StrapiSeoMeta;
 }
 
 interface StrapiBlogCategory {
@@ -726,13 +727,40 @@ function resolveRawMediaUrl(media?: StrapiMedia | null): string | undefined {
   return `${STRAPI_URL}${media.url}`;
 }
 
+function mapBlogPostToDiscovery(pFr: StrapiBlogPost, pEn: StrapiBlogPost, tone: 'warm' | 'mono' | 'dark'): DiscoveryPost {
+  const catFr = pFr.categories?.[0];
+  const catEn = pEn.categories?.[0];
+  const bodyFr = pFr.body ?? '';
+  const bodyEn = pEn.body ?? '';
+  const readingTime = estimateReadingTime(bodyFr || bodyEn);
+  const displayDate = pFr.articleDate ?? pFr.publishedAt ?? '';
+  const seo = buildSeo(pFr.seo, pEn.seo);
+  return {
+    id: pFr.id,
+    slug: pFr.slug,
+    cat: catFr?.slug ?? 'tips',
+    tone,
+    tag: { fr: catFr?.title ?? 'Tips', en: catEn?.title ?? 'Tips' },
+    title: { fr: pFr.title, en: pEn.title },
+    sub: { fr: pFr.excerpt, en: pEn.excerpt },
+    body: { fr: bodyFr, en: bodyEn },
+    date: formatStrapiDate(displayDate),
+    read: `${readingTime} min`,
+    author: 'Studio',
+    coverUrl: resolveStrapiMediaUrl(pFr.coverImage),
+    publishedAt: pFr.publishedAt ?? undefined,
+    featured: false,
+    seo,
+  };
+}
+
 export async function fetchDiscoveryPosts(): Promise<DiscoveryPost[]> {
   // Sort server-side on `createdAt` (always present, always sortable) and
   // re-sort by editorial `articleDate` below — sorting on `articleDate`
   // server-side fails with 400 on envs where the schema rename (EDO-256)
   // hadn't propagated yet, and a single 400 wipes the whole discovery page.
   const resBI = await fetchStrapiBilingual<{ data: StrapiBlogPost[] }>('blog-posts', {
-    'populate': 'categories,coverImage',
+    'populate': 'categories,coverImage,seo,seo.image',
     'sort': 'createdAt:desc',
     'pagination[pageSize]': '50',
   });
@@ -747,27 +775,20 @@ export async function fetchDiscoveryPosts(): Promise<DiscoveryPost[]> {
 
   return frPosts.map((pFr, i) => {
     const pEn = enPosts.find(e => e.slug === pFr.slug) ?? pFr;
-    const catFr = pFr.categories?.[0];
-    const catEn = pEn.categories?.[0];
-    const bodyFr = pFr.body ?? '';
-    const bodyEn = pEn.body ?? '';
-    const readingTime = estimateReadingTime(bodyFr || bodyEn);
-    const displayDate = pFr.articleDate ?? pFr.publishedAt ?? '';
-    return {
-      id: pFr.id,
-      cat: catFr?.slug ?? 'tips',
-      tone: TONES[i % 3],
-      tag: { fr: catFr?.title ?? 'Tips', en: catEn?.title ?? 'Tips' },
-      title: { fr: pFr.title, en: pEn.title },
-      sub: { fr: pFr.excerpt, en: pEn.excerpt },
-      body: { fr: bodyFr, en: bodyEn },
-      date: formatStrapiDate(displayDate),
-      read: `${readingTime} min`,
-      author: 'Studio',
-      coverUrl: resolveStrapiMediaUrl(pFr.coverImage),
-      featured: false,
-    };
+    return mapBlogPostToDiscovery(pFr, pEn, TONES[i % 3]);
   });
+}
+
+export async function fetchDiscoveryPost(slug: string): Promise<DiscoveryPost | null> {
+  const resBI = await fetchStrapiBilingual<{ data: StrapiBlogPost[] }>('blog-posts', {
+    'populate': 'categories,coverImage,seo,seo.image',
+    'filters[slug][$eq]': slug,
+    'pagination[pageSize]': '1',
+  });
+  const pFr = resBI.fr.data[0];
+  if (!pFr) return null;
+  const pEn = resBI.en.data.find(e => e.slug === pFr.slug) ?? pFr;
+  return mapBlogPostToDiscovery(pFr, pEn, TONES[0]);
 }
 
 function formatStrapiDate(iso: string): Bilingual {

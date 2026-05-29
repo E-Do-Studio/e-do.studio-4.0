@@ -16,6 +16,7 @@ import { PreviewBanner } from './preview-banner';
 import { useGoogleAnalytics } from './lib/use-google-analytics';
 import { useGoogleTagManager } from './lib/use-google-tag-manager';
 import { DirectionA } from './direction-editorial';
+import { NotFoundPage } from './not-found-page';
 import { PageContext, type PageContextValue } from './lib/page-context';
 
 export { usePageContext } from './lib/page-context';
@@ -46,7 +47,7 @@ export const SCREEN_TO_PATH: Record<string, (lang: Lang) => string> = {
   'plateau-live': (l) => `/${l}/plateau/live`,
   discovery: (l) => `/${l}/discovery`,
   postprod: (l) => `/${l}/post-production`,
-  gallery: (l) => `/${l}/galerie`,
+  gallery: (l) => `/${l}/${l === 'fr' ? 'galerie' : 'gallery'}`,
   contact: (l) => `/${l}/contact`,
   book: (l) => `/${l}/${l === 'fr' ? 'reserver' : 'book'}`,
   legal: (l) => `/${l}/legal`,
@@ -140,6 +141,12 @@ const discoveryRoute = createRoute({
   component: lazyRouteComponent(() => import('./discovery-pages'), 'DiscoveryVariants'),
 });
 
+const discoveryPostRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: '/discovery/$slug',
+  component: lazyRouteComponent(() => import('./discovery-post-page'), 'DiscoveryPostPage'),
+});
+
 const postprodRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/post-production',
@@ -149,6 +156,12 @@ const postprodRoute = createRoute({
 const galleryRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/galerie',
+  component: lazyRouteComponent(() => import('./gallery-page'), 'GalleryPageV3'),
+});
+
+const galleryEnRoute = createRoute({
+  getParentRoute: () => langRoute,
+  path: '/gallery',
   component: lazyRouteComponent(() => import('./gallery-page'), 'GalleryPageV3'),
 });
 
@@ -279,8 +292,10 @@ const routeTree = rootRoute.addChildren([
     cycloramaRoute,
     plateauRoute,
     discoveryRoute,
+    discoveryPostRoute,
     postprodRoute,
     galleryRoute,
+    galleryEnRoute,
     contactRoute,
     configFrRoute,
     configFrPlateauRoute,
@@ -306,6 +321,7 @@ const routeTree = rootRoute.addChildren([
 
 export const router = createRouter({
   routeTree,
+  defaultNotFoundComponent: NotFoundPage,
 });
 
 declare module '@tanstack/react-router' {

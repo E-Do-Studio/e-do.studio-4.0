@@ -360,7 +360,7 @@ interface BookPageV2Props {
 const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
   const { lang, setLang, openMenu, goto } = usePageContext();
   const navigate = useNavigate();
-  useDocumentMeta('book', lang);
+  useDocumentMeta('book', lang, { noIndex: true });
   const bookPathname = lang === 'fr' ? '/reserver' : '/book';
   useStructuredData('book', [
     buildWebPageSchema({

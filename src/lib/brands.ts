@@ -4,7 +4,6 @@
 
 export const BRANDS: readonly string[] = [
   'JEAN PAUL GAULTIER',
-  'BALENCIAGA',
   'COPERNI',
   'CARVEN',
   'THE KOOPLES',

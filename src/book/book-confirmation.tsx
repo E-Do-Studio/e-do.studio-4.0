@@ -230,7 +230,7 @@ const ConfirmedView = ({
 const BookConfirmation = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
   const navigate = useNavigate();
-  useDocumentMeta('book-confirmation', lang);
+  useDocumentMeta('book-confirmation', lang, { noIndex: true });
   const [snapshot, setSnapshot] = useState<ConfirmationSnapshot | null>(null);
   const [hydrated, setHydrated] = useState(false);
 

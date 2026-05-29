@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import type { FormEvent, InputHTMLAttributes, TextareaHTMLAttributes } from 'react';
-import { Button, CellLabel, IconArrowRight, PageHeader, SocialIcon, buildMainNav, cn } from './ui';
+import type { FormEvent } from 'react';
+import { CellLabel, PageHeader, SocialIcon, buildMainNav, cn } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
 import { useStructuredData } from './lib/use-structured-data';
 import { buildContactPageSchema, buildBreadcrumbSchema } from './lib/structured-data';
@@ -10,6 +10,7 @@ import type { Lang, ContactFormData, Bilingual } from './types';
 import { usePageContext } from './router';
 import { submitContactForm } from './lib/contact';
 import { common, contact as contactMsg } from './i18n/messages';
+import { ContactForm, ContactSuccess, INITIAL_FORM } from './contact-form';
 
 const UNAVAILABLE: Bilingual = {
   fr: 'Contenu temporairement indisponible',
@@ -42,15 +43,6 @@ const SOCIAL_LINKS: SocialLinkEntry[] = [
   {k:'facebook', label:'FB',href:'https://www.facebook.com/EdoStudioAgency/'},
   {k:'tiktok', label:'TT',href:'https://www.tiktok.com/@edostudio'},
 ];
-
-const INITIAL_FORM: ContactFormData = {
-  nom: '',
-  email: '',
-  telephone: '',
-  societe: '',
-  sujet: 'general',
-  message: '',
-};
 
 interface ContactRailProps {
   lang: Lang;
@@ -287,169 +279,17 @@ const ContactFormPanel = ({ lang, form, sent, sending, sendError, setForm, setSe
     {!sent ? (
       <ContactForm lang={lang} form={form} setForm={setForm} submit={submit} sending={sending} sendError={sendError} subjects={subjects} />
     ) : (
-      <ContactSuccess lang={lang} setForm={setForm} setSent={setSent} goto={goto} />
-    )}
-  </main>
-);
-
-interface ContactFormProps {
-  lang: Lang;
-  form: ContactFormData;
-  setForm: (form: ContactFormData) => void;
-  submit: (event: FormEvent) => void;
-  sending: boolean;
-  sendError: string | null;
-  subjects: Subject[];
-}
-
-const ContactForm = ({ lang, form, setForm, submit, sending, sendError, subjects }: ContactFormProps) => (
-  <form
-    onSubmit={submit}
-    className="grid h-full grid-cols-2 grid-rows-contact-form gap-hairline bg-border"
-  >
-    <div className="col-span-2 flex flex-col justify-center bg-white px-5 py-2.5">
-      <span className="edo-cell-label text-primary">{contactMsg.writeToUs[lang]}</span>
-      <h1 className="m-0 mt-0.5 text-tile-large font-light leading-none tracking-display text-foreground">
-        {contactMsg.projectVisit[lang]}
-      </h1>
-    </div>
-
-    {subjects.slice(0, 4).map((subject, index) => (
-      <SubjectButton
-        key={subject.k}
-        subject={subject}
-        index={index}
+      <ContactSuccess
         lang={lang}
-        active={form.sujet === subject.k}
-        onClick={() => setForm({...form, sujet: subject.k})}
-      />
-    ))}
-
-    <ContactInput required value={form.nom} onChange={(value) => setForm({...form, nom: value})} placeholder={contactMsg.name[lang]} className="col-start-1 row-start-4" />
-    <ContactInput required type="tel" value={form.telephone} onChange={(value) => setForm({...form, telephone: value})} placeholder={contactMsg.phonePlaceholder[lang]} className="col-start-2 row-start-4" />
-    <ContactInput required type="email" value={form.email} onChange={(value) => setForm({...form, email: value})} placeholder="Email*" className="col-span-2 row-start-5" />
-    <ContactInput required value={form.societe} onChange={(value) => setForm({...form, societe: value})} placeholder={contactMsg.companyBrand[lang]} className="col-span-2 row-start-6" />
-    <ContactTextarea required value={form.message} onChange={(value) => setForm({...form, message: value})} placeholder={contactMsg.yourMessage[lang]} />
-
-    {sendError && (
-      <div className="col-span-2 flex items-center bg-red-50 px-5 py-2 text-sm text-red-600">
-        {sendError}
-      </div>
-    )}
-
-    <button
-      type="submit"
-      disabled={sending}
-      className="edo-focus-ring col-span-2 row-start-8 flex cursor-pointer items-center justify-center gap-3.5 border-0 bg-primary font-mono text-caption uppercase tracking-label text-white transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-    >
-      {sending
-        ? common.sending[lang]
-        : <>{common.send[lang]} <IconArrowRight width="16" height="16" /></>
-      }
-    </button>
-  </form>
-);
-
-interface SubjectButtonProps {
-  subject: Subject;
-  index: number;
-  lang: Lang;
-  active: boolean;
-  onClick: () => void;
-}
-
-const SubjectButton = ({ subject, index, lang, active, onClick }: SubjectButtonProps) => {
-  const placements = [
-    'col-start-1 row-start-2',
-    'col-start-2 row-start-2',
-    'col-start-1 row-start-3',
-    'col-start-2 row-start-3',
-  ];
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        placements[index],
-        'edo-focus-ring flex min-h-14 cursor-pointer items-center gap-3 border-0 px-5 py-2.5 text-left font-sans transition-colors',
-        active ? 'bg-foreground text-white' : 'bg-white text-foreground hover:bg-muted'
-      )}
-    >
-      <span className={cn('font-mono text-caption tracking-meta', active ? 'text-white/60' : 'text-muted-foreground')}>
-        {String(index + 1).padStart(2, '0')}
-      </span>
-      <span className="text-detail font-normal tracking-copy-tight">{subject[lang]}</span>
-    </button>
-  );
-};
-
-const inputClassName = 'edo-bento-input w-full border-0 bg-white px-5 font-sans text-cell font-light tracking-copy-tight text-foreground outline-none transition-colors focus:bg-muted';
-
-interface ContactInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
-  value: string;
-  onChange: (value: string) => void;
-}
-
-const ContactInput = ({ value, onChange, className, type = 'text', ...props }: ContactInputProps) => (
-  <input
-    type={type}
-    value={value}
-    onChange={(event) => onChange(event.target.value)}
-    className={cn(inputClassName, className)}
-    {...props}
-  />
-);
-
-interface ContactTextareaProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'onChange'> {
-  value: string;
-  onChange: (value: string) => void;
-}
-
-const ContactTextarea = ({ value, onChange, ...props }: ContactTextareaProps) => (
-  <textarea
-    value={value}
-    onChange={(event) => onChange(event.target.value)}
-    className={cn(inputClassName, 'col-span-2 row-start-7 h-full min-h-36 resize-none py-4 leading-normal')}
-    {...props}
-  />
-);
-
-interface ContactSuccessProps {
-  lang: Lang;
-  setForm: (form: ContactFormData) => void;
-  setSent: (sent: boolean) => void;
-  goto: (screen: string) => void;
-}
-
-const ContactSuccess = ({ lang, setForm, setSent, goto }: ContactSuccessProps) => (
-  <div className="flex h-full flex-col items-start justify-center gap-4 bg-white px-7 py-8">
-    <span className="edo-cell-label text-primary">✓ {contactMsg.messageSent[lang]}</span>
-    <h1 className="m-0 max-w-lg text-page-title font-light leading-tight tracking-display text-foreground">
-      {contactMsg.thanksSoon[lang]}
-    </h1>
-    <p className="m-0 max-w-md text-detail leading-normal text-muted-foreground">
-      {contactMsg.replyTime[lang]}
-    </p>
-    <div className="mt-3 flex flex-wrap gap-2.5">
-      <Button
-        variant="outline"
-        size="lg"
-        onClick={() => {
+        onNewMessage={() => {
           setSent(false);
           setForm(INITIAL_FORM);
         }}
-      >
-        {contactMsg.newMessage[lang]}
-      </Button>
-      <Button
-        size="lg"
-        onClick={() => goto('gallery')}
-      >
-        {contactMsg.seeGallery[lang]} →
-      </Button>
-    </div>
-  </div>
+        onContinue={() => goto('gallery')}
+        continueLabel={`${contactMsg.seeGallery[lang]} →`}
+      />
+    )}
+  </main>
 );
 
 interface ContactRightColumnProps {
@@ -602,6 +442,7 @@ const ContactPage = () => {
 
   return (
     <div className="edo-page-enter grid w-full edo-hairline md:h-full md:grid-cols-contact-shell md:grid-rows-page md:overflow-hidden">
+      <h1 className="sr-only">{common.contactUs[lang]} — E-Do Studio Paris</h1>
       {/* Unified header — compact right-aligned actions on all breakpoints */}
       <PageHeader
         lang={lang}

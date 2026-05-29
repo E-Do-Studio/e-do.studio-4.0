@@ -19,8 +19,16 @@ export interface MachineInfo {
   en: { t: string; sub: string; label?: string };
 }
 
+export interface DiscoveryPostSeo {
+  title?: string;
+  description?: string;
+  imageUrl?: string;
+  noIndex?: boolean;
+}
+
 export interface DiscoveryPost {
   id: number;
+  slug: string;
   cat: string;
   tone: 'warm' | 'mono' | 'dark';
   tag: Bilingual;
@@ -31,8 +39,10 @@ export interface DiscoveryPost {
   read: string;
   author: string;
   coverUrl?: string;
+  publishedAt?: string;
   featured?: boolean;
   kind?: string;
+  seo?: Bilingual<DiscoveryPostSeo>;
 }
 
 export interface DiscoveryCategory {

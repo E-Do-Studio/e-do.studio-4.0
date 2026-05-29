@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from '@tanstack/react-router';
-import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
-import { BottomSheet, CellLabel, HoverMarquee, IconArrowRight, IconSelector, PageHeader, buildMainNav } from './ui';
+import { Pause, Play } from 'lucide-react';
+import { BottomSheet, CarouselNav, CellLabel, HoverMarquee, IconArrowRight, IconSelector, PageHeader, buildMainNav } from './ui';
 import { cn } from './ui/cn';
 import { VideoLoop } from './ui/video-loop';
 import { useDocumentMeta } from './lib/use-document-meta';
@@ -51,7 +51,7 @@ const Cover = ({ items, lang, plateauName, index, onPrev, onNext, className }: C
 
   return (
     <div
-      className={cn('group relative overflow-hidden bg-white min-h-56 md:min-h-0', className)}
+      className={cn('group relative overflow-hidden bg-white aspect-[4/3] md:aspect-auto md:min-h-0', className)}
       role={hasMultiple ? 'group' : undefined}
       aria-roledescription={hasMultiple ? 'carousel' : undefined}
       aria-label={hasMultiple ? common.imageCarousel[lang] : undefined}
@@ -93,22 +93,7 @@ const Cover = ({ items, lang, plateauName, index, onPrev, onNext, className }: C
 
       {hasMultiple && (
         <>
-          <button
-            type="button"
-            onClick={onPrev}
-            aria-label={common.prevImage[lang]}
-            className={cn(ctrlBtn, 'top-1/2 -translate-y-1/2 left-3')}
-          >
-            <ChevronLeft size={18} strokeWidth={1.5} />
-          </button>
-          <button
-            type="button"
-            onClick={onNext}
-            aria-label={common.nextImage[lang]}
-            className={cn(ctrlBtn, 'top-1/2 -translate-y-1/2 right-3')}
-          >
-            <ChevronRight size={18} strokeWidth={1.5} />
-          </button>
+          <CarouselNav lang={lang} onPrev={onPrev} onNext={onNext} />
           <span aria-live="polite" className="sr-only">
             {`${index + 1} / ${total}`}
           </span>
@@ -244,28 +229,36 @@ const PlateauPage = ({ slug }: { slug: string }) => {
         actions={buildMainNav({ lang, goto, exclude: 'stages' })}
       />
 
-      {/* Mobile navigation: sticky single-row trigger showing the current
-          plateau. Tap opens a BottomSheet listing all plateaux; selecting a
-          row in the sheet navigates and closes the sheet immediately. */}
-      <button
-        type="button"
-        onClick={() => setNavSheetOpen(true)}
-        aria-haspopup="dialog"
-        aria-expanded={navSheetOpen}
-        aria-controls="plateau-nav-sheet"
-        className="sticky top-14 z-30 md:hidden flex items-center gap-4 min-h-14 w-full px-4 py-3 bg-white border-b border-border text-left edo-focus-ring cursor-pointer"
+      {/* Mobile navigation: same sticky strip gabarit as MobileNavStrip
+          (gallery filters) — h-14 wrapper with min-h-11 trigger button. Tap
+          opens a BottomSheet listing all plateaux. */}
+      <div
+        className="sticky top-14 z-30 flex h-14 items-stretch border-b border-border bg-white md:hidden"
+        role="toolbar"
+        aria-label={common.stages[lang]}
       >
-        <span className="font-mono text-label tracking-label text-muted-foreground">
-          {currentNumber}
-        </span>
-        <HoverMarquee className="text-cell tracking-copy-tight font-medium text-foreground">
-          {p.name}
-        </HoverMarquee>
-        <HoverMarquee className="ml-auto font-mono text-micro uppercase tracking-ui text-muted-foreground">
-          {p.tagline[lang]}
-        </HoverMarquee>
-        <IconSelector width="16" height="16" className="shrink-0 text-foreground" />
-      </button>
+        <button
+          type="button"
+          onClick={() => setNavSheetOpen(true)}
+          aria-haspopup="dialog"
+          aria-expanded={navSheetOpen}
+          aria-controls="plateau-nav-sheet"
+          className="edo-focus-ring flex min-h-11 w-full cursor-pointer items-center gap-2 px-4 text-left transition-colors duration-150 ease-edo-out hover:bg-muted"
+        >
+          <span className="font-mono text-label uppercase tracking-label text-foreground">
+            {currentNumber}
+          </span>
+          <HoverMarquee className="text-cell tracking-copy-tight font-medium text-foreground">
+            {p.name}
+          </HoverMarquee>
+          <span className="ml-auto flex shrink-0 items-center gap-2">
+            <HoverMarquee className="font-mono text-label uppercase tracking-caption text-muted-foreground">
+              {p.tagline[lang]}
+            </HoverMarquee>
+            <IconSelector width="16" height="16" className="shrink-0 text-foreground" />
+          </span>
+        </button>
+      </div>
 
       <BottomSheet
         id="plateau-nav-sheet"

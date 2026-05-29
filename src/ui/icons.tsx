@@ -38,6 +38,13 @@ const IconArrowRight = (props: IconProps) => (
   </svg>
 );
 
+const IconArrowLeft = (props: IconProps) => (
+  <svg {...defaults} {...props}>
+    <path d="M19 12H5" />
+    <path d="m12 19-7-7 7-7" />
+  </svg>
+);
+
 const IconGlobe = (props: IconProps) => (
   <svg {...defaults} {...props}>
     <circle cx="12" cy="12" r="10" />
@@ -84,6 +91,7 @@ export {
   IconMenu,
   IconX,
   IconArrowRight,
+  IconArrowLeft,
   IconGlobe,
   IconPlay,
   IconChat,
