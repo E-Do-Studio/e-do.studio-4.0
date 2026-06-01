@@ -2,8 +2,16 @@ const KEY = 'edo-booking-confirmation';
 
 export type ConfirmationMode = 'request' | 'quote' | 'booking';
 
+export interface ConfirmationSessionSlot {
+  plateauKey: string;
+  plateauName: { fr: string; en: string };
+  date: { y: number; m: number; d: number } | null;
+  arrivalHour: number | null;
+  hours: number;
+}
+
 export interface ConfirmationSnapshot {
-  v: 1;
+  v: 2;
   ts: number;
   mode: ConfirmationMode;
   savedRef: string | null;
@@ -14,6 +22,7 @@ export interface ConfirmationSnapshot {
   rentalHours: number;
   plateaus: string[];
   perPlateau: Record<string, unknown>;
+  sessions: ConfirmationSessionSlot[];
   contact: Record<string, unknown>;
   total: number;
   rows: unknown[];
@@ -22,7 +31,7 @@ export interface ConfirmationSnapshot {
 
 export function saveConfirmation(snapshot: Omit<ConfirmationSnapshot, 'v' | 'ts'>): void {
   try {
-    const payload: ConfirmationSnapshot = { v: 1, ts: Date.now(), ...snapshot };
+    const payload: ConfirmationSnapshot = { v: 2, ts: Date.now(), ...snapshot };
     sessionStorage.setItem(KEY, JSON.stringify(payload));
   } catch {}
 }
@@ -32,7 +41,7 @@ export function loadConfirmation(): ConfirmationSnapshot | null {
     const raw = sessionStorage.getItem(KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as ConfirmationSnapshot;
-    if (parsed.v !== 1) return null;
+    if (parsed.v !== 2) return null;
     return parsed;
   } catch {
     return null;

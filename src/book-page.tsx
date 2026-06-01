@@ -15,7 +15,7 @@ import type { Lang } from './types';
 import type { BookingSessionData } from './lib/bookings';
 import { common, booking as bookingMsg } from './i18n/messages';
 import { pathForStep, confirmationPath, type BookMode } from './book/book-routes';
-import { saveConfirmation, type ConfirmationMode } from './book/confirmation-snapshot';
+import { saveConfirmation, type ConfirmationMode, type ConfirmationSessionSlot } from './book/confirmation-snapshot';
 
 type BilingualText = Record<Lang, string>;
 type AnyProps = Record<string, any>;
@@ -422,8 +422,18 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
       return next;
     });
   };
-  const [viewY, setViewY] = useStateBook<number>(() => draft ? draft.viewY : today.getFullYear());
-  const [viewM, setViewM] = useStateBook<number>(() => draft ? draft.viewM : today.getMonth());
+  // The calendar's displayed month is ephemeral UI state, not user intent — never
+  // restore it from the draft (a stale draft would reopen on a past month). Derive
+  // it from the selected date when it's still in the future, otherwise from today.
+  const initialView = (() => {
+    const sel = draft?.selected;
+    if (sel && new Date(sel.y, sel.m, 1) >= new Date(today.getFullYear(), today.getMonth(), 1)) {
+      return { y: sel.y, m: sel.m };
+    }
+    return { y: today.getFullYear(), m: today.getMonth() };
+  })();
+  const [viewY, setViewY] = useStateBook<number>(() => initialView.y);
+  const [viewM, setViewM] = useStateBook<number>(() => initialView.m);
   const [selected, setSelected] = useStateBook<DateSelection | null>(() => draft ? draft.selected : null);
   const [arrivalHour, setArrivalHour] = useStateBook<number>(() => draft ? draft.arrivalHour : 10);
   const [dateIdx, setDateIdx] = useStateBook<number>(() => draft ? draft.dateIdx : 0);
@@ -571,7 +581,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
     if (step===1) return (plateaus && plateaus.length > 0) || !!plateau;
     if (step===2) return true;
     if (step===5) return contactValid();
-    if (step===6) { const list = plateaus && plateaus.length > 0 ? plateaus : (plateau ? [plateau] : []); if (list.length <= 1) return !!selected; return list.every(k => perPlateau[k] && perPlateau[k].date); }
+    if (step===6) { const list = plateaus && plateaus.length > 0 ? plateaus : (plateau ? [plateau] : []); if (list.length <= 1) return !!selected; return list.every(k => perPlateau[k] && perPlateau[k].date && perPlateau[k].arrivalHour != null); }
     return true;
   };
   const canQuote = () => contactValid();
@@ -645,14 +655,22 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
     const keys = plateaus && plateaus.length > 0 ? plateaus : (plateau ? [plateau] : []);
     const isMulti = keys.length > 1;
     if (configApplied && configSessions.length > 0) {
-      return configSessions.filter(s => s.projectType === 'cyclorama' || (s.projectType === 'ecom' && s.product && Number(s.quantity) > 0)).map(s => {
-        const rec = recommendSession(s, configGlobal);
+      const valid = configSessions.filter(s => s.projectType === 'cyclorama' || (s.projectType === 'ecom' && s.product && Number(s.quantity) > 0));
+      const recs = valid.map(s => ({ session: s, rec: recommendSession(s, configGlobal) }));
+      const uniqPlateaus = Array.from(new Set(recs.map(r => r.rec.plateau)));
+      const configMulti = uniqPlateaus.length > 1;
+      return recs.map(({ session: s, rec }) => {
+        const st = perPlateau[rec.plateau] || {};
+        const sDate = configMulti ? (st.date ?? null) : selected;
+        const sArrival = configMulti
+          ? (sDate ? (st.arrivalHour ?? null) : null)
+          : (arrivalHour ?? null);
         return {
           plateauKey: rec.plateau,
           slotType: rec.slotType,
           hours: rec.hours || 1,
-          date: selected,
-          arrivalHour: arrivalHour ?? null,
+          date: sDate,
+          arrivalHour: sArrival,
           cycloMode: rec.cycloMode,
           productType: s.projectType,
           method: s.method,
@@ -717,6 +735,17 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
         preferredDate: firstDate,
         arrivalHour: arrivalHour ?? null,
       });
+      const snapSessions: ConfirmationSessionSlot[] = sessionsData.map(s => {
+        const px = BOOK_PLATEAUX.find(x => x.k === s.plateauKey);
+        const h = s.cycloMode ? (s.cycloMode === 'halfH' ? 5 : 10) : (s.hours || 1);
+        return {
+          plateauKey: s.plateauKey,
+          plateauName: { fr: px?.fr ?? s.plateauKey, en: px?.en ?? s.plateauKey },
+          date: s.date,
+          arrivalHour: s.arrivalHour,
+          hours: h,
+        };
+      });
       saveConfirmation({
         mode: submitMode as ConfirmationMode,
         savedRef: result.reference ?? null,
@@ -727,6 +756,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
         rentalHours,
         plateaus,
         perPlateau: perPlateau as Record<string, unknown>,
+        sessions: snapSessions,
         contact: contact as unknown as Record<string, unknown>,
         total: priceBreakdown.total,
         rows: priceBreakdown.rows as unknown[],
@@ -822,7 +852,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
             const stHours = st.hours != null ? st.hours : (st.slotType==='hour' ? 1 : st.slotType==='half' ? 4 : 8);
             const stRentalHours = px && px.isCyclo ? ((st.cycloMode||'halfH')==='halfH' ? 5 : 10) : px && px.isVisite ? 1 : stHours;
             const stSelected = st.date || null; const stArrival = st.arrivalHour != null ? st.arrivalHour : 10;
-            return (<div><div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 md:gap-4 bg-white flex-wrap sticky top-0 z-10"><span className="edo-cell-label text-primary whitespace-nowrap">{lang==='fr'?'Plateau':'Stage'} {String(safeIdx+1).padStart(2,'0')} / {String(list.length).padStart(2,'0')}</span><span className="text-detail font-normal tracking-copy-tight text-foreground">{px ? px[lang] : k}</span><div className="flex gap-1.5 flex-wrap w-full md:w-auto md:ml-auto">{list.map((kk, i) => { const has = perPlateau[kk] && perPlateau[kk].date; const active = i === safeIdx; return (<button type="button" key={kk} onClick={()=>setDateIdx(i)} className={`${active ? 'bg-foreground text-white border-foreground' : has ? 'bg-primary text-white border-primary' : 'bg-white text-foreground border-border'} border px-2.5 py-1 cursor-pointer font-mono text-label tracking-ui min-w-7 text-center`}>{String(i+1).padStart(2,'0')}{has?' ✓':''}</button>); })}</div></div><Step2Date lang={lang} p={px} viewY={viewY} viewM={viewM} months={months} days={days} calCells={calCells} selected={stSelected} setSelected={(d: DateSelection)=>setSt({date:d})} arrivalHour={stArrival} setArrivalHour={(h: number)=>setSt({arrivalHour:h})} rentalHours={stRentalHours} isPast={isPast} nextMonth={nextMonth} prevMonth={prevMonth} refreshKey={availRefreshKey}/></div>);
+            return (<div><div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 md:gap-4 bg-white flex-wrap sticky top-0 z-10"><span className="edo-cell-label text-primary whitespace-nowrap">{lang==='fr'?'Plateau':'Stage'} {String(safeIdx+1).padStart(2,'0')} / {String(list.length).padStart(2,'0')}</span><span className="text-detail font-normal tracking-copy-tight text-foreground">{px ? px[lang] : k}</span><div className="flex gap-1.5 flex-wrap w-full md:w-auto md:ml-auto">{list.map((kk, i) => { const has = perPlateau[kk] && perPlateau[kk].date; const active = i === safeIdx; return (<button type="button" key={kk} onClick={()=>setDateIdx(i)} className={`${active ? 'bg-foreground text-white border-foreground' : has ? 'bg-primary text-white border-primary' : 'bg-white text-foreground border-border'} border px-2.5 py-1 cursor-pointer font-mono text-label tracking-ui min-w-7 text-center`}>{String(i+1).padStart(2,'0')}{has?' ✓':''}</button>); })}</div></div><Step2Date lang={lang} p={px} viewY={viewY} viewM={viewM} months={months} days={days} calCells={calCells} selected={stSelected} setSelected={(d: DateSelection)=>setSt({date:d, arrivalHour: st.arrivalHour ?? 10})} arrivalHour={stArrival} setArrivalHour={(h: number)=>setSt({arrivalHour:h})} rentalHours={stRentalHours} isPast={isPast} nextMonth={nextMonth} prevMonth={prevMonth} refreshKey={availRefreshKey}/></div>);
           })()}
         </div>
 
@@ -888,7 +918,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
           </div>
         )}
         {step>0 && (
-        <div className="border-t border-border flex flex-col md:flex-row md:items-stretch shrink-0 bg-white md:min-h-control">
+        <div className="border-t border-hairline flex flex-col md:flex-row md:items-stretch shrink-0 bg-white md:min-h-control">
           {(() => {
             const idx = STEPS.findIndex(s=>s.n===step); const isFirst = idx <= 0; const prevN = idx > 0 ? STEPS[idx-1].n : null; const nextN = idx > -1 && idx < STEPS.length-1 ? STEPS[idx+1].n : null;
             const dateList = plateaus && plateaus.length > 0 ? plateaus : (plateau ? [plateau] : []); const isMultiDate = step===6 && dateList.length > 1;

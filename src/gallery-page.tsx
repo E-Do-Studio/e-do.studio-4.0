@@ -224,6 +224,7 @@ const FilterCell = ({
 interface GalleryContentProps {
   lang: Lang;
   filtered: GalleryProject[];
+  loaded: boolean;
   resetFilters: () => void;
   onOpenLightbox: (projectId: number, imageIndex: number) => void;
 }
@@ -231,12 +232,13 @@ interface GalleryContentProps {
 const GalleryContent = ({
   lang,
   filtered,
+  loaded,
   resetFilters,
   onOpenLightbox,
 }: GalleryContentProps) => (
   <div className="min-h-0 overflow-y-auto bg-white edo-hairline md:col-start-2 md:col-span-4">
     <div className="flex flex-col [&>*:not(:last-child)]:border-b [&>*:not(:last-child)]:border-hairline">
-      {filtered.length === 0 ? (
+      {loaded && filtered.length === 0 ? (
         <EmptyState
           label={galleryPage.noResults[lang]}
           description={galleryPage.tryAnotherFilter[lang]}
@@ -661,6 +663,7 @@ const GalleryPageV3 = () => {
         <GalleryContent
           lang={lang}
           filtered={filtered}
+          loaded={strapiProjects !== null}
           resetFilters={resetFilters}
           onOpenLightbox={(projectId, imageIndex) =>
             setLightbox({ projectId, imageIndex })

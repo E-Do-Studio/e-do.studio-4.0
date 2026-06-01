@@ -20,7 +20,7 @@ const SocialLinksRow = ({ className }: SocialLinksRowProps) => {
   const { data } = useSocialLinks();
   const items: SocialLink[] = data ?? [];
   return (
-    <div className={cn('grid h-11 grid-cols-4 [&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-hairline', className)}>
+    <div className={cn('grid grid-cols-4 [&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-hairline', className)}>
       {items.map((s) => (
         <a
           key={s.k}

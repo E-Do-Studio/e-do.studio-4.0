@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { CellLabel, PageHeader, SocialIcon, buildMainNav, cn } from './ui';
+import { CellLabel, PageHeader, SocialLinksRow, buildMainNav, cn } from './ui';
 import { useDocumentMeta } from './lib/use-document-meta';
 import { useStructuredData } from './lib/use-structured-data';
 import { buildContactPageSchema, buildBreadcrumbSchema } from './lib/structured-data';
@@ -28,20 +28,6 @@ function parseMetroLabel(label: string): { line: string | null; name: string } {
   return { line: null, name: label };
 }
 
-interface SocialLinkEntry {
-  k: string;
-  label: string;
-  href: string;
-}
-
-
-const SOCIAL_LINKS: SocialLinkEntry[] = [
-  {k:'instagram',label:'IG',href:'https://www.instagram.com/edostudio/'},
-  {k:'linkedin', label:'LI',href:'https://www.linkedin.com/company/e-do/'},
-  {k:'facebook', label:'FB',href:'https://www.facebook.com/EdoStudioAgency/'},
-  {k:'tiktok', label:'TT',href:'https://www.tiktok.com/@edostudio'},
-];
-
 interface ContactRailProps {
   lang: Lang;
   contact: { data: ContactInfo | null; loading: boolean; error: Error | null };
@@ -58,7 +44,7 @@ const ContactRail = ({ lang, contact, hours, closures }: ContactRailProps & { cl
       <ClosuresSection lang={lang} closures={closures} className="md:row-[6/7]" />
       <PhoneSection lang={lang} contact={contact} className="md:row-[7/8]" />
       <div className="flex-1 md:hidden" />
-      <SocialGrid className="md:row-[8/9]" />
+      <SocialLinksRow className="h-12 border-t border-border md:row-[8/9] md:h-full md:border-t-0" />
     </aside>
   );
 };
@@ -240,23 +226,6 @@ const UnavailableNote = ({ lang }: { lang: Lang }) => (
   <span className="block font-mono text-micro uppercase tracking-meta text-muted-foreground opacity-55">
     {UNAVAILABLE[lang]} · offline
   </span>
-);
-
-const SocialGrid = ({ className }: { className?: string }) => (
-  <div className={cn('grid grid-cols-2 gap-hairline border-t border-border bg-border md:border-t-0', className)}>
-    {SOCIAL_LINKS.map((social) => (
-      <a
-        key={social.k}
-        href={social.href}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center justify-between bg-white px-6 py-4 text-foreground no-underline transition-colors hover:bg-muted"
-      >
-        <SocialIcon kind={social.k} size={12} />
-        <span className="font-mono text-micro tracking-meta">{social.label}</span>
-      </a>
-    ))}
-  </div>
 );
 
 interface ContactFormPanelProps {

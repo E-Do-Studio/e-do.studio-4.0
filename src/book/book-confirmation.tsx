@@ -161,7 +161,22 @@ const ConfirmedView = ({
             <div className="edo-cell-label text-muted-foreground mb-1">
               {isMultiPlateau ? booking.dates[lang] : booking.date[lang]}
             </div>
-            {snapshot.selected ? (
+            {snapshot.sessions && snapshot.sessions.length > 1 ? (
+              <ul className="flex flex-col gap-1 list-none p-0 m-0">
+                {snapshot.sessions.map((s, i) => (
+                  <li key={`${s.plateauKey}-${i}`} className="text-detail font-medium tracking-copy-tight">
+                    <span className="text-muted-foreground">{s.plateauName[lang]}</span>
+                    {' · '}
+                    {s.date
+                      ? `${s.date.d} ${months[s.date.m]} ${s.date.y}`
+                      : (snapshot.mode === 'quote' ? booking.notSet[lang] : '—')}
+                    {s.arrivalHour != null && (
+                      <> · {fmtTime(s.arrivalHour)}–{fmtTime(s.arrivalHour + s.hours)}</>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : snapshot.selected ? (
               <div className="text-cell font-medium tracking-headline">
                 {snapshot.selected.d} {months[snapshot.selected.m]} {snapshot.selected.y} ·{' '}
                 {fmtTime(snapshot.arrivalHour ?? 10)}–{fmtTime((snapshot.arrivalHour ?? 10) + (snapshot.rentalHours || 0))}
