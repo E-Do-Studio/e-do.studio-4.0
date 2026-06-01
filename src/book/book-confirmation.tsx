@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { usePageContext, SCREEN_TO_PATH } from '../router';
-import { PageHeader, buildMainNav, IconArrowRight } from '../ui';
+import { Button, PageHeader, buildMainNav, IconArrowRight } from '../ui';
 import { useDocumentMeta } from '../lib/use-document-meta';
 import { clearDraft } from '../lib/use-booking-draft';
 import { booking, bookPicker, common } from '../i18n/messages';
@@ -44,7 +44,7 @@ const ConfirmedView = ({
   onNewRequest,
 }: ConfirmedViewProps) => {
   const months = lang === 'fr' ? MONTHS_FR : MONTHS_EN;
-  const isMultiPlateau = snapshot.plateaus.filter(Boolean).length > 1;
+  const isMultiPlateau = (snapshot.slotIds || []).filter(Boolean).length > 1;
   const ref = useMemo(() => {
     if (snapshot.savedRef) return snapshot.savedRef;
     const prefix = snapshot.mode === 'quote' ? 'EDO-Q-' : snapshot.mode === 'booking' ? 'EDO-R-' : 'EDO-';
