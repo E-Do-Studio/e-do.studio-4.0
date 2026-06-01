@@ -80,7 +80,8 @@ const PROSE_CLASS =
   '[&_a]:text-foreground [&_a]:underline ' +
   '[&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 ' +
   '[&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 ' +
-  '[&_li]:my-1';
+  '[&_li]:my-1 ' +
+  '[&_video]:my-4 [&_video]:block [&_video]:w-full [&_video]:h-auto [&_video]:rounded';
 
 const StrapiSectionsRenderer = ({ sections, lang }: SectionRendererProps) => (
   <>
@@ -344,16 +345,13 @@ const LegalPage = () => {
             </div>
           )}
 
-          <div className="mt-8 flex justify-between items-center gap-5 font-mono text-label tracking-code uppercase text-muted-foreground">
-            <span>{legalPage.viewPrintArchive[lang]}</span>
-            <div className="flex gap-5">
-              <button onClick={() => window.print()} className="edo-focus-ring bg-transparent border-0 cursor-pointer text-foreground font-inherit tracking-inherit text-transform-inherit">
-                ↓ {legalPage.print[lang]}
-              </button>
-              <a href="mailto:contact@e-do.studio" className="edo-focus-ring text-foreground no-underline">
-                contact@e-do.studio
-              </a>
-            </div>
+          <div className="mt-8 flex justify-end items-center gap-5 font-mono text-label tracking-code uppercase text-muted-foreground">
+            <button onClick={() => window.print()} className="edo-focus-ring bg-transparent border-0 cursor-pointer text-foreground font-inherit tracking-inherit text-transform-inherit">
+              ↓ {legalPage.print[lang]}
+            </button>
+            <a href="mailto:contact@e-do.studio" className="edo-focus-ring text-foreground no-underline">
+              contact@e-do.studio
+            </a>
           </div>
 
         </div>

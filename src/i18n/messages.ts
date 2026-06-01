@@ -145,10 +145,6 @@ export const legalPage = {
     en: 'RCS Bobigny 891 710 857 · 69 boulevard Victor Hugo · 93400 Saint-Ouen-sur-Seine. All rights reserved.',
   } as B,
   backToHome: { fr: 'Retour accueil', en: 'Back to home' } as B,
-  viewPrintArchive: {
-    fr: 'Document consultable · Imprimable · Archivable',
-    en: 'Viewable · Printable · Archivable',
-  } as B,
   print: { fr: 'Imprimer', en: 'Print' } as B,
 };
 
@@ -210,7 +206,7 @@ export const home = {
     en: 'Professional photo and video studio in Paris',
   } as B,
   studioHeadlineLead: {
-    fr: 'Le studio qui fait tourner votre',
+    fr: 'Le studio qui alimente votre',
     en: 'The studio that powers your',
   } as B,
   studioHeadlineAccent: {

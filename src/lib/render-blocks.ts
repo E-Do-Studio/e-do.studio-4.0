@@ -20,8 +20,32 @@ export type InlineNode =
   | { type: 'text'; text: string; bold?: boolean; italic?: boolean; underline?: boolean; strikethrough?: boolean; code?: boolean }
   | { type: 'link'; url: string; children: InlineNode[] };
 
+// Strapi's blocks editor exposes a single "link" affordance, so editors attach
+// uploaded videos (.mp4/.mov/...) through it. Detect those URLs and play them
+// inline instead of rendering a hyperlink that downloads the file.
+const VIDEO_URL_RE = /\.(mp4|mov|webm|ogg|m4v)(?:\?.*)?$/i;
+function isVideoUrl(url: string): boolean {
+  return VIDEO_URL_RE.test(url);
+}
+
+function inlineToPlainText(nodes: InlineNode[]): string {
+  return nodes
+    .map((n) => (n.type === 'text' ? n.text : inlineToPlainText(n.children)))
+    .join('');
+}
+
 function renderInline(node: InlineNode, key: string | number): ReactNode {
   if (node.type === 'link') {
+    if (isVideoUrl(node.url)) {
+      return createElement('video', {
+        key,
+        src: node.url,
+        controls: true,
+        preload: 'metadata',
+        playsInline: true,
+        'aria-label': inlineToPlainText(node.children) || undefined,
+      });
+    }
     return createElement(
       'a',
       { key, href: node.url, target: '_blank', rel: 'noopener noreferrer' },

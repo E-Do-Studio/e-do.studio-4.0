@@ -1,4 +1,7 @@
 import React from 'react';
+import type { DiscoveryPost, Lang } from '../types';
+import { ResponsiveImage } from '../ui';
+import { VideoLoop } from '../ui/video-loop';
 
 type CoverTone = 'mono' | 'dark' | 'warm';
 
@@ -34,5 +37,42 @@ export const DiscoveryCover: React.FC<DiscoveryCoverProps> = ({ tone = 'mono', s
         {layout === 5 && <><rect x="0" y="0" width="200" height="300" fill={palette.b}/><path d="M200 0 L400 300 L200 300 Z" fill={palette.a}/></>}
       </svg>
     </div>
+  );
+};
+
+interface DiscoveryCoverMediaProps {
+  post: DiscoveryPost;
+  lang: Lang;
+  className: string;
+  sizes: string;
+  priority?: boolean;
+  seedOffset?: number;
+}
+
+// Wraps the cover decision: video (autoplay loop muet), image (responsive),
+// or procedural fallback when the post has no coverMedia. `seedOffset` keeps
+// the existing per-callsite SVG variety on the procedural branch.
+export const DiscoveryCoverMedia: React.FC<DiscoveryCoverMediaProps> = ({
+  post,
+  lang,
+  className,
+  sizes,
+  priority,
+  seedOffset = 1,
+}) => {
+  if (!post.coverUrl) {
+    return <DiscoveryCover tone={post.tone} seed={post.id + seedOffset} />;
+  }
+  if (post.coverMime?.startsWith('video/')) {
+    return <VideoLoop src={post.coverUrl} className={className} objectFit="cover" />;
+  }
+  return (
+    <ResponsiveImage
+      src={post.coverUrl}
+      alt={post.title[lang]}
+      sizes={sizes}
+      priority={priority}
+      className={className}
+    />
   );
 };

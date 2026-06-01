@@ -1,10 +1,10 @@
 import React from 'react';
 import type { DiscoveryPost, Lang } from '../types';
 import { ArticleMeta, CellBadge } from './shared';
-import { DiscoveryCover } from './discovery-cover';
+import { DiscoveryCoverMedia } from './discovery-cover';
 import { FilterChips } from './filter-chips';
 import { cn } from '../ui/cn';
-import { EmptyState, ResponsiveImage } from '../ui';
+import { EmptyState } from '../ui';
 import { cellBase, labelBase } from './styles';
 import { discoveryPage } from '../i18n/messages';
 
@@ -45,16 +45,13 @@ export const MorePostsCard: React.FC<MorePostsCardProps> = ({ posts, lang, onOpe
             className="edo-focus-ring group grid w-full cursor-pointer grid-cols-thumb-row items-center gap-3 border-0 border-b border-border bg-white px-cell pb-3.5 pt-3 text-left transition-colors hover:bg-muted"
           >
             <div className="relative aspect-square overflow-hidden">
-              {post.coverUrl ? (
-                <ResponsiveImage
-                  src={post.coverUrl}
-                  alt={post.title[lang]}
-                  sizes="80px"
-                  className="absolute inset-0 h-full w-full object-cover"
-                />
-              ) : (
-                <DiscoveryCover tone={post.tone} seed={post.id + 4} />
-              )}
+              <DiscoveryCoverMedia
+                post={post}
+                lang={lang}
+                sizes="80px"
+                seedOffset={4}
+                className="absolute inset-0 h-full w-full object-cover"
+              />
             </div>
             <div className="flex min-w-0 origin-left flex-col gap-1 transition-transform duration-200 ease-edo-out group-hover:scale-102">
               <ArticleMeta post={post} lang={lang} muted />
