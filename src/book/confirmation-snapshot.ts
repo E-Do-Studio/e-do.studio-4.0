@@ -11,7 +11,7 @@ export interface ConfirmationSessionSlot {
 }
 
 export interface ConfirmationSnapshot {
-  v: 2;
+  v: 3;
   ts: number;
   mode: ConfirmationMode;
   savedRef: string | null;
@@ -20,8 +20,8 @@ export interface ConfirmationSnapshot {
   selected: { y: number; m: number; d: number } | null;
   arrivalHour: number | null;
   rentalHours: number;
-  plateaus: string[];
-  perPlateau: Record<string, unknown>;
+  slotIds: string[];
+  slots: Record<string, unknown>;
   sessions: ConfirmationSessionSlot[];
   contact: Record<string, unknown>;
   total: number;
@@ -31,7 +31,7 @@ export interface ConfirmationSnapshot {
 
 export function saveConfirmation(snapshot: Omit<ConfirmationSnapshot, 'v' | 'ts'>): void {
   try {
-    const payload: ConfirmationSnapshot = { v: 2, ts: Date.now(), ...snapshot };
+    const payload: ConfirmationSnapshot = { v: 3, ts: Date.now(), ...snapshot };
     sessionStorage.setItem(KEY, JSON.stringify(payload));
   } catch {}
 }
@@ -41,7 +41,7 @@ export function loadConfirmation(): ConfirmationSnapshot | null {
     const raw = sessionStorage.getItem(KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as ConfirmationSnapshot;
-    if (parsed.v !== 2) return null;
+    if (parsed.v !== 3) { sessionStorage.removeItem(KEY); return null; }
     return parsed;
   } catch {
     return null;

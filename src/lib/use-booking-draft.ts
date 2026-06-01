@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 
 const DRAFT_KEY = 'edo-booking-draft';
-const DRAFT_VERSION = 1;
+const DRAFT_VERSION = 2;
 const DEBOUNCE_MS = 800;
 
 export interface BookingDraft {
@@ -13,8 +13,8 @@ export interface BookingDraft {
   activeSessionIdx: number;
   configApplied: boolean;
   plateau: string | null;
-  plateaus: string[];
-  perPlateau: Record<string, unknown>;
+  slotIds: string[];
+  slots: Record<string, unknown>;
   slotType: string;
   hours: number;
   cycloMode: string;
@@ -37,7 +37,7 @@ export function loadDraft(): BookingDraft | null {
     const raw = localStorage.getItem(DRAFT_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as BookingDraft;
-    if (parsed.v !== DRAFT_VERSION) return null;
+    if (parsed.v !== DRAFT_VERSION) { localStorage.removeItem(DRAFT_KEY); return null; }
     if (Date.now() - parsed.ts > MAX_AGE_MS) {
       localStorage.removeItem(DRAFT_KEY);
       return null;

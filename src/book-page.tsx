@@ -87,7 +87,8 @@ interface PostprodState {
   perView?: boolean;
 }
 
-interface PerPlateauState {
+interface SlotState {
+  plateauKey?: string;
   slotType?: string | null;
   hours?: number;
   cycloMode?: string | null;
@@ -97,7 +98,10 @@ interface PerPlateauState {
   postprod?: PostprodState;
   date?: DateSelection | null;
   arrivalHour?: number;
+  configSessionIdx?: number;
 }
+
+const slotIdFor = (plateauKey: string, sessionIdx: number) => `${plateauKey}#${sessionIdx}`;
 
 interface QuoteRow {
   lbl: string;
@@ -407,18 +411,24 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
     return draft ? draft.configApplied : false;
   });
   const [plateau, setPlateau] = useStateBook<string | null>(() => { if (draft) return draft.plateau; try { const pre = localStorage.getItem('edo-book-plateau'); if (pre) { localStorage.removeItem('edo-book-plateau'); return pre; } } catch(e){} return null; });
-  const [plateaus, setPlateaus] = useStateBook<string[]>(() => draft ? draft.plateaus : (plateau ? [plateau] : []));
-  const [perPlateau, setPerPlateau] = useStateBook<Record<string, PerPlateauState>>(() => {
-    if (draft) return draft.perPlateau as Record<string, PerPlateauState>;
+  const [slotIds, setSlotIds] = useStateBook<string[]>(() => draft ? draft.slotIds : (plateau ? [plateau] : []));
+  const [slots, setSlots] = useStateBook<Record<string, SlotState>>(() => {
+    if (draft) return draft.slots as Record<string, SlotState>;
     if (!plateau) return {};
     const px = BOOK_PLATEAUX.find(x => x.k === plateau);
-    return { [plateau]: { slotType: (px && px.isCyclo) ? null : 'hour', hours: 1, cycloMode: 'halfH', paint: false, kwh: 0 } };
+    return { [plateau]: { plateauKey: plateau, slotType: (px && px.isCyclo) ? null : 'hour', hours: 1, cycloMode: 'halfH', paint: false, kwh: 0, team: {}, postprod: {} } };
   });
   const togglePlateau = (k: string) => {
-    setPlateaus(prev => {
-      const next = prev.includes(k) ? prev.filter(x=>x!==k) : [...prev, k];
+    setSlotIds(prev => {
+      const isAdding = !prev.includes(k);
+      const next = isAdding ? [...prev, k] : prev.filter(x=>x!==k);
       setPlateau(next[0] || null);
-      if (!prev.includes(k)) { const px = BOOK_PLATEAUX.find(x=>x.k===k); setPerPlateau(p => ({...p, [k]: { slotType:'hour', hours:1, cycloMode:'halfH', paint:false, kwh:0, ...(px && px.isCyclo ? {slotType:null} : {}) } })); }
+      if (isAdding) {
+        const px = BOOK_PLATEAUX.find(x=>x.k===k);
+        setSlots(p => ({...p, [k]: { plateauKey: k, slotType: (px && px.isCyclo) ? null : 'hour', hours: 1, cycloMode: 'halfH', paint: false, kwh: 0, team: {}, postprod: {} }}));
+      } else {
+        setSlots(p => { const n = {...p}; delete n[k]; return n; });
+      }
       return next;
     });
   };
@@ -451,10 +461,10 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
   const [availRefreshKey, setAvailRefreshKey] = useStateBook(0);
   const saveDraft = useBookingDraftSaver(() => ({
     step, configGlobal, configSessions, activeSessionIdx, configApplied,
-    plateau, plateaus, perPlateau, slotType, hours, cycloMode, paint, kwh,
+    plateau, slotIds, slots, slotType, hours, cycloMode, paint, kwh,
     team, pp, contact: contact as unknown as Record<string, unknown>, selected, arrivalHour, dateIdx, viewY, viewM,
   }));
-  React.useEffect(saveDraft, [step, configGlobal, configSessions, activeSessionIdx, configApplied, plateau, plateaus, perPlateau, slotType, hours, cycloMode, paint, kwh, team, pp, contact, selected, arrivalHour, dateIdx, viewY, viewM, saveDraft]);
+  React.useEffect(saveDraft, [step, configGlobal, configSessions, activeSessionIdx, configApplied, plateau, slotIds, slots, slotType, hours, cycloMode, paint, kwh, team, pp, contact, selected, arrivalHour, dateIdx, viewY, viewM, saveDraft]);
   React.useEffect(() => {
     if (forcedStep == null) return;
     if (step !== forcedStep) setStep(forcedStep);
@@ -490,71 +500,54 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
   const p = BOOK_PLATEAUX.find(x=>x.k===plateau) || {k:'', fr:'—', en:'—', desc:{fr:'',en:''}, rates:{hour:0,half:0,full:0}, hdUnit:'half', fdUnit:'full'};
   const rentalHours = p.isCyclo ? (cycloMode==='halfH' ? 5 : 10) : p.isVisite ? 1 : (slotType==='hour' ? hours : (slotType==='half' ? Math.max(4,Math.min(7,hours)) : 8));
   const priceBreakdown = useMemoBook<PriceBreakdown>(()=>{
-    const keys = plateaus && plateaus.length > 0 ? plateaus : (plateau ? [plateau] : []);
+    const ids = slotIds && slotIds.length > 0 ? slotIds : (plateau ? [plateau] : []);
     const groups: QuoteGroup[] = [];
-    if (step === 0 && keys.length === 0) {
-      const previewRows: QuoteRow[] = [];
-      (configSessions || []).forEach((s, idx) => {
-        const valid = (s.projectType === 'cyclorama') || (s.projectType === 'ecom' && s.product && Number(s.quantity) > 0);
-        if (!valid) return;
-        const rec = recommendSession(s, configGlobal);
-        const px = BOOK_PLATEAUX.find(x => x.k === rec.plateau);
-        if (!px) return;
-        const sessionTag = (configSessions.length > 1) ? `${bookingMsg.session[lang]} ${String(idx+1).padStart(2,'0')} · ` : '';
-        if (px.isCyclo || rec.onRequest) { previewRows.push({ lbl: `${sessionTag}${px[lang]} · ${common.onRequest[lang]}`, amt: 0, onReq: true }); }
-        else if (rec.slotType === 'hour') { const h = rec.hours || 1; previewRows.push({ lbl: `${sessionTag}${px[lang]} · ${h}h`, amt: +(((px.rates.hour ?? 0) * h).toFixed(2)) }); }
-        else if (rec.slotType === 'half') { const hh = Math.max(4, Math.min(7, rec.hours || 4)); const amt = hh === 4 ? (px.rates.half ?? 0) : +(((px.rates.half ?? 0) * hh / 4).toFixed(2)); previewRows.push({ lbl: `${sessionTag}${px[lang]} · ${bookingMsg.halfDay[lang]} (${hh}h)`, amt }); }
-        else if (rec.slotType === 'full') {
-          const totalH = rec.hours || 8; const fullDays = Math.floor(totalH / 8); const extraH = totalH - fullDays * 8;
-          if (fullDays >= 1) { previewRows.push({ lbl: `${sessionTag}${px[lang]} · ${fullDays} ${lang==='fr'?(fullDays>1?'journées (8h)':'journée (8h)'):(fullDays>1?'days (8h)':'day (8h)')}`, amt: +(((px.rates.full ?? 0) * fullDays).toFixed(2)) }); }
-          if (extraH > 0) { const hourlyFromFull = (px.rates.full ?? 0) / 8; const amt = +(hourlyFromFull * extraH).toFixed(2); const lbl = extraH === 4 ? `${sessionTag}${px[lang]} · ${bookingMsg.halfDay[lang]} (4h)` : `${sessionTag}${px[lang]} · ${extraH}h`; previewRows.push({ lbl, amt }); }
-        }
-        if (s.postprod) { const pp = computePostprodPrice(s); if (pp) { previewRows.push({ lbl: `${sessionTag}${bookingMsg.postProduction[lang]} · ${pp.images} ${bookingMsg.images[lang]}`, amt: pp.amount, estimate: true, breakdown: pp.breakdown, perView: pp.perView }); } else { previewRows.push({ lbl: `${sessionTag}${bookingMsg.postProduction[lang]} · ${common.onRequest[lang]}`, amt: 0, onReq: true }); } }
-        if (s.postprodVideo) { previewRows.push({ lbl: `${sessionTag}${bookingMsg.videoEditing[lang]}`, amt: 0, onReq: true }); }
-      });
-      const total = previewRows.reduce((s,r)=>s+r.amt, 0);
-      return { rows: previewRows, groups: [], sharedRows: [], sharedSubtotal: 0, total, isPreview: true };
-    }
-    keys.forEach(k => {
-      const px = BOOK_PLATEAUX.find(x => x.k === k); if (!px) return;
-      const isLegacyOnly = !plateaus || plateaus.length === 0;
-      const st: PerPlateauState = isLegacyOnly ? { slotType, hours, cycloMode, paint, kwh, team } : (perPlateau[k] || { slotType:'hour', hours:1, cycloMode:'halfH', paint:false, kwh:0, team:{} });
+    const sameKeyCount: Record<string, number> = {};
+    ids.forEach(id => { const k = slots[id]?.plateauKey || id; sameKeyCount[k] = (sameKeyCount[k] || 0) + 1; });
+    const seenIdx: Record<string, number> = {};
+    ids.forEach(id => {
+      const st: SlotState = slots[id] || { plateauKey: id, slotType:'hour', hours:1, cycloMode:'halfH', paint:false, kwh:0, team:{}, postprod:{} };
+      const pk = st.plateauKey || id;
+      const px = BOOK_PLATEAUX.find(x => x.k === pk); if (!px) return;
+      const idx = (seenIdx[pk] = (seenIdx[pk] || 0) + 1);
+      const prefix = (sameKeyCount[pk] > 1) ? `${px[lang]} ${String(idx).padStart(2,'0')}` : px[lang];
       const pRows: QuoteRow[] = [];
       if (px.isCyclo) {
-        if (st.cycloMode==='halfH') pRows.push({lbl:bookingMsg.cyclo5h[lang], amt:px.rates.halfH ?? 0});
-        else if (st.cycloMode==='fullH') pRows.push({lbl:bookingMsg.cyclo10h[lang], amt:px.rates.fullH ?? 0});
-        else if (st.cycloMode==='editorial') pRows.push({lbl:bookingMsg.cyclo10hEditorial[lang], amt:0, onReq:true});
-        if (st.paint) pRows.push({lbl:bookingMsg.cycloPaint[lang], amt:CYCLO_EXTRAS.paint});
-        if ((st.kwh ?? 0) > 0) pRows.push({lbl:`${bookingMsg.electricity[lang]} · ${st.kwh} kWh`, amt:+((st.kwh ?? 0)*CYCLO_EXTRAS.kwh).toFixed(2)});
-      } else if (px.isVisite) { pRows.push({lbl:bookingMsg.studioVisit[lang], amt:0}); }
+        if (st.cycloMode==='halfH') pRows.push({lbl:`${prefix} · ${bookingMsg.cyclo5h[lang]}`, amt:px.rates.halfH ?? 0});
+        else if (st.cycloMode==='fullH') pRows.push({lbl:`${prefix} · ${bookingMsg.cyclo10h[lang]}`, amt:px.rates.fullH ?? 0});
+        else if (st.cycloMode==='editorial') pRows.push({lbl:`${prefix} · ${bookingMsg.cyclo10hEditorial[lang]}`, amt:0, onReq:true});
+        if (st.paint) pRows.push({lbl:`${prefix} · ${bookingMsg.cycloPaint[lang]}`, amt:CYCLO_EXTRAS.paint});
+        if ((st.kwh ?? 0) > 0) pRows.push({lbl:`${prefix} · ${bookingMsg.electricity[lang]} · ${st.kwh} kWh`, amt:+((st.kwh ?? 0)*CYCLO_EXTRAS.kwh).toFixed(2)});
+      } else if (px.isVisite) { pRows.push({lbl:`${prefix} · ${bookingMsg.studioVisit[lang]}`, amt:0}); }
       else {
         const h = st.hours || 1;
-        if (st.slotType==='hour') pRows.push({lbl:`${px[lang]} · ${h}h`, amt:(px.rates.hour ?? 0)*h});
-        else if (st.slotType==='half') { const hh = Math.max(4, Math.min(7, h)); const amt = hh===4 ? (px.rates.half ?? 0) : +(((px.rates.half ?? 0) * hh / 4).toFixed(2)); pRows.push({lbl:`${px[lang]} · ${bookingMsg.halfDay[lang]} (${hh}h)`, amt}); }
+        if (st.slotType==='hour') pRows.push({lbl:`${prefix} · ${h}h`, amt:(px.rates.hour ?? 0)*h});
+        else if (st.slotType==='half') { const hh = Math.max(4, Math.min(7, h)); const amt = hh===4 ? (px.rates.half ?? 0) : +(((px.rates.half ?? 0) * hh / 4).toFixed(2)); pRows.push({lbl:`${prefix} · ${bookingMsg.halfDay[lang]} (${hh}h)`, amt}); }
         else { const totalH = h || 8; const fullDays = Math.floor(totalH / 8); const extraH = totalH - fullDays * 8;
-          if (fullDays > 0) { pRows.push({ lbl: `${px[lang]} · ${fullDays} ${lang==='fr'?(fullDays>1?'journées (8h)':'journée (8h)'):(fullDays>1?'days (8h)':'day (8h)')}`, amt: +(((px.rates.full ?? 0) * fullDays).toFixed(2)) }); }
-          if (extraH > 0) { const hourlyFromFull = (px.rates.full ?? 0) / 8; const extraAmt = +(hourlyFromFull * extraH).toFixed(2); if (extraH === 4) { pRows.push({lbl:`${px[lang]} · ${bookingMsg.halfDay[lang]} (4h)`, amt:extraAmt}); } else { pRows.push({lbl:`${px[lang]} · ${extraH}h ${bookingMsg.proRataDay[lang]}`, amt:extraAmt}); } }
+          if (fullDays > 0) { pRows.push({ lbl: `${prefix} · ${fullDays} ${lang==='fr'?(fullDays>1?'journées (8h)':'journée (8h)'):(fullDays>1?'days (8h)':'day (8h)')}`, amt: +(((px.rates.full ?? 0) * fullDays).toFixed(2)) }); }
+          if (extraH > 0) { const hourlyFromFull = (px.rates.full ?? 0) / 8; const extraAmt = +(hourlyFromFull * extraH).toFixed(2); if (extraH === 4) { pRows.push({lbl:`${prefix} · ${bookingMsg.halfDay[lang]} (4h)`, amt:extraAmt}); } else { pRows.push({lbl:`${prefix} · ${extraH}h ${bookingMsg.proRataDay[lang]}`, amt:extraAmt}); } }
         }
       }
-      const plateauRentalHours = px.isCyclo ? (st.cycloMode === 'halfH' ? 5 : 10) : px.isVisite ? 1 : (st.slotType === 'hour' ? (st.hours||1) : st.slotType === 'half' ? Math.max(4,Math.min(7,st.hours||4)) : (st.hours||8));
-      const plateauTeam = st.team || {};
-      EQUIPE.forEach(e=>{ const val = plateauTeam[e.k]; if (!val) return; if (e.unit === 'hour') { if (typeof val === 'number' && val>0) { const amt = +(e.price * plateauRentalHours * val).toFixed(2); pRows.push({lbl:`${e[lang]} · ${val} × ${plateauRentalHours}h`, amt}); } } else { if (val===true) pRows.push({lbl:`${e[lang]} · ${common.onRequest[lang]}`, amt:0, onReq:true}); } });
-      const plateauPostprod = st.postprod || {};
-      if (plateauPostprod.enabled) {
-        if ((plateauPostprod.amount ?? 0) > 0) { pRows.push({ lbl: `${bookingMsg.postProduction[lang]} · ${plateauPostprod.images ?? 0} ${bookingMsg.images[lang]}`, amt: plateauPostprod.amount ?? 0, estimate: true, breakdown: plateauPostprod.breakdown, perView: plateauPostprod.perView }); }
-        else { pRows.push({ lbl: `${bookingMsg.postProduction[lang]} · ${common.onRequest[lang]}`, amt: 0, onReq: true }); }
-        if (plateauPostprod.video) { pRows.push({ lbl: bookingMsg.videoEditing[lang], amt: 0, onReq: true }); }
+      const slotRentalHours = px.isCyclo ? (st.cycloMode === 'halfH' ? 5 : 10) : px.isVisite ? 1 : (st.slotType === 'hour' ? (st.hours||1) : st.slotType === 'half' ? Math.max(4,Math.min(7,st.hours||4)) : (st.hours||8));
+      const slotTeam = st.team || {};
+      EQUIPE.forEach(e=>{ const val = slotTeam[e.k]; if (!val) return; if (e.unit === 'hour') { if (typeof val === 'number' && val>0) { const amt = +(e.price * slotRentalHours * val).toFixed(2); pRows.push({lbl:`${e[lang]} · ${val} × ${slotRentalHours}h`, amt}); } } else { if (val===true) pRows.push({lbl:`${e[lang]} · ${common.onRequest[lang]}`, amt:0, onReq:true}); } });
+      const slotPostprod = st.postprod || {};
+      if (slotPostprod.enabled) {
+        const ppLbl = sameKeyCount[pk] > 1 ? `${prefix} · ${bookingMsg.postProduction[lang]}` : bookingMsg.postProduction[lang];
+        if ((slotPostprod.amount ?? 0) > 0) { pRows.push({ lbl: `${ppLbl} · ${slotPostprod.images ?? 0} ${bookingMsg.images[lang]}`, amt: slotPostprod.amount ?? 0, estimate: true, breakdown: slotPostprod.breakdown, perView: slotPostprod.perView }); }
+        else { pRows.push({ lbl: `${ppLbl} · ${common.onRequest[lang]}`, amt: 0, onReq: true }); }
+        if (slotPostprod.video) { pRows.push({ lbl: sameKeyCount[pk] > 1 ? `${prefix} · ${bookingMsg.videoEditing[lang]}` : bookingMsg.videoEditing[lang], amt: 0, onReq: true }); }
       }
       const subtotal = pRows.reduce((s,r)=>s+r.amt, 0);
-      groups.push({plateauKey:k, plateauName:px[lang], rows:pRows, subtotal});
+      groups.push({plateauKey:pk, plateauName:px[lang], rows:pRows, subtotal});
     });
       const sharedRows: QuoteRow[] = [];
     const sharedSubtotal = sharedRows.reduce((s,r)=>s+r.amt, 0);
-    const plateauTotal = groups.reduce((s,g)=>s+g.subtotal, 0);
-    const total = plateauTotal + sharedSubtotal;
+    const slotsTotal = groups.reduce((s,g)=>s+g.subtotal, 0);
+    const total = slotsTotal + sharedSubtotal;
     const flatRows = [...groups.flatMap(g => g.rows), ...sharedRows];
     return { rows: flatRows, groups, sharedRows, sharedSubtotal, total };
-  }, [plateau, plateaus, perPlateau, slotType, hours, cycloMode, paint, kwh, team, pp, lang, rentalHours, step, configSessions, configGlobal]);
+  }, [plateau, slotIds, slots, lang]);
   const calCells = useMemoBook<(number | null)[]>(()=>{ const first = new Date(viewY, viewM, 1); const dow = (first.getDay() + 6) % 7; const ndays = new Date(viewY, viewM+1, 0).getDate(); const arr: (number | null)[] = []; for (let i=0;i<dow;i++) arr.push(null); for (let d=1; d<=ndays; d++) arr.push(d); while (arr.length % 7) arr.push(null); return arr; }, [viewY, viewM]);
   const nextMonth = () => { let m = viewM+1, y = viewY; if (m>11) { m=0; y++; } setViewM(m); setViewY(y); };
   const prevMonth = () => { let m = viewM-1, y = viewY; if (m<0) { m=11; y--; } setViewM(m); setViewY(y); };
@@ -578,10 +571,10 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
   };
   const canNext = () => {
     if (step===0) return (configSessions || []).length > 0 && configSessions.every(isSessionValid);
-    if (step===1) return (plateaus && plateaus.length > 0) || !!plateau;
+    if (step===1) return (slotIds && slotIds.length > 0) || !!plateau;
     if (step===2) return true;
     if (step===5) return contactValid();
-    if (step===6) { const list = plateaus && plateaus.length > 0 ? plateaus : (plateau ? [plateau] : []); if (list.length <= 1) return !!selected; return list.every(k => perPlateau[k] && perPlateau[k].date && perPlateau[k].arrivalHour != null); }
+    if (step===6) { const list = slotIds && slotIds.length > 0 ? slotIds : (plateau ? [plateau] : []); if (list.length <= 1) return !!selected; return list.every(id => slots[id] && slots[id].date && slots[id].arrivalHour != null); }
     return true;
   };
   const canQuote = () => contactValid();
@@ -592,36 +585,65 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
     {n:1, fr:'Plateau', en:'Stage'}, {n:2, fr:'Créneau', en:'Slot'}, {n:3, fr:'Équipe', en:'Team'}, {n:4, fr:'Post-prod', en:'Post-prod'}, {n:5, fr:'Coordonnées', en:'Contact'}, {n:6, fr:'Date', en:'Date'},
   ];
   const seedFromConfig = () => {
-    const sessions = configSessions.filter(s => (s.projectType === 'cyclorama') || (s.projectType === 'ecom' && s.product && Number(s.quantity) > 0));
-    if (sessions.length === 0) return null;
-    const recs = sessions.map(s => ({ session: s, ...recommendSession(s, configGlobal) }));
-    const proj = recommendProjectLevel(sessions, configGlobal);
-    const pKeys = recs.map(r => r.plateau);
-    const uniqPlateaus = Array.from(new Set(pKeys));
-    setPlateaus(uniqPlateaus);
-    const pp2: Record<string, PerPlateauState> = {};
-    recs.forEach(r => {
-      const existing = pp2[r.plateau];
-      const ppPrice = r.session.postprod ? computePostprodPrice(r.session) : null;
-      const sessPP = { enabled: !!r.session.postprod, video: !!r.session.postprodVideo, amount: ppPrice ? ppPrice.amount : 0, images: ppPrice ? ppPrice.images : 0, breakdown: ppPrice ? ppPrice.breakdown : [], perView: ppPrice ? !!ppPrice.perView : false };
-      if (existing) {
-        if (r.slotType === 'full' || existing.slotType === 'full') { existing.slotType = 'full'; existing.hours = Math.max(existing.hours||8, r.hours||8); }
-        else if (r.slotType === 'half' || existing.slotType === 'half') { existing.slotType = 'half'; existing.hours = Math.max(existing.hours||4, r.hours||4); }
-        else { existing.hours = (existing.hours||1) + (r.hours||1); }
-        existing.postprod = existing.postprod || sessPP.enabled ? { enabled: existing.postprod?.enabled || sessPP.enabled, video: existing.postprod?.video || sessPP.video, amount: (existing.postprod?.amount || 0) + sessPP.amount, images: (existing.postprod?.images || 0) + sessPP.images, breakdown: [...(existing.postprod?.breakdown || []), ...sessPP.breakdown], perView: existing.postprod?.perView || sessPP.perView } : {};
-      } else {
-        const pxInfo = BOOK_PLATEAUX.find(x => x.k === r.plateau); const isCyclo = !!(pxInfo && pxInfo.isCyclo);
-        const teamCopy = {...(proj.team || {})}; if (isCyclo) { delete teamCopy.styliste_op; delete teamCopy.operateur; }
-        pp2[r.plateau] = { slotType: r.slotType || 'hour', hours: r.hours || 1, cycloMode: r.cycloMode || 'halfH', paint: false, kwh: 0, team: teamCopy, postprod: sessPP.enabled ? sessPP : {} };
-      }
+    const validRecs: { session: BookingSession; sessionIdx: number; rec: Recommendation }[] = [];
+    configSessions.forEach((s, idx) => {
+      const valid = (s.projectType === 'cyclorama') || (s.projectType === 'ecom' && s.product && Number(s.quantity) > 0);
+      if (!valid) return;
+      validRecs.push({ session: s, sessionIdx: idx, rec: recommendSession(s, configGlobal) });
     });
-    setPerPlateau(pp2);
-    const firstRec = recs[0];
+    if (validRecs.length === 0) return null;
+    const sessions = validRecs.map(v => v.session);
+    const proj = recommendProjectLevel(sessions, configGlobal);
+    setSlots(prev => {
+      const next: Record<string, SlotState> = {};
+      const prevBySessionIdx = new Map<number, SlotState>();
+      Object.values(prev).forEach(s => { if (s && s.configSessionIdx != null) prevBySessionIdx.set(s.configSessionIdx, s); });
+      validRecs.forEach(({ session, sessionIdx, rec }) => {
+        const id = slotIdFor(rec.plateau, sessionIdx);
+        const pxInfo = BOOK_PLATEAUX.find(x => x.k === rec.plateau);
+        const isCyclo = !!(pxInfo && pxInfo.isCyclo);
+        const teamCopy = { ...(proj.team || {}) };
+        if (isCyclo) { delete teamCopy.styliste_op; delete teamCopy.operateur; }
+        const ppPrice = session.postprod ? computePostprodPrice(session) : null;
+        const sessPP: PostprodState = session.postprod ? {
+          enabled: true,
+          video: !!session.postprodVideo,
+          amount: ppPrice ? ppPrice.amount : 0,
+          images: ppPrice ? ppPrice.images : 0,
+          breakdown: ppPrice ? ppPrice.breakdown : [],
+          perView: ppPrice ? !!ppPrice.perView : false,
+        } : {};
+        // Preserve user customizations by session index — survives slotId change
+        // when a session is retargeted to a different plateau.
+        const preserved = prev[id] ?? prevBySessionIdx.get(sessionIdx);
+        // For cyclo plateaus, drop styliste_op/operateur from preserved team
+        // (they don't apply on cyclorama).
+        const preservedTeam = preserved?.team ? { ...preserved.team } : null;
+        if (preservedTeam && isCyclo) { delete preservedTeam.styliste_op; delete preservedTeam.operateur; }
+        next[id] = {
+          plateauKey: rec.plateau,
+          slotType: rec.slotType || 'hour',
+          hours: rec.hours || 1,
+          cycloMode: rec.cycloMode || 'halfH',
+          paint: preserved?.paint ?? false,
+          kwh: preserved?.kwh ?? 0,
+          team: preservedTeam ?? teamCopy,
+          postprod: sessPP,
+          date: preserved?.date ?? null,
+          arrivalHour: preserved?.arrivalHour,
+          configSessionIdx: sessionIdx,
+        };
+      });
+      return next;
+    });
+    const newIds = validRecs.map(v => slotIdFor(v.rec.plateau, v.sessionIdx));
+    setSlotIds(newIds);
+    const firstRec = validRecs[0].rec;
     setPlateau(firstRec.plateau);
     if (firstRec.cycloMode) setCycloMode(firstRec.cycloMode);
     if (firstRec.slotType) { setSlotType(firstRec.slotType); setHours(firstRec.hours); }
     setTeam(proj.team); setPp({});
-    return { sessions, recs, proj };
+    return { sessions, recs: validRecs.map(v => ({ session: v.session, ...v.rec })), proj };
   };
   const applyConfig = () => {
     const seeded = seedFromConfig(); if (!seeded) return;
@@ -644,71 +666,63 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
     setConfigApplied(true);
     goToStep(2, 'config');
   };
-  const skipConfig = () => { setConfigApplied(false); goToStep(1, 'manual'); };
-  React.useEffect(() => { if (!configApplied) return; seedFromConfig(); }, [configSessions, configGlobal, configApplied]);
+  const skipConfig = () => {
+    setConfigApplied(false);
+    setSlotIds([]);
+    setSlots({});
+    setPlateau(null);
+    goToStep(1, 'manual');
+  };
+  React.useEffect(() => {
+    // Auto-seed slots from configurator state when:
+    // - the user is actively editing on step 0 (live preview), OR
+    // - the user has applied the configurator (configApplied).
+    // In any other situation (manual flow, forced manual), do NOT auto-seed —
+    // would clobber the user's manual selections.
+    if (forceManual) return;
+    if (!configApplied && step !== 0) return;
+    const hasValid = configSessions.some(s => (s.projectType === 'cyclorama') || (s.projectType === 'ecom' && s.product && Number(s.quantity) > 0));
+    if (!hasValid) return;
+    seedFromConfig();
+  }, [configSessions, configGlobal, configApplied, step, forceManual]);
   const contentScrollRef = React.useRef<HTMLFormElement | null>(null);
   const innerScrollRef = React.useRef<HTMLDivElement | null>(null);
   React.useEffect(() => { if (contentScrollRef.current) contentScrollRef.current.scrollTop = 0; if (innerScrollRef.current) innerScrollRef.current.scrollTop = 0; }, [step, dateIdx]);
   React.useEffect(() => { if (step === 6) setDateIdx(0); }, [step]);
 
   const buildSessionsData = useCallbackBook((): BookingSessionData[] => {
-    const keys = plateaus && plateaus.length > 0 ? plateaus : (plateau ? [plateau] : []);
-    const isMulti = keys.length > 1;
-    if (configApplied && configSessions.length > 0) {
-      const valid = configSessions.filter(s => s.projectType === 'cyclorama' || (s.projectType === 'ecom' && s.product && Number(s.quantity) > 0));
-      const recs = valid.map(s => ({ session: s, rec: recommendSession(s, configGlobal) }));
-      const uniqPlateaus = Array.from(new Set(recs.map(r => r.rec.plateau)));
-      const configMulti = uniqPlateaus.length > 1;
-      return recs.map(({ session: s, rec }) => {
-        const st = perPlateau[rec.plateau] || {};
-        const sDate = configMulti ? (st.date ?? null) : selected;
-        const sArrival = configMulti
-          ? (sDate ? (st.arrivalHour ?? null) : null)
-          : (arrivalHour ?? null);
-        return {
-          plateauKey: rec.plateau,
-          slotType: rec.slotType,
-          hours: rec.hours || 1,
-          date: sDate,
-          arrivalHour: sArrival,
-          cycloMode: rec.cycloMode,
-          productType: s.projectType,
-          method: s.method,
-          submethod: s.submethod,
-          media: s.media || [],
-          views: s.views || [],
-          viewsCount: Number(s.viewsCount) || 0,
-          quantity: Number(s.quantity) || 0,
-          postprodEnabled: !!s.postprod,
-          postprodVideo: !!s.postprodVideo,
-        };
-      });
-    }
-    return keys.map(k => {
-      const st = perPlateau[k] || {};
+    const ids = slotIds && slotIds.length > 0 ? slotIds : (plateau ? [plateau] : []);
+    const isMulti = ids.length > 1;
+    return ids.map(id => {
+      const st = slots[id] || {};
+      const pk = st.plateauKey || id;
       const stDate = isMulti ? (st.date ?? null) : selected;
       const stArrival = isMulti
         ? (stDate ? (st.arrivalHour != null ? st.arrivalHour : 10) : null)
         : (arrivalHour ?? null);
+      const cfgIdx = st.configSessionIdx;
+      const session = (configApplied && cfgIdx != null) ? configSessions[cfgIdx] : null;
+      const px = BOOK_PLATEAUX.find(x => x.k === pk);
+      const manualProductType = px?.isCyclo ? 'cyclorama' : null;
       return {
-        plateauKey: k,
+        plateauKey: pk,
         slotType: st.slotType ?? 'hour',
         hours: st.hours || 1,
         date: stDate,
         arrivalHour: stArrival,
         cycloMode: st.cycloMode ?? null,
-        productType: configGlobal.projectType || null,
-        method: null,
-        submethod: null,
-        media: [],
-        views: [],
-        viewsCount: 0,
-        quantity: Number(contact.quantiteArticles) || 0,
-        postprodEnabled: !!(st.postprod as PostprodState)?.enabled,
-        postprodVideo: !!(st.postprod as PostprodState)?.video,
+        productType: session?.projectType ?? manualProductType,
+        method: session?.method ?? null,
+        submethod: session?.submethod ?? null,
+        media: session?.media ?? [],
+        views: session?.views ?? [],
+        viewsCount: Number(session?.viewsCount) || 0,
+        quantity: session ? Number(session.quantity) || 0 : (Number(contact.quantiteArticles) || 0),
+        postprodEnabled: session ? !!session.postprod : !!st.postprod?.enabled,
+        postprodVideo: session ? !!session.postprodVideo : !!st.postprod?.video,
       };
     });
-  }, [plateaus, plateau, perPlateau, configApplied, configSessions, configGlobal, contact.quantiteArticles, selected, arrivalHour]);
+  }, [slotIds, plateau, slots, configApplied, configSessions, configGlobal, contact.quantiteArticles, selected, arrivalHour]);
 
   const handleSubmit = useCallbackBook(async (submitMode: 'quote' | 'booking' | 'request') => {
     if (!runContactValidation()) return;
@@ -718,9 +732,9 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
     try {
       const sessionsData = buildSessionsData();
       const firstDate = selected || (() => {
-        const keys = plateaus && plateaus.length > 0 ? plateaus : [];
-        for (const k of keys) {
-          const st = perPlateau[k];
+        const ids = slotIds && slotIds.length > 0 ? slotIds : [];
+        for (const id of ids) {
+          const st = slots[id];
           if (st?.date) return st.date;
         }
         return null;
@@ -754,8 +768,8 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
         selected: firstDate,
         arrivalHour: arrivalHour ?? null,
         rentalHours,
-        plateaus,
-        perPlateau: perPlateau as Record<string, unknown>,
+        slotIds,
+        slots: slots as Record<string, unknown>,
         sessions: snapSessions,
         contact: contact as unknown as Record<string, unknown>,
         total: priceBreakdown.total,
@@ -774,7 +788,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
     } finally {
       setSaving(false);
     }
-  }, [buildSessionsData, selected, plateaus, perPlateau, contact, configGlobal, priceBreakdown, arrivalHour, lang, p, rentalHours, navigate]);
+  }, [buildSessionsData, selected, slotIds, slots, contact, configGlobal, priceBreakdown, arrivalHour, lang, p, rentalHours, navigate]);
 
   return (
     <div className="edo-page-enter grid w-full edo-hairline md:h-full md:overflow-hidden md:grid-cols-book md:grid-rows-app">
@@ -825,7 +839,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
               <span className="text-foreground">{bookingMsg.letUsGuide[lang]}</span>
             </span>
             <div className="flex items-stretch border-t border-hairline md:border-t-0 md:flex-none md:w-1/2">
-              <button type="button" onClick={()=>{ setPlateau(null); setPlateaus([]); setPerPlateau({}); setSlotType('hour'); setHours(1); setCycloMode('halfH'); setPaint(false); setKwh(0); setTeam({}); setPp({}); setSelected(null); goToStep(1, 'manual'); }}
+              <button type="button" onClick={()=>{ setPlateau(null); setSlotIds([]); setSlots({}); setSlotType('hour'); setHours(1); setCycloMode('halfH'); setPaint(false); setKwh(0); setTeam({}); setPp({}); setSelected(null); goToStep(1, 'manual'); }}
                 className="edo-focus-ring flex-1 bg-transparent border-l border-hairline px-5 py-3 md:py-0 cursor-pointer font-mono text-micro tracking-code uppercase text-foreground whitespace-nowrap leading-normal inline-flex items-center justify-center transition-colors duration-150 hover:bg-white">
                 ↻ {common.reset[lang]}
               </button>
@@ -837,22 +851,32 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
           </div>
         )}
         <div ref={innerScrollRef} className="flex-1 overflow-y-auto">
-          {step===0 && <Step0Configurator lang={lang} global={configGlobal} setGlobal={setConfigGlobal} sessions={configSessions} setSessions={setConfigSessions} activeIdx={activeSessionIdx} setActiveIdx={setActiveSessionIdx} onApply={applyConfig} onSkip={skipConfig} onReset={()=>{ setPlateau(null); setPlateaus([]); setPerPlateau({}); setSlotType('hour'); setHours(1); setCycloMode('halfH'); setPaint(false); setKwh(0); setTeam({}); setPp({}); setSelected(null); setConfigApplied(false); }}/>}
-          {step===1 && <Step1Plateau lang={lang} plateau={plateau} setPlateau={setPlateau} plateaus={plateaus} togglePlateau={togglePlateau} setCycloMode={setCycloMode} setSlotType={setSlotType} setHours={setHours} onConfigurator={()=>goToStep(0, 'config')}/>}
-          {step===2 && <MultiPlateauStep lang={lang} plateaus={plateaus.length?plateaus:(plateau?[plateau]:[])} perPlateau={perPlateau} setPerPlateau={setPerPlateau} fallback={{slotType,hours,cycloMode,setSlotType,setHours,setCycloMode}} topBanner={(() => { const list = plateaus.length?plateaus:(plateau?[plateau]:[]); const allVisite = list.length>0 && list.every(k => BOOK_PLATEAUX.find(x=>x.k===k)?.isVisite); if (allVisite) return null; return (<div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local"><span className="edo-cell-label text-primary whitespace-nowrap">02 · {bookingMsg.rentalDuration[lang]}</span><span className="font-mono text-label tracking-caption text-muted-foreground">{list.length > 1 ? bookingMsg.chooseDurationEach[lang] : bookingMsg.chooseDurationSingle[lang]}</span></div>); })()} renderOne={(px: AnyProps, st: AnyProps, setSt: (patch: AnyProps) => void) => (<Step3Slot lang={lang} p={px} slotType={st.slotType||'hour'} setSlotType={(v: string)=>setSt({slotType:v})} hours={st.hours||1} setHours={(v: number)=>setSt({hours:v})} cycloMode={st.cycloMode||'halfH'} setCycloMode={(v: string)=>setSt({cycloMode:v})}/>)}/>}
-          {step===3 && <MultiPlateauStep lang={lang} plateaus={plateaus.length?plateaus:(plateau?[plateau]:[])} perPlateau={perPlateau} setPerPlateau={setPerPlateau} fallback={{team,setTeam}} topBanner={<div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local"><span className="edo-cell-label text-primary whitespace-nowrap">03 · {bookingMsg.teamOptional[lang]}</span></div>} renderOne={(px: AnyProps, st: AnyProps, setSt: (patch: AnyProps) => void) => (<Step5Team lang={lang} p={px} team={st.team || {}} configSessions={configSessions} setTeam={(updater: any) => { const next = typeof updater === 'function' ? updater(st.team || {}) : updater; setSt({team: next}); }}/>)}/>}
-          {step===4 && <MultiPlateauStep lang={lang} plateaus={plateaus.length?plateaus:(plateau?[plateau]:[])} perPlateau={perPlateau} setPerPlateau={setPerPlateau} fallback={{postprod:{},setPostprod:()=>{}}} topBanner={<div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local"><span className="edo-cell-label text-primary whitespace-nowrap">04 · {bookingMsg.postProdOptional[lang]}</span></div>} renderOne={(px: AnyProps, st: AnyProps, setSt: (patch: AnyProps) => void) => (<Step6Postprod lang={lang} plateauKey={px && px.k} postprod={st.postprod || {}} setPostprod={(v: AnyProps) => setSt({postprod: v})}/>)}/>}
+          {step===0 && <Step0Configurator lang={lang} global={configGlobal} setGlobal={setConfigGlobal} sessions={configSessions} setSessions={setConfigSessions} activeIdx={activeSessionIdx} setActiveIdx={setActiveSessionIdx} onApply={applyConfig} onSkip={skipConfig} onReset={()=>{ setPlateau(null); setSlotIds([]); setSlots({}); setSlotType('hour'); setHours(1); setCycloMode('halfH'); setPaint(false); setKwh(0); setTeam({}); setPp({}); setSelected(null); setConfigApplied(false); }}/>}
+          {step===1 && <Step1Plateau lang={lang} plateau={plateau} setPlateau={setPlateau} plateaus={slotIds} togglePlateau={togglePlateau} setCycloMode={setCycloMode} setSlotType={setSlotType} setHours={setHours} onConfigurator={()=>goToStep(0, 'config')}/>}
+          {step===2 && <MultiPlateauStep lang={lang} slotIds={slotIds.length?slotIds:(plateau?[plateau]:[])} slots={slots} setSlots={setSlots} fallback={{slotType,hours,cycloMode,setSlotType,setHours,setCycloMode}} topBanner={(() => { const list = slotIds.length?slotIds:(plateau?[plateau]:[]); const allVisite = list.length>0 && list.every(id => { const pk = slots[id]?.plateauKey || id; return BOOK_PLATEAUX.find(x=>x.k===pk)?.isVisite; }); if (allVisite) return null; return (<div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local"><span className="edo-cell-label text-primary whitespace-nowrap">02 · {bookingMsg.rentalDuration[lang]}</span><span className="font-mono text-label tracking-caption text-muted-foreground">{list.length > 1 ? bookingMsg.chooseDurationEach[lang] : bookingMsg.chooseDurationSingle[lang]}</span></div>); })()} renderOne={(px: AnyProps, st: AnyProps, setSt: (patch: AnyProps) => void) => (<Step3Slot lang={lang} p={px} slotType={st.slotType||'hour'} setSlotType={(v: string)=>setSt({slotType:v})} hours={st.hours||1} setHours={(v: number)=>setSt({hours:v})} cycloMode={st.cycloMode||'halfH'} setCycloMode={(v: string)=>setSt({cycloMode:v})}/>)}/>}
+          {step===3 && <MultiPlateauStep lang={lang} slotIds={slotIds.length?slotIds:(plateau?[plateau]:[])} slots={slots} setSlots={setSlots} fallback={{team,setTeam}} topBanner={<div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local"><span className="edo-cell-label text-primary whitespace-nowrap">03 · {bookingMsg.teamOptional[lang]}</span></div>} renderOne={(px: AnyProps, st: AnyProps, setSt: (patch: AnyProps) => void) => (<Step5Team lang={lang} p={px} team={st.team || {}} configSessions={configSessions} setTeam={(updater: any) => { const next = typeof updater === 'function' ? updater(st.team || {}) : updater; setSt({team: next}); }}/>)}/>}
+          {step===4 && <MultiPlateauStep lang={lang} slotIds={slotIds.length?slotIds:(plateau?[plateau]:[])} slots={slots} setSlots={setSlots} fallback={{postprod:{},setPostprod:()=>{}}} topBanner={<div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local"><span className="edo-cell-label text-primary whitespace-nowrap">04 · {bookingMsg.postProdOptional[lang]}</span></div>} renderOne={(px: AnyProps, st: AnyProps, setSt: (patch: AnyProps) => void) => (<Step6Postprod lang={lang} plateauKey={px && px.k} postprod={st.postprod || {}} setPostprod={(v: AnyProps) => setSt({postprod: v})}/>)}/>}
           {step===5 && <Step7Contact lang={lang} contact={contact} setContact={setContact} p={p} configMode={configApplied} errors={contactErrors}/>}
           {step===6 && (() => {
-            const list = plateaus && plateaus.length > 0 ? plateaus : (plateau ? [plateau] : []);
+            const list = slotIds && slotIds.length > 0 ? slotIds : (plateau ? [plateau] : []);
             if (list.length <= 1) { return <Step2Date lang={lang} p={p} viewY={viewY} viewM={viewM} months={months} days={days} calCells={calCells} selected={selected} setSelected={setSelected} arrivalHour={arrivalHour} setArrivalHour={setArrivalHour} rentalHours={rentalHours} isPast={isPast} nextMonth={nextMonth} prevMonth={prevMonth} refreshKey={availRefreshKey}/>; }
             const safeIdx = Math.max(0, Math.min(dateIdx, list.length - 1));
-            const k = list[safeIdx]; const px = BOOK_PLATEAUX.find(x => x.k === k); const st = perPlateau[k] || {};
-            const setSt = (patch: PerPlateauState) => setPerPlateau(prev => ({...prev, [k]: {...(prev[k]||{}), ...patch}}));
+            const id = list[safeIdx]; const st = slots[id] || {}; const pk = st.plateauKey || id; const px = BOOK_PLATEAUX.find(x => x.k === pk);
+            const setSt = (patch: SlotState) => setSlots(prev => ({...prev, [id]: {...(prev[id]||{}), plateauKey: pk, ...patch}}));
             const stHours = st.hours != null ? st.hours : (st.slotType==='hour' ? 1 : st.slotType==='half' ? 4 : 8);
             const stRentalHours = px && px.isCyclo ? ((st.cycloMode||'halfH')==='halfH' ? 5 : 10) : px && px.isVisite ? 1 : stHours;
             const stSelected = st.date || null; const stArrival = st.arrivalHour != null ? st.arrivalHour : 10;
-            return (<div><div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 md:gap-4 bg-white flex-wrap sticky top-0 z-10"><span className="edo-cell-label text-primary whitespace-nowrap">{lang==='fr'?'Plateau':'Stage'} {String(safeIdx+1).padStart(2,'0')} / {String(list.length).padStart(2,'0')}</span><span className="text-detail font-normal tracking-copy-tight text-foreground">{px ? px[lang] : k}</span><div className="flex gap-1.5 flex-wrap w-full md:w-auto md:ml-auto">{list.map((kk, i) => { const has = perPlateau[kk] && perPlateau[kk].date; const active = i === safeIdx; return (<button type="button" key={kk} onClick={()=>setDateIdx(i)} className={`${active ? 'bg-foreground text-white border-foreground' : has ? 'bg-primary text-white border-primary' : 'bg-white text-foreground border-border'} border px-2.5 py-1 cursor-pointer font-mono text-label tracking-ui min-w-7 text-center`}>{String(i+1).padStart(2,'0')}{has?' ✓':''}</button>); })}</div></div><Step2Date lang={lang} p={px} viewY={viewY} viewM={viewM} months={months} days={days} calCells={calCells} selected={stSelected} setSelected={(d: DateSelection)=>setSt({date:d, arrivalHour: st.arrivalHour ?? 10})} arrivalHour={stArrival} setArrivalHour={(h: number)=>setSt({arrivalHour:h})} rentalHours={stRentalHours} isPast={isPast} nextMonth={nextMonth} prevMonth={prevMonth} refreshKey={availRefreshKey}/></div>);
+            const sameKeyCount: Record<string, number> = {};
+            list.forEach(xid => { const xk = slots[xid]?.plateauKey || xid; sameKeyCount[xk] = (sameKeyCount[xk] || 0) + 1; });
+            const seenIdxByKey: Record<string, number> = {};
+            const slotLabel = (xid: string) => {
+              const xk = slots[xid]?.plateauKey || xid;
+              const xpx = BOOK_PLATEAUX.find(x => x.k === xk);
+              const n = (seenIdxByKey[xk] = (seenIdxByKey[xk] || 0) + 1);
+              return sameKeyCount[xk] > 1 ? `${xpx ? xpx[lang] : xk} ${String(n).padStart(2,'0')}` : (xpx ? xpx[lang] : xk);
+            };
+            const currentLabel = (() => { const tmpCount: Record<string, number> = {}; for (let i = 0; i <= safeIdx; i++) { const k = slots[list[i]]?.plateauKey || list[i]; tmpCount[k] = (tmpCount[k] || 0) + 1; } const pkCount = tmpCount[pk] || 1; return sameKeyCount[pk] > 1 ? `${px ? px[lang] : pk} ${String(pkCount).padStart(2,'0')}` : (px ? px[lang] : pk); })();
+            return (<div><div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 md:gap-4 bg-white flex-wrap sticky top-0 z-10"><span className="edo-cell-label text-primary whitespace-nowrap">{lang==='fr'?'Plateau':'Stage'} {String(safeIdx+1).padStart(2,'0')} / {String(list.length).padStart(2,'0')}</span><span className="text-detail font-normal tracking-copy-tight text-foreground">{currentLabel}</span><div className="flex gap-1.5 flex-wrap w-full md:w-auto md:ml-auto">{list.map((xid, i) => { const has = slots[xid] && slots[xid].date; const active = i === safeIdx; return (<button type="button" key={xid} onClick={()=>setDateIdx(i)} title={slotLabel(xid)} className={`${active ? 'bg-foreground text-white border-foreground' : has ? 'bg-primary text-white border-primary' : 'bg-white text-foreground border-border'} border px-2.5 py-1 cursor-pointer font-mono text-label tracking-ui min-w-7 text-center`}>{String(i+1).padStart(2,'0')}{has?' ✓':''}</button>); })}</div></div><Step2Date lang={lang} p={px} viewY={viewY} viewM={viewM} months={months} days={days} calCells={calCells} selected={stSelected} setSelected={(d: DateSelection)=>setSt({date:d, arrivalHour: st.arrivalHour ?? 10})} arrivalHour={stArrival} setArrivalHour={(h: number)=>setSt({arrivalHour:h})} rentalHours={stRentalHours} isPast={isPast} nextMonth={nextMonth} prevMonth={prevMonth} refreshKey={availRefreshKey}/></div>);
           })()}
         </div>
 
@@ -866,8 +890,8 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
           mode={mode}
           step={step}
           plateau={plateau}
-          plateaus={plateaus}
-          perPlateau={perPlateau}
+          slotIds={slotIds}
+          slots={slots}
           selected={selected}
           arrivalHour={arrivalHour}
           rentalHours={rentalHours}
@@ -921,9 +945,9 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
         <div className="border-t border-hairline flex flex-col md:flex-row md:items-stretch shrink-0 bg-white md:min-h-control">
           {(() => {
             const idx = STEPS.findIndex(s=>s.n===step); const isFirst = idx <= 0; const prevN = idx > 0 ? STEPS[idx-1].n : null; const nextN = idx > -1 && idx < STEPS.length-1 ? STEPS[idx+1].n : null;
-            const dateList = plateaus && plateaus.length > 0 ? plateaus : (plateau ? [plateau] : []); const isMultiDate = step===6 && dateList.length > 1;
+            const dateList = slotIds && slotIds.length > 0 ? slotIds : (plateau ? [plateau] : []); const isMultiDate = step===6 && dateList.length > 1;
             const safeDateIdx = Math.max(0, Math.min(dateIdx, dateList.length - 1)); const onLastDateSub = !isMultiDate || safeDateIdx >= dateList.length - 1; const onFirstDateSub = !isMultiDate || safeDateIdx <= 0;
-            const currentDateK = isMultiDate ? dateList[safeDateIdx] : null; const currentDateValid = !isMultiDate || (currentDateK != null && perPlateau[currentDateK] && perPlateau[currentDateK].date);
+            const currentDateId = isMultiDate ? dateList[safeDateIdx] : null; const currentDateValid = !isMultiDate || (currentDateId != null && slots[currentDateId] && slots[currentDateId].date);
             const handleBack = () => { if (isMultiDate && !onFirstDateSub) { setDateIdx(safeDateIdx - 1); return; } if (prevN !== null) goToStep(prevN); };
             const handleSubNext = () => { if (isMultiDate && !onLastDateSub && currentDateValid) { setDateIdx(safeDateIdx + 1); return true; } return false; };
             const backBtnCls = "edo-focus-ring bg-white border-0 cursor-pointer font-mono text-caption tracking-meta uppercase text-foreground px-5 py-3 md:py-0 inline-flex items-center justify-start gap-2 transition-colors duration-150 min-h-control md:flex-1 md:min-h-0 min-w-0 hover:bg-muted";
@@ -980,7 +1004,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
         )}
       </form>
 
-      <SidePanel lang={lang} p={p} selected={selected} months={months} slotType={slotType} hours={hours} cycloMode={cycloMode} rows={priceBreakdown.rows} total={priceBreakdown.total} isPreview={!!priceBreakdown.isPreview} step={step} plateaus={plateaus} perPlateau={perPlateau}/>
+      <SidePanel lang={lang} p={p} selected={selected} months={months} slotType={slotType} hours={hours} cycloMode={cycloMode} rows={priceBreakdown.rows} total={priceBreakdown.total} isPreview={!!priceBreakdown.isPreview} step={step} slotIds={slotIds} slots={slots}/>
     </div>
   );
 };
@@ -989,24 +1013,33 @@ const formatBookingDate = (d?: AnyProps | null) =>
   d ? `${d.y}-${String(d.m + 1).padStart(2, '0')}-${String(d.d).padStart(2, '0')}` : '';
 
 const BookingHubspotFields = ({
-  mode, step, plateau, plateaus, perPlateau,
+  mode, step, plateau, slotIds, slots,
   selected, arrivalHour, rentalHours,
   projectType, urgency, total, contact,
 }: AnyProps) => {
-  const datesByPlateau = Object.fromEntries(
-    Object.entries(perPlateau || {})
-      .map(([k, v]) => [k, formatBookingDate((v as AnyProps)?.date)])
+  const list: string[] = slotIds || [];
+  const plateauKeysList = Array.from(new Set(list.map(id => (slots || {})[id]?.plateauKey || id)));
+  const slotsHoursTotal = list.reduce((sum: number, id: string) => {
+    const st = (slots || {})[id] || {};
+    const pk = st.plateauKey || id;
+    const px = BOOK_PLATEAUX.find(x => x.k === pk);
+    const h = px && px.isCyclo ? (st.cycloMode === 'halfH' ? 5 : 10) : px && px.isVisite ? 1 : (st.hours || 0);
+    return sum + h;
+  }, 0);
+  const datesBySlot = Object.fromEntries(
+    list
+      .map((id: string) => [id, formatBookingDate(((slots || {})[id] || {}).date)])
       .filter(([, d]) => d)
   );
   return (
     <div hidden aria-hidden>
       <input type="hidden" name="mode" value={mode} readOnly />
       <input type="hidden" name="plateau" value={plateau || ''} readOnly />
-      <input type="hidden" name="plateaus" value={(plateaus || []).join(',')} readOnly />
+      <input type="hidden" name="plateaus" value={plateauKeysList.join(',')} readOnly />
       <input type="hidden" name="preferred_date" value={formatBookingDate(selected)} readOnly />
-      <input type="hidden" name="per_plateau_dates" value={JSON.stringify(datesByPlateau)} readOnly />
+      <input type="hidden" name="per_plateau_dates" value={JSON.stringify(datesBySlot)} readOnly />
       <input type="hidden" name="arrival_hour" value={arrivalHour ?? ''} readOnly />
-      <input type="hidden" name="rental_hours" value={String(rentalHours ?? '')} readOnly />
+      <input type="hidden" name="rental_hours" value={String(slotsHoursTotal > 0 ? slotsHoursTotal : (rentalHours ?? ''))} readOnly />
       <input type="hidden" name="project_type" value={projectType || ''} readOnly />
       <input type="hidden" name="urgency" value={urgency || ''} readOnly />
       <input type="hidden" name="total_ht" value={String(total ?? 0)} readOnly />
@@ -1177,27 +1210,33 @@ const Step0Configurator = ({ lang, global, setGlobal, sessions, setSessions, act
   );
 };
 
-const MultiPlateauStep = ({ lang, plateaus, perPlateau, setPerPlateau, fallback, renderOne, topBanner }: AnyProps) => {
-  const list = plateaus && plateaus.length > 0 ? plateaus : [];
+const MultiPlateauStep = ({ lang, slotIds, slots, setSlots, fallback, renderOne, topBanner }: AnyProps) => {
+  const list: string[] = slotIds && slotIds.length > 0 ? slotIds : [];
   if (list.length === 0) { return <EmptyState size="compact" label={bookingMsg.noStageSelected[lang]} />; }
-  const setOne = (k, patch) => { setPerPlateau(prev => ({...prev, [k]: {...(prev[k] || {}), ...patch}})); };
+  const setOne = (id: string, patch: AnyProps) => { setSlots((prev: AnyProps) => ({...prev, [id]: {...(prev[id] || {}), plateauKey: prev[id]?.plateauKey || id, ...patch}})); };
+  const sameKeyCount: Record<string, number> = {};
+  list.forEach(id => { const k = slots[id]?.plateauKey || id; sameKeyCount[k] = (sameKeyCount[k] || 0) + 1; });
+  const seenIdxByKey: Record<string, number> = {};
   return (
     <div>
       {topBanner}
-      {list.map((k, idx) => {
-        const px = BOOK_PLATEAUX.find(x => x.k === k);
+      {list.map((id, idx) => {
+        const st = slots[id] || {};
+        const pk = st.plateauKey || id;
+        const px = BOOK_PLATEAUX.find(x => x.k === pk);
         if (!px) return null;
-        const st = perPlateau[k] || {};
+        const dupIdx = (seenIdxByKey[pk] = (seenIdxByKey[pk] || 0) + 1);
+        const label = sameKeyCount[pk] > 1 ? `${px[lang]} · ${bookingMsg.session[lang]} ${String(dupIdx).padStart(2,'0')}` : px[lang];
         return (
-          <div key={k}>
+          <div key={id}>
             {list.length > 1 && (
               <div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 bg-white flex-wrap">
                 <span className="edo-cell-label text-primary whitespace-nowrap">{lang==='fr'?'Plateau':'Stage'} {String(idx+1).padStart(2,'0')}</span>
-                <span className="text-detail font-normal tracking-copy-tight text-foreground">{px[lang]}</span>
+                <span className="text-detail font-normal tracking-copy-tight text-foreground">{label}</span>
                 <span className="font-mono text-label tracking-caption text-muted-foreground">{px.desc[lang]}</span>
               </div>
             )}
-            {renderOne(px, st, patch => setOne(k, patch))}
+            {renderOne(px, st, (patch: AnyProps) => setOne(id, patch))}
           </div>
         );
       })}
@@ -1471,10 +1510,15 @@ const Step7Contact = ({ lang, contact, setContact, p, configMode, errors = {} }:
   </div>);
 };
 
-const SidePanel = ({ lang, p, selected, months, slotType, hours, cycloMode, rows, total, isPreview, step, plateaus, perPlateau }: AnyProps) => {
+const SidePanel = ({ lang, p, selected, months, slotType, hours, cycloMode, rows, total, isPreview, step, slotIds, slots }: AnyProps) => {
   const slotLbl = isPreview ? (lang==='fr'?'estimation live':'live estimate') : p.isCyclo ? (cycloMode==='halfH'?'5h':(cycloMode==='fullH'?'10h':(lang==='fr'?'10h éditorial':'10h editorial'))) : p.isVisite ? (lang==='fr'?'visite':'visit') : (slotType==='hour'? `${hours}h`:(slotType==='half'?(()=>{const hh=Math.max(4,Math.min(7,hours||4));return hh===4?(lang==='fr'?'½ j':'½ d'):`${hh}h`;})():(()=>{ const totalH = hours || 8; const fullDays = Math.floor(totalH / 8); const extraH = totalH - fullDays * 8; const dUnit = lang==='fr'?'j':'d'; let s = `${fullDays} ${dUnit}`; if (extraH === 4) s += lang==='fr'?' + ½ j':' + ½ d'; else if (extraH > 0) s += ` + ${extraH}h`; return s; })()));
   const title = isPreview ? (lang==='fr'?'Estimation':'Estimate') : p[lang];
-  return (<div className="bg-foreground md:col-start-4 md:row-start-2 text-white px-5 py-6 md:p-6 overflow-auto flex flex-col gap-4 md:gap-3.5 min-h-0"><div><span className="edo-cell-label text-white/55 md:hidden">{lang==='fr'?'Votre devis':'Your quote'}</span><h2 className="m-0 mt-2 md:mt-0 text-tile-large font-light tracking-headline text-white/85">{title}</h2><div className="font-mono text-label text-white/55 mt-1 tracking-caption">{slotLbl}</div></div>{(() => { const list = (plateaus || []).filter(Boolean); const isMulti = list.length > 1; if (isMulti) { const datedList = list.map(k => ({k, px: BOOK_PLATEAUX.find(x => x.k === k), d: (perPlateau||{})[k]?.date})).filter(x => x.d); if (datedList.length === 0) return null; return (<div className="pt-3.5 border-t border-white/10"><span className="edo-cell-label text-white/55 mb-1.5 block">{lang==='fr'?'Dates':'Dates'}</span><div className="flex flex-col gap-1.5">{datedList.map(({k, px, d}) => (<div key={k} className="flex justify-between items-baseline gap-2 text-detail"><span className="text-white/55 font-mono text-label tracking-caption uppercase">{px ? px[lang] : k}</span><span className="tracking-copy-tight">{d.d} {months[d.m]} {d.y}</span></div>))}</div></div>); } if (!selected) return null; return (<div className="pt-3.5 border-t border-white/10"><span className="edo-cell-label text-white/55 mb-1.5 block">{lang==='fr'?'Date':'Date'}</span><div className="text-cell tracking-copy-tight">{selected.d} {months[selected.m]} {selected.y}</div></div>); })()}<div className="pt-3.5 border-t border-white/10 flex-1 min-h-0 flex flex-col"><span className="edo-cell-label text-white/55 mb-2.5 block">{lang==='fr'?'Détail':'Breakdown'}</span><div className="flex flex-col gap-1.5 overflow-auto pr-1">{rows.length===0 && <span className="text-caption text-white/40">—</span>}{rows.map((r,i)=>(<div key={i} className="flex flex-col gap-0.5"><div className="flex justify-between items-baseline gap-2 text-caption"><span className="tracking-copy-tight">{(() => { const idx = r.lbl.indexOf(' · '); if (idx === -1) return <span className="text-white/75">{r.lbl}</span>; return (<><span className="text-white/40">{r.lbl.slice(0, idx)}</span><span className="text-white/75">{r.lbl.slice(idx)}</span></>); })()}</span><span className="font-mono tabular-nums text-white whitespace-nowrap">{r.onReq ? (lang==='fr'?'sur demande':'on request') : `${fmtEUR(r.amt)} €`}</span></div>{r.breakdown && r.breakdown.length > 0 && (<div className="pl-0.5 flex flex-col gap-hairline">{r.breakdown.map((b, bi) => { const viewLbl = b.labels ? b.labels[lang] : null; const formula = b.imagesPerSku && b.imagesPerSku > 1 ? `${b.qty} × ${b.imagesPerSku} × ${fmtEUR(b.unit)} €` : `${b.qty} × ${fmtEUR(b.unit)} €`; const line = viewLbl ? `${viewLbl} · ${formula}` : formula; return (<div key={bi} className="flex justify-between gap-2 font-mono text-micro text-white/40 tracking-caption"><span>→ {line}</span><span className="tabular-nums">{fmtEUR(b.subtotal)} €</span></div>); })}</div>)}</div>))}</div></div><div className="pt-3.5 border-t border-white/25"><div className="flex justify-between items-baseline"><span className="font-mono text-caption tracking-ui uppercase text-white/65">Total HT</span><span className="text-page-title font-light tracking-headline tabular-nums">{fmtEUR(total)} €</span></div><div className="font-mono text-micro text-white/45 mt-1 tracking-ui">TVA 20% · {fmtEUR(total*1.2)} € TTC</div>{rows.some(r=>r.estimate) && (<div className="font-mono text-micro text-white/45 mt-1.5 tracking-caption leading-normal">{lang==='fr' ? '⚠ Prix post-production estimatif — ajusté après brief selon volume et complexité.' : '⚠ Post-production price is an estimate — adjusted after brief based on volume and complexity.'}</div>)}</div></div>);
+  const list: string[] = (slotIds || []).filter(Boolean);
+  const isMulti = list.length > 1;
+  const sameKeyCount: Record<string, number> = {};
+  list.forEach((id: string) => { const k = (slots||{})[id]?.plateauKey || id; sameKeyCount[k] = (sameKeyCount[k] || 0) + 1; });
+  const seenIdxByKey: Record<string, number> = {};
+  return (<div className="bg-foreground md:col-start-4 md:row-start-2 text-white px-5 py-6 md:p-6 overflow-auto flex flex-col gap-4 md:gap-3.5 min-h-0"><div><span className="edo-cell-label text-white/55 md:hidden">{lang==='fr'?'Votre devis':'Your quote'}</span><h2 className="m-0 mt-2 md:mt-0 text-tile-large font-light tracking-headline text-white/85">{title}</h2><div className="font-mono text-label text-white/55 mt-1 tracking-caption">{slotLbl}</div></div>{(() => { if (isMulti) { const datedList = list.map((id: string) => { const st = (slots||{})[id] || {}; const pk = st.plateauKey || id; const px = BOOK_PLATEAUX.find(x => x.k === pk); const n = (seenIdxByKey[pk] = (seenIdxByKey[pk] || 0) + 1); const label = sameKeyCount[pk] > 1 ? `${px ? px[lang] : pk} ${String(n).padStart(2,'0')}` : (px ? px[lang] : pk); return { id, label, d: st.date }; }).filter((x: AnyProps) => x.d); if (datedList.length === 0) return null; return (<div className="pt-3.5 border-t border-white/10"><span className="edo-cell-label text-white/55 mb-1.5 block">{lang==='fr'?'Dates':'Dates'}</span><div className="flex flex-col gap-1.5">{datedList.map(({id, label, d}: AnyProps) => (<div key={id} className="flex justify-between items-baseline gap-2 text-detail"><span className="text-white/55 font-mono text-label tracking-caption uppercase">{label}</span><span className="tracking-copy-tight">{d.d} {months[d.m]} {d.y}</span></div>))}</div></div>); } if (!selected) return null; return (<div className="pt-3.5 border-t border-white/10"><span className="edo-cell-label text-white/55 mb-1.5 block">{lang==='fr'?'Date':'Date'}</span><div className="text-cell tracking-copy-tight">{selected.d} {months[selected.m]} {selected.y}</div></div>); })()}<div className="pt-3.5 border-t border-white/10 flex-1 min-h-0 flex flex-col"><span className="edo-cell-label text-white/55 mb-2.5 block">{lang==='fr'?'Détail':'Breakdown'}</span><div className="flex flex-col gap-1.5 overflow-auto pr-1">{rows.length===0 && <span className="text-caption text-white/40">—</span>}{rows.map((r: AnyProps,i: number)=>(<div key={i} className="flex flex-col gap-0.5"><div className="flex justify-between items-baseline gap-2 text-caption"><span className="tracking-copy-tight">{(() => { const idx = r.lbl.indexOf(' · '); if (idx === -1) return <span className="text-white/75">{r.lbl}</span>; return (<><span className="text-white/40">{r.lbl.slice(0, idx)}</span><span className="text-white/75">{r.lbl.slice(idx)}</span></>); })()}</span><span className="font-mono tabular-nums text-white whitespace-nowrap">{r.onReq ? (lang==='fr'?'sur demande':'on request') : `${fmtEUR(r.amt)} €`}</span></div>{r.breakdown && r.breakdown.length > 0 && (<div className="pl-0.5 flex flex-col gap-hairline">{r.breakdown.map((b: AnyProps, bi: number) => { const viewLbl = b.labels ? b.labels[lang] : null; const formula = b.imagesPerSku && b.imagesPerSku > 1 ? `${b.qty} × ${b.imagesPerSku} × ${fmtEUR(b.unit)} €` : `${b.qty} × ${fmtEUR(b.unit)} €`; const line = viewLbl ? `${viewLbl} · ${formula}` : formula; return (<div key={bi} className="flex justify-between gap-2 font-mono text-micro text-white/40 tracking-caption"><span>→ {line}</span><span className="tabular-nums">{fmtEUR(b.subtotal)} €</span></div>); })}</div>)}</div>))}</div></div><div className="pt-3.5 border-t border-white/25"><div className="flex justify-between items-baseline"><span className="font-mono text-caption tracking-ui uppercase text-white/65">Total HT</span><span className="text-page-title font-light tracking-headline tabular-nums">{fmtEUR(total)} €</span></div><div className="font-mono text-micro text-white/45 mt-1 tracking-ui">TVA 20% · {fmtEUR(total*1.2)} € TTC</div>{rows.some((r: AnyProps)=>r.estimate) && (<div className="font-mono text-micro text-white/45 mt-1.5 tracking-caption leading-normal">{lang==='fr' ? '⚠ Prix post-production estimatif — ajusté après brief selon volume et complexité.' : '⚠ Post-production price is an estimate — adjusted after brief based on volume and complexity.'}</div>)}</div></div>);
 };
 
 const Toggle = ({ on, onClick }: AnyProps) => (
