@@ -65,7 +65,7 @@ export const ContactForm = ({
   return (
     <form
       onSubmit={submit}
-      className="grid grid-cols-2 grid-rows-contact-form-compact gap-hairline bg-border md:h-full"
+      className="grid grid-cols-2 grid-rows-contact-form-compact gap-hairline bg-edo-pure-black md:h-full"
     >
       <div className="col-span-2 flex flex-col justify-center bg-white px-5 py-2.5">
         <span className="edo-cell-label text-primary">{contactMsg.writeToUs[lang]}</span>

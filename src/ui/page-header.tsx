@@ -97,8 +97,8 @@ const PageHeaderActionButton = ({
   );
 };
 
-const DEFAULT_TITLE_CLASS = 'lg:col-start-2 lg:col-span-2';
-const DEFAULT_RIGHT_BLOCK_CLASS = 'lg:col-start-4';
+const DEFAULT_TITLE_CLASS = 'lg:col-start-2';
+const DEFAULT_RIGHT_BLOCK_CLASS = 'lg:col-start-3 lg:col-span-2';
 const RIGHT_BLOCK_BASE_CLASS =
   'flex min-w-0 [&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-hairline';
 
@@ -145,6 +145,7 @@ const PageHeader = ({
     <div
       className={cn(
         'hidden min-w-0 flex-1 items-center justify-start bg-background md:flex md:px-6',
+        subgrid && 'lg:!border-r-0',
         subgrid && (titleClassName ?? DEFAULT_TITLE_CLASS),
       )}
     >
@@ -202,6 +203,7 @@ const PageHeader = ({
         <div
           className={cn(
             RIGHT_BLOCK_BASE_CLASS,
+            'lg:justify-end lg:[&>*:first-child]:border-l lg:[&>*:first-child]:border-hairline',
             hasMobileAction && 'flex-1 md:flex-initial',
             rightBlockClassName ?? DEFAULT_RIGHT_BLOCK_CLASS,
           )}
@@ -210,7 +212,7 @@ const PageHeader = ({
             <PageHeaderActionButton
               key={action.id}
               {...action}
-              className={cn(action.className, '!flex-1 md:!flex-none lg:!flex-1 lg:min-w-0 lg:px-2 lg:gap-1.5')}
+              className={cn(action.className, '!flex-1 md:!flex-none')}
             />
           ))}
           <LangButton lang={lang} onLangToggle={onLangToggle} />

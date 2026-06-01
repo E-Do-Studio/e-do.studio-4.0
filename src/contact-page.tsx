@@ -38,13 +38,13 @@ const ContactRail = ({ lang, contact, hours, closures }: ContactRailProps & { cl
   const today = new Date().toISOString().slice(0, 10);
   const hasClosures = closures.some((c) => c.endsAt >= today);
   return (
-    <aside className="flex flex-col overflow-auto bg-white md:col-start-1 md:row-start-2 md:grid md:grid-rows-contact-form md:gap-hairline md:overflow-hidden md:bg-border">
+    <aside className="flex flex-col overflow-auto bg-white md:col-start-1 md:row-start-2 md:grid md:grid-rows-contact-form md:gap-hairline md:overflow-hidden md:bg-hairline">
       <FindUsSection lang={lang} contact={contact} className="md:row-[1/5]" />
       <HoursSection lang={lang} hours={hours} className={hasClosures ? 'md:row-[5/6]' : 'md:row-[5/7]'} />
       <ClosuresSection lang={lang} closures={closures} className="md:row-[6/7]" />
       <PhoneSection lang={lang} contact={contact} className="md:row-[7/8]" />
       <div className="flex-1 md:hidden" />
-      <SocialLinksRow className="h-12 border-t border-border md:row-[8/9] md:h-full md:border-t-0" />
+      <SocialLinksRow className="border-t border-hairline md:row-[8/9] md:h-full md:border-t-0" />
     </aside>
   );
 };
@@ -276,11 +276,6 @@ function buildMapsEmbedFallback(fullAddress?: string, street?: string, postalCod
   return `https://www.google.com/maps?q=${encodeURIComponent(q)}&z=17&output=embed`;
 }
 
-function buildMapsDirections(fullAddress?: string, street?: string, postalCode?: string, city?: string): string {
-  const q = fullAddress || [street, postalCode, city].filter(Boolean).join(', ');
-  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(q)}`;
-}
-
 interface ContactMapProps {
   lang: Lang;
   contact: { data: ContactInfo | null; loading: boolean; error: Error | null };
@@ -292,8 +287,6 @@ const ContactMap = ({ lang, contact, className }: ContactMapProps) => {
   const showFallback = !contact.loading && (contact.error || !c);
   const embedUrl = c?.mapsEmbedUrl
     || buildMapsEmbedFallback(c?.fullAddress, c?.address.street, c?.address.postalCode, c?.address.city);
-  const directionsUrl = c?.googleMapsUrl
-    || buildMapsDirections(c?.fullAddress, c?.address.street, c?.address.postalCode, c?.address.city);
   return (
     <section className={cn('relative overflow-hidden bg-edo-warm', className)}>
       {showFallback ? (
@@ -308,29 +301,6 @@ const ContactMap = ({ lang, contact, className }: ContactMapProps) => {
           referrerPolicy="no-referrer-when-downgrade"
           title={contactMsg.mapTitle[lang]}
         />
-      )}
-
-      {!showFallback && c && (
-        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-3 bg-white/95 px-3 py-2.5">
-          <div className="min-w-0">
-            <div className="text-detail font-medium tracking-copy-tight text-foreground">
-              {c.address.street}
-              {c.entries && c.entries.length > 0 ? ` · ${c.entries.map(e => `${e.label}${e.address ? ' ' + e.address : ''}`).join(' · ')}` : ''}
-            </div>
-            <div className="font-mono text-label uppercase tracking-caption text-muted-foreground">
-              {c.address.postalCode} {c.address.city?.toUpperCase()}
-              {c.transport && c.transport.length > 0 ? ` · ${c.transport.map(t => t.label.toUpperCase()).join(' / ')}` : ''}
-            </div>
-          </div>
-          <a
-            href={directionsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="shrink-0 font-mono text-label uppercase tracking-meta text-primary no-underline"
-          >
-            {contactMsg.directions[lang]}
-          </a>
-        </div>
       )}
     </section>
   );
@@ -417,8 +387,8 @@ const ContactPage = () => {
         onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
         actions={buildMainNav({ lang, goto, exclude: 'contact' })}
       />
-      <ContactRail lang={lang} contact={contact} hours={hours} closures={closures} />
       <ContactFormPanel lang={lang} form={form} sent={sent} sending={sending} sendError={sendError} setForm={setForm} setSent={setSent} submit={submit} goto={goto} />
+      <ContactRail lang={lang} contact={contact} hours={hours} closures={closures} />
       <ContactRightColumn lang={lang} contact={contact} team={team} />
     </div>
   );

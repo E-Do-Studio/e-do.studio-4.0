@@ -122,6 +122,10 @@ const ThumbStrip = ({ items, lang, plateauName, activeIndex, onSelect, className
   // 1.5px right-border serves as the visible separator. The bases must sum to
   // exactly 100% so the last tile aligns with the column boundary above.
   const tileBasis = `${100 / items.length}%`;
+  // Strip occupies ~60vw on desktop (same column span as the cover) and 100vw
+  // on mobile, divided by n tiles. Without this hint the browser would pick
+  // the 245w `thumbnail_` derivative and stretch it — visible blur.
+  const tileSizes = `(min-width: 768px) ${Math.ceil(60 / items.length)}vw, ${Math.ceil(100 / items.length)}vw`;
 
   return (
     <div className={cn('relative edo-hairline h-16 md:h-full', className)}>
@@ -153,7 +157,7 @@ const ThumbStrip = ({ items, lang, plateauName, activeIndex, onSelect, className
                 <ResponsiveImage
                   src={item.previewUrl ?? item.url}
                   alt=""
-                  sizes="120px"
+                  sizes={tileSizes}
                   className="absolute inset-0 h-full w-full object-cover"
                 />
               )}
@@ -397,7 +401,7 @@ const PlateauPage = ({ slug }: { slug: string }) => {
           ))}
         </div>
         {p.ratesNote && (
-          <div className="font-mono text-micro tracking-caption text-muted-foreground leading-normal mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis">
+          <div className="font-mono text-micro tracking-caption text-muted-foreground leading-normal mt-0.5 break-words">
             {p.ratesNote[lang]}
           </div>
         )}

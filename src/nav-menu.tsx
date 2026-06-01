@@ -1,8 +1,7 @@
 import { useNavigate } from '@tanstack/react-router';
-import { CellLabel, IconLock, IconX, cn } from './ui';
-import { useSocialLinks } from './lib/use-strapi';
+import { CellLabel, IconLock, IconX, SocialLinksRow, cn } from './ui';
 import { nav, common, home as homeMsg } from './i18n/messages';
-import type { Lang, SocialLink } from './types';
+import type { Lang } from './types';
 
 interface NavItemDef {
   label: string;
@@ -66,8 +65,8 @@ const NavItemLink = ({ item, index, lang, onClose, navigate }: NavItemLinkProps)
         className="relative flex min-h-13 cursor-not-allowed flex-col justify-between gap-1 border-b border-hairline px-4 py-2.5"
       >
         <div className="flex items-center justify-between gap-2">
-          <CellLabel>{String(index + 1).padStart(2, "0")}</CellLabel>
-          <span className="inline-flex items-center gap-1 font-mono text-micro uppercase tracking-meta text-muted-foreground">
+          <CellLabel className="leading-none">{String(index + 1).padStart(2, "0")}</CellLabel>
+          <span className="inline-flex items-center gap-1 font-mono text-micro leading-none uppercase tracking-meta text-muted-foreground">
             <IconLock width="9" height="9" aria-hidden="true" />
             {homeMsg.comingSoon[lang]}
           </span>
@@ -117,33 +116,6 @@ const NavExternalLink = ({ href, label, index }: NavExternalLinkProps) => (
   </a>
 );
 
-interface SocialLinkProps {
-  item: SocialLink;
-  index: number;
-}
-
-const SocialLink = ({ item, index }: SocialLinkProps) => (
-  <a
-    href={item.href}
-    target="_blank"
-    rel="noopener noreferrer"
-    className={cn(
-      "edo-focus-ring flex cursor-pointer items-center justify-center border-b border-hairline px-4 py-3 font-mono text-caption uppercase tracking-label text-muted-foreground no-underline transition-colors hover:bg-muted",
-      index % 2 === 0 && "border-r border-hairline",
-    )}
-  >
-    {item.label}
-  </a>
-);
-
-const SocialGrid = ({ links }: { links: SocialLink[] }) => (
-  <div className="grid grid-cols-2">
-    {links.map((item, index) => (
-      <SocialLink key={item.k} item={item} index={index} />
-    ))}
-  </div>
-);
-
 interface NavFooterProps {
   lang: Lang;
   setLang: (lang: Lang) => void;
@@ -186,7 +158,6 @@ interface NavMenuProps {
 
 const NavMenu = ({ lang, isOpen, onClose, setLang }: NavMenuProps) => {
   const navigate = useNavigate();
-  const { data: socialLinks } = useSocialLinks();
 
   return (
     <>
@@ -213,7 +184,7 @@ const NavMenu = ({ lang, isOpen, onClose, setLang }: NavMenuProps) => {
             label="Etouch"
             index={nav.items[lang].length}
           />
-          <SocialGrid links={socialLinks ?? []} />
+          <SocialLinksRow className="mt-auto border-t border-hairline" />
         </nav>
 
         <NavFooter lang={lang} setLang={setLang} onClose={onClose} navigate={navigate} />
