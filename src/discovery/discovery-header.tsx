@@ -20,6 +20,7 @@ export const DiscoveryHeader: React.FC<DiscoveryHeaderProps> = ({ lang, setLang,
     onLogoClick={() => goto('home')}
     onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
     actions={[
+      { id: 'book', label: common.book[lang], onClick: () => goto('book'), variant: 'primary', className: 'md:hidden' },
       { id: 'gallery', label: common.gallery[lang], onClick: () => goto('gallery'), className: 'hidden md:flex' },
       { id: 'plateaux', label: common.stages[lang], onClick: () => goto('plateau-live'), className: 'hidden md:flex' },
       { id: 'contact', label: common.contactUs[lang], onClick: () => goto('contact'), className: 'hidden lg:flex' },

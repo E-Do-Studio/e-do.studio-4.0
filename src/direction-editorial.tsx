@@ -122,6 +122,7 @@ const DirectionA = () => {
         onLogoClick={() => goto('home')}
         onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
         actions={[
+          { id: 'book', label: common.book[lang], onClick: () => goto('book'), variant: 'primary', className: 'md:hidden' },
           ...(contact?.phone
             ? [{ id: 'phone', label: contact.phone.replace(/^\+33\s?/, '0'), href: contact.phoneHref || `tel:${contact.phone.replace(/\s/g, '')}`, showArrow: false, className: 'hidden sm:flex' }]
             : []),
@@ -133,8 +134,6 @@ const DirectionA = () => {
 
       {/* ── Row 2: Social links + clients marquee ── */}
       <SocialClientsBar
-        lang={lang}
-        onBook={() => goto('book')}
         className="col-span-2 md:col-start-1 md:col-end-13 md:row-start-2"
       />
 
@@ -246,29 +245,7 @@ const DirectionA = () => {
        * doesn't affect the bento layout above the md breakpoint.
        */}
 
-      {/* ── Rows 5-6 right (desktop) / mobile row A left: Post-production ── */}
-      <button
-        onClick={() => goto('postprod')}
-        className="edo-focus-ring group col-span-1 h-36 flex cursor-pointer flex-col justify-between border-0 bg-white p-5 text-left text-foreground transition-colors duration-150 hover:bg-muted md:col-start-7 md:col-end-10 md:row-start-5 md:row-end-7 md:mt-home-offset md:h-home-offset"
-      >
-        <CellLabel>Service</CellLabel>
-        <div className="flex items-end justify-between gap-2.5">
-          <div className="min-w-0">
-            <div className="whitespace-nowrap text-page-title font-light tracking-display leading-none text-foreground">
-              Post-production
-            </div>
-            <div className="mt-1.5 font-mono text-caption uppercase tracking-ui text-muted-foreground">
-              {homeMsg.retouchPhotoVideo[lang]}
-            </div>
-          </div>
-          <IconArrowRight
-            className="flex-shrink-0 transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5"
-            width="16" height="16"
-          />
-        </div>
-      </button>
-
-      {/* ── Rows 5-6 middle (desktop) / mobile row A right: Cyclorama ── */}
+      {/* ── Rows 5-6 middle (desktop) / mobile row A left: Cyclorama ── */}
       <button
         onClick={() => goto('cyclorama')}
         className="edo-focus-ring group col-span-1 h-36 flex cursor-pointer flex-col justify-between border-0 bg-white p-5 text-left text-foreground transition-colors duration-150 hover:bg-muted md:col-span-3 md:col-start-4 md:col-end-7 md:row-start-5 md:row-end-7 md:h-auto md:min-h-0"
@@ -289,6 +266,28 @@ const DirectionA = () => {
               width="16" height="16"
             />
           </div>
+        </div>
+      </button>
+
+      {/* ── Rows 5-6 right (desktop) / mobile row A right: Post-production ── */}
+      <button
+        onClick={() => goto('postprod')}
+        className="edo-focus-ring group col-span-1 h-36 flex cursor-pointer flex-col justify-between border-0 bg-white p-5 text-left text-foreground transition-colors duration-150 hover:bg-muted md:col-start-7 md:col-end-10 md:row-start-5 md:row-end-7 md:mt-home-offset md:h-home-offset"
+      >
+        <CellLabel>Service</CellLabel>
+        <div className="flex items-end justify-between gap-2.5">
+          <div className="min-w-0">
+            <div className="whitespace-nowrap text-page-title font-light tracking-display leading-none text-foreground">
+              Post-production
+            </div>
+            <div className="mt-1.5 font-mono text-caption uppercase tracking-ui text-muted-foreground">
+              {homeMsg.retouchPhotoVideo[lang]}
+            </div>
+          </div>
+          <IconArrowRight
+            className="flex-shrink-0 transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5"
+            width="16" height="16"
+          />
         </div>
       </button>
 
@@ -327,10 +326,8 @@ const DirectionA = () => {
       </div>
 
       {/* ── Row 5 right (desktop only): Book CTA.
-          Renders the exact same BookCTATile component as the mobile social
-          row in SocialClientsBar — one component, two viewport-conditional
-          render sites. This instance is hidden on mobile via
-          `col-span-2 hidden md:flex`; the mobile instance is hidden at md+. */}
+          On mobile, the Book CTA lives in the header as a primary action
+          (md:hidden), so this tile is desktop-only via `hidden md:flex`. */}
       <BookCTATile
         lang={lang}
         onClick={() => goto('book')}

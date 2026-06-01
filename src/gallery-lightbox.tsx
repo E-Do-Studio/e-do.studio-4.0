@@ -2,9 +2,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ArrowLeft as IconArrowLeft,
   ArrowRight as IconArrowRight,
-  Maximize2,
   Minus,
   Plus,
+  RotateCcw,
   X,
 } from "lucide-react";
 import type { GalleryProject } from "./lib/strapi";
@@ -221,7 +221,7 @@ export const GalleryLightbox = ({
             type="button"
             onClick={onClose}
             aria-label={common.close[lang]}
-            className="edo-focus-ring absolute right-3 top-3 z-30 flex h-8 w-8 cursor-pointer items-center justify-center text-white opacity-0 mix-blend-exclusion transition-opacity duration-200 ease-edo-out group-hover:opacity-100 focus-visible:opacity-100"
+            className="edo-focus-ring absolute right-3 top-3 z-30 flex h-8 w-8 cursor-pointer items-center justify-center text-white mix-blend-exclusion transition-opacity duration-200 ease-edo-out md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100"
           >
             <X size={18} strokeWidth={1.5} />
           </button>
@@ -308,7 +308,7 @@ export const GalleryLightbox = ({
                 aria-label={common.resetZoom[lang]}
                 className={zoomBtn}
               >
-                <Maximize2 size={16} strokeWidth={1.5} />
+                <RotateCcw size={16} strokeWidth={1.5} />
               </button>
             </div>
           )}

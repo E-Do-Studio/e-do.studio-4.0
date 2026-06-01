@@ -108,7 +108,7 @@ const ConfirmedView = ({
         onMenuClick={onMenuClick}
         onLogoClick={onLogoClick}
         onLangToggle={onLangToggle}
-        actions={buildMainNav({ lang, goto, exclude: 'book' })}
+        actions={buildMainNav({ lang, goto })}
       />
       <div className="overflow-auto flex flex-col edo-hairline md:col-span-2 md:row-start-2 md:min-h-0">
         <div className="grid edo-hairline grid-cols-1 md:grid-cols-confirmation-hero">
@@ -259,7 +259,7 @@ const BookConfirmation = () => {
           onMenuClick={openMenu}
           onLogoClick={() => goto('home')}
           onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
-          actions={buildMainNav({ lang, goto, exclude: 'book' })}
+          actions={buildMainNav({ lang, goto })}
         />
         <div className="md:row-start-2 md:overflow-y-auto md:min-h-0 bg-white">
           <div className="px-5 py-10 md:px-12 md:py-14">

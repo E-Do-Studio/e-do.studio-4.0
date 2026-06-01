@@ -99,6 +99,8 @@ const PageHeaderActionButton = ({
 
 const DEFAULT_TITLE_CLASS = 'lg:col-start-2 lg:col-span-2';
 const DEFAULT_RIGHT_BLOCK_CLASS = 'lg:col-start-4';
+const RIGHT_BLOCK_BASE_CLASS =
+  'flex min-w-0 [&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-hairline';
 
 const LangButton = ({
   lang,
@@ -111,8 +113,9 @@ const LangButton = ({
 }) => (
   <button
     onClick={onLangToggle}
+    style={{ width: '3.375rem', flex: '0 0 3.375rem' }}
     className={cn(
-      'edo-focus-ring flex h-full basis-header flex-none cursor-pointer items-center justify-center border-0 bg-background p-0 transition-colors hover:bg-muted',
+      'edo-focus-ring flex h-full cursor-pointer items-center justify-center border-0 bg-background p-0 transition-colors hover:bg-muted',
       className,
     )}
   >
@@ -135,6 +138,9 @@ const PageHeader = ({
   onLogoClick,
   onLangToggle,
 }: PageHeaderProps) => {
+  const hasMobileAction = actions.some(
+    (a) => !(a.className ?? '').split(' ').includes('hidden'),
+  );
   const titleCell = (
     <div
       className={cn(
@@ -190,10 +196,13 @@ const PageHeader = ({
 
       {subgrid ? (
         /* Subgrid mode — actions + lang are wrapped in a single right block
-           grid cell whose width matches the body's rightmost column. */
+           grid cell whose width matches the body's rightmost column. On mobile,
+           if a primary action is visible (e.g. Book CTA), the wrapper grows
+           so the action fills the space between logo and the 54px LangButton. */
         <div
           className={cn(
-            'flex min-w-0 [&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-hairline',
+            RIGHT_BLOCK_BASE_CLASS,
+            hasMobileAction && 'flex-1 md:flex-initial',
             rightBlockClassName ?? DEFAULT_RIGHT_BLOCK_CLASS,
           )}
         >
@@ -201,22 +210,29 @@ const PageHeader = ({
             <PageHeaderActionButton
               key={action.id}
               {...action}
-              showArrow={false}
-              className={cn(action.className, 'lg:!flex-1 lg:min-w-0 lg:px-2 lg:gap-1.5')}
+              className={cn(action.className, '!flex-1 md:!flex-none lg:!flex-1 lg:min-w-0 lg:px-2 lg:gap-1.5')}
             />
           ))}
           <LangButton lang={lang} onLangToggle={onLangToggle} />
         </div>
       ) : (
-        /* Flex mode — actions + lang are direct flex children of the header,
-           preserving the original natural-width layout for pages that do not
-           opt into subgrid alignment (home, discovery, booking confirmation). */
-        <>
+        /* Flex mode — actions + lang are wrapped in a single right block.
+           Same mobile-grow behavior for the primary action if visible. */
+        <div
+          className={cn(
+            RIGHT_BLOCK_BASE_CLASS,
+            hasMobileAction && 'flex-1 md:flex-initial',
+          )}
+        >
           {actions.map((action) => (
-            <PageHeaderActionButton key={action.id} {...action} />
+            <PageHeaderActionButton
+              key={action.id}
+              {...action}
+              className={cn(action.className, '!flex-1 md:!flex-none')}
+            />
           ))}
           <LangButton lang={lang} onLangToggle={onLangToggle} />
-        </>
+        </div>
       )}
     </header>
   );
@@ -245,6 +261,7 @@ const buildMainNav = ({ lang, goto, exclude }: BuildMainNavOpts): PageHeaderActi
       label: it.label,
       onClick: () => goto(it.screen),
       variant: it.primary ? 'primary' : 'default',
+      showArrow: !!it.primary,
       className: it.primary ? undefined : 'hidden md:flex',
     }));
 };
