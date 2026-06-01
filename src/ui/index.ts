@@ -50,6 +50,8 @@ export type { VideoLoopProps } from './video-loop';
 export { ImageCrossfade } from './image-crossfade';
 export type { ImageCrossfadeProps, ImageCrossfadeSlide } from './image-crossfade';
 
+export { ResponsiveImage } from './responsive-image';
+
 export { Loader } from './loader';
 export type { LoaderProps, LoaderSize } from './loader';
 

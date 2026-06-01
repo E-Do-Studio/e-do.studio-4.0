@@ -9,7 +9,7 @@ import { buildGalleryCollectionSchema, buildBreadcrumbSchema } from "./lib/struc
 import { useGalleryProjects, useGalleryCategories } from "./lib/use-strapi";
 import type { GalleryProject } from "./lib/strapi";
 import type { Lang } from "./types";
-import { EmptyState, HoverMarquee, MobileNavStrip, PageHeader, buildMainNav } from "./ui";
+import { EmptyState, HoverMarquee, MobileNavStrip, PageHeader, ResponsiveImage, buildMainNav } from "./ui";
 import type { StripGroup } from "./ui";
 import { cn } from "./ui/cn";
 import { common, galleryPage, mobileNav } from "./i18n/messages";
@@ -354,11 +354,11 @@ const ProjectImage = ({
   } else {
     const altText = item.alt || `${project.brand} — ${imageIndex + 1}`;
     inner = (
-      <img
+      <ResponsiveImage
         src={item.previewUrl ?? item.url}
         alt={altText}
+        sizes="33vw"
         className="absolute inset-0 h-full w-full object-cover pointer-events-none"
-        loading="lazy"
       />
     );
   }
@@ -589,7 +589,7 @@ const GalleryPageV3 = () => {
   };
 
   return (
-    <div className="edo-page-enter grid w-full edo-hairline md:h-full md:grid-cols-gallery-shell md:grid-rows-page md:overflow-hidden">
+    <main className="edo-page-enter grid w-full edo-hairline md:h-full md:grid-cols-gallery-shell md:grid-rows-page md:overflow-hidden">
       <h1 className="sr-only">{common.gallery[lang]} — E-Do Studio Paris</h1>
 
       <PageHeader
@@ -656,7 +656,7 @@ const GalleryPageV3 = () => {
           }}
         />
       )}
-    </div>
+    </main>
   );
 };
 

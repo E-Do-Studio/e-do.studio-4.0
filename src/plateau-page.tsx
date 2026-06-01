@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from '@tanstack/react-router';
 import { Pause, Play } from 'lucide-react';
-import { BottomSheet, CarouselNav, CellLabel, HoverMarquee, IconArrowRight, IconSelector, PageHeader, buildMainNav } from './ui';
+import { BottomSheet, CarouselNav, CellLabel, HoverMarquee, IconArrowRight, IconSelector, PageHeader, ResponsiveImage, buildMainNav } from './ui';
 import { cn } from './ui/cn';
 import { VideoLoop } from './ui/video-loop';
 import { useDocumentMeta } from './lib/use-document-meta';
@@ -66,12 +66,12 @@ const Cover = ({ items, lang, plateauName, index, onPrev, onNext, className }: C
           className="absolute inset-0 h-full w-full"
         />
       ) : (
-        <img
+        <ResponsiveImage
           key={item.url}
           src={item.url}
           alt={item.alt[lang] || `${plateauName} — ${index + 1}`}
-          loading="eager"
-          decoding="async"
+          sizes="(min-width: 768px) 60vw, 100vw"
+          priority
           className={cn(
             'absolute inset-0 h-full w-full',
             fit === 'contain' ? 'object-contain' : 'object-cover',
@@ -150,11 +150,10 @@ const ThumbStrip = ({ items, lang, plateauName, activeIndex, onSelect, className
                   className="absolute inset-0 h-full w-full"
                 />
               ) : (
-                <img
+                <ResponsiveImage
                   src={item.previewUrl ?? item.url}
                   alt=""
-                  loading="lazy"
-                  decoding="async"
+                  sizes="120px"
                   className="absolute inset-0 h-full w-full object-cover"
                 />
               )}
@@ -216,7 +215,7 @@ const PlateauPage = ({ slug }: { slug: string }) => {
 
   return (
     /* Mobile: single-column stacked, scrollable. Desktop (md+): 4-column bento */
-    <div className="edo-page-enter grid w-full edo-hairline md:h-full md:grid-cols-plateau md:grid-rows-plateau md:overflow-hidden">
+    <main className="edo-page-enter grid w-full edo-hairline md:h-full md:grid-cols-plateau md:grid-rows-plateau md:overflow-hidden">
 
       {/* Unified header — compact right-aligned actions on all breakpoints */}
       <PageHeader
@@ -427,7 +426,7 @@ const PlateauPage = ({ slug }: { slug: string }) => {
           <IconArrowRight width="20" height="20"/>
         </div>
       </button>
-    </div>
+    </main>
   );
 };
 

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { buildStrapiSrcset, getStrapiLargeUrl } from '../lib/strapi';
 import { cn } from './cn';
 
 interface ImageCrossfadeSlide {
@@ -55,9 +56,12 @@ const ImageCrossfade = ({
     const only = images[0];
     return (
       <img
-        src={only.url}
+        src={getStrapiLargeUrl(only.url) ?? only.url}
+        srcSet={buildStrapiSrcset(only.url)}
+        sizes="100vw"
         alt={only.alt}
         fetchPriority={priority ? 'high' : 'auto'}
+        loading={priority ? 'eager' : 'lazy'}
         decoding="async"
         className={cn('pointer-events-none absolute inset-0 h-full w-full object-cover', className)}
       />
@@ -72,7 +76,9 @@ const ImageCrossfade = ({
         return (
           <img
             key={`${i}-${img.url}`}
-            src={img.url}
+            src={getStrapiLargeUrl(img.url) ?? img.url}
+            srcSet={buildStrapiSrcset(img.url)}
+            sizes="100vw"
             alt={active ? img.alt : ''}
             fetchPriority={priority && isFirst ? 'high' : 'auto'}
             loading={isFirst ? 'eager' : 'lazy'}

@@ -3,7 +3,7 @@ import type { DiscoveryPost, Lang } from '../types';
 import { DiscoveryCover } from './discovery-cover';
 import { ArticleMeta, CellBadge } from './shared';
 import { cn } from '../ui/cn';
-import { EmptyState } from '../ui';
+import { EmptyState, ResponsiveImage } from '../ui';
 import { cellBase, labelBase } from './styles';
 import { discoveryPage } from '../i18n/messages';
 
@@ -29,7 +29,12 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({ post, lang, onOpen, he
     {badge != null && <CellBadge n={badge} />}
     <div className="relative min-h-0 border-b border-border">
       {post.coverUrl ? (
-        <img src={post.coverUrl} alt={post.title[lang]} className="absolute inset-0 h-full w-full object-cover" />
+        <ResponsiveImage
+          src={post.coverUrl}
+          alt={post.title[lang]}
+          sizes={headline ? '(min-width: 1024px) 50vw, 100vw' : '(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw'}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
       ) : (
         <DiscoveryCover tone={post.tone} seed={post.id + 1} />
       )}

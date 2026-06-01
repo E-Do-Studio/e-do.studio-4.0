@@ -4,7 +4,7 @@ import { DiscoveryCover } from './discovery-cover';
 import { useEscapeKey } from './hooks';
 import { ArticleMeta, ArrowIcon } from './shared';
 import { renderMarkdown } from '../lib/render-markdown';
-import { EmptyState, HoverMarquee } from '../ui';
+import { EmptyState, HoverMarquee, ResponsiveImage } from '../ui';
 import { discoveryPage } from '../i18n/messages';
 import { useStructuredData } from '../lib/use-structured-data';
 import { buildBlogPostingSchema } from '../lib/structured-data';
@@ -47,7 +47,13 @@ export const ArticleOverlay: React.FC<ArticleOverlayProps> = ({ post, lang, onCl
       <div className="row-start-2 grid min-h-0 grid-cols-1 edo-hairline overflow-y-auto md:grid-cols-overlay md:overflow-hidden">
         <div className="relative min-h-64 bg-foreground md:min-h-0">
           {post.coverUrl ? (
-            <img src={post.coverUrl} alt={post.title[lang]} className="absolute inset-0 h-full w-full object-cover" />
+            <ResponsiveImage
+              src={post.coverUrl}
+              alt={post.title[lang]}
+              sizes="(min-width: 768px) 50vw, 100vw"
+              priority
+              className="absolute inset-0 h-full w-full object-cover"
+            />
           ) : (
             <DiscoveryCover tone={post.tone} seed={post.id + 1} />
           )}

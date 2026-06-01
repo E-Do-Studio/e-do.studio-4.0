@@ -273,7 +273,7 @@ const ContactRightColumn = ({ lang, contact, team }: ContactRightColumnProps) =>
 
 function buildMapsEmbedFallback(fullAddress?: string, street?: string, postalCode?: string, city?: string): string {
   const q = fullAddress || [street, postalCode, city].filter(Boolean).join(', ');
-  return `https://www.google.com/maps?q=${encodeURIComponent(q)}&z=15&output=embed`;
+  return `https://www.google.com/maps?q=${encodeURIComponent(q)}&z=17&output=embed`;
 }
 
 function buildMapsDirections(fullAddress?: string, street?: string, postalCode?: string, city?: string): string {

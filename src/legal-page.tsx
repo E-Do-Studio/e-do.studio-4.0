@@ -182,7 +182,7 @@ const LegalPage = () => {
   const articleCount = strapiBody.filter((s) => tryParseArticle(s.title[lang])).length;
 
   return (
-    <div className="edo-page-enter grid w-full edo-hairline md:grid-cols-contact-shell md:grid-rows-app md:h-full md:overflow-hidden">
+    <main className="edo-page-enter grid w-full edo-hairline md:grid-cols-contact-shell md:grid-rows-app md:h-full md:overflow-hidden">
 
       {/* Unified header — compact right-aligned actions on all breakpoints */}
       <PageHeader
@@ -359,7 +359,7 @@ const LegalPage = () => {
         </div>
       </div>
 
-    </div>
+    </main>
   );
 };
 
