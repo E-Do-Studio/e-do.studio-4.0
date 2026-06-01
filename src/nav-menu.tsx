@@ -1,12 +1,13 @@
 import { useNavigate } from '@tanstack/react-router';
-import { CellLabel, IconX, cn } from './ui';
+import { CellLabel, IconLock, IconX, cn } from './ui';
 import { useSocialLinks } from './lib/use-strapi';
-import { nav, common } from './i18n/messages';
+import { nav, common, home as homeMsg } from './i18n/messages';
 import type { Lang, SocialLink } from './types';
 
 interface NavItemDef {
   label: string;
   href: string;
+  disabled?: boolean;
 }
 
 interface NavOverlayProps {
@@ -51,26 +52,49 @@ const NavHeader = ({ onClose, lang }: NavHeaderProps) => (
 interface NavItemLinkProps {
   item: NavItemDef;
   index: number;
+  lang: Lang;
   onClose: () => void;
   navigate: (opts: { to: string }) => void;
 }
 
-const NavItemLink = ({ item, index, onClose, navigate }: NavItemLinkProps) => (
-  <a
-    href={item.href}
-    onClick={(e) => {
-      e.preventDefault();
-      onClose();
-      navigate({ to: item.href });
-    }}
-    className="edo-focus-ring relative flex min-h-13 cursor-pointer flex-col justify-between gap-1 border-b border-hairline px-4 py-2.5 no-underline transition-colors hover:bg-muted"
-  >
-    <CellLabel>{String(index + 1).padStart(2, "0")}</CellLabel>
-    <span className="mt-auto text-cell font-light text-foreground">
-      {item.label}
-    </span>
-  </a>
-);
+const NavItemLink = ({ item, index, lang, onClose, navigate }: NavItemLinkProps) => {
+  if (item.disabled) {
+    return (
+      <div
+        aria-disabled="true"
+        aria-label={`${item.label} — ${homeMsg.comingSoon[lang]}`}
+        className="relative flex min-h-13 cursor-not-allowed flex-col justify-between gap-1 border-b border-hairline px-4 py-2.5"
+      >
+        <div className="flex items-center justify-between gap-2">
+          <CellLabel>{String(index + 1).padStart(2, "0")}</CellLabel>
+          <span className="inline-flex items-center gap-1 font-mono text-micro uppercase tracking-meta text-muted-foreground">
+            <IconLock width="9" height="9" aria-hidden="true" />
+            {homeMsg.comingSoon[lang]}
+          </span>
+        </div>
+        <span className="mt-auto text-cell font-light text-muted-foreground">
+          {item.label}
+        </span>
+      </div>
+    );
+  }
+  return (
+    <a
+      href={item.href}
+      onClick={(e) => {
+        e.preventDefault();
+        onClose();
+        navigate({ to: item.href });
+      }}
+      className="edo-focus-ring relative flex min-h-13 cursor-pointer flex-col justify-between gap-1 border-b border-hairline px-4 py-2.5 no-underline transition-colors hover:bg-muted"
+    >
+      <CellLabel>{String(index + 1).padStart(2, "0")}</CellLabel>
+      <span className="mt-auto text-cell font-light text-foreground">
+        {item.label}
+      </span>
+    </a>
+  );
+};
 
 interface NavExternalLinkProps {
   href: string;
@@ -182,7 +206,7 @@ const NavMenu = ({ lang, isOpen, onClose, setLang }: NavMenuProps) => {
 
         <nav className="flex flex-1 flex-col overflow-y-auto" aria-label={common.menu[lang]}>
           {nav.items[lang].map((item, index) => (
-            <NavItemLink key={item.href} item={item} index={index} onClose={onClose} navigate={navigate} />
+            <NavItemLink key={item.href} item={item} index={index} lang={lang} onClose={onClose} navigate={navigate} />
           ))}
           <NavExternalLink
             href="https://etouch.e-do.studio"

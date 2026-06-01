@@ -761,7 +761,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
         onMenuClick={openMenu}
         onLogoClick={()=>goto('home')}
         onLangToggle={()=>setLang(lang==='fr'?'en':'fr')}
-        actions={buildMainNav({ lang, goto, exclude: 'book' })}
+        actions={buildMainNav({ lang, goto })}
       />
 
       {/* Desktop col 4 – dark label matching quote panel below */}

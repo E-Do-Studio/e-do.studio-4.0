@@ -109,7 +109,7 @@ const BookPicker = () => {
         onMenuClick={openMenu}
         onLogoClick={() => goto('home')}
         onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
-        actions={buildMainNav({ lang, goto, exclude: 'book' })}
+        actions={buildMainNav({ lang, goto })}
       />
 
       <main className="flex flex-col overflow-auto bg-white md:col-start-2 md:col-span-2 md:row-start-2">

@@ -28,7 +28,7 @@ const DiscoveryV2 = () => {
         {lang === 'fr' ? 'Discovery — Blog & actualités' : 'Discovery — Blog & news'} — E-Do Studio
       </h1>
       <DiscoveryHeader lang={lang} setLang={setLang} openMenu={openMenu} goto={goto} />
-      <SocialClientsBar lang={lang} onBook={() => goto('book')} className="row-start-2" />
+      <SocialClientsBar className="row-start-2" />
       <DiscoveryBentoGrid lang={lang} goto={goto} />
     </DiscoveryShell>
   );

@@ -290,15 +290,10 @@ const PostprodPage = () => {
     /* Mobile: single-column scrollable. Desktop (md+): sidebar + workspace */
     <div className="edo-page-enter grid w-full grid-cols-[minmax(0,1fr)] edo-hairline md:h-full md:grid-cols-plateau md:grid-rows-app md:overflow-hidden">
 
-      {/* Unified header — title aligns with the description col (col 2),
-          right block aligns with the samples block (cols 3-4) since postprod
-          inverts the plateau layout (descrip on the left, media on the right). */}
       <PageHeader
         lang={lang}
         title="Post-production"
         className="col-span-full h-14 md:col-span-full md:row-start-1 md:h-full"
-        titleClassName="lg:col-start-2 lg:col-span-1"
-        rightBlockClassName="lg:col-start-3 lg:col-span-2"
         onMenuClick={openMenu}
         onLogoClick={()=>goto('home')}
         onLangToggle={()=>setLang(lang==='fr'?'en':'fr')}
