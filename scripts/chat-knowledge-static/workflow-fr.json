@@ -1,0 +1,172 @@
+[
+  {
+    "id": "faq:packshot-ecommerce-fr",
+    "kind": "faq",
+    "slug": "packshot-ecommerce",
+    "lang": "fr",
+    "title": "Quel plateau pour un packshot e-commerce ?",
+    "url": "https://e-do.studio/fr/plateau/eclipse",
+    "body": "Pour un packshot e-commerce produit (accessoires, beauté, petits objets), le plateau **Eclipse** est le mieux adapté : système rotatif motorisé 4 axes, détourage automatique AutoAlpha™, livraison JPG/PNG/TIFF (vidéo MP4/MOV si besoin). Pour des vêtements à plat ou des compositions produits posées, on bascule sur le **plateau Horizontal** (Canon EOS R · 24–105 mm motorisé, détourage automatique). Compter en général une demi-journée (≈ 60–80 références sur Eclipse) à une journée complète selon le volume.",
+    "tags": ["packshot", "e-commerce", "eclipse", "horizontal", "détourage", "produits", "beauté", "accessoires"]
+  },
+  {
+    "id": "faq:packshot-bijoux-fr",
+    "kind": "faq",
+    "slug": "packshot-bijoux",
+    "lang": "fr",
+    "title": "Quel plateau pour un shoot bijoux ?",
+    "url": "https://e-do.studio/fr/plateau/eclipse",
+    "body": "Pour des bijoux ou de la petite maroquinerie, le plateau **Eclipse** est le bon choix : éclairage LED High-CRI continu, plateau rotatif 360°, contrôle iPad pour des prises de vues répétables. Le détourage est automatique grâce à AutoAlpha™. Prévoir une demi-journée pour 20–40 références. Si le volume dépasse 60 références, passer sur une journée complète.",
+    "tags": ["bijoux", "joaillerie", "petits objets", "eclipse", "macro", "rotation"]
+  },
+  {
+    "id": "faq:chaussures-fr",
+    "kind": "faq",
+    "slug": "chaussures",
+    "lang": "fr",
+    "title": "Quel plateau pour shooter des chaussures ?",
+    "url": "https://e-do.studio/fr/plateau/eclipse",
+    "body": "Pour les chaussures et accessoires, le plateau **Eclipse** est dédié : système rotatif 360°, 4 axes motorisés, lumière continue calibrée. Idéal pour produire des vues sous tous les angles et des vidéos courtes pour les fiches produit. Compter ~50 paires/jour. Pour une campagne portée (modèle), basculer sur **Live**.",
+    "tags": ["chaussures", "shoes", "accessoires", "eclipse", "rotation"]
+  },
+  {
+    "id": "faq:ghost-mannequin-fr",
+    "kind": "faq",
+    "slug": "ghost-mannequin",
+    "lang": "fr",
+    "title": "Vous faites du ghost mannequin ?",
+    "url": "https://e-do.studio/fr/plateau/vertical",
+    "body": "Oui. Le plateau **Vertical** est conçu pour le ghost mannequin (vêtement porté sur mannequin invisible) et le piqué pleine hauteur. Caméra Canon EOS R · 70–200 mm motorisée, détourage automatique. Compter ~60–80 pièces/jour selon la complexité. Livraison en JPG/PNG/TIFF/RAW prêts pour l'e-commerce.",
+    "tags": ["ghost", "mannequin", "vertical", "vêtement", "prêt-à-porter"]
+  },
+  {
+    "id": "faq:vetement-plat-fr",
+    "kind": "faq",
+    "slug": "vetement-plat",
+    "lang": "fr",
+    "title": "Vêtement à plat / packshot textile ?",
+    "url": "https://e-do.studio/fr/plateau/horizontal",
+    "body": "Pour du vêtement à plat (flat-lay), de la maille ou des compositions produit posées, le plateau **Horizontal** est dédié : Canon EOS R · 24–105 mm motorisé vertical, lumière continue LED High-CRI, détourage automatique AutoAlpha™. Compter ~80–120 pièces/jour. Idéal pour des linesheets ou des fiches produit massives.",
+    "tags": ["vêtement", "plat", "flat-lay", "horizontal", "maille", "linesheet"]
+  },
+  {
+    "id": "faq:mode-portee-fr",
+    "kind": "faq",
+    "slug": "mode-portee",
+    "lang": "fr",
+    "title": "Shoot mode porté / on-model ?",
+    "url": "https://e-do.studio/fr/plateau/live",
+    "body": "Pour de la mode portée (e-commerce, lookbook, linesheet sur modèle), le plateau **Live** est dédié au shooting porté et à la diffusion live (e-commerce + vidéo). Lumière continue, possibilité de stream. Prévoir une équipe : photographe, styliste, modèle(s) — l'équipe peut être fournie sur demande. Tarif plateau dès 450 €/jour HT, hors équipe externe.",
+    "tags": ["mode", "porté", "on-model", "live", "lookbook", "linesheet"]
+  },
+  {
+    "id": "faq:beauty-cosmetiques-fr",
+    "kind": "faq",
+    "slug": "beauty-cosmetiques",
+    "lang": "fr",
+    "title": "Photo & vidéo cosmétiques / beauty ?",
+    "url": "https://e-do.studio/fr/plateau/eclipse",
+    "body": "Pour des produits beauty (flacons, sticks, rouges à lèvres, parfums), le plateau **Eclipse** combine packshot rotatif et vidéo courte (rotation 360°, gros plans macro). Pour une campagne avec modèle/visage, basculer sur **Live** ou **Cyclorama** selon l'ampleur du dispositif lumière.",
+    "tags": ["beauty", "cosmétiques", "parfum", "eclipse", "macro", "vidéo"]
+  },
+  {
+    "id": "faq:campagne-editorial-fr",
+    "kind": "faq",
+    "slug": "campagne-editorial",
+    "lang": "fr",
+    "title": "Campagne, éditorial ou film publicitaire ?",
+    "url": "https://e-do.studio/fr/cyclorama",
+    "body": "Pour une campagne, un éditorial ou un film publicitaire, le **Cyclorama** est le bon plateau : 240 m² au sol avec un cyclo 2 faces de 32 m², skydomes occultables, quai de livraison 3,5 m × 4,5 m. Studio Broncolor, électricité 63A triphasée, Wi-Fi très haut débit, 2 cabines d'essayage, 2 postes maquillage, cuisine entièrement équipée. Demi-journée **650 €** HT, journée **880 €** HT.",
+    "tags": ["campagne", "éditorial", "cyclorama", "film", "publicitaire", "broncolor"]
+  },
+  {
+    "id": "faq:food-culinaire-fr",
+    "kind": "faq",
+    "slug": "food-culinaire",
+    "lang": "fr",
+    "title": "Photo culinaire / food ?",
+    "url": "https://e-do.studio/fr/plateau/horizontal",
+    "body": "Pour de la photo culinaire, le plateau **Horizontal** (top-shot) couvre les flat-lays et compositions plats. Pour une scène plus mise en scène (table dressée, ambiance), passer sur le **Cyclorama** qui dispose d'une cuisine entièrement équipée pour préparer/styliser sur place. Prévoir un styliste culinaire externe selon le brief.",
+    "tags": ["food", "culinaire", "horizontal", "cyclorama", "cuisine", "flat-lay"]
+  },
+  {
+    "id": "faq:duree-session-fr",
+    "kind": "faq",
+    "slug": "duree-session-typique",
+    "lang": "fr",
+    "title": "Combien de temps prévoir pour une session ?",
+    "url": "https://e-do.studio/fr/reserver",
+    "body": "À titre indicatif sur les plateaux automatisés : **Eclipse** ~50–80 références/jour (packshot rotatif), **Horizontal** ~80–120 pièces/jour (flat-lay), **Vertical** ~60–80 pièces/jour (ghost mannequin). En porté sur **Live** : ~120–200 looks/jour selon la complexité. Sur le **Cyclorama**, la durée dépend du dispositif (campagne, film) — compter une demi-journée minimum pour un setup léger, une à plusieurs journées pour une campagne. Tarif plateau dès **450 €/jour HT**.",
+    "tags": ["durée", "session", "volume", "productivité", "estimation"]
+  },
+  {
+    "id": "faq:postprod-delai-fr",
+    "kind": "faq",
+    "slug": "postprod-delai",
+    "lang": "fr",
+    "title": "Quel délai pour la post-production ?",
+    "url": "https://e-do.studio/fr/post-production",
+    "body": "La post-production est intégrée : retouche, détourage, colorimétrie, montage vidéo. Délais typiques : **48–72 h** pour un lot e-commerce standard (jusqu'à ~100 visuels avec détourage automatique), **5–7 jours** pour une campagne ou un film publicitaire avec étalonnage avancé. Les fichiers détourés (AutoAlpha™ Eclipse/Horizontal/Vertical) sont livrés J+1. Formats livrables : JPG, PNG, TIFF, RAW, MP4, MOV.",
+    "tags": ["post-production", "délai", "livraison", "retouche", "détourage", "colorimétrie"]
+  },
+  {
+    "id": "faq:visite-decouverte-fr",
+    "kind": "faq",
+    "slug": "visite-decouverte",
+    "lang": "fr",
+    "title": "Visite découverte du studio ?",
+    "url": "https://e-do.studio/fr/contact",
+    "body": "Oui : **visite gratuite ~1 h sur rendez-vous, du lundi au vendredi, 10 h – 18 h**. **Pas de visite le week-end** (ni samedi, ni dimanche). L'occasion de découvrir les 5 plateaux + le cyclorama, échanger sur votre projet, et estimer le bon dispositif. Pour planifier, écrivez à [contact@e-do.studio](mailto:contact@e-do.studio) ou passez par la [page contact](https://e-do.studio/fr/contact) — précisez « visite » dans votre message (le formulaire n'a pas de sélecteur de sujet).",
+    "tags": ["visite", "découverte", "tour", "rendez-vous", "studio", "lundi-vendredi"]
+  },
+  {
+    "id": "faq:horaires-weekend-fr",
+    "kind": "faq",
+    "slug": "horaires-weekend",
+    "lang": "fr",
+    "title": "Horaires d'ouverture et tarif week-end ?",
+    "url": "https://e-do.studio/fr/contact",
+    "body": "E-DO Studio est ouvert **du lundi au vendredi, 10 h – 18 h**. Les sessions **week-end (samedi et dimanche) sont possibles uniquement sur demande**, avec une **majoration de 25 %** sur le tarif plateau. Pour planifier un créneau week-end, écrivez à [contact@e-do.studio](mailto:contact@e-do.studio) — la demande est étudiée au cas par cas selon la disponibilité de l'équipe.",
+    "tags": ["horaires", "ouverture", "week-end", "weekend", "majoration", "samedi", "dimanche", "tarif"]
+  },
+  {
+    "id": "faq:formulaire-contact-fr",
+    "kind": "faq",
+    "slug": "formulaire-contact",
+    "lang": "fr",
+    "title": "Que contient le formulaire de contact ?",
+    "url": "https://e-do.studio/fr/contact",
+    "body": "Le [formulaire de contact](https://e-do.studio/fr/contact) est en **texte libre** : nom, téléphone, email, entreprise/marque, et un message. **Il n'y a pas de sélecteur de sujet** (pas d'option « visite studio », « devis », etc. à cocher) — précisez simplement votre demande dans le message. Pour un projet complexe ou une visite, vous pouvez aussi écrire directement à [contact@e-do.studio](mailto:contact@e-do.studio).",
+    "tags": ["contact", "formulaire", "form", "sujet", "topic"]
+  },
+  {
+    "id": "faq:combinaison-plateaux-fr",
+    "kind": "faq",
+    "slug": "combinaison-plateaux",
+    "lang": "fr",
+    "title": "On peut combiner plusieurs plateaux dans la même journée ?",
+    "url": "https://e-do.studio/fr/reserver",
+    "body": "Oui, c'est très courant : packshot **Eclipse** le matin + porté **Live** l'après-midi, ou ghost **Vertical** + flat-lay **Horizontal** sur une même journée. Le configurateur de réservation permet de combiner plusieurs sessions dans le même devis. Chaque plateau est facturé séparément. Idéal pour rentabiliser un déplacement d'équipe.",
+    "tags": ["combinaison", "plateaux", "multi-plateau", "réservation", "devis"]
+  },
+  {
+    "id": "faq:preparer-shoot-fr",
+    "kind": "faq",
+    "slug": "preparer-shoot",
+    "lang": "fr",
+    "title": "Que prévoir pour le jour du shoot ?",
+    "url": "https://e-do.studio/fr/contact",
+    "body": "Le studio fournit le **plateau, les machines, la lumière, l'opérateur** technique et la post-production. À prévoir de votre côté : les **produits** ou échantillons (étiquetés si volumes importants), votre **équipe créative** (DA, styliste, modèle, MUA — fournis sur demande), un **brief visuel** ou des références. Parking sur place, quai de livraison 3,5 m × 4,5 m H. Pour un brief détaillé, écrivez à [contact@e-do.studio](mailto:contact@e-do.studio).",
+    "tags": ["préparer", "shoot", "équipe", "brief", "checklist"]
+  },
+  {
+    "id": "faq:processus-reservation-fr",
+    "kind": "faq",
+    "slug": "processus-reservation",
+    "lang": "fr",
+    "title": "Comment réserver une journée studio ?",
+    "url": "https://e-do.studio/fr/reserver",
+    "body": "La [page de réservation](https://e-do.studio/fr/reserver) intègre un configurateur en 7 étapes : type de projet, plateau(x), durée, équipe, options post-production, contact, date + heure d'arrivée. Le devis est généré automatiquement et vous recevez une confirmation par email. Pour un cas complexe (campagne sur plusieurs jours, dispositif sur-mesure), écrivez directement à [contact@e-do.studio](mailto:contact@e-do.studio).",
+    "tags": ["réservation", "devis", "process", "booking", "configurateur"]
+  }
+]

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { useRouterState } from '@tanstack/react-router';
 import { IconArrowRight, cn } from './ui';
 import type { Lang, ChatMessage } from './types';
 import { assistant as assistantMsg, common } from './i18n/messages';
@@ -18,12 +19,22 @@ interface ChatResponse {
   error?: string;
 }
 
+// Backend regex (`/^\/[a-z0-9/_-]*$/i`) accepts only clean paths — strip
+// anything weirder (query, hash, accents) before sending.
+const CURRENT_PAGE_RE = /^\/[a-z0-9/_-]*$/i;
+const sanitizeCurrentPage = (path: string): string | undefined => {
+  if (!path) return undefined;
+  const stripped = path.split('?')[0].split('#')[0];
+  return CURRENT_PAGE_RE.test(stripped) && stripped.length <= 200 ? stripped : undefined;
+};
+
 const sendAssistantMessage = async (
   messages: ChatMessage[],
   lang: Lang,
+  currentPage: string | undefined,
 ): Promise<{ reply: string } | { error: ChatError }> => {
   const { data, error } = await supabase.functions.invoke<ChatResponse>('chat', {
-    body: { messages, lang },
+    body: { messages, lang, currentPage },
   });
 
   if (error) {
@@ -289,6 +300,7 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const currentPath = useRouterState({ select: (s) => s.resolvedLocation?.pathname ?? '' });
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -307,7 +319,7 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
     setLoading(true);
 
     try {
-      const result = await sendAssistantMessage(nextMessages, lang);
+      const result = await sendAssistantMessage(nextMessages, lang, sanitizeCurrentPage(currentPath));
       if ('reply' in result) {
         setMessages((currentMessages) => [...currentMessages, { role: 'assistant', content: result.reply }]);
       } else {
