@@ -19,8 +19,8 @@ const CookieBanner = ({ lang, onLegalClick }: CookieBannerProps) => {
       aria-label={cookieBanner.ariaLabel[lang]}
       className="fixed inset-x-0 bottom-0 z-modal border-t border-hairline bg-background text-foreground"
     >
-      <div className="flex flex-col gap-4 px-5 py-4 md:flex-row md:items-center md:justify-between md:gap-6 md:px-8 md:py-5">
-        <div className="flex flex-col gap-1.5 md:max-w-3xl">
+      <div className="flex flex-col md:flex-row md:items-stretch">
+        <div className="flex flex-1 flex-col gap-1.5 px-5 py-4 md:px-8 md:py-5">
           <span className="font-mono text-label tracking-meta uppercase text-primary">
             {cookieBanner.title[lang]}
           </span>
@@ -35,11 +35,19 @@ const CookieBanner = ({ lang, onLegalClick }: CookieBannerProps) => {
             </button>
           </p>
         </div>
-        <div className="flex flex-col gap-2 sm:flex-row md:shrink-0">
-          <Button variant="outline" size="default" onClick={reject}>
+        <div className="grid grid-cols-2 md:flex md:shrink-0">
+          <Button
+            variant="outline"
+            onClick={reject}
+            className="h-auto! self-stretch px-6! md:px-8! border-0! border-t! border-l! border-hairline! md:border-t-0!"
+          >
             {cookieBanner.reject[lang]}
           </Button>
-          <Button variant="default" size="default" onClick={accept}>
+          <Button
+            variant="default"
+            onClick={accept}
+            className="h-auto! self-stretch px-6! md:px-8!"
+          >
             {cookieBanner.accept[lang]}
           </Button>
         </div>
