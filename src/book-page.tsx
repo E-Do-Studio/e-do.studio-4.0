@@ -1,4 +1,4 @@
-import React, { useState as useStateBook, useMemo as useMemoBook, useCallback as useCallbackBook } from 'react';
+import React, { Fragment, useState as useStateBook, useMemo as useMemoBook, useCallback as useCallbackBook } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useQueryState, parseAsInteger } from 'nuqs';
 import { usePageContext } from './router';
@@ -14,6 +14,7 @@ import { useAvailability, isHourBlocked, clearAvailabilityCache } from './lib/av
 import type { Lang } from './types';
 import type { BookingSessionData } from './lib/bookings';
 import { common, booking as bookingMsg } from './i18n/messages';
+import { cn } from './ui/cn';
 import { pathForStep, confirmationPath, type BookMode } from './book/book-routes';
 import { saveConfirmation, type ConfirmationMode, type ConfirmationSessionSlot } from './book/confirmation-snapshot';
 
@@ -813,7 +814,44 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
         <CellLabel className="text-white/55">{bookingMsg.yourQuote[lang]}</CellLabel>
       </div>
 
-      <div className="bg-white overflow-x-auto flex flex-row md:col-start-1 md:row-start-2 md:flex-col md:overflow-x-hidden md:overflow-y-auto md:min-h-0">
+      <nav aria-label={lang === 'fr' ? 'Étapes de réservation' : 'Booking steps'} className="md:hidden bg-white border-b border-hairline">
+        <ol className="flex items-center px-5 pt-4">
+          {STEPS.map((s,i)=>{
+            const active = step===s.n;
+            const curIdx = STEPS.findIndex(x=>x.n===step);
+            const done = curIdx > -1 && i < curIdx;
+            const clickable = done || active || (i === curIdx + 1 && canNext()) || s.n===0;
+            return (
+              <Fragment key={s.n}>
+                <li className="flex-none">
+                  <button type="button" onClick={()=>{ if(clickable) goToStep(s.n); }}
+                    aria-current={active ? 'step' : undefined}
+                    aria-disabled={!clickable}
+                    aria-label={`${i+1}. ${s[lang]}`}
+                    className={cn(
+                      'edo-focus-ring p-2 -m-2 inline-flex items-center justify-center h-7 w-7 font-mono text-label tracking-meta transition-colors duration-150',
+                      active && 'bg-primary text-white',
+                      !active && done && 'bg-foreground text-white cursor-pointer',
+                      !active && !done && clickable && 'bg-white text-foreground border border-foreground cursor-pointer',
+                      !active && !done && !clickable && 'bg-white text-muted-foreground border border-hairline opacity-50 cursor-not-allowed',
+                    )}>
+                    {done ? '✓' : String(i+1).padStart(2,'0')}
+                  </button>
+                </li>
+                {i < STEPS.length - 1 && (
+                  <li aria-hidden className={cn('flex-1 h-px mx-2', i < curIdx ? 'bg-foreground' : 'bg-hairline')} />
+                )}
+              </Fragment>
+            );
+          })}
+        </ol>
+        <div className="px-5 pb-4 pt-3 font-mono text-micro tracking-code uppercase">
+          <span className="text-muted-foreground">{String(STEPS.findIndex(x=>x.n===step) + 1).padStart(2,'0')} · </span>
+          <span className="text-foreground">{STEPS.find(x=>x.n===step)?.[lang]}</span>
+        </div>
+      </nav>
+
+      <div className="hidden md:flex md:col-start-1 md:row-start-2 md:flex-col md:overflow-y-auto md:min-h-0 bg-white">
         {STEPS.map((s,i)=>{
           const active = step===s.n;
           const curIdx = STEPS.findIndex(x=>x.n===step);

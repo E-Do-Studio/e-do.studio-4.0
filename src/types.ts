@@ -39,6 +39,7 @@ export interface DiscoveryPost {
   read: string;
   author: string;
   coverUrl?: string;
+  coverMime?: string;
   publishedAt?: string;
   featured?: boolean;
   kind?: string;

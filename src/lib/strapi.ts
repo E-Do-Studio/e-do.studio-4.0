@@ -130,7 +130,7 @@ interface StrapiBlogPost {
   slug: string;
   excerpt: string;
   body?: string;
-  coverImage?: StrapiMedia;
+  coverMedia?: StrapiMedia;
   // Editorial date set by the editor (independent of Strapi's publish state).
   // `publishedAt` is kept as a fallback for posts that haven't been migrated
   // yet but is no longer authoritative (EDO-256).
@@ -796,7 +796,8 @@ function mapBlogPostToDiscovery(pFr: StrapiBlogPost, pEn: StrapiBlogPost, tone: 
     date: formatStrapiDate(displayDate),
     read: `${readingTime} min`,
     author: 'Studio',
-    coverUrl: resolveStrapiMediaUrl(pFr.coverImage),
+    coverUrl: resolveStrapiMediaUrl(pFr.coverMedia),
+    coverMime: pFr.coverMedia?.mime,
     publishedAt: pFr.publishedAt ?? undefined,
     featured: false,
     seo,
@@ -809,7 +810,7 @@ export async function fetchDiscoveryPosts(): Promise<DiscoveryPost[]> {
   // server-side fails with 400 on envs where the schema rename (EDO-256)
   // hadn't propagated yet, and a single 400 wipes the whole discovery page.
   const resBI = await fetchStrapiBilingual<{ data: StrapiBlogPost[] }>('blog-posts', {
-    'populate': 'categories,coverImage,seo,seo.image',
+    'populate': 'categories,coverMedia,seo,seo.image',
     'sort': 'createdAt:desc',
     'pagination[pageSize]': '50',
   });
@@ -830,7 +831,7 @@ export async function fetchDiscoveryPosts(): Promise<DiscoveryPost[]> {
 
 export async function fetchDiscoveryPost(slug: string): Promise<DiscoveryPost | null> {
   const resBI = await fetchStrapiBilingual<{ data: StrapiBlogPost[] }>('blog-posts', {
-    'populate': 'categories,coverImage,seo,seo.image',
+    'populate': 'categories,coverMedia,seo,seo.image',
     'filters[slug][$eq]': slug,
     'pagination[pageSize]': '1',
   });
@@ -1147,16 +1148,18 @@ export async function fetchLegalDocuments(): Promise<LegalDocumentMeta[]> {
   });
   const frSections = resBI.fr.data ?? [];
 
-  // Pick the most recent lastUpdatedAt per document.
+  // Pick the most recent lastUpdatedAt per document, and track which docs have content.
   const updatedByDoc = new Map<LegalDocumentKey, string>();
+  const docsWithContent = new Set<LegalDocumentKey>();
   for (const s of frSections) {
+    docsWithContent.add(s.documentKey);
     const existing = updatedByDoc.get(s.documentKey);
     if (!existing || (s.lastUpdatedAt && s.lastUpdatedAt > existing)) {
       updatedByDoc.set(s.documentKey, s.lastUpdatedAt ?? existing ?? '');
     }
   }
 
-  return LEGAL_DOCUMENT_ORDER.map((k) => ({
+  return LEGAL_DOCUMENT_ORDER.filter((k) => docsWithContent.has(k)).map((k) => ({
     k,
     fr: LEGAL_DOCUMENT_LABELS[k].fr,
     en: LEGAL_DOCUMENT_LABELS[k].en,

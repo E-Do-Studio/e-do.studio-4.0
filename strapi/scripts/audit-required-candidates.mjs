@@ -29,7 +29,7 @@ const CANDIDATES = [
   // table, column (DB), attribute (schema), severity
   ['blog_categories', 'title', 'title', 'major'],
   ['blog_posts', 'title', 'title', 'major'],
-  ['blog_posts', 'cover_image_id', 'coverImage', 'critical'],
+  ['blog_posts', 'cover_media_id', 'coverMedia', 'critical'],
   ['blog_posts', 'excerpt', 'excerpt', 'minor'],
   ['gallery_brands', 'logo_id', 'logo', 'critical'],
   ['gallery_brands', 'url', 'url', 'minor'],

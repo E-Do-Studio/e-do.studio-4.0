@@ -5,9 +5,9 @@ import { useStructuredData } from './lib/use-structured-data';
 import { useDiscoveryPost } from './lib/use-strapi';
 import { buildBlogPostingSchema, buildBreadcrumbSchema } from './lib/structured-data';
 import { renderMarkdown } from './lib/render-markdown';
-import { DiscoveryCover } from './discovery/discovery-cover';
+import { DiscoveryCoverMedia } from './discovery/discovery-cover';
 import { ArticleMeta, ArrowIcon } from './discovery/shared';
-import { Loader, HoverMarquee, ResponsiveImage } from './ui';
+import { Loader, HoverMarquee } from './ui';
 import { discoveryPage } from './i18n/messages';
 import { usePageContext } from './router';
 import { NotFoundPage } from './not-found-page';
@@ -80,17 +80,13 @@ export const DiscoveryPostPage = () => {
 
       <div className="row-start-2 grid min-h-0 grid-cols-1 edo-hairline overflow-y-auto md:grid-cols-overlay md:overflow-hidden">
         <div className="relative min-h-64 bg-foreground md:min-h-0">
-          {post.coverUrl ? (
-            <ResponsiveImage
-              src={post.coverUrl}
-              alt={post.title[lang]}
-              sizes="(min-width: 768px) 55vw, 100vw"
-              priority
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-          ) : (
-            <DiscoveryCover tone={post.tone} seed={post.id + 1} />
-          )}
+          <DiscoveryCoverMedia
+            post={post}
+            lang={lang}
+            sizes="(min-width: 768px) 55vw, 100vw"
+            priority
+            className="absolute inset-0 h-full w-full object-cover"
+          />
         </div>
         <article className="flex min-h-0 flex-col gap-5 overflow-y-auto bg-white px-6 py-8 md:px-12 md:py-10">
           <ArticleMeta post={post} lang={lang} />
@@ -104,7 +100,7 @@ export const DiscoveryPostPage = () => {
           )}
           {bodyHtml && (
             <div
-              className="prose prose-sm m-0 max-w-none text-foreground [&_a]:text-primary [&_a]:underline [&_blockquote]:border-l-2 [&_blockquote]:border-border [&_blockquote]:pl-4 [&_blockquote]:italic [&_h2]:mt-6 [&_h2]:text-lg [&_h2]:font-medium [&_h3]:mt-4 [&_h3]:text-base [&_h3]:font-medium [&_hr]:my-6 [&_hr]:border-border [&_img]:my-4 [&_img]:rounded [&_li]:ml-4 [&_p]:leading-relaxed [&_ul]:my-2 [&_ul]:list-disc"
+              className="prose prose-sm m-0 max-w-none text-foreground [&_a]:text-primary [&_a]:underline [&_blockquote]:border-l-2 [&_blockquote]:border-border [&_blockquote]:pl-4 [&_blockquote]:italic [&_h2]:mt-6 [&_h2]:text-lg [&_h2]:font-medium [&_h3]:mt-4 [&_h3]:text-base [&_h3]:font-medium [&_hr]:my-6 [&_hr]:border-border [&_img]:my-4 [&_img]:rounded [&_video]:my-4 [&_video]:block [&_video]:w-full [&_video]:h-auto [&_video]:rounded [&_li]:ml-4 [&_p]:leading-relaxed [&_ul]:my-2 [&_ul]:list-disc"
               dangerouslySetInnerHTML={{ __html: bodyHtml }}
             />
           )}

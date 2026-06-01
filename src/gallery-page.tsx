@@ -596,8 +596,8 @@ const GalleryPageV3 = () => {
         lang={lang}
         title={common.gallery[lang]}
         className="col-span-full h-14 md:col-span-full md:row-start-1 md:h-full"
-        titleClassName="lg:col-start-2 lg:col-span-3"
-        rightBlockClassName="lg:col-start-5"
+        titleClassName="lg:col-start-2 lg:col-span-2"
+        rightBlockClassName="lg:col-start-4 lg:col-span-2"
         onMenuClick={openMenu}
         onLogoClick={() => goto("home")}
         onLangToggle={() => setLang(lang === "fr" ? "en" : "fr")}

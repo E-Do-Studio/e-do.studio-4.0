@@ -25,15 +25,17 @@ interface TileProps {
 }
 
 const PickerTile = ({ index, label, description, variant, onClick, lang }: TileProps) => {
+  const onDark = variant === 'primary' || variant === 'foreground';
   const palette =
     variant === 'primary'
-      ? 'bg-white text-foreground hover:bg-muted'
+      ? 'bg-primary text-primary-foreground hover:bg-edo-orange/90'
       : variant === 'foreground'
-      ? 'bg-edo-gray-50 text-foreground hover:bg-muted'
-      : 'bg-muted text-foreground hover:bg-edo-gray-200';
-  const labelMutedTone = 'text-muted-foreground';
-  const descTone = 'text-muted-foreground';
-  const idxTone = 'text-muted-foreground';
+      ? 'bg-edo-black text-edo-white hover:bg-edo-dark'
+      : 'bg-white text-foreground hover:bg-edo-gray-50';
+  const subtleTone = onDark ? 'text-white/75' : 'text-muted-foreground';
+  const labelMutedTone = subtleTone;
+  const descTone = subtleTone;
+  const idxTone = subtleTone;
   return (
     <button
       type="button"

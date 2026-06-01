@@ -430,6 +430,31 @@ export async function fetchSafeBookings(
 
 // ─── Public entry point ──────────────────────────────────────────────────
 
+/**
+ * Strip slots that have already started in the studio's local timezone
+ * (Europe/Paris). Without this, the bot can suggest a 9 h–17 h slot today at
+ * 4 pm. Adds a 1 h buffer so the visitor has time to react before the slot
+ * begins.
+ */
+function dropPastSlots(slots: FreeSlot[], now: Date): FreeSlot[] {
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Paris",
+    hour12: false,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+  });
+  const parts: Record<string, string> = {};
+  for (const p of fmt.formatToParts(now)) {
+    if (p.type !== "literal") parts[p.type] = p.value;
+  }
+  const todayLocal = `${parts.year}-${parts.month}-${parts.day}`;
+  const hourLocal = Number.parseInt(parts.hour ?? "0", 10);
+  const minStartToday = hourLocal + 1;
+  return slots.filter((s) => s.date !== todayLocal || s.start_hour >= minStartToday);
+}
+
 /** Try the requested window first; if empty, search forward up to MAX_WINDOW_DAYS. */
 export async function getAvailability(
   client: MinimalSupabaseClient,
@@ -443,12 +468,15 @@ export async function getAvailability(
     intent.plateauKey,
   );
 
-  const initial = computeFreeSlots(safeRows, {
-    from: intent.windowStart,
-    to: intent.windowEnd,
-    plateauKey: intent.plateauKey,
-    minHours: intent.minHours,
-  }).slice(0, MAX_SLOTS_RETURNED);
+  const initial = dropPastSlots(
+    computeFreeSlots(safeRows, {
+      from: intent.windowStart,
+      to: intent.windowEnd,
+      plateauKey: intent.plateauKey,
+      minHours: intent.minHours,
+    }),
+    now,
+  ).slice(0, MAX_SLOTS_RETURNED);
 
   if (initial.length > 0) {
     return {
@@ -468,12 +496,15 @@ export async function getAvailability(
   }
 
   const fbRows = await fetchSafeBookings(client, fallbackFrom, fallbackTo, intent.plateauKey);
-  const fbSlots = computeFreeSlots(fbRows, {
-    from: fallbackFrom,
-    to: fallbackTo,
-    plateauKey: intent.plateauKey,
-    minHours: intent.minHours,
-  }).slice(0, MAX_SLOTS_RETURNED);
+  const fbSlots = dropPastSlots(
+    computeFreeSlots(fbRows, {
+      from: fallbackFrom,
+      to: fallbackTo,
+      plateauKey: intent.plateauKey,
+      minHours: intent.minHours,
+    }),
+    now,
+  ).slice(0, MAX_SLOTS_RETURNED);
 
   return {
     slots: fbSlots,

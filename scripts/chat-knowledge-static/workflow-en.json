@@ -1,0 +1,172 @@
+[
+  {
+    "id": "faq:packshot-ecommerce-en",
+    "kind": "faq",
+    "slug": "packshot-ecommerce",
+    "lang": "en",
+    "title": "Which stage for an e-commerce packshot?",
+    "url": "https://e-do.studio/en/plateau/eclipse",
+    "body": "For e-commerce product packshots (accessories, beauty, small objects), the **Eclipse** stage is the best fit: motorised 4-axis rotation system, AutoAlpha™ automatic clipping, output as JPG/PNG/TIFF (video MP4/MOV on request). For flat-laid garments or staged product compositions, switch to the **Horizontal** stage (Canon EOS R · motorised 24–105 mm, automatic clipping). Plan a half-day for ~60–80 references on Eclipse, a full day for larger volumes.",
+    "tags": ["packshot", "ecommerce", "eclipse", "horizontal", "clipping", "product", "beauty", "accessories"]
+  },
+  {
+    "id": "faq:packshot-bijoux-en",
+    "kind": "faq",
+    "slug": "packshot-bijoux",
+    "lang": "en",
+    "title": "Which stage for jewelry shoots?",
+    "url": "https://e-do.studio/en/plateau/eclipse",
+    "body": "For jewelry or small leather goods, **Eclipse** is the right pick: High-CRI continuous LED lighting, full 360° rotating platform, iPad control for repeatable shots. Clipping is automatic via AutoAlpha™. Plan a half-day for 20–40 SKUs. For a volume above 60 SKUs, book a full day.",
+    "tags": ["jewelry", "small objects", "eclipse", "macro", "rotation"]
+  },
+  {
+    "id": "faq:chaussures-en",
+    "kind": "faq",
+    "slug": "chaussures",
+    "lang": "en",
+    "title": "Which stage for footwear?",
+    "url": "https://e-do.studio/en/plateau/eclipse",
+    "body": "For shoes and accessories, the **Eclipse** stage is dedicated: 360° rotation system, 4 motorised axes, calibrated continuous light. Perfect for producing every angle and short product-page videos. Plan ~50 pairs/day. For an on-model campaign, switch to **Live**.",
+    "tags": ["shoes", "footwear", "accessories", "eclipse", "rotation"]
+  },
+  {
+    "id": "faq:ghost-mannequin-en",
+    "kind": "faq",
+    "slug": "ghost-mannequin",
+    "lang": "en",
+    "title": "Do you shoot ghost mannequin?",
+    "url": "https://e-do.studio/en/plateau/vertical",
+    "body": "Yes. The **Vertical** stage is built for ghost mannequin (garment on invisible mannequin) and full-height piqué. Camera Canon EOS R · motorised 70–200 mm, automatic clipping. Plan ~60–80 pieces/day depending on complexity. Delivery as JPG/PNG/TIFF/RAW ready for e-commerce.",
+    "tags": ["ghost", "mannequin", "vertical", "garment", "rtw"]
+  },
+  {
+    "id": "faq:vetement-plat-en",
+    "kind": "faq",
+    "slug": "vetement-plat",
+    "lang": "en",
+    "title": "Flat-laid garment / textile packshot?",
+    "url": "https://e-do.studio/en/plateau/horizontal",
+    "body": "For flat-laid garments, knitwear or product compositions, the **Horizontal** stage is dedicated: Canon EOS R · motorised 24–105 mm (vertical), High-CRI continuous LED lighting, AutoAlpha™ automatic clipping. Plan ~80–120 pieces/day. Ideal for linesheets or large product-page batches.",
+    "tags": ["garment", "flat", "flat-lay", "horizontal", "knitwear", "linesheet"]
+  },
+  {
+    "id": "faq:mode-portee-en",
+    "kind": "faq",
+    "slug": "mode-portee",
+    "lang": "en",
+    "title": "On-model fashion shoot?",
+    "url": "https://e-do.studio/en/plateau/live",
+    "body": "For on-model fashion (e-commerce, lookbook, linesheet on model), the **Live** stage is dedicated to on-model shooting and live broadcast (e-commerce + video). Continuous lighting, optional live-stream setup. Bring your crew: photographer, stylist, model(s) — crew can be sourced on request. Stage rate from **€450/day (excl. VAT)**, external crew not included.",
+    "tags": ["fashion", "on-model", "live", "lookbook", "linesheet"]
+  },
+  {
+    "id": "faq:beauty-cosmetiques-en",
+    "kind": "faq",
+    "slug": "beauty-cosmetiques",
+    "lang": "en",
+    "title": "Beauty / cosmetics photo & video?",
+    "url": "https://e-do.studio/en/plateau/eclipse",
+    "body": "For beauty products (bottles, sticks, lipsticks, fragrance), **Eclipse** combines rotating packshot and short video (360° rotation, macro close-ups). For an on-model campaign, switch to **Live** or **Cyclorama** depending on the lighting setup needed.",
+    "tags": ["beauty", "cosmetics", "fragrance", "eclipse", "macro", "video"]
+  },
+  {
+    "id": "faq:campagne-editorial-en",
+    "kind": "faq",
+    "slug": "campagne-editorial",
+    "lang": "en",
+    "title": "Campaign, editorial or commercial film?",
+    "url": "https://e-do.studio/en/cyclorama",
+    "body": "For a campaign, editorial or commercial film, the **Cyclorama** is the right stage: 240 m² floor with a 2-sided 32 m² cyclo, blackout skydomes, 3.5 m × 4.5 m loading dock. Broncolor studio, 63A 3-phase electricity, high-speed Wi-Fi, 2 fitting rooms, 2 make-up stations, fully equipped kitchen. Half-day **€650**, full day **€880** (excl. VAT).",
+    "tags": ["campaign", "editorial", "cyclorama", "film", "commercial", "broncolor"]
+  },
+  {
+    "id": "faq:food-culinaire-en",
+    "kind": "faq",
+    "slug": "food-culinaire",
+    "lang": "en",
+    "title": "Food / culinary photography?",
+    "url": "https://e-do.studio/en/plateau/horizontal",
+    "body": "For food photography, the **Horizontal** stage handles top-shots, flat-lays and plated compositions. For a more staged scene (set table, atmosphere), move to the **Cyclorama**, which has a fully equipped kitchen on-site for prep and styling. Plan to bring a food stylist per brief.",
+    "tags": ["food", "culinary", "horizontal", "cyclorama", "kitchen", "flat-lay"]
+  },
+  {
+    "id": "faq:duree-session-en",
+    "kind": "faq",
+    "slug": "duree-session-typique",
+    "lang": "en",
+    "title": "How long should I plan for a session?",
+    "url": "https://e-do.studio/en/book",
+    "body": "Rough volumes on automated stages: **Eclipse** ~50–80 SKUs/day (rotating packshot), **Horizontal** ~80–120 pieces/day (flat-lay), **Vertical** ~60–80 pieces/day (ghost mannequin). On-model on **Live**: ~120–200 looks/day depending on complexity. On the **Cyclorama**, time depends on the setup (campaign, film) — plan a half-day minimum for a light setup, a day or more for a campaign. Stage rate from **€450/day (excl. VAT)**.",
+    "tags": ["duration", "session", "volume", "productivity", "estimate"]
+  },
+  {
+    "id": "faq:postprod-delai-en",
+    "kind": "faq",
+    "slug": "postprod-delai",
+    "lang": "en",
+    "title": "Post-production turnaround?",
+    "url": "https://e-do.studio/en/post-production",
+    "body": "Post-production is in-house: retouching, clipping, color grading, video editing. Typical turnaround: **48–72 h** for a standard e-commerce batch (up to ~100 visuals with automatic clipping), **5–7 days** for a campaign or commercial film with advanced grading. Clipped files (AutoAlpha™ Eclipse/Horizontal/Vertical) are delivered next-day. Deliverable formats: JPG, PNG, TIFF, RAW, MP4, MOV.",
+    "tags": ["post-production", "turnaround", "delivery", "retouching", "clipping", "color grading"]
+  },
+  {
+    "id": "faq:visite-decouverte-en",
+    "kind": "faq",
+    "slug": "visite-decouverte",
+    "lang": "en",
+    "title": "Studio tour / discovery visit?",
+    "url": "https://e-do.studio/en/contact",
+    "body": "Yes: **free ~1h tour by appointment, Monday to Friday, 10am – 6pm**. **No tours on weekends** (no Saturday or Sunday). A chance to walk through the 5 stages + cyclorama, talk through your project, and estimate the right setup. To schedule, email [contact@e-do.studio](mailto:contact@e-do.studio) or use the [contact page](https://e-do.studio/en/contact) — mention \"tour\" in your message (the form has no topic selector).",
+    "tags": ["tour", "visit", "discovery", "appointment", "studio", "monday-friday"]
+  },
+  {
+    "id": "faq:horaires-weekend-en",
+    "kind": "faq",
+    "slug": "horaires-weekend",
+    "lang": "en",
+    "title": "Studio hours and weekend pricing?",
+    "url": "https://e-do.studio/en/contact",
+    "body": "E-DO Studio is open **Monday to Friday, 10am – 6pm**. **Weekend sessions (Saturday and Sunday) are available on request only**, with a **25% surcharge** on the stage rate. To plan a weekend slot, email [contact@e-do.studio](mailto:contact@e-do.studio) — each request is reviewed case-by-case based on crew availability.",
+    "tags": ["hours", "opening", "weekend", "surcharge", "saturday", "sunday", "rate"]
+  },
+  {
+    "id": "faq:formulaire-contact-en",
+    "kind": "faq",
+    "slug": "formulaire-contact",
+    "lang": "en",
+    "title": "What's in the contact form?",
+    "url": "https://e-do.studio/en/contact",
+    "body": "The [contact form](https://e-do.studio/en/contact) is **free-form**: name, phone, email, company/brand, and a message. **There is no topic selector** (no \"studio tour\", \"quote\", etc. dropdown) — just describe what you need in the message. For a complex project or a tour, you can also email [contact@e-do.studio](mailto:contact@e-do.studio) directly.",
+    "tags": ["contact", "form", "topic", "subject"]
+  },
+  {
+    "id": "faq:combinaison-plateaux-en",
+    "kind": "faq",
+    "slug": "combinaison-plateaux",
+    "lang": "en",
+    "title": "Can I combine several stages in one day?",
+    "url": "https://e-do.studio/en/book",
+    "body": "Yes, this is common: **Eclipse** packshot in the morning + on-model **Live** in the afternoon, or ghost **Vertical** + flat-lay **Horizontal** in a single day. The booking configurator lets you combine multiple sessions in the same quote. Each stage is billed separately. Good way to make a single crew day worth it.",
+    "tags": ["combination", "stages", "multi-stage", "booking", "quote"]
+  },
+  {
+    "id": "faq:preparer-shoot-en",
+    "kind": "faq",
+    "slug": "preparer-shoot",
+    "lang": "en",
+    "title": "What to bring for shoot day?",
+    "url": "https://e-do.studio/en/contact",
+    "body": "The studio provides the **stage, machines, lighting, technical operator** and post-production. On your side: the **products** or samples (labeled when volumes are high), your **creative crew** (AD, stylist, model, MUA — can be sourced on request), a **visual brief** or references. On-site parking, 3.5 m × 4.5 m H loading dock. For a detailed brief, email [contact@e-do.studio](mailto:contact@e-do.studio).",
+    "tags": ["prepare", "shoot", "crew", "brief", "checklist"]
+  },
+  {
+    "id": "faq:processus-reservation-en",
+    "kind": "faq",
+    "slug": "processus-reservation",
+    "lang": "en",
+    "title": "How do I book a studio day?",
+    "url": "https://e-do.studio/en/book",
+    "body": "The [booking page](https://e-do.studio/en/book) has a 7-step configurator: project type, stage(s), duration, crew, post-production options, contact, date + arrival time. The quote is generated automatically and you receive an email confirmation. For a complex case (multi-day campaign, custom setup), email [contact@e-do.studio](mailto:contact@e-do.studio) directly.",
+    "tags": ["booking", "quote", "process", "configurator"]
+  }
+]

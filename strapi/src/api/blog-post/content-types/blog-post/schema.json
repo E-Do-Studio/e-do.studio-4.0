@@ -41,11 +41,11 @@
       "inversedBy": "posts",
       "description": "Catégorie(s) associées à l'article."
     },
-    "coverImage": {
+    "coverMedia": {
       "type": "media",
       "multiple": false,
-      "allowedTypes": ["images"],
-      "description": "Image de couverture (1200×800 recommandé). Penser à renseigner l'alt text."
+      "allowedTypes": ["images", "videos"],
+      "description": "Cover de l'article (1200×800 recommandé pour image). Une vidéo (mp4/webm) est lue en boucle muette. Renseigner l'alt text."
     },
     "excerpt": {
       "type": "text",

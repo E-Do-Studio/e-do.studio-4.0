@@ -1,9 +1,9 @@
 import React from 'react';
 import type { DiscoveryPost, Lang } from '../types';
-import { DiscoveryCover } from './discovery-cover';
+import { DiscoveryCoverMedia } from './discovery-cover';
 import { ArticleMeta, CellBadge } from './shared';
 import { cn } from '../ui/cn';
-import { EmptyState, ResponsiveImage } from '../ui';
+import { EmptyState } from '../ui';
 import { cellBase, labelBase } from './styles';
 import { discoveryPage } from '../i18n/messages';
 
@@ -28,16 +28,12 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({ post, lang, onOpen, he
   >
     {badge != null && <CellBadge n={badge} />}
     <div className="relative min-h-0 border-b border-border">
-      {post.coverUrl ? (
-        <ResponsiveImage
-          src={post.coverUrl}
-          alt={post.title[lang]}
-          sizes={headline ? '(min-width: 1024px) 50vw, 100vw' : '(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw'}
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-      ) : (
-        <DiscoveryCover tone={post.tone} seed={post.id + 1} />
-      )}
+      <DiscoveryCoverMedia
+        post={post}
+        lang={lang}
+        sizes={headline ? '(min-width: 1024px) 50vw, 100vw' : '(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw'}
+        className="absolute inset-0 h-full w-full object-cover"
+      />
     </div>
 
     <div className={cn(

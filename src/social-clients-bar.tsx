@@ -12,7 +12,7 @@ const SocialClientsBar = ({ className }: SocialClientsBarProps) => (
       className,
     )}
   >
-    <SocialLinksRow className="h-12 md:h-11 md:border-b" />
+    <SocialLinksRow layout="row" className="h-12 md:h-11 md:border-b" />
     <div className="flex h-11 min-w-0 items-center overflow-hidden bg-white">
       <MarqueeCell size={20} />
     </div>
