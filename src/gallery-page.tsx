@@ -78,7 +78,6 @@ interface GalleryFiltersProps {
   setPlateau: (p: string) => void;
   categories: { k: string; fr: string; en: string }[];
   plateauOptions: { k: string; fr: string; en: string }[];
-  projects: GalleryProject[];
   catToPlateaux: Record<string, string[]>;
   plateauToCats: Record<string, string[]>;
 }
@@ -91,18 +90,9 @@ const GalleryFilters = ({
   setPlateau,
   categories,
   plateauOptions,
-  projects,
   catToPlateaux,
   plateauToCats,
 }: GalleryFiltersProps) => {
-  const countCat = (key: string) =>
-    key === "all"
-      ? projects.length
-      : projects.filter((p) => p.cat === key).length;
-  const countPlateau = (key: string) =>
-    key === "all"
-      ? projects.length
-      : projects.filter((p) => p.plateau === key).length;
   const hasFilters = cat !== "all" || plateau !== "all";
 
   return (
@@ -111,7 +101,6 @@ const GalleryFilters = ({
       <FilterCell
         label={common.all[lang]}
         active={cat === "all"}
-        count={countCat("all")}
         onClick={() => setCat("all")}
       />
       {categories.map((category) => {
@@ -123,7 +112,6 @@ const GalleryFilters = ({
             key={category.k}
             label={category[lang]}
             active={cat === category.k}
-            count={countCat(category.k)}
             dimmed={dimmed}
             onClick={() => {
               if (dimmed) setPlateau("all");
@@ -137,7 +125,6 @@ const GalleryFilters = ({
       <FilterCell
         label={common.all[lang]}
         active={plateau === "all"}
-        count={countPlateau("all")}
         onClick={() => setPlateau("all")}
       />
       {plateauOptions.map((option) => {
@@ -149,7 +136,6 @@ const GalleryFilters = ({
             key={option.k}
             label={option[lang]}
             active={plateau === option.k}
-            count={countPlateau(option.k)}
             dimmed={dimmed}
             onClick={() => {
               if (dimmed) setCat("all");
@@ -186,13 +172,11 @@ const FilterCell = ({
   label,
   active,
   onClick,
-  count,
   dimmed,
 }: {
   label: string;
   active: boolean;
   onClick: () => void;
-  count: number;
   dimmed?: boolean;
 }) => (
   <button
@@ -208,16 +192,6 @@ const FilterCell = ({
     <span className="overflow-hidden text-ellipsis whitespace-nowrap">
       {label}
     </span>
-    {count != null && (
-      <span
-        className={cn(
-          "shrink-0 font-mono text-label tracking-caption",
-          active ? "text-primary" : "text-muted-foreground",
-        )}
-      >
-        {count}
-      </span>
-    )}
   </button>
 );
 
@@ -534,12 +508,10 @@ const GalleryPageV3 = () => {
       {
         k: "all",
         label: allLabel,
-        count: projects.length,
       },
       ...categories.map((category) => ({
         k: category.k,
         label: category[lang],
-        count: projects.filter((p) => p.cat === category.k).length,
         dimmed:
           plateau !== "all" &&
           !(plateauToCats[plateau] ?? []).includes(category.k),
@@ -550,12 +522,10 @@ const GalleryPageV3 = () => {
       {
         k: "all",
         label: allLabel,
-        count: projects.length,
       },
       ...plateauOptions.map((option) => ({
         k: option.k,
         label: option[lang],
-        count: projects.filter((p) => p.plateau === option.k).length,
         dimmed:
           cat !== "all" && !(catToPlateaux[cat] ?? []).includes(option.k),
       })),
@@ -655,7 +625,6 @@ const GalleryPageV3 = () => {
             setPlateau={setPlateau}
             categories={categories}
             plateauOptions={plateauOptions}
-            projects={projects}
             catToPlateaux={catToPlateaux}
             plateauToCats={plateauToCats}
           />
