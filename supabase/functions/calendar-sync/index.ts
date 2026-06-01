@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.105.1";
 import {
-  buildBookingIcs,
+  buildSessionVEvent,
+  wrapCalendar,
   type IcalBookingRow,
   type IcalQuoteRow,
   type IcalSessionRow,
@@ -24,7 +25,6 @@ async function caldavPut(
   password: string,
   eventUid: string,
   icsData: string,
-  isUpdate: boolean,
 ): Promise<{ ok: boolean; status: number; statusText: string }> {
   const eventUrl = `${calendarUrl.replace(/\/$/, "")}/${eventUid}.ics`;
   const auth = btoa(`${username}:${password}`);
@@ -33,9 +33,6 @@ async function caldavPut(
     Authorization: `Basic ${auth}`,
     "Content-Type": "text/calendar; charset=utf-8",
   };
-  if (!isUpdate) {
-    headers["If-None-Match"] = "*";
-  }
 
   const res = await fetch(eventUrl, { method: "PUT", headers, body: icsData });
 
@@ -103,36 +100,54 @@ Deno.serve(async (req: Request) => {
     );
   }
 
-  const eventUid = `${booking.reference}@e-do.studio`;
-
-  if (action === "delete") {
-    const result = await caldavDelete(caldavUrl, caldavUser, caldavPass, eventUid);
-    return new Response(
-      JSON.stringify({ success: result.ok, status: result.status }),
-      { status: result.ok ? 200 : 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    );
-  }
-
   const [{ data: sessions }, { data: quoteRow }] = await Promise.all([
     supabase.from("booking_sessions").select("*").eq("booking_id", bookingId),
     supabase.from("booking_quotes").select("*").eq("booking_id", bookingId).maybeSingle(),
   ]);
 
+  const sessionList = (sessions ?? []) as IcalSessionRow[];
   const quoteRows = (quoteRow?.rows as IcalQuoteRow[]) ?? [];
   const quoteTotal: number | null = quoteRow?.total ?? null;
 
+  const legacyUid = `${booking.reference}@e-do.studio`;
+  const calName = `E-Do Studio — ${booking.reference}`;
+  const sessionUid = (sessionId: string) => `${booking.reference}-${sessionId}@e-do.studio`;
+
+  if (action === "delete") {
+    const legacyResult = await caldavDelete(caldavUrl, caldavUser, caldavPass, legacyUid);
+    const sessionResults = await Promise.all(
+      sessionList.map((s) => caldavDelete(caldavUrl, caldavUser, caldavPass, sessionUid(s.id))),
+    );
+    const allOk = legacyResult.ok && sessionResults.every((r) => r.ok);
+    return new Response(
+      JSON.stringify({ success: allOk, legacyUid, deletedSessions: sessionResults.length }),
+      { status: allOk ? 200 : 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
+
+  await caldavDelete(caldavUrl, caldavUser, caldavPass, legacyUid).catch(() => {});
+
   const isUpdate = action === "update";
-  const icsData = buildBookingIcs(
-    booking as IcalBookingRow,
-    (sessions ?? []) as IcalSessionRow[],
-    quoteRows,
-    quoteTotal,
-    { sequence: isUpdate ? 1 : 0 },
+  const results = await Promise.all(
+    sessionList.map(async (s) => {
+      const uid = sessionUid(s.id);
+      const vevent = buildSessionVEvent(
+        booking as IcalBookingRow,
+        s,
+        quoteRows,
+        quoteTotal,
+        { sequence: isUpdate ? 1 : 0 },
+      );
+      const ics = wrapCalendar([vevent], calName);
+      const r = await caldavPut(caldavUrl, caldavUser, caldavPass, uid, ics);
+      return { sessionId: s.id, uid, ...r };
+    }),
   );
-  const result = await caldavPut(caldavUrl, caldavUser, caldavPass, eventUid, icsData, isUpdate);
+
+  const allOk = results.every((r) => r.ok);
 
   return new Response(
-    JSON.stringify({ success: result.ok, status: result.status, statusText: result.statusText, eventUid }),
-    { status: result.ok ? 200 : 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    JSON.stringify({ success: allOk, sessions: results }),
+    { status: allOk ? 200 : 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
   );
 });
