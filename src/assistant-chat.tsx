@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { IconArrowRight, cn } from './ui';
 import type { Lang, ChatMessage } from './types';
-import { assistant as assistantMsg } from './i18n/messages';
+import { assistant as assistantMsg, common } from './i18n/messages';
 import { supabase } from './lib/supabase';
 
 const MAX_INPUT_CHARS = 1500;
@@ -268,6 +268,7 @@ const AssistantInput = ({ input, setInput, loading, lang, onSend, inputRef }: As
     <button
       type="submit"
       disabled={loading || !input.trim()}
+      aria-label={common.send[lang]}
       className="edo-focus-ring flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-muted-foreground transition-colors hover:text-foreground disabled:cursor-default disabled:opacity-30 disabled:hover:text-muted-foreground"
     >
       <IconArrowRight width="16" height="16" />

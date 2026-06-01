@@ -1,0 +1,27 @@
+# E-Do Studio
+
+> Studio photo et vidéo professionnel à Paris. Plateaux de prise de vue,
+> cyclorama, automation packshot et post-production pour marques de mode,
+> cosmétique, joaillerie et food.
+
+## Pages clés
+
+- [Accueil](https://e-do.studio/fr): vue d'ensemble du studio et des services
+- [Galerie](https://e-do.studio/fr/galerie): projets réalisés par marque et plateau
+- [Cyclorama](https://e-do.studio/fr/cyclorama): plateau cyclo 240 m² · 2 faces 32 m²
+- [Plateaux packshot](https://e-do.studio/fr/plateau/horizontal): automation horizontal · vertical · éclipse · live
+- [Post-production](https://e-do.studio/fr/post-production): retouche photo et vidéo, ghost, détourage
+- [Discovery](https://e-do.studio/fr/discovery): articles éditoriaux et tips production
+- [Réserver](https://e-do.studio/fr/reserver): configurateur et créneaux disponibles
+- [Contact](https://e-do.studio/fr/contact): adresse, horaires, équipe
+
+## English
+
+- [Home](https://e-do.studio/en)
+- [Gallery](https://e-do.studio/en/gallery)
+- [Book](https://e-do.studio/en/book)
+- [Contact](https://e-do.studio/en/contact)
+
+## Optional
+
+- [Mentions légales](https://e-do.studio/fr/legal)

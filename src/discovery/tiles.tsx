@@ -3,7 +3,7 @@ import type { DiscoveryPost, Lang } from '../types';
 import { DiscoveryCover } from './discovery-cover';
 import { ArrowIcon, CellBadge } from './shared';
 import { cn } from '../ui/cn';
-import { EmptyState } from '../ui';
+import { EmptyState, ResponsiveImage } from '../ui';
 import { cellBase, labelBase } from './styles';
 import { common, discoveryPage } from '../i18n/messages';
 import { renderInlineMarkdown } from '../lib/render-markdown';
@@ -86,7 +86,12 @@ export const SplitArticleCard: React.FC<SplitArticleCardProps> = ({ post, lang, 
     {badge != null && <CellBadge n={badge} />}
     <div className="relative min-h-56 overflow-hidden bg-foreground sm:min-h-0">
       {post.coverUrl ? (
-        <img src={post.coverUrl} alt={post.title[lang]} className="absolute inset-0 h-full w-full object-cover" />
+        <ResponsiveImage
+          src={post.coverUrl}
+          alt={post.title[lang]}
+          sizes="(min-width: 640px) 50vw, 100vw"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
       ) : (
         <DiscoveryCover tone={post.tone} seed={post.id + 10} />
       )}

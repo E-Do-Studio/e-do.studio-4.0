@@ -4,7 +4,7 @@ import { ArticleMeta, CellBadge } from './shared';
 import { DiscoveryCover } from './discovery-cover';
 import { FilterChips } from './filter-chips';
 import { cn } from '../ui/cn';
-import { EmptyState } from '../ui';
+import { EmptyState, ResponsiveImage } from '../ui';
 import { cellBase, labelBase } from './styles';
 import { discoveryPage } from '../i18n/messages';
 
@@ -46,7 +46,12 @@ export const MorePostsCard: React.FC<MorePostsCardProps> = ({ posts, lang, onOpe
           >
             <div className="relative aspect-square overflow-hidden">
               {post.coverUrl ? (
-                <img src={post.coverUrl} alt={post.title[lang]} className="absolute inset-0 h-full w-full object-cover" />
+                <ResponsiveImage
+                  src={post.coverUrl}
+                  alt={post.title[lang]}
+                  sizes="80px"
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
               ) : (
                 <DiscoveryCover tone={post.tone} seed={post.id + 4} />
               )}

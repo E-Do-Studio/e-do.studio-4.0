@@ -1,5 +1,5 @@
-import { lazy, Suspense } from 'react';
-import { CellLabel, HoverMarquee, IconArrowRight, IconLock, ImageCrossfade, MobileAssistantFab, PageHeader, VideoLoop, cn } from './ui';
+import { lazy, Suspense, useEffect, useState } from 'react';
+import { CellLabel, HoverMarquee, IconArrowRight, IconLock, ImageCrossfade, MobileAssistantFab, PageHeader, ResponsiveImage, VideoLoop, cn } from './ui';
 import { BookCTATile } from './book-cta';
 import { SocialClientsBar } from './social-clients-bar';
 
@@ -65,9 +65,26 @@ const MachineRow = ({ idx, m, lang, onClick, isLast }: MachineRowProps) => (
   </button>
 );
 
+// The chat cell takes a 3×2 desktop slot but is `hidden` on mobile. Without
+// a viewport gate the lazy chunk (and Supabase) would still load on phones
+// for an offscreen widget — defer the mount to desktop and let the FAB
+// own the mobile path.
+function useIsDesktop(): boolean {
+  const [isDesktop, setIsDesktop] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 768px)');
+    const update = () => setIsDesktop(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
+  return isDesktop;
+}
+
 const DirectionA = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
   useDocumentMeta('home', lang);
+  const isDesktop = useIsDesktop();
   const { data: socialLinks } = useSocialLinks();
   const { data: machines } = useMachines();
   const { data: contact } = useContact();
@@ -109,7 +126,7 @@ const DirectionA = () => {
 
   return (
     /* Mobile: 2-col grid, vertical scroll. Desktop (md+): 12-col bento, fixed viewport */
-    <div className="edo-page-enter grid w-full grid-cols-2 edo-hairline md:h-full md:grid-cols-12 md:grid-rows-home md:overflow-hidden">
+    <main className="edo-page-enter grid w-full grid-cols-2 edo-hairline md:h-full md:grid-cols-12 md:grid-rows-home md:overflow-hidden">
       <h1 className="sr-only">E-Do Studio — {homeMsg.srTitle[lang]}</h1>
 
       {/* ── Row 1: Header ── */}
@@ -197,11 +214,11 @@ const DirectionA = () => {
         {galleryUseCrossfade ? (
           <ImageCrossfade images={heroPosters} priority />
         ) : galleryHasCmsPosters ? (
-          <img
+          <ResponsiveImage
             src={heroPosters[0].url}
             alt={heroPosters[0].alt}
-            fetchPriority="high"
-            decoding="async"
+            sizes="(min-width: 768px) 50vw, 100vw"
+            priority
             className="pointer-events-none absolute inset-0 h-full w-full object-cover"
           />
         ) : (
@@ -299,6 +316,7 @@ const DirectionA = () => {
       <div className="col-span-2 aspect-[5/4] flex overflow-hidden bg-black md:col-span-3 md:col-start-1 md:col-end-4 md:row-start-5 md:aspect-auto md:min-h-0">
         <button
           onClick={() => goto('gallery')}
+          aria-label={common.gallery[lang]}
           className="edo-focus-ring group relative flex h-full w-full cursor-pointer items-center justify-center overflow-hidden border-0 bg-edo-dark p-0 text-left transition-all duration-150 hover:brightness-75"
         >
           {heroShowStaticPicture ? (
@@ -339,7 +357,6 @@ const DirectionA = () => {
         type="button"
         disabled
         aria-disabled="true"
-        aria-label={`Discovery — ${homeMsg.comingSoon[lang]}`}
         tabIndex={-1}
         className="pointer-events-none cursor-not-allowed group relative col-span-2 h-20 flex items-center justify-between gap-3 border-0 bg-foreground px-4 py-3 text-left text-white md:col-span-3 md:col-start-1 md:col-end-4 md:row-start-6 md:h-21"
       >
@@ -364,20 +381,29 @@ const DirectionA = () => {
         </div>
       </button>
 
-      {/* ── Rows 5-6 far right: Assistant chat (desktop only; mobile uses FAB) ── */}
-      <Suspense
-        fallback={
-          <div
-            aria-hidden
-            className="hidden bg-white md:flex md:col-start-10 md:col-end-13 md:row-start-5 md:row-end-7 md:min-h-0"
+      {/* ── Rows 5-6 far right: Assistant chat (desktop only; mobile uses FAB) ──
+          Mounted only above md so phones never download the chat chunk
+          (and its Supabase dependency) for an offscreen widget. */}
+      {isDesktop ? (
+        <Suspense
+          fallback={
+            <div
+              aria-hidden
+              className="hidden bg-white md:flex md:col-start-10 md:col-end-13 md:row-start-5 md:row-end-7 md:min-h-0"
+            />
+          }
+        >
+          <AssistantChat
+            lang={lang}
+            className="hidden md:flex md:col-start-10 md:col-end-13 md:row-start-5 md:row-end-7 md:min-h-0"
           />
-        }
-      >
-        <AssistantChat
-          lang={lang}
-          className="hidden md:flex md:col-start-10 md:col-end-13 md:row-start-5 md:row-end-7 md:min-h-0"
+        </Suspense>
+      ) : (
+        <div
+          aria-hidden
+          className="hidden bg-white md:flex md:col-start-10 md:col-end-13 md:row-start-5 md:row-end-7 md:min-h-0"
         />
-      </Suspense>
+      )}
 
       {/* ── Mobile chat FAB + sheet ──
           Discreet 40px floating button that opens a full-screen sheet on
@@ -385,7 +411,7 @@ const DirectionA = () => {
           MobileAssistantFab so the discovery page can reuse the same UX. */}
       <MobileAssistantFab lang={lang} />
 
-    </div>
+    </main>
   );
 };
 

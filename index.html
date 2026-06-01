@@ -40,9 +40,11 @@
 <meta name="twitter:description" content="Studio photo et vidéo professionnel à Paris. Cyclorama, plateaux de prise de vue, post-production."/>
 <meta name="twitter:image" content="https://e-do.studio/twitter-card.png"/>
 
-<!-- Critical self-hosted fonts: preload to remove FOUT on first paint -->
-<link rel="preload" as="font" type="font/woff2" href="/fonts/space-grotesk-variable-latin.woff2" crossorigin/>
-<link rel="preload" as="font" type="font/woff2" href="/fonts/ibm-plex-mono-400-latin.woff2" crossorigin/>
+<!-- Critical self-hosted fonts: preload the Light (300) cut used by the hero
+     titles + the Mono Book (400) used for eyebrow labels. The remaining ABC
+     Favorit weights are pulled by the CSS @font-face declarations on demand. -->
+<link rel="preload" as="font" type="font/woff2" href="/fonts/ABCFavorit-Light.woff2" crossorigin/>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/ABCFavoritMono-Book.woff2" crossorigin/>
 
 <!-- LCP preload: gallery hero (largest above-the-fold image on home) -->
 <link rel="preload" as="image" href="/gallery-hero.avif" type="image/avif" fetchpriority="high"/>

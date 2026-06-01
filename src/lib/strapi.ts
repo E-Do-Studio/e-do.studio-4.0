@@ -117,6 +117,7 @@ interface StrapiMedia {
   width?: number | null;
   height?: number | null;
   formats?: {
+    large?: { url: string };
     medium?: { url: string };
     small?: { url: string };
     thumbnail?: { url: string };
@@ -725,6 +726,54 @@ function resolveRawMediaUrl(media?: StrapiMedia | null): string | undefined {
   if (!media?.url) return undefined;
   if (media.url.startsWith('http')) return media.url;
   return `${STRAPI_URL}${media.url}`;
+}
+
+// Strapi 5 generates responsive derivatives for every uploaded image, written
+// to the same bucket as `<variant>_<original>.<ext>` (thumbnail 245w, small
+// 500w, medium 750w, large 1000w). `coverUrl`/`previewUrl` strings reaching
+// the UI may already be one of these variants — strip the prefix to recover
+// the stem, then synthesize the full srcset.
+const STRAPI_FORMAT_PREFIXES = ['large_', 'medium_', 'small_', 'thumbnail_'] as const;
+
+function splitVariantUrl(url: string): { dir: string; stem: string; query: string } | null {
+  const m = url.match(/^(.*\/)([^/?#]+\.(?:jpg|jpeg|png|webp|avif))(\?.*)?$/i);
+  if (!m) return null;
+  const [, dir, filename, query = ''] = m;
+  let stem = filename;
+  for (const prefix of STRAPI_FORMAT_PREFIXES) {
+    if (filename.startsWith(prefix)) {
+      stem = filename.slice(prefix.length);
+      break;
+    }
+  }
+  return { dir, stem, query };
+}
+
+// Build a `srcset` covering thumbnail/small/medium/large for a Strapi-served
+// image URL. Returns `undefined` for URLs that don't match (SVG, external,
+// unrecognized extension) so the caller can skip the attribute entirely.
+export function buildStrapiSrcset(url: string | undefined | null): string | undefined {
+  if (!url) return undefined;
+  const parts = splitVariantUrl(url);
+  if (!parts) return undefined;
+  const { dir, stem, query } = parts;
+  return [
+    `${dir}thumbnail_${stem}${query} 245w`,
+    `${dir}small_${stem}${query} 500w`,
+    `${dir}medium_${stem}${query} 750w`,
+    `${dir}large_${stem}${query} 1000w`,
+  ].join(', ');
+}
+
+// Largest derivative (`large_*`, ~1000px wide, typically 30–60 KB) used as
+// the default `src`. Falls back to the input URL when the pattern doesn't
+// match — preserves behaviour for non-Strapi assets.
+export function getStrapiLargeUrl(url: string | undefined | null): string | undefined {
+  if (!url) return undefined;
+  const parts = splitVariantUrl(url);
+  if (!parts) return url;
+  const { dir, stem, query } = parts;
+  return `${dir}large_${stem}${query}`;
 }
 
 function mapBlogPostToDiscovery(pFr: StrapiBlogPost, pEn: StrapiBlogPost, tone: 'warm' | 'mono' | 'dark'): DiscoveryPost {

@@ -84,26 +84,14 @@
       "description": "Adresse postale structurée. Remplace progressivement `street`/`city`/`postalCode`/`country`/`fullAddress`. Tant que vide, le front continue de lire les champs plats."
     },
     "googleMapsUrl": {
-      "type": "string",
-      "regex": "^https://(www\\.)?google\\.[a-z.]+/maps.+",
-      "description": "URL Google Maps publique (ouvre dans un nouvel onglet)."
+      "type": "text",
+      "regex": "^https://(www\\.)?(google\\.[a-z.]+/maps|maps\\.app\\.goo\\.gl)/.+",
+      "description": "URL Google Maps publique (ouvre dans un nouvel onglet). Accepte les liens longs `google.com/maps/...` et les raccourcis `maps.app.goo.gl/...`."
     },
     "mapsEmbedUrl": {
-      "type": "string",
+      "type": "text",
       "regex": "^https://www\\.google\\.com/maps/embed\\?.+",
-      "description": "URL d'iframe Google Maps Embed. Validé pour éviter une injection arbitraire (rendu en <iframe>)."
-    },
-    "latitude": {
-      "type": "float",
-      "min": -90,
-      "max": 90,
-      "description": "Coordonnée GPS (latitude)."
-    },
-    "longitude": {
-      "type": "float",
-      "min": -180,
-      "max": 180,
-      "description": "Coordonnée GPS (longitude)."
+      "description": "URL d'iframe Google Maps Embed (peut faire >255 caractères). Validé pour éviter une injection arbitraire (rendu en <iframe>)."
     },
     "transport": {
       "type": "component",

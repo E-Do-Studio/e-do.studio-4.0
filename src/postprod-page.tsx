@@ -8,6 +8,7 @@ import {
   IconArrowRight,
   IconSelector,
   PageHeader,
+  ResponsiveImage,
   buildMainNav,
   cn,
 } from './ui';
@@ -123,10 +124,10 @@ const SampleImage = ({ sample, label, medium }: SampleImageProps) => {
   if (sample.kind === 'image') {
     return (
       <div className="relative w-full h-full overflow-hidden bg-muted">
-        <img
+        <ResponsiveImage
           src={sample.url}
           alt={sample.alt || label || ''}
-          loading="lazy"
+          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
           className="absolute inset-0 w-full h-full object-cover"
         />
         {label && (
@@ -288,7 +289,7 @@ const PostprodPage = () => {
 
   return (
     /* Mobile: single-column scrollable. Desktop (md+): sidebar + workspace */
-    <div className="edo-page-enter grid w-full grid-cols-[minmax(0,1fr)] edo-hairline md:h-full md:grid-cols-plateau md:grid-rows-app md:overflow-hidden">
+    <main className="edo-page-enter grid w-full grid-cols-[minmax(0,1fr)] edo-hairline md:h-full md:grid-cols-plateau md:grid-rows-app md:overflow-hidden">
 
       <PageHeader
         lang={lang}
@@ -482,7 +483,7 @@ const PostprodPage = () => {
           </div>
         ))}
       </div>
-    </div>
+    </main>
   );
 };
 

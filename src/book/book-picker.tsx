@@ -39,7 +39,7 @@ const PickerTile = ({ index, label, description, variant, onClick, lang }: TileP
       type="button"
       onClick={onClick}
       className={cn(
-        'edo-focus-ring group flex flex-1 min-h-40 cursor-pointer flex-col gap-3 border-0 px-6 py-7 text-left transition-[color,background-color,opacity] duration-150 ease-edo-out md:aspect-square md:min-h-0 md:border-t md:border-edo-pure-black md:px-8 md:py-8',
+        'edo-focus-ring group flex flex-1 min-h-40 cursor-pointer flex-col gap-3 border-0 px-6 py-7 text-left transition-[color,background-color,opacity] duration-150 ease-edo-out md:aspect-square md:min-h-fit md:min-w-0 md:border-t md:border-edo-pure-black md:px-8 md:py-8',
         palette,
       )}
     >

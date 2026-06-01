@@ -7,7 +7,7 @@ import { buildBlogPostingSchema, buildBreadcrumbSchema } from './lib/structured-
 import { renderMarkdown } from './lib/render-markdown';
 import { DiscoveryCover } from './discovery/discovery-cover';
 import { ArticleMeta, ArrowIcon } from './discovery/shared';
-import { Loader, HoverMarquee } from './ui';
+import { Loader, HoverMarquee, ResponsiveImage } from './ui';
 import { discoveryPage } from './i18n/messages';
 import { usePageContext } from './router';
 import { NotFoundPage } from './not-found-page';
@@ -59,7 +59,7 @@ export const DiscoveryPostPage = () => {
   const backToIndex = () => navigate({ to: '/$lang/discovery', params: { lang } });
 
   return (
-    <div className="edo-page-enter grid w-full grid-rows-page min-h-screen edo-hairline overflow-hidden">
+    <main className="edo-page-enter grid w-full grid-rows-page min-h-screen edo-hairline overflow-hidden">
       <div className="row-start-1 flex edo-hairline">
         <button
           onClick={backToIndex}
@@ -81,7 +81,13 @@ export const DiscoveryPostPage = () => {
       <div className="row-start-2 grid min-h-0 grid-cols-1 edo-hairline overflow-y-auto md:grid-cols-overlay md:overflow-hidden">
         <div className="relative min-h-64 bg-foreground md:min-h-0">
           {post.coverUrl ? (
-            <img src={post.coverUrl} alt={post.title[lang]} className="absolute inset-0 h-full w-full object-cover" />
+            <ResponsiveImage
+              src={post.coverUrl}
+              alt={post.title[lang]}
+              sizes="(min-width: 768px) 55vw, 100vw"
+              priority
+              className="absolute inset-0 h-full w-full object-cover"
+            />
           ) : (
             <DiscoveryCover tone={post.tone} seed={post.id + 1} />
           )}
@@ -115,6 +121,6 @@ export const DiscoveryPostPage = () => {
           </footer>
         </article>
       </div>
-    </div>
+    </main>
   );
 };
