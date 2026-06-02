@@ -47,6 +47,11 @@
       "required": true,
       "allowedTypes": ["images", "videos"],
       "description": "Médias du projet : exactement 3 entrées, images ou vidéos (mp4/webm). Validé par lifecycles.ts. Le fichier 1 sert de couverture par défaut. Les migrations 2026.05.25T10.20.00.gallery-project-images-to-media.js et 2026.05.25T10.30.00.gallery-project-unify-media.js renomment les anciens liens `images` vers ce champ."
+    },
+    "displayOrder": {
+      "type": "integer",
+      "default": 0,
+      "description": "Ordre d'affichage dans la galerie publique. Géré via la page admin « Ordre galerie » (drag-and-drop), masqué de la vue d'édition. Trié display_order:asc côté front."
     }
   }
 }
