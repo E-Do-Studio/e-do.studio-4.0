@@ -1,5 +1,12 @@
 import { supabase } from './supabase';
 import type { Database } from './database.types';
+import type {
+  BookingSessionData,
+  BookingQuoteData,
+  CreateBookingInput,
+} from './booking-engine';
+
+export type { BookingSessionData, BookingQuoteData, CreateBookingInput };
 
 type BookingInsert = Database['public']['Tables']['bookings']['Insert'];
 type BookingSessionInsert = Database['public']['Tables']['booking_sessions']['Insert'];
@@ -14,50 +21,6 @@ function generateReference(mode: 'quote' | 'booking' | 'request'): string {
     code += chars[Math.floor(Math.random() * chars.length)];
   }
   return prefix + code;
-}
-
-export interface BookingSessionData {
-  plateauKey: string;
-  slotType: string | null;
-  hours: number;
-  date: { y: number; m: number; d: number } | null;
-  arrivalHour: number | null;
-  cycloMode: string | null;
-  productType: string | null;
-  method: string | null;
-  submethod: string | null;
-  media: string[];
-  views: string[];
-  viewsCount: number;
-  quantity: number;
-  postprodEnabled: boolean;
-  postprodVideo: boolean;
-}
-
-export interface BookingQuoteData {
-  rows: { lbl: string; amt: number; onReq?: boolean; estimate?: boolean }[];
-  total: number;
-}
-
-export interface CreateBookingInput {
-  mode: 'quote' | 'booking' | 'request';
-  contact: {
-    nom: string;
-    prenom: string;
-    email: string;
-    tel: string;
-    societe: string;
-    siren: string;
-    adresseFacturation: string;
-    marque: string;
-    autresInfos: string;
-  };
-  projectType: string | null;
-  urgency: string | null;
-  sessions: BookingSessionData[];
-  quote: BookingQuoteData;
-  preferredDate: { y: number; m: number; d: number } | null;
-  arrivalHour: number | null;
 }
 
 export interface CreateBookingResult {

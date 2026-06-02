@@ -198,6 +198,46 @@ export const assistant = {
     fr: 'Un {devis} ? Une {visite} ? Une question sur la {post-production} ?',
     en: 'A {quote}? A {tour}? A question about {post-prod}?',
   } as B,
+  bookingRecapTitle: { fr: 'Récapitulatif de réservation', en: 'Booking summary' } as B,
+  bookingTotalHT: { fr: 'Total HT', en: 'Total excl. tax' } as B,
+  bookingTotalTTC: { fr: 'TTC (TVA 20%)', en: 'incl. tax (20% VAT)' } as B,
+  bookingContact: { fr: 'Contact', en: 'Contact' } as B,
+  bookingCgv: {
+    fr: "J'accepte les conditions générales de vente.",
+    en: 'I accept the terms and conditions of sale.',
+  } as B,
+  bookingEstimateNote: {
+    fr: 'Estimation — le créneau et le devis pourront être ajustés par notre équipe après échange.',
+    en: 'Estimate — the slot and quote may be adjusted by our team after a chat.',
+  } as B,
+  bookingConfirm: { fr: 'Confirmer la réservation', en: 'Confirm booking' } as B,
+  bookingConfirming: { fr: 'Réservation en cours…', en: 'Booking…' } as B,
+  bookingSuccess: {
+    fr: 'Réservation confirmée — référence {ref}. Vous allez recevoir un email de confirmation.',
+    en: 'Booking confirmed — reference {ref}. You will receive a confirmation email.',
+  } as B,
+  bookingError: {
+    fr: "La réservation n'a pas pu être finalisée. Réessayez ou contactez-nous à contact@e-do.studio.",
+    en: 'The booking could not be completed. Please retry or email contact@e-do.studio.',
+  } as B,
+  bookingConflict: {
+    fr: 'Ce créneau vient d\'être pris. Demandez-moi un autre horaire.',
+    en: 'That slot was just taken. Ask me for another time.',
+  } as B,
+  contactFormTitle: { fr: 'Vos coordonnées', en: 'Your details' } as B,
+  contactFirstName: { fr: 'Prénom', en: 'First name' } as B,
+  contactLastName: { fr: 'Nom', en: 'Last name' } as B,
+  contactEmail: { fr: 'Email', en: 'Email' } as B,
+  contactPhone: { fr: 'Téléphone', en: 'Phone' } as B,
+  contactCompany: { fr: 'Société (optionnel)', en: 'Company (optional)' } as B,
+  contactSiren: { fr: 'SIREN (optionnel)', en: 'SIREN (optional)' } as B,
+  contactSubmit: { fr: 'Valider mes coordonnées', en: 'Submit my details' } as B,
+  contactErrRequired: {
+    fr: 'Prénom, nom, email et téléphone sont requis.',
+    en: 'First name, last name, email and phone are required.',
+  } as B,
+  contactErrEmail: { fr: 'Email invalide.', en: 'Invalid email.' } as B,
+  contactErrSiren: { fr: 'SIREN invalide (9 chiffres).', en: 'Invalid SIREN (9 digits).' } as B,
 };
 
 export const home = {

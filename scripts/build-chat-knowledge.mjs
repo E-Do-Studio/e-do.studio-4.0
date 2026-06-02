@@ -5,6 +5,9 @@
 //   - Strapi (cyclorama is in `machines`, post-production-types, blog-posts,
 //     legal-sections, team-members, site-setting).
 //   - Static FAQ files in scripts/chat-knowledge-static/*.json.
+//   - Second-brain wiki HTTP API, when WIKI_API_URL is set: the VPS serves the
+//     pages it has marked public; the site re-embeds them. The public/private
+//     gate lives on the VPS — this script trusts whatever the API returns.
 //
 // Writes:
 //   - chat_knowledge_chunks (id, kind, slug, lang, title, url, body, tags,
@@ -56,6 +59,10 @@ const SUPABASE_SERVICE_ROLE_KEY = requireEnv('SUPABASE_SERVICE_ROLE_KEY');
 const GEMINI_API_KEY = requireEnv('GEMINI_API_KEY');
 const SITE_URL = process.env.SITE_URL || 'https://e-do.studio';
 const DRY_RUN = process.env.CHAT_KNOWLEDGE_DRY_RUN === '1';
+// Second-brain wiki HTTP API (served from the VPS). When unset, the wiki
+// source is skipped entirely.
+const WIKI_API_URL = process.env.WIKI_API_URL || '';
+const WIKI_API_TOKEN = process.env.WIKI_API_TOKEN || '';
 
 const EMBED_MODEL = 'gemini-embedding-001';
 const EMBED_DIMS = 768;
@@ -397,6 +404,125 @@ async function buildStaticFaqChunks() {
   return out;
 }
 
+// ─── Wiki (second brain) ──────────────────────────────────────────────────
+
+// Flatten Obsidian wikilinks to plain text: [[Target|Alias]] → Alias,
+// [[a/b/Target#anchor]] → Target. Drop embeds (![[...]]).
+function flattenWikilinks(text) {
+  return text
+    .replace(/!\[\[[^\]]*\]\]/g, '')
+    .replace(/\[\[([^\]]+)\]\]/g, (_, inner) => {
+      const [target, alias] = inner.split('|');
+      if (alias) return alias.trim();
+      const last = target.split('/').pop() || target;
+      return last.split('#')[0].trim();
+    });
+}
+
+// Split a markdown body into sections on H2 headings so each chunk stays
+// mono-topic. Returns [{ heading|null, text }]. Content before the first H2
+// is kept as a leading section with no heading.
+function splitByH2(body) {
+  const lines = body.split('\n');
+  const sections = [];
+  let heading = null;
+  let buffer = [];
+  const flush = () => {
+    const text = buffer.join('\n').trim();
+    if (text) sections.push({ heading, text });
+    buffer = [];
+  };
+  for (const line of lines) {
+    const m = line.match(/^##\s+(.+?)\s*$/);
+    if (m) {
+      flush();
+      heading = m[1].trim();
+    } else {
+      buffer.push(line);
+    }
+  }
+  flush();
+  return sections;
+}
+
+// Fetch the public pages the VPS wiki API chooses to expose. The public/private
+// gate lives on the VPS; this script trusts the response.
+async function fetchPublicWikiPages() {
+  const endpoint = new URL('public-pages', WIKI_API_URL.endsWith('/') ? WIKI_API_URL : `${WIKI_API_URL}/`);
+  const res = await fetch(endpoint, {
+    headers: WIKI_API_TOKEN ? { Authorization: `Bearer ${WIKI_API_TOKEN}` } : {},
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(`Wiki API ${res.status}: ${body.slice(0, 200)}`);
+  }
+  const data = await res.json();
+  if (!Array.isArray(data)) throw new Error('Wiki API: expected an array of pages');
+  return data;
+}
+
+async function buildWikiChunks() {
+  const out = [];
+  if (!WIKI_API_URL) return out;
+  let pages;
+  try {
+    pages = await fetchPublicWikiPages();
+  } catch (e) {
+    // Match the Strapi sources: warn and continue rather than abort the whole
+    // reindex. (Caveat: an API outage means no wiki chunks this run, so the
+    // prune step removes them until the next successful reindex.)
+    console.warn('wiki:', e.message);
+    return out;
+  }
+  for (const page of pages) {
+    if (!page?.slug || !page?.body) continue;
+    const slug = String(page.slug);
+    const lang = page.lang === 'en' ? 'en' : 'fr';
+    const title = page.title || slug.split('/').pop();
+    const url = page.url || null;
+    const cleanBody = flattenWikilinks(String(page.body)).trim();
+    if (!cleanBody) continue;
+
+    // Operator instructions (frontmatter `role: instructions`): a single
+    // verbatim chunk the edge function loads by kind to extend the system
+    // prompt. Not split, larger budget, never embedded (loaded by kind, not
+    // by semantic match — see main()).
+    if (page.role === 'instructions') {
+      out.push({
+        id: `wiki:instructions:${lang}`,
+        kind: 'instructions',
+        slug,
+        lang,
+        title,
+        url,
+        body: clip(cleanBody, 8000),
+        tags: ['instructions'],
+      });
+      continue;
+    }
+
+    const tags = uniq(['wiki', ...(Array.isArray(page.tags) ? page.tags : [])]);
+    const sections = splitByH2(cleanBody);
+    sections.forEach((section, i) => {
+      const sectionBody = section.heading ? `## ${section.heading}\n\n${section.text}` : section.text;
+      out.push({
+        id: sections.length > 1 ? `wiki:${slug}#${i}:${lang}` : `wiki:${slug}:${lang}`,
+        kind: 'wiki',
+        slug,
+        lang,
+        title: section.heading && sections.length > 1 ? `${title} — ${section.heading}` : title,
+        url,
+        body: clip(sectionBody),
+        tags,
+      });
+    });
+  }
+  if (pages.length) {
+    console.log(`Wiki: ${out.length} chunk(s) from ${pages.length} public page(s).`);
+  }
+  return out;
+}
+
 // ─── Build full corpus ────────────────────────────────────────────────────
 
 async function buildCorpus() {
@@ -437,6 +563,7 @@ async function buildCorpus() {
     ...buildLegalChunks(legalBI.fr?.data ?? [], legalBI.en?.data ?? []),
     ...buildTeamChunks(teamBI.fr?.data ?? [], teamBI.en?.data ?? []),
     ...(await buildStaticFaqChunks()),
+    ...(await buildWikiChunks()),
   ];
 
   // Filter empties and dedup by id.
@@ -627,6 +754,10 @@ async function main() {
     c._hash = contentHash(c);
     const prev = existing.get(c.id);
     c._needsEmbed = !prev || !prev.hasEmbedding || prev.hash !== c._hash;
+    // Instructions are loaded by kind, never by semantic match — keep their
+    // embedding null so match_chat_chunks (filters embedding is not null)
+    // never surfaces them as knowledge.
+    if (c.kind === 'instructions') c._needsEmbed = false;
     if (c._needsEmbed) toEmbedCount += 1;
   }
   console.log(`Embed: ${toEmbedCount} new/changed · Skip: ${corpus.length - toEmbedCount}`);

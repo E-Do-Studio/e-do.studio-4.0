@@ -5,6 +5,8 @@ import { IconArrowRight, cn } from './ui';
 import type { Lang, ChatMessage } from './types';
 import { assistant as assistantMsg, common } from './i18n/messages';
 import { supabase } from './lib/supabase';
+import { createBooking } from './lib/bookings';
+import { BOOK_PLATEAUX, fmtEUR, isValidSiren, type CreateBookingInput } from './lib/booking-engine';
 
 const MAX_INPUT_CHARS = 1500;
 
@@ -17,6 +19,9 @@ type ChatError = 'rate_limited' | 'other';
 interface ChatResponse {
   reply?: string;
   error?: string;
+  bookingProposal?: CreateBookingInput | null;
+  suggestions?: string[];
+  collectContact?: boolean;
 }
 
 // Backend regex (`/^\/[a-z0-9/_-]*$/i`) accepts only clean paths — strip
@@ -32,7 +37,7 @@ const sendAssistantMessage = async (
   messages: ChatMessage[],
   lang: Lang,
   currentPage: string | undefined,
-): Promise<{ reply: string } | { error: ChatError }> => {
+): Promise<{ reply: string; bookingProposal?: CreateBookingInput | null; suggestions?: string[]; collectContact?: boolean } | { error: ChatError }> => {
   const { data, error } = await supabase.functions.invoke<ChatResponse>('chat', {
     body: { messages, lang, currentPage },
   });
@@ -48,7 +53,12 @@ const sendAssistantMessage = async (
 
   if (data?.error === 'rate_limited') return { error: 'rate_limited' };
   if (!data?.reply) return { error: 'other' };
-  return { reply: data.reply };
+  return {
+    reply: data.reply,
+    bookingProposal: data.bookingProposal ?? null,
+    suggestions: data.suggestions ?? [],
+    collectContact: data.collectContact ?? false,
+  };
 };
 
 interface AssistantHeaderProps {
@@ -287,6 +297,162 @@ const AssistantInput = ({ input, setInput, loading, lang, onSend, inputRef }: As
   </form>
 );
 
+const MONTHS_SHORT: Record<Lang, string[]> = {
+  fr: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'],
+  en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+};
+
+const fmtRecapDate = (d: { y: number; m: number; d: number } | null, lang: Lang) =>
+  d ? `${d.d} ${MONTHS_SHORT[lang][d.m]} ${d.y}` : '—';
+
+interface ContactFormProps {
+  lang: Lang;
+  onSubmit: (message: string) => void;
+}
+
+const ContactForm = ({ lang, onSubmit }: ContactFormProps) => {
+  const [f, setF] = useState({ prenom: '', nom: '', email: '', tel: '', societe: '', siren: '' });
+  const [err, setErr] = useState<string | null>(null);
+  const upd = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setF((p) => ({ ...p, [k]: e.target.value }));
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!f.prenom.trim() || !f.nom.trim() || !f.email.trim() || !f.tel.trim()) {
+      setErr(assistantMsg.contactErrRequired[lang]);
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim())) {
+      setErr(assistantMsg.contactErrEmail[lang]);
+      return;
+    }
+    if (f.siren.trim() && !isValidSiren(f.siren)) {
+      setErr(assistantMsg.contactErrSiren[lang]);
+      return;
+    }
+    const parts = [
+      `Prénom: ${f.prenom.trim()}`,
+      `Nom: ${f.nom.trim()}`,
+      `Email: ${f.email.trim()}`,
+      `Téléphone: ${f.tel.trim()}`,
+    ];
+    if (f.societe.trim()) parts.push(`Société: ${f.societe.trim()}`);
+    parts.push(f.siren.trim() ? `SIREN: ${f.siren.trim()}` : 'SIREN: aucun');
+    onSubmit('Mes coordonnées — ' + parts.join(' · '));
+  };
+
+  const inputCls =
+    'w-full border border-border bg-white px-2 py-1.5 text-detail text-foreground outline-none transition-colors focus:border-foreground';
+
+  return (
+    <form onSubmit={submit} className="shrink-0 border border-border bg-white p-3">
+      <div className="mb-2 font-mono text-nano uppercase tracking-code text-primary">
+        {assistantMsg.contactFormTitle[lang]}
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <div className="flex gap-1.5">
+          <input className={inputCls} placeholder={assistantMsg.contactFirstName[lang]} value={f.prenom} onChange={upd('prenom')} />
+          <input className={inputCls} placeholder={assistantMsg.contactLastName[lang]} value={f.nom} onChange={upd('nom')} />
+        </div>
+        <input className={inputCls} type="email" placeholder={assistantMsg.contactEmail[lang]} value={f.email} onChange={upd('email')} />
+        <input className={inputCls} type="tel" placeholder={assistantMsg.contactPhone[lang]} value={f.tel} onChange={upd('tel')} />
+        <input className={inputCls} placeholder={assistantMsg.contactCompany[lang]} value={f.societe} onChange={upd('societe')} />
+        <input className={inputCls} placeholder={assistantMsg.contactSiren[lang]} value={f.siren} onChange={upd('siren')} />
+      </div>
+      {err && <div className="mt-1.5 text-micro text-primary">{err}</div>}
+      <button
+        type="submit"
+        className="edo-focus-ring mt-2 flex w-full cursor-pointer items-center justify-center border-0 bg-primary px-3 py-2 text-detail text-white transition-opacity hover:opacity-90"
+      >
+        {assistantMsg.contactSubmit[lang]}
+      </button>
+    </form>
+  );
+};
+
+interface BookingRecapCardProps {
+  proposal: CreateBookingInput;
+  lang: Lang;
+  cgv: boolean;
+  setCgv: (v: boolean) => void;
+  busy: boolean;
+  error: string | null;
+  onConfirm: () => void;
+}
+
+const BookingRecapCard = ({ proposal, lang, cgv, setCgv, busy, error, onConfirm }: BookingRecapCardProps) => {
+  const ttc = Math.round(proposal.quote.total * 1.2);
+  return (
+    <div className="shrink-0 border border-border bg-white p-3">
+      <div className="mb-2 font-mono text-nano uppercase tracking-code text-primary">
+        {assistantMsg.bookingRecapTitle[lang]}
+      </div>
+
+      <div className="mb-2 flex flex-col gap-1">
+        {proposal.sessions.map((s, i) => {
+          const px = BOOK_PLATEAUX.find((p) => p.k === s.plateauKey);
+          return (
+            <div key={i} className="flex justify-between gap-2 text-detail">
+              <span className="text-foreground">
+                {px ? px[lang] : s.plateauKey} · {fmtRecapDate(s.date, lang)}
+                {s.arrivalHour != null ? ` · ${s.arrivalHour}h` : ''}
+              </span>
+              <span className="text-muted-foreground">{s.hours}h</span>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="mb-2 flex flex-col gap-0.5 border-t border-hairline pt-2">
+        {proposal.quote.rows.map((r, i) => (
+          <div key={i} className="flex justify-between gap-2 text-micro">
+            <span className="text-muted-foreground">{r.lbl}</span>
+            <span className="text-foreground">{r.onReq ? '—' : `${fmtEUR(r.amt)} €`}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex justify-between border-t border-hairline pt-2 text-detail font-semibold text-foreground">
+        <span>{assistantMsg.bookingTotalHT[lang]}</span>
+        <span>{fmtEUR(proposal.quote.total)} €</span>
+      </div>
+      <div className="mb-2 text-right font-mono text-micro text-muted-foreground">
+        {fmtEUR(ttc)} € {assistantMsg.bookingTotalTTC[lang]}
+      </div>
+
+      <div className="mb-2 border-t border-hairline pt-2 text-micro text-muted-foreground">
+        {assistantMsg.bookingContact[lang]}: {proposal.contact.prenom} {proposal.contact.nom} · {proposal.contact.email} · {proposal.contact.tel}
+        {proposal.contact.siren ? ` · SIREN ${proposal.contact.siren}` : ''}
+      </div>
+
+      <div className="mb-2 text-micro italic text-muted-foreground">
+        {assistantMsg.bookingEstimateNote[lang]}
+      </div>
+
+      <label className="mb-2 flex cursor-pointer items-start gap-2 text-micro text-foreground">
+        <input
+          type="checkbox"
+          checked={cgv}
+          onChange={(e) => setCgv(e.target.checked)}
+          className="mt-0.5 accent-primary"
+        />
+        <span>{assistantMsg.bookingCgv[lang]}</span>
+      </label>
+
+      {error && <div className="mb-2 text-micro text-primary">{error}</div>}
+
+      <button
+        type="button"
+        disabled={!cgv || busy}
+        onClick={onConfirm}
+        className="edo-focus-ring flex w-full cursor-pointer items-center justify-center border-0 bg-primary px-3 py-2 text-detail text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+      >
+        {busy ? assistantMsg.bookingConfirming[lang] : assistantMsg.bookingConfirm[lang]}
+      </button>
+    </div>
+  );
+};
+
 interface AssistantChatProps {
   lang: Lang;
   badge?: number | string;
@@ -298,6 +464,12 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [proposal, setProposal] = useState<CreateBookingInput | null>(null);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [collectContact, setCollectContact] = useState(false);
+  const [cgv, setCgv] = useState(false);
+  const [bookingBusy, setBookingBusy] = useState(false);
+  const [bookingErr, setBookingErr] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const currentPath = useRouterState({ select: (s) => s.resolvedLocation?.pathname ?? '' });
@@ -317,11 +489,20 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
     setInput('');
     setMode('chat');
     setLoading(true);
+    setSuggestions([]);
+    setCollectContact(false);
 
     try {
       const result = await sendAssistantMessage(nextMessages, lang, sanitizeCurrentPage(currentPath));
       if ('reply' in result) {
         setMessages((currentMessages) => [...currentMessages, { role: 'assistant', content: result.reply }]);
+        setSuggestions(result.suggestions ?? []);
+        setCollectContact(result.collectContact ?? false);
+        if (result.bookingProposal) {
+          setProposal(result.bookingProposal);
+          setCgv(false);
+          setBookingErr(null);
+        }
       } else {
         const fallback = result.error === 'rate_limited'
           ? assistantMsg.rateLimited[lang]
@@ -341,10 +522,36 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
     }
   };
 
+  const confirmBooking = async () => {
+    if (!proposal || !cgv || bookingBusy) return;
+    setBookingBusy(true);
+    setBookingErr(null);
+    try {
+      const result = await createBooking({ ...proposal, mode: 'booking' });
+      setProposal(null);
+      setCgv(false);
+      setMessages((currentMessages) => [...currentMessages, {
+        role: 'assistant',
+        content: assistantMsg.bookingSuccess[lang].replace('{ref}', result.reference),
+      }]);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '';
+      const isConflict = msg.includes('réservé') || msg.includes('already booked');
+      setBookingErr(isConflict ? assistantMsg.bookingConflict[lang] : assistantMsg.bookingError[lang]);
+    } finally {
+      setBookingBusy(false);
+    }
+  };
+
   const reset = () => {
     setMessages([]);
     setMode('prompt');
     setInput('');
+    setProposal(null);
+    setSuggestions([]);
+    setCollectContact(false);
+    setCgv(false);
+    setBookingErr(null);
   };
 
   return (
@@ -366,6 +573,32 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
         <AssistantPrompt lang={lang} onSend={send} />
       ) : (
         <ConversationList messages={messages} loading={loading} scrollRef={scrollRef} />
+      )}
+
+      {mode === 'chat' && !loading && suggestions.length > 0 && (
+        <div className="flex shrink-0 flex-wrap gap-1.5">
+          {suggestions.map((s) => (
+            <QuickReplyButton key={s} onClick={() => send(s)}>
+              {s}
+            </QuickReplyButton>
+          ))}
+        </div>
+      )}
+
+      {mode === 'chat' && collectContact && !proposal && (
+        <ContactForm lang={lang} onSubmit={(m) => send(m)} />
+      )}
+
+      {mode === 'chat' && proposal && (
+        <BookingRecapCard
+          proposal={proposal}
+          lang={lang}
+          cgv={cgv}
+          setCgv={setCgv}
+          busy={bookingBusy}
+          error={bookingErr}
+          onConfirm={confirmBooking}
+        />
       )}
 
       <AssistantInput

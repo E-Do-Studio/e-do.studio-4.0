@@ -9,6 +9,12 @@ import {
   formatAvailabilityForPrompt,
   getAvailability,
 } from "./availability.ts";
+import {
+  prepareBooking,
+  PREPARE_BOOKING_TOOL,
+  PREPARE_BOOKING_TOOL_OPENAI,
+} from "./booking.ts";
+import type { CreateBookingInput } from "../../../src/lib/booking-engine.ts";
 
 const DEFAULT_ALLOWED_ORIGINS = ["https://e-do.studio", "http://localhost:5173"];
 const SITE_URL = "https://e-do.studio";
@@ -40,9 +46,15 @@ function buildCorsHeaders(req: Request): Record<string, string> {
   };
 }
 
+// User input is capped at 1500 (matches the chat UI). Assistant messages are
+// our own generated replies replayed as history — they can be much longer
+// (advice/guided answers, recaps), so allow up to 8000 to avoid rejecting the
+// whole turn when the prior reply was long.
 const messageSchema = z.object({
   role: z.enum(["user", "assistant"]),
-  content: z.string().min(1).max(1500),
+  content: z.string().min(1).max(8000),
+}).refine((m) => m.role === "assistant" || m.content.length <= 1500, {
+  message: "user message exceeds 1500 chars",
 });
 
 const bodySchema = z.object({
@@ -115,6 +127,31 @@ async function loadPinnedIdentity(client: any, lang: Lang): Promise<KnowledgeChu
     pinnedCache.ts = Date.now();
   }
   return (data as KnowledgeChunk) ?? null;
+}
+
+// Editable operator instructions sourced from the wiki (kind="instructions"
+// chunk, written by the reindex). Additive layer on top of the hardcoded
+// baseline — never overrides the hard rules. Cached like the identity chunk.
+const instructionsCache: { text: string | null; ts: number } = { text: null, ts: 0 };
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function loadWikiInstructions(client: any): Promise<string | null> {
+  if (instructionsCache.text !== null && Date.now() - instructionsCache.ts < PIN_TTL_MS) {
+    return instructionsCache.text;
+  }
+  const { data, error } = await client
+    .from("chat_knowledge_chunks")
+    .select("body")
+    .eq("kind", "instructions")
+    .limit(1)
+    .maybeSingle();
+  if (error) {
+    console.error("loadWikiInstructions failed", error);
+    return instructionsCache.text;
+  }
+  instructionsCache.text = data?.body ?? null;
+  instructionsCache.ts = Date.now();
+  return instructionsCache.text;
 }
 
 async function embedQuery(apiKey: string, text: string): Promise<number[] | null> {
@@ -266,6 +303,7 @@ function buildSystemPrompt(
   retrievedBlock: string,
   pageBlock: string,
   now: Date,
+  instructionsBlock: string,
 ): string {
   const baseline = lang === "en" ? BASELINE_FACTS_EN : BASELINE_FACTS_FR;
   const nowParis = formatParisNow(now);
@@ -286,6 +324,32 @@ Answer visitor questions precisely using the KNOWLEDGE BASE below. Your goal is 
 
 # Tools available
 - **check_availability**(windowStart, windowEnd, plateauKey?, durationHours?) — Query the studio's live booking calendar. **Call this whenever the user asks about dates, free slots, planning a shoot, or whether a specific window is available.** Never invent slot data; always call the tool first. Resolve relative dates ("vendredi", "next week", "demain après-midi") using the current Paris time stated above as reference before calling — never propose a slot earlier today than the current hour. If the user asks for "afternoon" or "matin", call the tool for the full day then filter the proposed slots in your reply (≥ 13h for afternoon, ≤ 12h for morning). \`plateauKey\` is one of: ${PLATEAU_KEYS.join(", ")}. \`durationHours\` defaults to 1; use 4 for "demi-journée / half-day", 8 for "journée / full day". Cap your window to ${MAX_WINDOW_DAYS} days max; default ${DEFAULT_WINDOW_DAYS} days if unspecified.
+
+- **prepare_booking**(sessions, contact?) — The ONLY way to quote a booking price and to start a real reservation. Pass every product session the user described (product, method, submethod, views or viewsCount, quantity, postprod) plus, once known, each session's date (YYYY-MM-DD) and arrivalHour (9–19), and the contact (prenom, nom, email, tel). It returns the AUTHORITATIVE price — never compute or guess prices yourself — and what is still missing. Re-call it as you gather details.
+
+# Booking flow (natural-language reservation)
+The visitor can reserve entirely in this chat. Drive it conversationally, one or two questions at a time:
+1. Understand the shoot: product family, method (packshot / on-model), packshot sub-type (piqué / ghost / flat), views (face / dos / détail / 3-4) or views-per-product, and quantity. A booking may have several sessions on different plateaux.
+2. Call prepare_booking to get the real recommendation + price; relay the figures exactly.
+3. Propose a date and arrival hour: call check_availability first, then present 2–3 concrete free slots as **tappable choices** via the SUGGESTIONS line (each option a date + hour, e.g. "Mar 9 juin · 12h"). Do NOT list slots as a plain bullet list. Each session can have its own date.
+4. Collect the contact. Do NOT list the contact fields in text and do NOT ask the user to type them. Instead, write one short sentence inviting them to fill the form, then emit the marker COLLECT_CONTACT on its own — an interactive form (first name, last name, email, phone, company, SIREN) is shown to the user. Their filled details arrive as the next message (SIREN is optional and already format-checked client-side); then call prepare_booking. If prepare_booking still reports the SIREN invalid, ask them to re-enter it.
+5. Call prepare_booking again with everything. ONLY when it explicitly answers READY is the recap card (with the CGV checkbox and the "Confirm booking" button) actually shown to the user — then invite them to review and click it. If it does NOT answer READY, do NOT tell the user to confirm or that a card is displayed — ask only for the exact items it lists as missing, then call it again. NEVER claim the booking is done: only the user's click finalizes it (real pending reservation, confirmation emails, calendar hold). For on-model or accessory/object shoots, assume photo unless the visitor mentions video.
+Never invent a price, never write a booking yourself, and if prepare_booking flags an on-request item, tell the user that part is quote-on-request. Always present the duration and price as an **estimate** based on typical throughput — make clear, in your own words, that the studio team will confirm and may adjust the slot and quote after a quick exchange. Never present the figures as final or contractually binding.
+
+## Guided mode (visitor unsure what to book)
+When the visitor doesn't know which plateau/method they need (vague request like "je veux des photos mais je ne sais pas quoi prendre", "aidez-moi à choisir", or just "réserver" with no details), GUIDE them step by step — ONE question at a time — down the configurator tree, advising in 1 short line at each step using the knowledge base:
+1. What do they shoot? → ready-to-wear (pap), accessories, eyewear, jewelry, cosmetics, food, or free/cyclorama production.
+2. (apparel) On-model or packshot?
+3. (packshot) Piqué (sharp flat-lay), ghost (ghost mannequin) or à-plat (lay-flat)?
+4. How many products? (open input)
+5. (packshot) Which views? (face / dos / détail / 3-4)
+6. Post-production by E-DO? (yes/no)
+Then call prepare_booking for the real recommendation + price, explain it briefly, and continue to date, contact and confirmation. Map the visitor's plain-language answers to the prepare_booking enums yourself.
+
+### Tappable choices
+When a step is a CLOSED choice (product type, method, packshot type, views, yes/no, "book vs quote", or proposed time slots), END your message with ONE line, exactly:
+SUGGESTIONS: Option A | Option B | Option C
+2 to 6 short options, in the user's language — they render as tappable buttons. Do NOT add a SUGGESTIONS line for OPEN inputs (quantity, dates, contact details) — let the visitor type. Never add SUGGESTIONS after the final READY confirmation step.
 
 # Advice mode
 If the user asks for advice on which plateau, machine or post-production option fits their project (jewelry shoot, ghost mannequin, packshot, food, beauty campaign, on-model fashion, etc.), use the workflow FAQ chunks in the knowledge base. Lead with a recommendation, justify it briefly (1–2 lines), and propose a next step (link to the relevant plateau page or booking page).
@@ -316,7 +380,11 @@ Length: typically 4-8 sentences (or short bullets). Go longer only when the user
 - **Question outside scope** (unrelated to E-DO): brief polite refusal + email link.
 - **User insists on contacting**: give the contact block (email + phone), no fluff.
 
-# Current page context
+${instructionsBlock ? `# Studio playbook (editable, sourced from the studio wiki)
+These refine your mission, tone, priorities and advice. They **never override** the Hard rules above — especially calendar privacy and the refusals.
+${instructionsBlock}
+
+` : ""}# Current page context
 ${pageBlock || "(no page context provided — answer based on the user's question alone)"}
 
 # Baseline facts (always true)
@@ -552,7 +620,7 @@ async function callGeminiWithTools(opts: ProviderOptions): Promise<string> {
       systemInstruction: { parts: [{ text: opts.systemPrompt }] },
       contents,
       generationConfig: { maxOutputTokens: 900, temperature: 0.35 },
-      tools: isFinalRound ? undefined : [{ functionDeclarations: [CHECK_AVAILABILITY_TOOL] }],
+      tools: isFinalRound ? undefined : [{ functionDeclarations: [CHECK_AVAILABILITY_TOOL, PREPARE_BOOKING_TOOL] }],
       toolConfig: isFinalRound
         ? { functionCallingConfig: { mode: "NONE" } }
         : { functionCallingConfig: { mode: "AUTO" } },
@@ -653,7 +721,7 @@ async function callGlmWithTools(opts: ProviderOptions): Promise<string> {
       max_tokens: 900,
     };
     if (!isFinalRound) {
-      requestBody.tools = [CHECK_AVAILABILITY_TOOL_OPENAI];
+      requestBody.tools = [CHECK_AVAILABILITY_TOOL_OPENAI, PREPARE_BOOKING_TOOL_OPENAI];
       requestBody.tool_choice = "auto";
     }
 
@@ -819,12 +887,18 @@ Deno.serve(async (req: Request) => {
     ? `${pageDescription.label} (${parsed.currentPage}). ${pageDescription.hint}`
     : "";
 
-  const systemPrompt = buildSystemPrompt(lang, retrievedBlock, pageBlock, now);
+  const instructionsBlock = (await loadWikiInstructions(supabase).catch(() => null)) ?? "";
+  const systemPrompt = buildSystemPrompt(lang, retrievedBlock, pageBlock, now, instructionsBlock);
   const bookingPageUrl = lang === "en"
     ? `${SITE_URL}/en/book`
     : `${SITE_URL}/fr/reserver`;
 
   const zaiKey = Deno.env.get("ZAI_API_KEY") ?? null;
+
+  // Side-channel: prepare_booking fills this when the LLM has assembled a
+  // complete, valid reservation. It is NOT a write — the client renders it as a
+  // recap + confirm card and the user's click runs createBooking().
+  let bookingProposal: CreateBookingInput | null = null;
 
   try {
     const reply = await callChatWithFallback(
@@ -832,23 +906,45 @@ Deno.serve(async (req: Request) => {
         systemPrompt,
         messages: trimmedMessages,
         onToolCall: async (name, args) => {
-          if (name !== "check_availability") {
-            return "(unknown tool)";
+          if (name === "check_availability") {
+            const intent = intentFromToolArgs(args, lang, now);
+            if (!intent) {
+              return lang === "fr"
+                ? "Paramètres invalides : windowStart et windowEnd doivent être au format YYYY-MM-DD."
+                : "Invalid parameters: windowStart and windowEnd must be YYYY-MM-DD.";
+            }
+            const result = await getAvailability(supabase, intent, now);
+            return formatAvailabilityForPrompt(result, intent, bookingPageUrl);
           }
-          const intent = intentFromToolArgs(args, lang, now);
-          if (!intent) {
-            return lang === "fr"
-              ? "Paramètres invalides : windowStart et windowEnd doivent être au format YYYY-MM-DD."
-              : "Invalid parameters: windowStart and windowEnd must be YYYY-MM-DD.";
+          if (name === "prepare_booking") {
+            const result = prepareBooking(args, lang);
+            if (result.ready && result.proposal) bookingProposal = result.proposal;
+            return result.text;
           }
-          const result = await getAvailability(supabase, intent, now);
-          return formatAvailabilityForPrompt(result, intent, bookingPageUrl);
+          return "(unknown tool)";
         },
       },
       zaiKey,
       geminiKey,
     );
-    return jsonResponse({ reply }, 200, cors);
+    // Extract tappable guided choices the LLM appended as a trailing
+    // "SUGGESTIONS: a | b | c" line, and strip it from the visible reply.
+    let suggestions: string[] = [];
+    let cleanReply = reply;
+    const sugIdx = reply.lastIndexOf("SUGGESTIONS:");
+    if (sugIdx !== -1) {
+      const line = reply.slice(sugIdx + "SUGGESTIONS:".length).split("\n")[0];
+      suggestions = line.split("|").map((s) => s.trim()).filter(Boolean).slice(0, 6);
+      cleanReply = reply.slice(0, sugIdx).trimEnd();
+    }
+    // When the LLM asks for contact details it emits a COLLECT_CONTACT marker —
+    // the client renders an interactive form instead of free-text fields.
+    let collectContact = false;
+    if (cleanReply.includes("COLLECT_CONTACT")) {
+      collectContact = true;
+      cleanReply = cleanReply.replace(/COLLECT_CONTACT/g, "").trimEnd();
+    }
+    return jsonResponse({ reply: cleanReply, bookingProposal, suggestions, collectContact }, 200, cors);
   } catch (e) {
     const code = e instanceof Error && e.message === "upstream" ? "upstream" : "internal";
     const status = code === "upstream" ? 502 : 500;
