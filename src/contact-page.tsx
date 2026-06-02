@@ -276,6 +276,13 @@ function buildMapsEmbedFallback(fullAddress?: string, street?: string, postalCod
   return `https://www.google.com/maps?q=${encodeURIComponent(q)}&z=17&output=embed`;
 }
 
+// Le type de carte est encodé dans le token `!5eN` d'un embed Google Maps
+// (0 = plan, 1 = satellite, 2 = relief). On force la vue plan quel que soit
+// l'embed copié dans Strapi.
+function forceMapPlanView(url: string): string {
+  return url.replace(/!5e[12]/, '!5e0');
+}
+
 interface ContactMapProps {
   lang: Lang;
   contact: { data: ContactInfo | null; loading: boolean; error: Error | null };
@@ -285,8 +292,10 @@ interface ContactMapProps {
 const ContactMap = ({ lang, contact, className }: ContactMapProps) => {
   const c = contact.data;
   const showFallback = !contact.loading && (contact.error || !c);
-  const embedUrl = c?.mapsEmbedUrl
-    || buildMapsEmbedFallback(c?.fullAddress, c?.address.street, c?.address.postalCode, c?.address.city);
+  const embedUrl = forceMapPlanView(
+    c?.mapsEmbedUrl
+    || buildMapsEmbedFallback(c?.fullAddress, c?.address.street, c?.address.postalCode, c?.address.city),
+  );
   return (
     <section className={cn('relative overflow-hidden bg-edo-warm', className)}>
       {showFallback ? (
