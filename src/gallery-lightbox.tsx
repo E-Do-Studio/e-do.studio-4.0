@@ -50,7 +50,10 @@ export const GalleryLightbox = ({
   );
   const hasMultiple = total > 1;
   const item = project.media[index];
-  const isVideo = !!item && item.mime.startsWith("video/");
+  const isVideo = !!item && item.kind === "video";
+  const isEmbed = !!item && item.kind === "embed";
+  // Only still images support pan/zoom; videos and iframe embeds are excluded.
+  const zoomable = !!item && !isVideo && !isEmbed;
   const plateauLabel = PLATEAU_LABELS[project.plateau]?.[lang] ?? project.plateau;
 
   const prev = useCallback(
@@ -114,7 +117,7 @@ export const GalleryLightbox = ({
   );
 
   useEffect(() => {
-    if (isVideo) return;
+    if (!zoomable) return;
     const el = surfaceRef.current;
     if (!el) return;
     const handler = (e: WheelEvent) => {
@@ -128,11 +131,11 @@ export const GalleryLightbox = ({
     };
     el.addEventListener("wheel", handler, { passive: false });
     return () => el.removeEventListener("wheel", handler);
-  }, [applyZoomAt, isVideo]);
+  }, [applyZoomAt, zoomable]);
 
   const onSurfaceClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
-      if (isVideo) return;
+      if (!zoomable) return;
       const el = surfaceRef.current;
       if (!el) return;
       const rect = el.getBoundingClientRect();
@@ -145,7 +148,7 @@ export const GalleryLightbox = ({
         resetTransform();
       }
     },
-    [applyZoomAt, isVideo, resetTransform, scale, triggerAnimation],
+    [applyZoomAt, zoomable, resetTransform, scale, triggerAnimation],
   );
 
   const zoomCentered = useCallback(
@@ -177,14 +180,14 @@ export const GalleryLightbox = ({
         next();
         return;
       }
-      if (isVideo) return;
+      if (!zoomable) return;
       if (e.key === "+" || e.key === "=") zoomIn();
       else if (e.key === "-" || e.key === "_") zoomOut();
       else if (e.key === "0") zoomReset();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [hasMultiple, isVideo, next, onClose, prev, zoomIn, zoomOut, zoomReset]);
+  }, [hasMultiple, zoomable, next, onClose, prev, zoomIn, zoomOut, zoomReset]);
 
   useEffect(() => {
     const previous = document.body.style.overflow;
@@ -230,7 +233,7 @@ export const GalleryLightbox = ({
             onClick={onSurfaceClick}
             className={cn(
               "absolute inset-0 select-none",
-              isVideo
+              !zoomable
                 ? "cursor-default"
                 : scale > MIN_SCALE
                   ? "cursor-zoom-out"
@@ -238,7 +241,16 @@ export const GalleryLightbox = ({
             )}
           >
             {item ? (
-              isVideo ? (
+              isEmbed ? (
+                <iframe
+                  key={item.url}
+                  src={item.url}
+                  title={item.alt || `${project.brand} — ${index + 1}`}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  className="pointer-events-auto absolute inset-0 h-full w-full border-0"
+                />
+              ) : isVideo ? (
                 <video
                   key={item.url}
                   autoPlay
@@ -277,7 +289,7 @@ export const GalleryLightbox = ({
             ) : null}
           </div>
 
-          {!isVideo && (
+          {zoomable && (
             <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 bg-black/35 backdrop-blur-md border border-white/20 px-1.5 py-1">
               <button
                 type="button"

@@ -232,6 +232,7 @@ interface StrapiGalleryProject {
   category?: StrapiGalleryCategory;
   brand?: StrapiGalleryBrand;
   media?: StrapiMedia[];
+  embeds?: { url: string; alt?: string }[];
 }
 
 // ─── PlateauSpec type (local, matches what the frontend expects) ────────────
@@ -1226,10 +1227,11 @@ export async function fetchSiteDefaults(): Promise<SiteDefaults> {
 // ─── Gallery types & fetchers ──────────────────────────────────────────────
 
 export interface GalleryMedia {
+  kind: 'image' | 'video' | 'embed';
   url: string;
   previewUrl?: string;
-  mime: string;
   alt: string;
+  mime?: string;
 }
 
 export interface GalleryProject {
@@ -1266,7 +1268,7 @@ export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
   });
 
   return res.data.map((p, i) => {
-    const media: GalleryMedia[] = (p.media ?? [])
+    const files: GalleryMedia[] = (p.media ?? [])
       .map((m): GalleryMedia | null => {
         if (!m.url) return null;
         // Videos must be served raw. For images, expose the original as `url`
@@ -1277,6 +1279,7 @@ export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
         const mediumPath = m.formats?.medium?.url;
         const previewUrl = !isVideo && mediumPath ? absoluteMediaUrl(mediumPath) : undefined;
         return {
+          kind: isVideo ? 'video' : 'image',
           url: rawUrl,
           previewUrl,
           mime: m.mime ?? '',
@@ -1284,6 +1287,11 @@ export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
         };
       })
       .filter((m): m is GalleryMedia => m !== null);
+    // Iframe embeds (360° packshots) follow the uploaded files in slot order.
+    const embeds: GalleryMedia[] = (p.embeds ?? [])
+      .filter((e) => !!e.url)
+      .map((e) => ({ kind: 'embed', url: e.url, alt: e.alt ?? '' }));
+    const media: GalleryMedia[] = [...files, ...embeds];
     return {
       id: p.id,
       brand: p.brand?.name ?? '',
