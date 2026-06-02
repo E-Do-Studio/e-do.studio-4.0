@@ -33,6 +33,9 @@ const PUBLIC_SINGLE_TYPES = [
  * uncluttered without losing the data.
  */
 const HIDDEN_FIELDS_BY_CT: Record<string, string[]> = {
+  // `displayOrder` is set exclusively from the "Ordre galerie" admin page
+  // (drag-and-drop), never typed by hand — hide it from the edit view.
+  'api::gallery-project.gallery-project': ['displayOrder'],
   'api::machine.machine': ['pricing', 'operatorPricing'],
   'api::post-production-type.post-production-type': ['price'],
   'api::site-setting.site-setting': [
