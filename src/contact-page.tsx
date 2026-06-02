@@ -44,7 +44,7 @@ const ContactRail = ({ lang, contact, hours, closures }: ContactRailProps & { cl
       <ClosuresSection lang={lang} closures={closures} className="md:row-[6/7]" />
       <PhoneSection lang={lang} contact={contact} className="md:row-[7/8]" />
       <div className="flex-1 md:hidden" />
-      <SocialLinksRow className="border-t border-hairline md:row-[8/9] md:h-full md:border-t-0" />
+      <SocialLinksRow className="border-t border-hairline md:row-[8/9] md:auto-rows-[2.75rem] md:border-t-0" />
     </aside>
   );
 };

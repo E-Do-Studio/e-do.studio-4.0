@@ -442,11 +442,11 @@
 }
 
 @utility grid-rows-contact-form {
-  grid-template-rows: 96px 64px 64px 64px 64px 64px minmax(0, 1fr) 97px;
+  grid-template-rows: 96px 64px 64px 64px 64px 64px minmax(0, 1fr) auto;
 }
 
 @utility grid-rows-contact-form-compact {
-  grid-template-rows: 96px 64px 64px 64px minmax(0, 1fr) 48px 48px;
+  grid-template-rows: 96px 64px 64px 64px minmax(0, 1fr) 44px;
 }
 
 @utility bg-home-media-gradient {
