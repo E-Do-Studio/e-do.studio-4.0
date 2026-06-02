@@ -739,6 +739,82 @@
     .edo-cell-label, .edo-eyebrow { font-size: var(--font-size-xs); }
   }
 
+  /* ---------- Editorial article typography (blog overlay) ----------
+     `@tailwindcss/typography` is intentionally absent; these classes are the
+     single source of truth for the article reading view (`article-overlay`). */
+  .edo-article-lede {
+    font-family: var(--font-sans);
+    font-weight: var(--weight-light);
+    font-size: clamp(1.125rem, 1.6vw, 1.375rem);
+    line-height: 1.5;
+    color: var(--muted-foreground);
+    text-wrap: pretty;
+  }
+
+  .edo-article-prose {
+    font-family: var(--font-sans);
+    color: var(--foreground);
+    max-width: 40rem;
+    font-size: clamp(1.1875rem, 0.45vw + 1.1rem, 1.3125rem);
+    line-height: 1.7;
+  }
+  .edo-article-prose > :first-child { margin-top: 0; }
+  .edo-article-prose > :last-child { margin-bottom: 0; }
+  .edo-article-prose p { margin: 0 0 1.25em; }
+  .edo-article-prose strong { font-weight: var(--weight-bold); }
+  .edo-article-prose em { font-style: italic; }
+  .edo-article-prose h1,
+  .edo-article-prose h2 {
+    font-size: clamp(1.375rem, 2vw, 1.625rem);
+    font-weight: var(--weight-medium);
+    line-height: 1.2;
+    letter-spacing: var(--tracking-headline);
+    margin: 2.5em 0 0.6em;
+  }
+  .edo-article-prose h3 {
+    font-size: 1.25rem;
+    font-weight: var(--weight-medium);
+    line-height: 1.25;
+    margin: 2em 0 0.5em;
+  }
+  .edo-article-prose a {
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .edo-article-prose ul {
+    margin: 1.25em 0;
+    padding-left: 1.25em;
+    list-style: disc;
+  }
+  .edo-article-prose li { margin: 0.35em 0; }
+  .edo-article-prose blockquote {
+    border-left: 2px solid var(--border);
+    padding-left: 1.25rem;
+    font-style: italic;
+    color: var(--muted-foreground);
+    margin: 1.75em 0;
+    line-height: 1.6;
+  }
+  .edo-article-prose code {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    background: var(--muted);
+    padding: 0.1em 0.3em;
+  }
+  .edo-article-prose hr {
+    border: none;
+    border-top: var(--hairline) solid var(--border);
+    margin: 2.5em 0;
+  }
+  .edo-article-prose img,
+  .edo-article-prose video {
+    display: block;
+    width: 100%;
+    margin: 2em 0;
+    border-radius: 0;
+  }
+
   /* ---------- Bento inputs — placeholder styled as label ---------- */
   .edo-bento-input::placeholder {
     font-family: var(--font-mono);
