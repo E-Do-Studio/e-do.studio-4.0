@@ -54,21 +54,21 @@ export const ArticleOverlay: React.FC<ArticleOverlayProps> = ({ post, lang, onCl
             className="absolute inset-0 h-full w-full object-cover"
           />
         </div>
-        <article className="flex min-h-0 flex-col gap-5 overflow-y-auto bg-white px-6 py-8 md:px-12 md:py-10">
+        <article className="flex min-h-0 flex-col gap-6 overflow-y-auto bg-white px-6 py-8 md:gap-7 md:px-12 md:py-10">
           <ArticleMeta post={post} lang={lang} />
           <h1 className="m-0 text-balance text-hero font-light leading-none tracking-display text-foreground">
             {post.title[lang]}
           </h1>
-          <p className="m-0 text-pretty text-cell font-normal leading-copy text-foreground">
+          <p className="edo-article-lede m-0">
             {post.sub[lang]}
           </p>
           {hasBody ? (
             <div
-              className="prose prose-sm m-0 max-w-none text-foreground [&_a]:text-primary [&_a]:underline [&_blockquote]:border-l-2 [&_blockquote]:border-border [&_blockquote]:pl-4 [&_blockquote]:italic [&_h2]:mt-6 [&_h2]:text-lg [&_h2]:font-medium [&_h3]:mt-4 [&_h3]:text-base [&_h3]:font-medium [&_hr]:my-6 [&_hr]:border-border [&_img]:my-4 [&_img]:rounded [&_video]:my-4 [&_video]:block [&_video]:w-full [&_video]:h-auto [&_video]:rounded [&_li]:ml-4 [&_p]:leading-relaxed [&_ul]:my-2 [&_ul]:list-disc"
+              className="edo-article-prose m-0"
               dangerouslySetInnerHTML={{ __html: bodyHtml }}
             />
           ) : hasSubtitle ? (
-            <p className="m-0 text-pretty text-detail leading-relaxed text-muted-foreground">
+            <p className="edo-article-lede m-0">
               {post.sub[lang]}
             </p>
           ) : (

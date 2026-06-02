@@ -32,6 +32,10 @@ const INLINE_RULES: [RegExp, string][] = [
   [/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'],
 ];
 
+// Lines that are already block-level HTML (opening or closing tag) must not be
+// re-wrapped in <p>. Inline-leading lines (<strong>, <a>, …) are still prose.
+const BLOCK_LINE_RE = /^<\/?(h[1-3]|ul|ol|li|blockquote|hr|img|video|figure|pre|table)[\s/>]/;
+
 export function renderMarkdown(md: string): string {
   if (!md) return '';
   let html = md;
@@ -39,7 +43,20 @@ export function renderMarkdown(md: string): string {
     html = html.replace(regex, replacement as string);
   }
   html = html.replace(/(<li>.+<\/li>\n?)+/g, (m) => `<ul>${m}</ul>`);
-  html = html.replace(/(?:^|\n\n)([^<\n].+?)(?=\n\n|$)/g, (_, p) => `\n<p>${p.trim()}</p>\n`);
+  // Strapi editors press Enter once between paragraphs, so the body separates
+  // paragraphs with single newlines (not blank lines). Wrap each text line in
+  // its own <p> — giving it the vertical rhythm — while leaving block-level HTML
+  // lines (headings, list markup, quotes, media) untouched.
+  html = html
+    .split('\n')
+    .map((line) => {
+      const trimmed = line.trim();
+      if (!trimmed) return '';
+      if (BLOCK_LINE_RE.test(trimmed)) return trimmed;
+      return `<p>${trimmed}</p>`;
+    })
+    .filter(Boolean)
+    .join('\n');
   return html.trim();
 }
 
