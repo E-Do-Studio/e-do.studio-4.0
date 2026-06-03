@@ -397,7 +397,7 @@ export function buildGalleryCollectionSchema(
 ): JsonLdNode {
   const url = pageUrl(lang, pathname);
   const items = projects.slice(0, 50).map((p, i) => {
-    const firstImage = p.media?.find((m) => m.mime.startsWith('image/'));
+    const firstImage = p.media?.find((m) => m.kind === 'image');
     return {
       '@type': 'ListItem',
       position: i + 1,

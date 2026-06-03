@@ -21,22 +21,32 @@ function asArray(value: unknown): unknown[] | null {
   return null;
 }
 
-function assertExactlyThree(data: Record<string, unknown> | undefined) {
-  if (!data || !('media' in data)) return;
-  const list = asArray(data.media);
-  if (list == null) return;
-  if (list.length !== REQUIRED_COUNT) {
+function countField(data: Record<string, unknown>, key: string): number | null {
+  if (!(key in data)) return 0;
+  const list = asArray(data[key]);
+  return list == null ? null : list.length;
+}
+
+function assertTotalThree(data: Record<string, unknown> | undefined) {
+  if (!data || !('media' in data || 'embeds' in data)) return;
+  const mediaCount = countField(data, 'media');
+  const embedCount = countField(data, 'embeds');
+  // A relation-style patch (`{ connect, … }`) yields null — we can't infer the
+  // resulting count from the patch alone, so skip rather than guess.
+  if (mediaCount == null || embedCount == null) return;
+  const total = mediaCount + embedCount;
+  if (total !== REQUIRED_COUNT) {
     throw new errors.ValidationError(
-      `gallery-project.media doit contenir exactement ${REQUIRED_COUNT} fichiers (reçu : ${list.length}). Ajoutez ou retirez des médias.`,
+      `gallery-project doit contenir exactement ${REQUIRED_COUNT} contenus au total (media + embeds), reçu : ${total}. Ajoutez ou retirez des fichiers ou des liens iframe.`,
     );
   }
 }
 
 export default {
   beforeCreate(event: { params: MutationPayload }) {
-    assertExactlyThree(event.params.data);
+    assertTotalThree(event.params.data);
   },
   beforeUpdate(event: { params: MutationPayload }) {
-    assertExactlyThree(event.params.data);
+    assertTotalThree(event.params.data);
   },
 };

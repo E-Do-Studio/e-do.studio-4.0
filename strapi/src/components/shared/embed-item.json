@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_shared_embed_items",
+  "info": {
+    "displayName": "Embed (iframe)",
+    "description": "Lien iframe (ex: packshot 360°) affiché dans la galerie.",
+    "icon": "code"
+  },
+  "attributes": {
+    "url": {
+      "type": "string",
+      "required": true,
+      "regex": "^https?://.+",
+      "description": "URL d'embed de l'iframe (https://). Ex: viewer packshot 360°."
+    },
+    "alt": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "Titre / aria-label de l'iframe (texte court)."
+    }
+  }
+}
