@@ -12,6 +12,11 @@
     "draftAndPublish": true
   },
   "pluginOptions": {},
+  "config": {
+    "attributes": {
+      "displayOrder": { "hidden": true }
+    }
+  },
   "attributes": {
     "stage": {
       "type": "enumeration",
@@ -58,7 +63,7 @@
     "displayOrder": {
       "type": "integer",
       "default": 0,
-      "description": "Ordre d'affichage dans la galerie publique. Géré via la page admin « Ordre galerie » (drag-and-drop), masqué de la vue d'édition. Trié display_order:asc côté front."
+      "description": "Ordre d'affichage dans la galerie publique. Géré via la page admin « Ordre galerie » (drag-and-drop), masqué de l'éditeur via `config.attributes.displayOrder.hidden`. Trié display_order:asc côté front."
     }
   }
 }
