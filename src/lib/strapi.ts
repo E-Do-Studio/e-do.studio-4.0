@@ -1256,6 +1256,39 @@ function absoluteMediaUrl(path: string): string {
   return `${STRAPI_URL}${path}`;
 }
 
+// Cappasity 360° viewers ship with branding, UI chrome and a click-to-start
+// overlay by default. Apply our house look (clean, auto-rotating, no logo) to
+// any Cappasity embed so editors can paste the bare `/embedded` URL. A param
+// explicitly set in the CMS URL always wins (per-packshot override).
+const CAPPASITY_EMBED_DEFAULTS: Record<string, string> = {
+  autorun: '1',
+  autorotate: '1',
+  logo: '0',
+  arbutton: '0',
+  closebutton: '0',
+  hidehints: '1',
+  hidefullscreen: '1',
+  hideautorotateopt: '1',
+  hidesettingsbtn: '1',
+  hidezoomopt: '1',
+  enableimagezoom: '1',
+  analytics: '0',
+};
+
+function normalizeEmbedUrl(raw: string): string {
+  let url: URL;
+  try {
+    url = new URL(raw);
+  } catch {
+    return raw;
+  }
+  if (!url.hostname.endsWith('cappasity.com')) return raw;
+  for (const [k, v] of Object.entries(CAPPASITY_EMBED_DEFAULTS)) {
+    if (!url.searchParams.has(k)) url.searchParams.set(k, v);
+  }
+  return url.toString();
+}
+
 export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
   // `populate=*` returns every first-level relation with all its scalar
   // attributes — category.slug, brand.name, and the media files with their
@@ -1299,7 +1332,7 @@ export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
     // Iframe embeds (360° packshots) follow the uploaded files in slot order.
     const embeds: GalleryMedia[] = (p.embeds ?? [])
       .filter((e) => !!e.url)
-      .map((e) => ({ kind: 'embed', url: e.url, alt: e.alt ?? '' }));
+      .map((e) => ({ kind: 'embed', url: normalizeEmbedUrl(e.url), alt: e.alt ?? '' }));
     const media: GalleryMedia[] = [...files, ...embeds];
     return {
       id: p.id,
