@@ -345,6 +345,8 @@ const ProjectImage = ({
         title={altText}
         loading="lazy"
         referrerPolicy="no-referrer-when-downgrade"
+        allow="accelerometer; gyroscope; fullscreen; xr-spatial-tracking"
+        allowFullScreen
         className="absolute inset-0 h-full w-full border-0 pointer-events-none select-none"
       />
     );

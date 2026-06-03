@@ -248,6 +248,8 @@ export const GalleryLightbox = ({
                   title={item.alt || `${project.brand} — ${index + 1}`}
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
+                  allow="accelerometer; gyroscope; fullscreen; xr-spatial-tracking"
+                  allowFullScreen
                   className="pointer-events-auto absolute inset-0 h-full w-full border-0"
                 />
               ) : isVideo ? (
