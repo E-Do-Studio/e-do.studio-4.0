@@ -33,6 +33,9 @@ const PUBLIC_SINGLE_TYPES = [
  * uncluttered without losing the data.
  */
 const HIDDEN_FIELDS_BY_CT: Record<string, string[]> = {
+  // `displayOrder` is set exclusively from the "Ordre galerie" admin page
+  // (drag-and-drop), never typed by hand — hide it from the edit view.
+  'api::gallery-project.gallery-project': ['displayOrder'],
   'api::machine.machine': ['pricing', 'operatorPricing'],
   'api::post-production-type.post-production-type': ['price'],
   'api::site-setting.site-setting': [
@@ -160,8 +163,41 @@ export default {
   async bootstrap({ strapi }: { strapi: Core.Strapi }) {
     await ensureLocales(strapi);
     await hideContentManagerFields(strapi);
+    registerGalleryOrderRoutes(strapi);
   },
 };
+
+/**
+ * Register the admin-authenticated endpoints backing the "Ordre galerie" page.
+ *
+ * They can't live in `src/api/gallery-project/routes/` because Strapi forces
+ * every API-folder router to `type: 'content-api'` (see
+ * @strapi/core register-routes.js → registerAPIRoutes), which would mount them
+ * under `/api` behind a content-API token instead of the admin session.
+ * Registering them here as `type: 'admin'` mounts them at the root, protected
+ * by the admin auth strategy — exactly what the admin page's fetch client uses.
+ */
+function registerGalleryOrderRoutes(strapi: Core.Strapi) {
+  strapi.server.routes({
+    type: 'admin',
+    routes: [
+      {
+        method: 'GET',
+        path: '/gallery-projects/order-list',
+        handler: 'gallery-project.orderList',
+        config: { policies: [] },
+        info: { apiName: 'gallery-project' },
+      },
+      {
+        method: 'PUT',
+        path: '/gallery-projects/reorder',
+        handler: 'gallery-project.reorder',
+        config: { policies: [] },
+        info: { apiName: 'gallery-project' },
+      },
+    ],
+  });
+}
 
 /**
  * Force-hide deprecated fields from the Content Manager edit view at boot.

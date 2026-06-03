@@ -54,6 +54,11 @@
       "component": "shared.embed-item",
       "max": 3,
       "description": "Packshots 360° / liens iframe. Comptés avec `media` : total = exactement 3 (validé par lifecycles.ts)."
+    },
+    "displayOrder": {
+      "type": "integer",
+      "default": 0,
+      "description": "Ordre d'affichage dans la galerie publique. Géré via la page admin « Ordre galerie » (drag-and-drop), masqué de la vue d'édition. Trié display_order:asc côté front."
     }
   }
 }

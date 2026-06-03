@@ -229,6 +229,7 @@ interface StrapiGalleryProject {
   id: number;
   stage?: StageKey | null;
   year: number | string;
+  displayOrder?: number | null;
   category?: StrapiGalleryCategory;
   brand?: StrapiGalleryBrand;
   media?: StrapiMedia[];
@@ -1260,6 +1261,10 @@ export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
   // attributes — category.slug, brand.name, and the media files with their
   // url/formats. Simpler and more robust than nested populate across the
   // i18n schema transition (EDO-159).
+  // Sort server-side on `createdAt` (always present) and re-sort by the
+  // editorial `displayOrder` below — sorting on `displayOrder` server-side
+  // 400s on any env where the schema field hasn't propagated yet, and a single
+  // 400 wipes the whole gallery (same precaution as `fetchDiscoveryPosts`).
   const res = await fetchStrapi<{ data: StrapiGalleryProject[] }>('gallery-projects', {
     'populate': '*',
     'sort': 'createdAt:asc',
@@ -1267,7 +1272,11 @@ export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
     'locale': 'fr',
   });
 
-  return res.data.map((p, i) => {
+  const ordered = [...res.data].sort(
+    (a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0),
+  );
+
+  return ordered.map((p, i) => {
     const files: GalleryMedia[] = (p.media ?? [])
       .map((m): GalleryMedia | null => {
         if (!m.url) return null;
