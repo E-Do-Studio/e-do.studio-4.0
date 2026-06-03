@@ -17,6 +17,8 @@ export {
   IconLock,
   IconChevronDown,
   IconSelector,
+  IconPlus,
+  IconTrash,
 } from './icons';
 export type { IconProps } from './icons';
 

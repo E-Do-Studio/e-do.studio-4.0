@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { useRouterState } from '@tanstack/react-router';
-import { IconArrowRight, cn } from './ui';
+import { IconArrowRight, IconPlus, IconTrash, IconX, cn } from './ui';
 import type { Lang, ChatMessage } from './types';
 import { assistant as assistantMsg, common } from './i18n/messages';
 import { supabase } from './lib/supabase';
+import { useChatSessions, type ChatSession } from './lib/use-chat-sessions';
 import { createBooking } from './lib/bookings';
 import { BOOK_PLATEAUX, fmtEUR, isValidSiren, type CreateBookingInput } from './lib/booking-engine';
 
@@ -65,10 +66,19 @@ interface AssistantHeaderProps {
   lang: Lang;
   mode: 'prompt' | 'chat';
   loading: boolean;
-  onReset: () => void;
+  historyCount: number;
+  onNewSession: () => void;
+  onOpenHistory: () => void;
 }
 
-const AssistantHeader = ({ lang: _lang, mode, loading, onReset }: AssistantHeaderProps) => (
+const AssistantHeader = ({
+  lang,
+  mode,
+  loading,
+  historyCount,
+  onNewSession,
+  onOpenHistory,
+}: AssistantHeaderProps) => (
   <div className="flex shrink-0 items-center justify-between">
     <div className="flex items-center gap-2">
       <span className="edo-cell-label">Assistant</span>
@@ -82,14 +92,130 @@ const AssistantHeader = ({ lang: _lang, mode, loading, onReset }: AssistantHeade
       )}
     </div>
 
-    {mode === 'chat' && (
+    <div className="-mr-1 flex items-center gap-0.5">
+      {historyCount > 0 && (
+        <button
+          type="button"
+          onClick={onOpenHistory}
+          className="edo-focus-ring flex cursor-pointer items-center gap-1.5 border-0 bg-transparent px-1.5 py-1 font-mono text-micro uppercase tracking-code text-muted-foreground transition-colors hover:text-foreground"
+        >
+          {assistantMsg.history[lang]}
+          <span className="flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-muted px-1 text-nano text-muted-foreground">
+            {historyCount}
+          </span>
+        </button>
+      )}
+      {mode === 'chat' && (
+        <button
+          type="button"
+          onClick={onNewSession}
+          aria-label={assistantMsg.newConversation[lang]}
+          title={assistantMsg.newConversation[lang]}
+          className="edo-focus-ring flex h-7 w-7 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <IconPlus width="15" height="15" />
+        </button>
+      )}
+    </div>
+  </div>
+);
+
+const formatRelative = (ts: number, lang: Lang): string => {
+  const diffMin = Math.round((Date.now() - ts) / 60000);
+  if (diffMin < 1) return lang === 'fr' ? "à l'instant" : 'just now';
+  const rtf = new Intl.RelativeTimeFormat(lang, { numeric: 'auto' });
+  if (diffMin < 60) return rtf.format(-diffMin, 'minute');
+  const diffHr = Math.round(diffMin / 60);
+  if (diffHr < 24) return rtf.format(-diffHr, 'hour');
+  const diffDay = Math.round(diffHr / 24);
+  if (diffDay < 7) return rtf.format(-diffDay, 'day');
+  return new Intl.DateTimeFormat(lang, { day: 'numeric', month: 'short' }).format(ts);
+};
+
+interface ChatSessionListProps {
+  lang: Lang;
+  sessions: ChatSession[];
+  activeId: string | null;
+  onSelect: (id: string) => void;
+  onDelete: (id: string) => void;
+  onNew: () => void;
+  onClose: () => void;
+}
+
+const ChatSessionList = ({
+  lang,
+  sessions,
+  activeId,
+  onSelect,
+  onDelete,
+  onNew,
+  onClose,
+}: ChatSessionListProps) => (
+  <div className="absolute inset-0 z-40 flex flex-col bg-white">
+    <div className="flex shrink-0 items-center justify-between border-b border-hairline px-cell py-3">
+      <span className="edo-cell-label">{assistantMsg.history[lang]}</span>
       <button
-        onClick={onReset}
-        className="edo-focus-ring cursor-pointer border-0 bg-transparent p-0 font-mono text-micro uppercase tracking-code text-muted-foreground transition-colors hover:text-foreground"
+        type="button"
+        onClick={onClose}
+        aria-label={common.close[lang]}
+        className="edo-focus-ring -mr-1 flex h-7 w-7 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-muted-foreground transition-colors hover:text-foreground"
       >
-        ↺ Reset
+        <IconX width="16" height="16" />
       </button>
-    )}
+    </div>
+
+    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto scrollbar-thin">
+      <button
+        type="button"
+        onClick={onNew}
+        className="edo-focus-ring group flex shrink-0 cursor-pointer items-center gap-2.5 border-b border-hairline bg-transparent px-cell py-3 text-left transition-colors hover:bg-muted"
+      >
+        <IconPlus width="15" height="15" className="text-primary" />
+        <span className="text-detail leading-none text-foreground">
+          {assistantMsg.newConversation[lang]}
+        </span>
+      </button>
+
+      {sessions.length === 0 ? (
+        <p className="px-cell py-4 text-detail leading-normal text-muted-foreground">
+          {assistantMsg.historyEmpty[lang]}
+        </p>
+      ) : (
+        sessions.map((session) => {
+          const isActive = session.id === activeId;
+          return (
+            <div
+              key={session.id}
+              className={cn(
+                'group/row flex items-center gap-2 border-b border-hairline transition-colors',
+                isActive ? 'bg-muted' : 'hover:bg-muted',
+              )}
+            >
+              <button
+                type="button"
+                onClick={() => onSelect(session.id)}
+                className="edo-focus-ring flex min-w-0 flex-1 cursor-pointer flex-col items-start gap-1 border-0 bg-transparent py-2.5 pl-cell pr-2 text-left"
+              >
+                <span className="w-full truncate text-detail leading-none text-foreground">
+                  {session.title || assistantMsg.untitledConversation[lang]}
+                </span>
+                <span className="text-caption leading-none text-muted-foreground">
+                  {formatRelative(session.updatedAt, lang)}
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onDelete(session.id)}
+                aria-label={assistantMsg.deleteConversation[lang]}
+                className="edo-focus-ring mr-1.5 flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-muted-foreground opacity-0 transition-opacity hover:text-foreground focus-visible:opacity-100 group-hover/row:opacity-100"
+              >
+                <IconTrash width="14" height="14" />
+              </button>
+            </div>
+          );
+        })
+      )}
+    </div>
   </div>
 );
 
@@ -451,10 +577,18 @@ interface AssistantChatProps {
 }
 
 const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
-  const [mode, setMode] = useState<'prompt' | 'chat'>('prompt');
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const {
+    sessions,
+    activeId,
+    activeMessages: messages,
+    setActiveMessages,
+    newSession,
+    selectSession,
+    deleteSession,
+  } = useChatSessions();
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [proposal, setProposal] = useState<CreateBookingInput | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [collectContact, setCollectContact] = useState(false);
@@ -464,6 +598,9 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const currentPath = useRouterState({ select: (s) => s.resolvedLocation?.pathname ?? '' });
+
+  const mode: 'prompt' | 'chat' = messages.length === 0 ? 'prompt' : 'chat';
+  const savedSessions = sessions.filter((s) => s.messages.length > 0);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -476,9 +613,8 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
     if (!trimmed || loading) return;
 
     const nextMessages: ChatMessage[] = [...messages, { role: 'user', content: trimmed }];
-    setMessages(nextMessages);
+    setActiveMessages(nextMessages);
     setInput('');
-    setMode('chat');
     setLoading(true);
     setSuggestions([]);
     setCollectContact(false);
@@ -486,7 +622,7 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
     try {
       const result = await sendAssistantMessage(nextMessages, lang, sanitizeCurrentPage(currentPath));
       if ('reply' in result) {
-        setMessages((currentMessages) => [...currentMessages, { role: 'assistant', content: result.reply }]);
+        setActiveMessages([...nextMessages, { role: 'assistant', content: result.reply }]);
         setSuggestions(result.suggestions ?? []);
         setCollectContact(result.collectContact ?? false);
         if (result.bookingProposal) {
@@ -498,19 +634,21 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
         const fallback = result.error === 'rate_limited'
           ? assistantMsg.rateLimited[lang]
           : assistantMsg.errorFallback[lang];
-        setMessages((currentMessages) => [...currentMessages, {
-          role: 'assistant',
-          content: fallback,
-        }]);
+        setActiveMessages([...nextMessages, { role: 'assistant', content: fallback }]);
       }
     } catch (_error) {
-      setMessages((currentMessages) => [...currentMessages, {
-        role: 'assistant',
-        content: assistantMsg.errorFallback[lang],
-      }]);
+      setActiveMessages([...nextMessages, { role: 'assistant', content: assistantMsg.errorFallback[lang] }]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const clearBookingState = () => {
+    setProposal(null);
+    setSuggestions([]);
+    setCollectContact(false);
+    setCgv(false);
+    setBookingErr(null);
   };
 
   const confirmBooking = async () => {
@@ -521,7 +659,7 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
       const result = await createBooking({ ...proposal, mode: 'booking' });
       setProposal(null);
       setCgv(false);
-      setMessages((currentMessages) => [...currentMessages, {
+      setActiveMessages([...messages, {
         role: 'assistant',
         content: assistantMsg.bookingSuccess[lang].replace('{ref}', result.reference),
       }]);
@@ -534,15 +672,11 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
     }
   };
 
-  const reset = () => {
-    setMessages([]);
-    setMode('prompt');
+  const startNewSession = () => {
+    newSession();
     setInput('');
-    setProposal(null);
-    setSuggestions([]);
-    setCollectContact(false);
-    setCgv(false);
-    setBookingErr(null);
+    setHistoryOpen(false);
+    clearBookingState();
   };
 
   return (
@@ -558,7 +692,14 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
         </span>
       )}
 
-      <AssistantHeader lang={lang} mode={mode} loading={loading} onReset={reset} />
+      <AssistantHeader
+        lang={lang}
+        mode={mode}
+        loading={loading}
+        historyCount={savedSessions.length}
+        onNewSession={startNewSession}
+        onOpenHistory={() => setHistoryOpen(true)}
+      />
 
       {mode === 'prompt' ? (
         <AssistantPrompt lang={lang} onSend={send} />
@@ -608,6 +749,23 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
         onSend={send}
         inputRef={inputRef}
       />
+
+      {historyOpen && (
+        <ChatSessionList
+          lang={lang}
+          sessions={savedSessions}
+          activeId={activeId}
+          onSelect={(id) => {
+            selectSession(id);
+            setInput('');
+            setHistoryOpen(false);
+            clearBookingState();
+          }}
+          onDelete={deleteSession}
+          onNew={startNewSession}
+          onClose={() => setHistoryOpen(false)}
+        />
+      )}
     </div>
   );
 };
