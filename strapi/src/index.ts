@@ -161,8 +161,54 @@ export default {
     await ensureLocales(strapi);
     await hideContentManagerFields(strapi);
     registerGalleryOrderRoutes(strapi);
+    await backfillGalleryDisplayOrder(strapi);
   },
 };
+
+/**
+ * Seed gallery-project display order on boot when it has never been set.
+ *
+ * The companion migration can't reliably populate `display_order`: depending on
+ * the boot-time ordering of schema sync vs. migrations it may run before the
+ * column exists, get recorded as executed, and never backfill — leaving every
+ * row `null`. With every value null, the public gallery's `displayOrder` sort is
+ * a no-op (`null ?? 0` for all), so reordering never shows up on the site.
+ *
+ * This runs in bootstrap (after schema sync) and is idempotent: it seeds the
+ * order — by creation date, one rank per document so draft/published stay in
+ * sync — ONLY when no row carries a value yet. A saved drag-and-drop order (or
+ * any non-null value) makes it a no-op, so it never clobbers an editor's order.
+ */
+async function backfillGalleryDisplayOrder(strapi: Core.Strapi) {
+  const knex = strapi.db.connection;
+  const table = 'gallery_projects';
+  const column = 'display_order';
+  try {
+    if (!(await knex.schema.hasTable(table))) return;
+    if (!(await knex.schema.hasColumn(table, column))) return;
+
+    const anySet = await knex(table).whereNotNull(column).first();
+    if (anySet) return;
+
+    const docs = await knex(table)
+      .select('document_id')
+      .min({ first_created: 'created_at' })
+      .whereNotNull('document_id')
+      .groupBy('document_id')
+      .orderBy('first_created', 'asc');
+
+    let rank = 0;
+    for (const { document_id } of docs) {
+      await knex(table).where('document_id', document_id).update({ [column]: rank });
+      rank += 1;
+    }
+    if (rank > 0) {
+      strapi.log.info(`[displayOrder] seeded order for ${rank} gallery project(s).`);
+    }
+  } catch (err) {
+    strapi.log.warn(`[displayOrder] backfill skipped: ${(err as Error).message}`);
+  }
+}
 
 /**
  * Register the admin-authenticated endpoints backing the "Ordre galerie" page.
