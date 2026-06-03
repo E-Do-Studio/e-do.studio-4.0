@@ -11,8 +11,8 @@ import { BOOK_PLATEAUX, fmtEUR, isValidSiren, type CreateBookingInput } from './
 const MAX_INPUT_CHARS = 1500;
 
 const getQuickReplies = (lang: Lang) => lang === 'fr'
-  ? ['Tarifs cyclo', 'Dispos semaine prochaine', 'Livraison post-prod', 'Visite studio']
-  : ['Cyclo rates', 'Next-week availability', 'Post-prod delivery', 'Studio tour'];
+  ? ['Réservation guidée', 'Tarifs cyclo', 'Dispos semaine prochaine', 'Livraison post-prod', 'Visite studio']
+  : ['Guided booking', 'Cyclo rates', 'Next-week availability', 'Post-prod delivery', 'Studio tour'];
 
 type ChatError = 'rate_limited' | 'other';
 
@@ -130,24 +130,6 @@ const QuickReplyButton = ({ children, onClick }: QuickReplyButtonProps) => (
   >
     {children}
   </button>
-);
-
-interface ConversationListProps {
-  messages: ChatMessage[];
-  loading: boolean;
-  scrollRef: React.Ref<HTMLDivElement>;
-}
-
-const ConversationList = ({ messages, loading, scrollRef }: ConversationListProps) => (
-  <div
-    ref={scrollRef}
-    className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto pr-1 scrollbar-thin "
-  >
-    {messages.map((message, index) => (
-      <ChatBubble key={`${message.role}-${index}`} role={message.role} content={message.content} />
-    ))}
-    {loading && <TypingBubble />}
-  </div>
 );
 
 interface ChatBubbleProps {
@@ -311,14 +293,17 @@ interface ContactFormProps {
 }
 
 const ContactForm = ({ lang, onSubmit }: ContactFormProps) => {
-  const [f, setF] = useState({ prenom: '', nom: '', email: '', tel: '', societe: '', siren: '' });
+  const [f, setF] = useState({
+    prenom: '', nom: '', email: '', tel: '',
+    societe: '', adresseFacturation: '', marque: '', siren: '', autresInfos: '',
+  });
   const [err, setErr] = useState<string | null>(null);
   const upd = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setF((p) => ({ ...p, [k]: e.target.value }));
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!f.prenom.trim() || !f.nom.trim() || !f.email.trim() || !f.tel.trim()) {
+    if (!f.prenom.trim() || !f.nom.trim() || !f.email.trim() || !f.tel.trim() || !f.societe.trim() || !f.adresseFacturation.trim()) {
       setErr(assistantMsg.contactErrRequired[lang]);
       return;
     }
@@ -335,9 +320,12 @@ const ContactForm = ({ lang, onSubmit }: ContactFormProps) => {
       `Nom: ${f.nom.trim()}`,
       `Email: ${f.email.trim()}`,
       `Téléphone: ${f.tel.trim()}`,
+      `Société: ${f.societe.trim()}`,
+      `Adresse de facturation: ${f.adresseFacturation.trim()}`,
     ];
-    if (f.societe.trim()) parts.push(`Société: ${f.societe.trim()}`);
+    if (f.marque.trim()) parts.push(`Marque: ${f.marque.trim()}`);
     parts.push(f.siren.trim() ? `SIREN: ${f.siren.trim()}` : 'SIREN: aucun');
+    if (f.autresInfos.trim()) parts.push(`Autres infos: ${f.autresInfos.trim()}`);
     onSubmit('Mes coordonnées — ' + parts.join(' · '));
   };
 
@@ -357,7 +345,10 @@ const ContactForm = ({ lang, onSubmit }: ContactFormProps) => {
         <input className={inputCls} type="email" placeholder={assistantMsg.contactEmail[lang]} value={f.email} onChange={upd('email')} />
         <input className={inputCls} type="tel" placeholder={assistantMsg.contactPhone[lang]} value={f.tel} onChange={upd('tel')} />
         <input className={inputCls} placeholder={assistantMsg.contactCompany[lang]} value={f.societe} onChange={upd('societe')} />
+        <input className={inputCls} placeholder={assistantMsg.contactBillingAddress[lang]} value={f.adresseFacturation} onChange={upd('adresseFacturation')} />
+        <input className={inputCls} placeholder={assistantMsg.contactBrand[lang]} value={f.marque} onChange={upd('marque')} />
         <input className={inputCls} placeholder={assistantMsg.contactSiren[lang]} value={f.siren} onChange={upd('siren')} />
+        <input className={inputCls} placeholder={assistantMsg.contactNotes[lang]} value={f.autresInfos} onChange={upd('autresInfos')} />
       </div>
       {err && <div className="mt-1.5 text-micro text-primary">{err}</div>}
       <button
@@ -572,33 +563,41 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
       {mode === 'prompt' ? (
         <AssistantPrompt lang={lang} onSend={send} />
       ) : (
-        <ConversationList messages={messages} loading={loading} scrollRef={scrollRef} />
-      )}
-
-      {mode === 'chat' && !loading && suggestions.length > 0 && (
-        <div className="flex shrink-0 flex-wrap gap-1.5">
-          {suggestions.map((s) => (
-            <QuickReplyButton key={s} onClick={() => send(s)}>
-              {s}
-            </QuickReplyButton>
+        <div
+          ref={scrollRef}
+          className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto pr-1 scrollbar-thin"
+        >
+          {messages.map((message, index) => (
+            <ChatBubble key={`${message.role}-${index}`} role={message.role} content={message.content} />
           ))}
+          {loading && <TypingBubble />}
+
+          {!loading && suggestions.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {suggestions.map((s) => (
+                <QuickReplyButton key={s} onClick={() => send(s)}>
+                  {s}
+                </QuickReplyButton>
+              ))}
+            </div>
+          )}
+
+          {collectContact && !proposal && (
+            <ContactForm lang={lang} onSubmit={(m) => send(m)} />
+          )}
+
+          {proposal && (
+            <BookingRecapCard
+              proposal={proposal}
+              lang={lang}
+              cgv={cgv}
+              setCgv={setCgv}
+              busy={bookingBusy}
+              error={bookingErr}
+              onConfirm={confirmBooking}
+            />
+          )}
         </div>
-      )}
-
-      {mode === 'chat' && collectContact && !proposal && (
-        <ContactForm lang={lang} onSubmit={(m) => send(m)} />
-      )}
-
-      {mode === 'chat' && proposal && (
-        <BookingRecapCard
-          proposal={proposal}
-          lang={lang}
-          cgv={cgv}
-          setCgv={setCgv}
-          busy={bookingBusy}
-          error={bookingErr}
-          onConfirm={confirmBooking}
-        />
       )}
 
       <AssistantInput

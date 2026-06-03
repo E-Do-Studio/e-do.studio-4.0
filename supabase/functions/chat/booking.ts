@@ -160,6 +160,8 @@ export function prepareBooking(rawArgs: Record<string, any>, lang: Lang): Prepar
   if (!c.nom) missing.push(lang === "fr" ? "nom" : "last name");
   if (!c.email || !EMAIL_RE.test(c.email)) missing.push(lang === "fr" ? "email valide" : "valid email");
   if (!c.tel) missing.push(lang === "fr" ? "téléphone" : "phone");
+  if (!c.societe) missing.push(lang === "fr" ? "société" : "company");
+  if (!c.adresseFacturation) missing.push(lang === "fr" ? "adresse de facturation" : "billing address");
   // SIREN is optional (individuals may not have one), but if provided it must be
   // a valid 9-digit SIREN / 14-digit SIRET (Luhn).
   if (c.siren && !isValidSiren(c.siren)) {

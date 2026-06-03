@@ -332,12 +332,12 @@ The visitor can reserve entirely in this chat. Drive it conversationally, one or
 1. Understand the shoot: product family, method (packshot / on-model), packshot sub-type (piqué / ghost / flat), views (face / dos / détail / 3-4) or views-per-product, and quantity. A booking may have several sessions on different plateaux.
 2. Call prepare_booking to get the real recommendation + price; relay the figures exactly.
 3. Propose a date and arrival hour: call check_availability first, then present 2–3 concrete free slots as **tappable choices** via the SUGGESTIONS line (each option a date + hour, e.g. "Mar 9 juin · 12h"). Do NOT list slots as a plain bullet list. Each session can have its own date.
-4. Collect the contact. Do NOT list the contact fields in text and do NOT ask the user to type them. Instead, write one short sentence inviting them to fill the form, then emit the marker COLLECT_CONTACT on its own — an interactive form (first name, last name, email, phone, company, SIREN) is shown to the user. Their filled details arrive as the next message (SIREN is optional and already format-checked client-side); then call prepare_booking. If prepare_booking still reports the SIREN invalid, ask them to re-enter it.
+4. Collect the contact. Do NOT list the contact fields in text and do NOT ask the user to type them. Instead, write one short sentence inviting them to fill the form, then emit the marker COLLECT_CONTACT on its own — an interactive form (first name, last name, email, phone, company, billing address, brand, SIREN, notes — company and billing address required, SIREN optional) is shown to the user. Their filled details arrive as the next message (already format-checked client-side); then call prepare_booking. If prepare_booking still reports the SIREN invalid, ask them to re-enter it.
 5. Call prepare_booking again with everything. ONLY when it explicitly answers READY is the recap card (with the CGV checkbox and the "Confirm booking" button) actually shown to the user — then invite them to review and click it. If it does NOT answer READY, do NOT tell the user to confirm or that a card is displayed — ask only for the exact items it lists as missing, then call it again. NEVER claim the booking is done: only the user's click finalizes it (real pending reservation, confirmation emails, calendar hold). For on-model or accessory/object shoots, assume photo unless the visitor mentions video.
 Never invent a price, never write a booking yourself, and if prepare_booking flags an on-request item, tell the user that part is quote-on-request. Always present the duration and price as an **estimate** based on typical throughput — make clear, in your own words, that the studio team will confirm and may adjust the slot and quote after a quick exchange. Never present the figures as final or contractually binding.
 
 ## Guided mode (visitor unsure what to book)
-When the visitor doesn't know which plateau/method they need (vague request like "je veux des photos mais je ne sais pas quoi prendre", "aidez-moi à choisir", or just "réserver" with no details), GUIDE them step by step — ONE question at a time — down the configurator tree, advising in 1 short line at each step using the knowledge base:
+When the visitor doesn't know which plateau/method they need (vague request like "je veux des photos mais je ne sais pas quoi prendre", "aidez-moi à choisir", "réservation guidée" / "guided booking", or just "réserver" with no details), GUIDE them step by step — ONE question at a time — down the configurator tree, advising in 1 short line at each step using the knowledge base:
 1. What do they shoot? → ready-to-wear (pap), accessories, eyewear, jewelry, cosmetics, food, or free/cyclorama production.
 2. (apparel) On-model or packshot?
 3. (packshot) Piqué (sharp flat-lay), ghost (ghost mannequin) or à-plat (lay-flat)?
@@ -619,7 +619,7 @@ async function callGeminiWithTools(opts: ProviderOptions): Promise<string> {
     const requestBody = {
       systemInstruction: { parts: [{ text: opts.systemPrompt }] },
       contents,
-      generationConfig: { maxOutputTokens: 900, temperature: 0.35 },
+      generationConfig: { maxOutputTokens: 2048, temperature: 0.35 },
       tools: isFinalRound ? undefined : [{ functionDeclarations: [CHECK_AVAILABILITY_TOOL, PREPARE_BOOKING_TOOL] }],
       toolConfig: isFinalRound
         ? { functionCallingConfig: { mode: "NONE" } }
@@ -718,7 +718,7 @@ async function callGlmWithTools(opts: ProviderOptions): Promise<string> {
       model: GLM_MODEL,
       messages,
       temperature: 0.35,
-      max_tokens: 900,
+      max_tokens: 2048,
     };
     if (!isFinalRound) {
       requestBody.tools = [CHECK_AVAILABILITY_TOOL_OPENAI, PREPARE_BOOKING_TOOL_OPENAI];
