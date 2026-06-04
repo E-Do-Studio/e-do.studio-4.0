@@ -525,6 +525,7 @@ export const discoveryPage = {
     en: 'The first journal entry is coming soon.',
   } as B,
   noSecondaryPost: { fr: 'Article suivant', en: 'Next article' } as B,
+  nextArticle: { fr: 'Article suivant', en: 'Next article' } as B,
   noSecondaryPostHint: {
     fr: 'Un nouveau format est en préparation.',
     en: 'A new long-form piece is on its way.',

@@ -87,28 +87,17 @@ interface SplitArticleEmptyCardProps {
 
 export const SplitArticleEmptyCard: React.FC<SplitArticleEmptyCardProps> = ({ lang, className, badge }) => (
   <section
-    aria-label={discoveryPage.noSecondaryPost[lang]}
+    aria-label={discoveryPage.noPosts[lang]}
     className={cn(cellBase, 'order-6 grid min-h-104 grid-cols-1 bg-white sm:grid-cols-2 lg:min-h-0', className)}
   >
     {badge != null && <CellBadge n={badge} />}
-    <div className="relative min-h-56 bg-muted sm:min-h-0">
-      <span className={cn(labelBase, 'absolute left-cell top-3 text-muted-foreground')}>
-        {discoveryPage.noSecondaryPost[lang]}
-      </span>
-    </div>
-    <div className="flex min-h-0 min-w-0 flex-col items-start justify-between gap-3.5 px-7 py-6">
-      <span className={cn(labelBase, 'text-primary')}>
-        {discoveryPage.morePosts[lang]}
-      </span>
+    <div className="relative min-h-56 bg-muted sm:min-h-0" />
+    <div className="flex min-h-0 min-w-0 flex-col items-start justify-center px-7 py-6">
       <EmptyState
         size="compact"
         label={discoveryPage.noPosts[lang]}
-        description={discoveryPage.noSecondaryPostHint[lang]}
         className="items-start px-0 py-0 text-left"
       />
-      <span className="font-mono text-micro tracking-ui text-muted-foreground">
-        {discoveryPage.studioOpen[lang]}
-      </span>
     </div>
   </section>
 );
