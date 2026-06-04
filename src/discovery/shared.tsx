@@ -17,11 +17,12 @@ interface ArticleMetaProps {
   post: import('../types').DiscoveryPost;
   lang: import('../types').Lang;
   muted?: boolean;
+  read?: boolean;
 }
 
-export const ArticleMeta: React.FC<ArticleMetaProps> = ({ post, lang, muted = false }) => (
+export const ArticleMeta: React.FC<ArticleMetaProps> = ({ post, lang, muted = false, read = true }) => (
   <span className={cn(microBase, muted ? 'text-muted-foreground' : 'text-primary')}>
-    {post.tag[lang]} · {post.read}
+    {post.tag[lang]}{read ? ` · ${post.read}` : ''}
   </span>
 );
 
