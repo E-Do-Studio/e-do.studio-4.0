@@ -138,6 +138,7 @@ interface StrapiBlogPost {
   publishedAt?: string | null;
   createdAt?: string | null;
   categories?: { id: number; title: string; slug: string }[];
+  featured?: boolean;
   seo?: StrapiSeoMeta;
 }
 
@@ -801,7 +802,7 @@ function mapBlogPostToDiscovery(pFr: StrapiBlogPost, pEn: StrapiBlogPost, tone: 
     coverUrl: resolveStrapiMediaUrl(pFr.coverMedia),
     coverMime: pFr.coverMedia?.mime,
     publishedAt: pFr.publishedAt ?? undefined,
-    featured: false,
+    featured: pFr.featured ?? false,
     seo,
   };
 }

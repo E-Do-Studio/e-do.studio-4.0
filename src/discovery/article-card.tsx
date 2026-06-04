@@ -1,7 +1,7 @@
 import React from 'react';
 import type { DiscoveryPost, Lang } from '../types';
 import { DiscoveryCoverMedia } from './discovery-cover';
-import { ArticleMeta, CellBadge } from './shared';
+import { CellBadge } from './shared';
 import { cn } from '../ui/cn';
 import { EmptyState } from '../ui';
 import { cellBase, labelBase } from './styles';
@@ -40,7 +40,6 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({ post, lang, onOpen, he
       'flex min-w-0 origin-left flex-col overflow-hidden transition-transform duration-200 ease-edo-out group-hover:scale-102',
       headline ? 'gap-1 px-cell pb-3 pt-2.5' : 'gap-1 px-cell pb-4 pt-3.5'
     )}>
-      <ArticleMeta post={post} lang={lang} />
       <h3 className={cn(
         'm-0 edo-line-clamp-2 text-balance text-foreground',
         headline
@@ -49,9 +48,11 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({ post, lang, onOpen, he
       )}>
         {post.title[lang]}
       </h3>
-      <span className="font-mono text-micro tracking-ui text-muted-foreground">
-        {post.author} · {post.date[lang]}
-      </span>
+      {headline && (
+        <span className="mt-1 inline-flex items-center gap-2 font-mono text-label uppercase tracking-label text-foreground">
+          {discoveryPage.readArticle[lang]} <span className="text-detail">→</span>
+        </span>
+      )}
     </div>
   </button>
 );
