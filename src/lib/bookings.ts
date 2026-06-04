@@ -165,8 +165,11 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     throw new Error(quoteError.message);
   }
 
-  syncToCalendar(booking.id).catch(() => {});
-  sendBookingEmails(booking.id).catch(() => {});
+  // Best-effort instant sync. It is no longer the guarantee: the server-side
+  // reconcile cron (reconcile_calendar_sync) re-pushes any booking left
+  // unsynced, so a failure here is logged, not swallowed, and self-heals.
+  syncToCalendar(booking.id).catch((e) => console.error('calendar sync failed', e));
+  sendBookingEmails(booking.id).catch((e) => console.error('booking email failed', e));
 
   return { booking, reference };
 }
@@ -175,11 +178,12 @@ async function syncToCalendar(bookingId: string): Promise<void> {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   if (!supabaseUrl) return;
 
-  await fetch(`${supabaseUrl}/functions/v1/calendar-sync`, {
+  const res = await fetch(`${supabaseUrl}/functions/v1/calendar-sync`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ bookingId, action: 'create' }),
   });
+  if (!res.ok) throw new Error(`calendar-sync ${res.status}`);
 }
 
 async function sendBookingEmails(bookingId: string): Promise<void> {
