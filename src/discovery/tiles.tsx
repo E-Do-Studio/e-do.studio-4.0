@@ -61,15 +61,11 @@ export const SplitArticleCard: React.FC<SplitArticleCardProps> = ({ post, lang, 
         <h3 className="m-0 text-balance text-page-title font-light leading-tight tracking-headline text-foreground">
           {post.title[lang]}
         </h3>
-        {post.sub?.[lang] ? (
+        {post.sub?.[lang] && (
           <p
             className="edo-line-clamp-3 m-0 text-detail leading-normal text-muted-foreground [&_a]:text-primary [&_em]:italic [&_strong]:font-semibold [&_strong]:text-foreground"
             dangerouslySetInnerHTML={{ __html: renderInlineMarkdown(post.sub[lang]) }}
           />
-        ) : (
-          <p className="edo-line-clamp-3 m-0 text-detail leading-normal text-muted-foreground">
-            {discoveryPage.readFallback[lang]}
-          </p>
         )}
       </div>
       <span className="inline-flex items-center gap-2 font-mono text-label uppercase tracking-label text-foreground">

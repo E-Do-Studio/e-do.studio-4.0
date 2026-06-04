@@ -70,7 +70,7 @@ export const DiscoveryBentoGrid: React.FC<DiscoveryBentoGridProps> = ({ lang, go
         )}
 
         {/* Middle column split in two equal halves: pinned (top) + latest (bottom). */}
-        <div className="order-6 flex flex-col gap-hairline md:col-span-2 lg:col-start-4 lg:col-span-3 lg:row-start-1 lg:row-span-5 lg:order-none lg:min-h-0">
+        <div className="order-6 flex flex-col gap-hairline bg-[var(--border)] md:col-span-2 lg:col-start-4 lg:col-span-3 lg:row-start-1 lg:row-span-5 lg:order-none lg:min-h-0">
           {pinnedPost ? (
             <SplitArticleCard
               post={pinnedPost}
