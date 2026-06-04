@@ -193,6 +193,17 @@ export async function updateBookingStatus(
     throw new Error(error?.message ?? 'Failed to update booking status');
   }
 
+  // A reschedule moves preferred_date, but the calendar event's DTSTART is driven
+  // by booking_sessions.session_date — move it too, or the agenda keeps the old
+  // slot. Single-date semantics (the admin reschedule UI gives one date); a
+  // future multi-session reschedule would need per-session dates.
+  if (options?.newDate) {
+    await supabase
+      .from('booking_sessions')
+      .update({ session_date: options.newDate })
+      .eq('booking_id', bookingId);
+  }
+
   if (options?.reason) {
     sendStatusChangeEmail(bookingId, options.reason, options.newDate, options.message).catch(() => {});
   }

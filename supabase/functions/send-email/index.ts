@@ -52,7 +52,16 @@ interface BookingStatusChangePayload {
   message?: string;
 }
 
-type EmailPayload = BookingEmailPayload | ContactEmailPayload | BookingStatusChangePayload;
+interface CalendarSyncAlertPayload {
+  type: "calendar_sync_alert";
+  bookingId: string;
+}
+
+type EmailPayload =
+  | BookingEmailPayload
+  | ContactEmailPayload
+  | BookingStatusChangePayload
+  | CalendarSyncAlertPayload;
 
 interface ResendAttachment {
   filename: string;
@@ -164,6 +173,8 @@ Deno.serve(async (req: Request) => {
       await handleContactEmail(resendKey, fromEmail, payload);
     } else if (payload.type === "booking_status_change") {
       await handleBookingStatusChangeEmail(resendKey, fromEmail, payload);
+    } else if (payload.type === "calendar_sync_alert") {
+      await handleCalendarSyncAlert(resendKey, fromEmail, payload.bookingId);
     } else {
       return new Response(JSON.stringify({ error: "Unknown email type" }), {
         status: 400,
@@ -184,6 +195,53 @@ Deno.serve(async (req: Request) => {
     });
   }
 });
+
+async function handleCalendarSyncAlert(
+  resendKey: string,
+  fromEmail: string,
+  bookingId: string,
+): Promise<void> {
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  );
+
+  const { data: booking, error } = await supabase
+    .from("bookings")
+    .select("reference, client_name, client_company, preferred_date, status, calendar_sync_error, calendar_sync_attempts")
+    .eq("id", bookingId)
+    .single();
+
+  if (error || !booking) {
+    throw new Error(`Booking not found: ${bookingId}`);
+  }
+
+  const esc = (v: unknown) =>
+    String(v ?? "—").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]!));
+
+  const html = `
+    <div style="font-family:system-ui,sans-serif;font-size:14px;line-height:1.5;color:#111">
+      <p><strong>⚠️ Une réservation ne se synchronise pas avec le calendrier.</strong></p>
+      <p>Après ${esc(booking.calendar_sync_attempts)} tentatives, l'événement CalDAV
+      n'a pas pu être créé. L'agenda risque de ne pas montrer cette réservation.</p>
+      <table cellpadding="4" style="border-collapse:collapse">
+        <tr><td><strong>Référence</strong></td><td>${esc(booking.reference)}</td></tr>
+        <tr><td><strong>Client</strong></td><td>${esc(booking.client_name)}${booking.client_company ? ` — ${esc(booking.client_company)}` : ""}</td></tr>
+        <tr><td><strong>Date</strong></td><td>${esc(booking.preferred_date)}</td></tr>
+        <tr><td><strong>Statut</strong></td><td>${esc(booking.status)}</td></tr>
+        <tr><td><strong>Erreur</strong></td><td>${esc(booking.calendar_sync_error)}</td></tr>
+      </table>
+      <p>Le système continue de réessayer automatiquement toutes les 2 minutes.</p>
+    </div>`;
+
+  await sendResendEmail(
+    resendKey,
+    fromEmail,
+    STUDIO_EMAIL,
+    `⚠️ Échec synchro calendrier — ${booking.reference}`,
+    html,
+  );
+}
 
 async function handleBookingEmail(
   resendKey: string,
