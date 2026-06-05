@@ -1,6 +1,6 @@
 import React from 'react';
 import type { DiscoveryPost, Lang } from '../types';
-import { DiscoveryCoverMedia } from './discovery-cover';
+import { DiscoveryCoverMedia, hasCover } from './discovery-cover';
 import { ArrowIcon, CellBadge } from './shared';
 import { cn } from '../ui/cn';
 import { EmptyState } from '../ui';
@@ -41,39 +41,44 @@ interface SplitArticleCardProps {
   badge?: number;
 }
 
-export const SplitArticleCard: React.FC<SplitArticleCardProps> = ({ post, lang, onOpen, className, badge }) => (
-  <button
-    onClick={onOpen}
-    className={cn(cellBase, 'edo-focus-ring group order-6 grid min-h-104 cursor-pointer grid-cols-1 border-0 bg-white p-0 text-left transition-opacity hover:opacity-95 sm:grid-cols-2 lg:min-h-0', className)}
-  >
-    {badge != null && <CellBadge n={badge} />}
-    <div className="relative min-h-56 overflow-hidden bg-foreground sm:min-h-0">
-      <DiscoveryCoverMedia
-        post={post}
-        lang={lang}
-        sizes="(min-width: 640px) 50vw, 100vw"
-        seedOffset={10}
-        className="absolute inset-0 h-full w-full object-cover"
-      />
-    </div>
-    <div className="flex min-h-0 min-w-0 origin-left flex-col justify-between gap-3.5 overflow-hidden px-7 py-6 transition-transform duration-200 ease-edo-out group-hover:scale-102">
-      <div className="flex min-w-0 flex-col gap-2.5">
-        <h3 className="m-0 text-balance text-page-title font-light leading-tight tracking-headline text-foreground">
-          {post.title[lang]}
-        </h3>
-        {post.sub?.[lang] && (
-          <p
-            className="edo-line-clamp-3 m-0 text-detail leading-normal text-muted-foreground [&_a]:text-primary [&_em]:italic [&_strong]:font-semibold [&_strong]:text-foreground"
-            dangerouslySetInnerHTML={{ __html: renderInlineMarkdown(post.sub[lang]) }}
+export const SplitArticleCard: React.FC<SplitArticleCardProps> = ({ post, lang, onOpen, className, badge }) => {
+  const cover = hasCover(post);
+  return (
+    <button
+      onClick={onOpen}
+      className={cn(cellBase, 'edo-focus-ring group order-6 grid min-h-104 cursor-pointer grid-cols-1 border-0 bg-white p-0 text-left transition-opacity hover:opacity-95 lg:min-h-0', cover && 'sm:grid-cols-2', className)}
+    >
+      {badge != null && <CellBadge n={badge} />}
+      {cover && (
+        <div className="relative min-h-56 overflow-hidden bg-foreground sm:min-h-0">
+          <DiscoveryCoverMedia
+            post={post}
+            lang={lang}
+            sizes="(min-width: 640px) 50vw, 100vw"
+            seedOffset={10}
+            className="absolute inset-0 h-full w-full object-cover"
           />
-        )}
+        </div>
+      )}
+      <div className="flex min-h-0 min-w-0 origin-left flex-col justify-between gap-3.5 overflow-hidden px-7 py-6 transition-transform duration-200 ease-edo-out group-hover:scale-102">
+        <div className="flex min-w-0 flex-col gap-2.5">
+          <h3 className="m-0 text-balance text-page-title font-light leading-tight tracking-headline text-foreground">
+            {post.title[lang]}
+          </h3>
+          {post.sub?.[lang] && (
+            <p
+              className="edo-line-clamp-3 m-0 text-detail leading-normal text-muted-foreground [&_a]:text-primary [&_em]:italic [&_strong]:font-semibold [&_strong]:text-foreground"
+              dangerouslySetInnerHTML={{ __html: renderInlineMarkdown(post.sub[lang]) }}
+            />
+          )}
+        </div>
+        <span className="inline-flex items-center gap-2 font-mono text-label uppercase tracking-label text-foreground">
+          {discoveryPage.readArticle[lang]} <span className="text-detail">→</span>
+        </span>
       </div>
-      <span className="inline-flex items-center gap-2 font-mono text-label uppercase tracking-label text-foreground">
-        {discoveryPage.readArticle[lang]} <span className="text-detail">→</span>
-      </span>
-    </div>
-  </button>
-);
+    </button>
+  );
+};
 
 interface SplitArticleEmptyCardProps {
   lang: Lang;
