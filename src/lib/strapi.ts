@@ -138,6 +138,7 @@ interface StrapiBlogPost {
   publishedAt?: string | null;
   createdAt?: string | null;
   categories?: { id: number; title: string; slug: string }[];
+  featured?: boolean;
   seo?: StrapiSeoMeta;
 }
 
@@ -229,9 +230,11 @@ interface StrapiGalleryProject {
   id: number;
   stage?: StageKey | null;
   year: number | string;
+  displayOrder?: number | null;
   category?: StrapiGalleryCategory;
   brand?: StrapiGalleryBrand;
   media?: StrapiMedia[];
+  embeds?: { url: string; alt?: string }[];
 }
 
 // ─── PlateauSpec type (local, matches what the frontend expects) ────────────
@@ -799,7 +802,7 @@ function mapBlogPostToDiscovery(pFr: StrapiBlogPost, pEn: StrapiBlogPost, tone: 
     coverUrl: resolveStrapiMediaUrl(pFr.coverMedia),
     coverMime: pFr.coverMedia?.mime,
     publishedAt: pFr.publishedAt ?? undefined,
-    featured: false,
+    featured: pFr.featured ?? false,
     seo,
   };
 }
@@ -1226,10 +1229,11 @@ export async function fetchSiteDefaults(): Promise<SiteDefaults> {
 // ─── Gallery types & fetchers ──────────────────────────────────────────────
 
 export interface GalleryMedia {
+  kind: 'image' | 'video' | 'embed';
   url: string;
   previewUrl?: string;
-  mime: string;
   alt: string;
+  mime?: string;
 }
 
 export interface GalleryProject {
@@ -1253,11 +1257,48 @@ function absoluteMediaUrl(path: string): string {
   return `${STRAPI_URL}${path}`;
 }
 
+// Cappasity 360° viewers ship with branding, UI chrome and a click-to-start
+// overlay by default. Apply our house look (clean, auto-rotating, no logo) to
+// any Cappasity embed so editors can paste the bare `/embedded` URL. A param
+// explicitly set in the CMS URL always wins (per-packshot override).
+const CAPPASITY_EMBED_DEFAULTS: Record<string, string> = {
+  autorun: '1',
+  autorotate: '1',
+  logo: '0',
+  arbutton: '0',
+  closebutton: '0',
+  hidehints: '1',
+  hidefullscreen: '1',
+  hideautorotateopt: '1',
+  hidesettingsbtn: '1',
+  hidezoomopt: '1',
+  enableimagezoom: '1',
+  analytics: '0',
+};
+
+function normalizeEmbedUrl(raw: string): string {
+  let url: URL;
+  try {
+    url = new URL(raw);
+  } catch {
+    return raw;
+  }
+  if (!url.hostname.endsWith('cappasity.com')) return raw;
+  for (const [k, v] of Object.entries(CAPPASITY_EMBED_DEFAULTS)) {
+    if (!url.searchParams.has(k)) url.searchParams.set(k, v);
+  }
+  return url.toString();
+}
+
 export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
   // `populate=*` returns every first-level relation with all its scalar
   // attributes — category.slug, brand.name, and the media files with their
   // url/formats. Simpler and more robust than nested populate across the
   // i18n schema transition (EDO-159).
+  // Sort server-side on `createdAt` (always present) and re-sort by the
+  // editorial `displayOrder` below — sorting on `displayOrder` server-side
+  // 400s on any env where the schema field hasn't propagated yet, and a single
+  // 400 wipes the whole gallery (same precaution as `fetchDiscoveryPosts`).
   const res = await fetchStrapi<{ data: StrapiGalleryProject[] }>('gallery-projects', {
     'populate': '*',
     'sort': 'createdAt:asc',
@@ -1265,8 +1306,12 @@ export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
     'locale': 'fr',
   });
 
-  return res.data.map((p, i) => {
-    const media: GalleryMedia[] = (p.media ?? [])
+  const ordered = [...res.data].sort(
+    (a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0),
+  );
+
+  return ordered.map((p, i) => {
+    const files: GalleryMedia[] = (p.media ?? [])
       .map((m): GalleryMedia | null => {
         if (!m.url) return null;
         // Videos must be served raw. For images, expose the original as `url`
@@ -1277,6 +1322,7 @@ export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
         const mediumPath = m.formats?.medium?.url;
         const previewUrl = !isVideo && mediumPath ? absoluteMediaUrl(mediumPath) : undefined;
         return {
+          kind: isVideo ? 'video' : 'image',
           url: rawUrl,
           previewUrl,
           mime: m.mime ?? '',
@@ -1284,6 +1330,11 @@ export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
         };
       })
       .filter((m): m is GalleryMedia => m !== null);
+    // Iframe embeds (360° packshots) follow the uploaded files in slot order.
+    const embeds: GalleryMedia[] = (p.embeds ?? [])
+      .filter((e) => !!e.url)
+      .map((e) => ({ kind: 'embed', url: normalizeEmbedUrl(e.url), alt: e.alt ?? '' }));
+    const media: GalleryMedia[] = [...files, ...embeds];
     return {
       id: p.id,
       brand: p.brand?.name ?? '',

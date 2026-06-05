@@ -12,6 +12,11 @@
     "draftAndPublish": true
   },
   "pluginOptions": {},
+  "config": {
+    "attributes": {
+      "displayOrder": { "hidden": true }
+    }
+  },
   "attributes": {
     "stage": {
       "type": "enumeration",
@@ -44,9 +49,21 @@
     "media": {
       "type": "media",
       "multiple": true,
-      "required": true,
+      "required": false,
       "allowedTypes": ["images", "videos"],
-      "description": "Médias du projet : exactement 3 entrées, images ou vidéos (mp4/webm). Validé par lifecycles.ts. Le fichier 1 sert de couverture par défaut. Les migrations 2026.05.25T10.20.00.gallery-project-images-to-media.js et 2026.05.25T10.30.00.gallery-project-unify-media.js renomment les anciens liens `images` vers ce champ."
+      "description": "Fichiers du projet : images ou vidéos (mp4/webm). Comptés avec `embeds` : total = exactement 3 (validé par lifecycles.ts). Le 1er contenu sert de couverture par défaut. Les migrations 2026.05.25T10.20.00.gallery-project-images-to-media.js et 2026.05.25T10.30.00.gallery-project-unify-media.js renomment les anciens liens `images` vers ce champ."
+    },
+    "embeds": {
+      "type": "component",
+      "repeatable": true,
+      "component": "shared.embed-item",
+      "max": 3,
+      "description": "Packshots 360° / liens iframe. Comptés avec `media` : total = exactement 3 (validé par lifecycles.ts)."
+    },
+    "displayOrder": {
+      "type": "integer",
+      "default": 0,
+      "description": "Ordre d'affichage dans la galerie publique. Géré via la page admin « Ordre galerie » (drag-and-drop), masqué de l'éditeur via `config.attributes.displayOrder.hidden`. Trié display_order:asc côté front."
     }
   }
 }

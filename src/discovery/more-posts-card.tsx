@@ -1,7 +1,7 @@
 import React from 'react';
 import type { DiscoveryPost, Lang } from '../types';
 import { ArticleMeta, CellBadge } from './shared';
-import { DiscoveryCoverMedia } from './discovery-cover';
+import { DiscoveryCoverMedia, hasCover } from './discovery-cover';
 import { FilterChips } from './filter-chips';
 import { cn } from '../ui/cn';
 import { EmptyState } from '../ui';
@@ -38,29 +38,37 @@ export const MorePostsCard: React.FC<MorePostsCardProps> = ({ posts, lang, onOpe
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto">
-        {filteredPosts.map((post) => (
-          <button
-            key={post.id}
-            onClick={() => onOpen(post)}
-            className="edo-focus-ring group grid w-full cursor-pointer grid-cols-thumb-row items-center gap-3 border-0 border-b border-border bg-white px-cell pb-3.5 pt-3 text-left transition-colors hover:bg-muted"
-          >
-            <div className="relative aspect-square overflow-hidden">
-              <DiscoveryCoverMedia
-                post={post}
-                lang={lang}
-                sizes="80px"
-                seedOffset={4}
-                className="absolute inset-0 h-full w-full object-cover"
-              />
-            </div>
-            <div className="flex min-w-0 origin-left flex-col gap-1 transition-transform duration-200 ease-edo-out group-hover:scale-102">
-              <ArticleMeta post={post} lang={lang} muted />
-              <span className="edo-line-clamp-2 text-detail font-normal leading-snug tracking-copy-tight text-foreground">
-                {post.title[lang]}
-              </span>
-            </div>
-          </button>
-        ))}
+        {filteredPosts.map((post) => {
+          const cover = hasCover(post);
+          return (
+            <button
+              key={post.id}
+              onClick={() => onOpen(post)}
+              className={cn(
+                'edo-focus-ring group grid w-full cursor-pointer items-center gap-3 border-0 border-b border-border bg-white px-cell pb-3.5 pt-3 text-left transition-colors hover:bg-muted',
+                cover ? 'grid-cols-thumb-row' : 'grid-cols-1',
+              )}
+            >
+              {cover && (
+                <div className="relative aspect-square overflow-hidden">
+                  <DiscoveryCoverMedia
+                    post={post}
+                    lang={lang}
+                    sizes="80px"
+                    seedOffset={4}
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                </div>
+              )}
+              <div className="flex min-w-0 origin-left flex-col gap-1 transition-transform duration-200 ease-edo-out group-hover:scale-102">
+                <ArticleMeta post={post} lang={lang} muted />
+                <span className="edo-line-clamp-2 text-detail font-normal leading-snug tracking-copy-tight text-foreground">
+                  {post.title[lang]}
+                </span>
+              </div>
+            </button>
+          );
+        })}
 
         {filteredPosts.length === 0 && (
           <EmptyState size="compact" label={discoveryPage.noPosts[lang]} />

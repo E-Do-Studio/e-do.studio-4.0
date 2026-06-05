@@ -334,7 +334,23 @@ const ProjectImage = ({
   let inner: ReactNode;
   if (!item) {
     inner = <ProjectCoverFallback project={project} seed={project.id * 3 + imageIndex} />;
-  } else if (item.mime.startsWith("video/")) {
+  } else if (item.kind === "embed") {
+    const altText = item.alt || `${project.brand} — ${imageIndex + 1}`;
+    // pointer-events-none so the click reaches the wrapping button (opens the
+    // lightbox, where the iframe becomes interactive).
+    inner = (
+      <iframe
+        key={item.url}
+        src={item.url}
+        title={altText}
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+        allow="accelerometer; gyroscope; fullscreen; xr-spatial-tracking"
+        allowFullScreen
+        className="absolute inset-0 h-full w-full border-0 pointer-events-none select-none"
+      />
+    );
+  } else if (item.kind === "video") {
     const altText = item.alt || `${project.brand} — ${imageIndex + 1}`;
     inner = (
       <video

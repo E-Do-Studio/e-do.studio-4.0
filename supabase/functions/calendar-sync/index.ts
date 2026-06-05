@@ -146,6 +146,25 @@ Deno.serve(async (req: Request) => {
 
   const allOk = results.every((r) => r.ok);
 
+  // Persist the outcome so failures are visible and the reconcile cron
+  // (reconcile_calendar_sync) knows what still needs pushing. Never throw on
+  // this bookkeeping — the CalDAV result is what matters to the caller.
+  const syncPatch = allOk
+    ? { calendar_synced_at: new Date().toISOString(), calendar_sync_error: null, calendar_sync_alerted_at: null }
+    : {
+        calendar_synced_at: null,
+        calendar_sync_error: results
+          .filter((r) => !r.ok)
+          .map((r) => `${r.sessionId}: ${r.status} ${r.statusText}`)
+          .join("; ")
+          .slice(0, 1000),
+      };
+  await supabase
+    .from("bookings")
+    .update({ ...syncPatch, calendar_sync_attempts: (booking.calendar_sync_attempts ?? 0) + 1 })
+    .eq("id", bookingId)
+    .then(undefined, () => {});
+
   return new Response(
     JSON.stringify({ success: allOk, sessions: results }),
     { status: allOk ? 200 : 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
