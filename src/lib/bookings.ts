@@ -94,6 +94,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
   const bookingData: BookingInsert = {
     reference,
     status: input.mode === 'booking' ? 'pending' : 'draft',
+    source: 'website',
     client_name: [input.contact.prenom, input.contact.nom].filter(Boolean).join(' '),
     client_first_name: input.contact.prenom || null,
     client_last_name: input.contact.nom || null,

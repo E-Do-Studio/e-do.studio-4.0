@@ -8,6 +8,7 @@ export interface Database {
           id: string;
           reference: string;
           status: BookingStatus;
+          source: string;
           client_name: string;
           client_first_name: string | null;
           client_last_name: string | null;
@@ -30,6 +31,7 @@ export interface Database {
           id?: string;
           reference: string;
           status?: BookingStatus;
+          source?: string;
           client_name: string;
           client_first_name?: string | null;
           client_last_name?: string | null;
