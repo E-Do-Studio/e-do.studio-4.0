@@ -212,11 +212,17 @@ const DirectionA = () => {
         className="edo-focus-ring group relative col-span-2 aspect-[6/5] flex flex-col items-stretch justify-end overflow-hidden border-0 bg-edo-dark p-6 text-white transition-all duration-150 hover:brightness-75 md:col-start-7 md:col-end-13 md:row-start-3 md:row-end-5 md:aspect-auto"
       >
         {galleryUseCrossfade ? (
-          <ImageCrossfade images={heroPosters} priority />
+          <ImageCrossfade
+            images={heroPosters.map((p, i) => ({
+              url: p.url,
+              alt: p.alt || `${common.gallery[lang]} — ${i + 1}`,
+            }))}
+            priority
+          />
         ) : galleryHasCmsPosters ? (
           <ResponsiveImage
             src={heroPosters[0].url}
-            alt={heroPosters[0].alt}
+            alt={heroPosters[0].alt || common.gallery[lang]}
             sizes="(min-width: 768px) 50vw, 100vw"
             priority
             className="pointer-events-none absolute inset-0 h-full w-full object-cover"

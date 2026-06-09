@@ -41,9 +41,11 @@
 <meta name="twitter:image" content="https://e-do.studio/twitter-card.png"/>
 
 <!-- Critical self-hosted fonts: preload the Light (300) cut used by the hero
-     titles + the Mono Book (400) used for eyebrow labels. The remaining ABC
-     Favorit weights are pulled by the CSS @font-face declarations on demand. -->
+     titles, the Regular (400) body cut (most-used weight — avoids a swap-driven
+     layout shift on text-heavy pages), and the Mono Book (400) eyebrow labels.
+     The remaining ABC Favorit weights load via @font-face on demand. -->
 <link rel="preload" as="font" type="font/woff2" href="/fonts/ABCFavorit-Light.woff2" crossorigin/>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/ABCFavorit-Regular_1.woff2" crossorigin/>
 <link rel="preload" as="font" type="font/woff2" href="/fonts/ABCFavoritMono-Book.woff2" crossorigin/>
 
 <!-- LCP preload: gallery hero (largest above-the-fold image on home) -->

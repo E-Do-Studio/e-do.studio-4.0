@@ -306,3 +306,18 @@
     opacity: 0;
   }
 }
+
+/* ── Mobile legibility floor (audit: USE_LEGIBLE_FONT_SIZE) ──
+   The editorial micro-scale dips to 9–11px, which fails the 12px minimum on
+   phones (gallery, cyclorama and plateau read at 14–26% passing). On <768px we
+   lift the *readable* steps — micro (used for project titles, brand + meta
+   labels), label and caption — to a 12px floor while desktop keeps the full
+   scale. `text-nano` (8px) stays as-is: it is reserved for decorative numbering
+   / badges. These rules are intentionally unlayered so they win over Tailwind's
+   inlined `@theme` utilities. Most call sites truncate or marquee on overflow,
+   so the 2–3px bump does not break the dense grids. */
+@media (max-width: 767px) {
+  .text-micro { font-size: 0.75rem; line-height: 1.15; }
+  .text-label { font-size: 0.75rem; line-height: 1.15; }
+  .text-caption { font-size: 0.75rem; }
+}

@@ -14,11 +14,11 @@ export const META: Record<string, Record<Lang, PageMeta>> = {
   home: {
     fr: {
       title: 'E-Do Studio — Studio photo & vidéo professionnel à Paris',
-      description: 'Studio photo et vidéo professionnel à Paris. Cyclorama, plateaux de prise de vue, post-production. Location et services pour marques de mode, cosmétique, joaillerie et food.',
+      description: 'Studio photo et vidéo à Paris. Cyclorama, plateaux et post-production. Location pour marques de mode, cosmétique, joaillerie et food.',
     },
     en: {
       title: 'E-Do Studio — Professional photo & video studio in Paris',
-      description: 'Professional photo and video studio in Paris. Cyclorama, shooting stages, post-production. Rental and services for fashion, cosmetics, jewelry and food brands.',
+      description: 'Professional photo and video studio in Paris. Cyclorama, stages and post-production for fashion, cosmetics, jewelry and food brands.',
     },
   },
   cyclorama: {
