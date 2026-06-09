@@ -156,7 +156,7 @@ const ThumbStrip = ({ items, lang, plateauName, activeIndex, onSelect, className
               ) : (
                 <ResponsiveImage
                   src={item.previewUrl ?? item.url}
-                  alt=""
+                  alt={item.alt[lang] || `${plateauName} — ${i + 1}`}
                   sizes={tileSizes}
                   className="absolute inset-0 h-full w-full object-cover"
                 />

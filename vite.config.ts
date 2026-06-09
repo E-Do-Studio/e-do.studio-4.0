@@ -237,6 +237,32 @@ function edoPrerender(): Plugin {
         errorWritten += 1;
         this.info(`edo-prerender: wrote ${errorWritten} error HTML files (404)`);
       }
+
+      // Booking entry points: emit a noindex shell so crawlers get an explicit
+      // "do not index" signal instead of the SPA fallback's default
+      // `robots: index, follow` on an empty body (flagged REMOVE_BLANK_PAGES /
+      // MISSING_HTML). Booking is intentionally out of the index, so we reuse
+      // applyErrorMeta (bakes noindex, strips canonical + hreflang).
+      const bookingMeta = META['book-picker'];
+      if (bookingMeta) {
+        const bookingRoutes: { lang: Lang; path: string }[] = [
+          { lang: 'fr', path: '/fr/reserver' },
+          { lang: 'en', path: '/en/book' },
+        ];
+        let bookingWritten = 0;
+        for (const { lang, path: routePath } of bookingRoutes) {
+          const html = applyErrorMeta(baseHtml, {
+            lang,
+            title: bookingMeta[lang].title,
+            description: bookingMeta[lang].description,
+          });
+          const outDir = path.join(distDir, routePath.slice(1));
+          await fs.mkdir(outDir, { recursive: true });
+          await fs.writeFile(path.join(outDir, 'index.html'), html, 'utf8');
+          bookingWritten += 1;
+        }
+        this.info(`edo-prerender: wrote ${bookingWritten} noindex booking HTML files`);
+      }
     },
   };
 }

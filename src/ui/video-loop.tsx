@@ -9,17 +9,34 @@ interface VideoLoopProps {
   paused?: boolean;
 }
 
+// Background loops play imperatively, never via the `autoPlay` attribute: autoplay
+// would eagerly download the whole source on mount (these clips are 20–50 MB). With
+// preload="metadata" + play() gated on viewport visibility, off-screen videos fetch
+// only metadata and the poster covers the paint until playback actually starts.
 const VideoLoop = ({ src, poster, className, objectFit = 'cover', paused = false }: VideoLoopProps) => {
   const ref = useRef<HTMLVideoElement>(null);
+  const visibleRef = useRef(false);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    if (paused) {
-      el.pause();
-    } else {
-      el.play().catch(() => {});
-    }
+    el.muted = true; // required for programmatic playback; the attribute alone isn't always reflected
+
+    const sync = () => {
+      if (visibleRef.current && !paused) el.play().catch(() => {});
+      else el.pause();
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        visibleRef.current = entries[0]?.isIntersecting ?? false;
+        sync();
+      },
+      { threshold: 0.1 },
+    );
+    observer.observe(el);
+
+    return () => observer.disconnect();
   }, [src, paused]);
 
   return (
@@ -27,10 +44,10 @@ const VideoLoop = ({ src, poster, className, objectFit = 'cover', paused = false
       ref={ref}
       src={src}
       poster={poster}
-      autoPlay
       loop
       muted
       playsInline
+      preload="metadata"
       disablePictureInPicture
       className={cn('pointer-events-none select-none', className)}
       style={{ objectFit }}

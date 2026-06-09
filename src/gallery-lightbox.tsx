@@ -260,6 +260,7 @@ export const GalleryLightbox = ({
                   muted
                   playsInline
                   controls
+                  preload="metadata"
                   onLoadedMetadata={(e) => {
                     const v = e.currentTarget;
                     if (v.videoWidth && v.videoHeight)

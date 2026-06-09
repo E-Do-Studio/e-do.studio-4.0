@@ -2,6 +2,15 @@
     root * /srv
     encode zstd gzip
 
+    # ---------- Force HTTPS (audit: LOAD_PAGE_OVER_HTTPS) ----------
+    # TLS terminates at the Coolify proxy, which forwards over plain HTTP to this
+    # container on :80 and sets X-Forwarded-Proto. When the visitor's original
+    # scheme was http, redirect to https. On https the header reads "https" so
+    # this never fires — no redirect loop. Runs first so every other directive
+    # only ever sees secured requests.
+    @forwarded-http header X-Forwarded-Proto http
+    redir @forwarded-http https://{host}{uri} 301
+
     # ---------- Redirections legacy v3 → v4 (301 permanent) ----------
 
     @root path /

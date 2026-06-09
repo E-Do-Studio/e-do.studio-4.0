@@ -81,7 +81,7 @@ const PROSE_CLASS =
   '[&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 ' +
   '[&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 ' +
   '[&_li]:my-1 ' +
-  '[&_video]:my-4 [&_video]:block [&_video]:w-full [&_video]:h-auto [&_video]:rounded';
+  '[&_video]:my-4 [&_video]:block [&_video]:w-full [&_video]:aspect-video [&_video]:object-cover [&_video]:rounded';
 
 const StrapiSectionsRenderer = ({ sections, lang }: SectionRendererProps) => (
   <>

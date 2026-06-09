@@ -728,15 +728,11 @@
   .edo-cell-label,
   .edo-eyebrow {
     font-family: var(--font-mono);
-    font-size: var(--font-size-micro);
+    font-size: var(--font-size-xs);   /* 12px — was 10px on mobile; now matches the desktop size at every breakpoint (audit: legible-font-size) */
     font-weight: var(--weight-regular);
     text-transform: uppercase;
     letter-spacing: var(--tracking-widest);
     color: var(--muted-foreground);
-  }
-
-  @media (min-width: 768px) {
-    .edo-cell-label, .edo-eyebrow { font-size: var(--font-size-xs); }
   }
 
   /* ---------- Editorial article typography (blog overlay) ----------

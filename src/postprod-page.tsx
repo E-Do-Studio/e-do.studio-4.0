@@ -109,7 +109,7 @@ const SampleVideo = ({ src, mime, label }: { src: string; mime: string; label?: 
         <source src={src} type={mime} />
       </video>
       {label && (
-        <span className="absolute bottom-1.5 left-2 font-mono text-nano tracking-ui uppercase opacity-55 text-white">
+        <span className="absolute bottom-1.5 left-2 font-mono text-micro tracking-ui uppercase opacity-55 text-white">
           {label}
         </span>
       )}
@@ -131,7 +131,7 @@ const SampleImage = ({ sample, label, medium }: SampleImageProps) => {
           className="absolute inset-0 w-full h-full object-cover"
         />
         {label && (
-          <span className="absolute bottom-1.5 left-2 font-mono text-nano tracking-ui uppercase opacity-55 text-white">
+          <span className="absolute bottom-1.5 left-2 font-mono text-micro tracking-ui uppercase opacity-55 text-white">
             {label}
           </span>
         )}
@@ -152,12 +152,12 @@ const SampleImage = ({ sample, label, medium }: SampleImageProps) => {
       </svg>
       <div className="absolute inset-0 pointer-events-none bg-postprod-pattern"/>
       {medium==='video' && (
-        <div className="absolute top-2 right-2 bg-black/55 text-white font-mono text-nano tracking-meta px-1.5 py-0.5 flex items-center gap-1">
+        <div className="absolute top-2 right-2 bg-black/55 text-white font-mono text-micro tracking-meta px-1.5 py-0.5 flex items-center gap-1">
           <span className="inline-block w-0 h-0 border-l-4 border-l-white border-t-3 border-t-transparent border-b-3 border-b-transparent"/>
           VIDEO
         </div>
       )}
-      {label && <span className="absolute bottom-1.5 left-2 font-mono text-nano tracking-ui uppercase opacity-55" style={{color: p.a}}>{label}</span>}
+      {label && <span className="absolute bottom-1.5 left-2 font-mono text-micro tracking-ui uppercase opacity-55" style={{color: p.a}}>{label}</span>}
     </div>
   );
 };
@@ -274,22 +274,36 @@ const PostprodPage = () => {
   const lineCls = dark ? 'border-white/18' : 'border-border';
 
   if (!cat) {
+    // A stable, data-independent h1 stays in the tree in every state — including
+    // before Strapi resolves — so crawlers that snapshot the loading/empty page
+    // still see exactly one h1 (the category title below is rendered as an h2).
     if (ppQuery.loading) {
-      return null;
+      return (
+        <main className="edo-page-enter">
+          <h1 className="sr-only">{postprodLabel}</h1>
+        </main>
+      );
     }
     return (
-      <EmptyState
-        size="page"
-        label="Post-production"
-        description={lang === 'fr' ? 'Aucune catégorie configurée. Renseignez vos types de post-production dans Strapi.' : 'No categories configured. Add post-production types in Strapi.'}
-        action={{ label: lang === 'fr' ? 'Retour accueil' : 'Back home', onClick: () => goto('home') }}
-      />
+      <>
+        <h1 className="sr-only">{postprodLabel}</h1>
+        <EmptyState
+          size="page"
+          label="Post-production"
+          description={lang === 'fr' ? 'Aucune catégorie configurée. Renseignez vos types de post-production dans Strapi.' : 'No categories configured. Add post-production types in Strapi.'}
+          action={{ label: lang === 'fr' ? 'Retour accueil' : 'Back home', onClick: () => goto('home') }}
+        />
+      </>
     );
   }
 
   return (
     /* Mobile: single-column scrollable. Desktop (md+): sidebar + workspace */
     <main className="edo-page-enter grid w-full grid-cols-[minmax(0,1fr)] edo-hairline md:h-full md:grid-cols-plateau md:grid-rows-app md:overflow-hidden">
+
+      {/* Single, stable page h1 — data-independent so it's present at every
+          breakpoint and before Strapi resolves. The selected category is an h2. */}
+      <h1 className="sr-only">{postprodLabel}</h1>
 
       <PageHeader
         lang={lang}
@@ -408,11 +422,10 @@ const PostprodPage = () => {
         </div>
       </aside>
 
-      {/* Mobile-only sr-only h1 — the visible heading lives inside the desktop
-          description panel (hidden md:block). The sticky trigger above already
-          surfaces the name + tagline on mobile, so we keep just one heading in
-          the accessibility tree at every breakpoint. */}
-      <h1 className="sr-only md:hidden">{cat[lang]}</h1>
+      {/* Mobile-only category subheading (h2). The page h1 is the stable
+          "Post-production" title above; the sticky trigger surfaces the name +
+          tagline visually on mobile, so this stays in the a11y tree only. */}
+      <h2 className="sr-only md:hidden">{cat[lang]}</h2>
 
       {/* Description + pricing panel */}
       <div className={`${bgCls} ${fgCls} py-8 px-6 md:px-9 flex flex-col justify-between gap-6 md:col-start-2 md:row-start-2 md:overflow-y-auto md:min-h-0`}>
@@ -422,14 +435,14 @@ const PostprodPage = () => {
               {String(cats.findIndex(x=>x.k===k)+1).padStart(2,'0')} · {postprodMsg.category[lang]}
             </span>
             {cat.featured && (
-              <span className="font-mono text-nano tracking-label uppercase bg-primary text-white px-2 py-0.5">
+              <span className="font-mono text-micro tracking-label uppercase bg-primary text-white px-2 py-0.5">
                 {postprodMsg.standard[lang]}
               </span>
             )}
           </div>
-          <h1 className={`hidden md:block m-0 text-hero font-light tracking-display leading-none ${fgCls}`}>
+          <h2 className={`hidden md:block m-0 text-hero font-light tracking-display leading-none ${fgCls}`}>
             {cat[lang]}
-          </h1>
+          </h2>
           <ul className="mt-2 p-0 list-none flex flex-col gap-1.5">
             {cat.features[lang].map(f=>(
               <li key={f} className={`text-detail flex gap-2 items-start leading-snug ${fgCls}`}>
