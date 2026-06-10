@@ -60,7 +60,7 @@ const PickerTile = ({ index, label, description, variant, onClick, lang }: TileP
           {lang === 'fr' ? 'Mode' : 'Mode'}
         </span>
         <span className="text-tile-title font-light tracking-headline leading-tight">{label}</span>
-        <span className={cn('text-detail leading-snug tracking-copy-tight', descTone)}>
+        <span className={cn('text-detail leading-snug tracking-copy-tight md:min-h-[2lh]', descTone)}>
           {description}
         </span>
       </div>
