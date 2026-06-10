@@ -46,7 +46,7 @@ const CookieBanner = ({ lang, onLegalClick }: CookieBannerProps) => {
           <Button
             variant="default"
             onClick={accept}
-            className="h-auto! self-stretch px-6! md:px-8!"
+            className="h-auto! self-stretch px-6! md:px-8! border-0! border-t! border-l! border-hairline! md:border-t-0!"
           >
             {cookieBanner.accept[lang]}
           </Button>
