@@ -295,7 +295,7 @@ const ProjectLabel = ({
         {plateauLabel}
       </HoverMarquee>
       <div className="flex min-h-0 min-w-0 flex-1 items-center justify-center overflow-hidden py-1 md:py-2 edo-writing-vertical rotate-180">
-        <span className="block max-h-full overflow-hidden text-ellipsis whitespace-nowrap text-micro md:text-tile-large font-medium leading-none tracking-headline text-foreground">
+        <span className="block max-h-full overflow-hidden text-ellipsis whitespace-nowrap text-micro md:text-tile-large font-medium leading-[1.4] tracking-headline text-foreground">
           {project.brand}
         </span>
       </div>
