@@ -126,8 +126,9 @@ export function buildSessionVEvent(
     descParts.push("");
     descParts.push("--- Devis ---");
     for (const r of quoteRows) {
-      const amt = r.onReq ? "Sur demande" : `${r.amt}€ HT${r.estimate ? " (estimé)" : ""}`;
-      descParts.push(`${r.lbl}: ${amt}`);
+      const amt = r.onReq ? "Sur devis" : `${r.amt}€ HT${r.estimate ? " (estimé)" : ""}`;
+      const lbl = r.onReq ? r.lbl.replace(/\s*·\s*(Sur demande|On request)\s*$/i, "") : r.lbl;
+      descParts.push(`${lbl}: ${amt}`);
     }
     if (quoteTotal != null) descParts.push(`Total: ${quoteTotal}€ HT`);
   }

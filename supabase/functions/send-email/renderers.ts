@@ -204,9 +204,13 @@ function quoteGrid(quote: QuoteData | null): string {
   const rows = quote.rows.map((r, i) => {
     const isLast = i === quote.rows.length - 1;
     const sep = isLast ? "" : ROW_SEP;
-    const label = escapeHtml(r.lbl);
+    // Drop the redundant "· Sur demande" the label carries — the amount column
+    // already shows the mention, and the row appears only when the client picked it.
+    const label = r.onReq
+      ? escapeHtml(r.lbl.replace(/\s*·\s*(Sur demande|On request)\s*$/i, ""))
+      : escapeHtml(r.lbl);
     const amt = r.onReq
-      ? `<span style="color:${C_GRAY};font-size:14px;">Sur demande</span>`
+      ? `<span style="color:${C_GRAY};font-size:14px;">Sur devis</span>`
       : `<span style="font-family:${FONT_MONO};font-size:14px;color:${C_BLACK};">${r.amt.toLocaleString("fr-FR")} € HT${r.estimate ? `<span style="color:${C_GRAY};font-size:11px;"> (estimé)</span>` : ""}</span>`;
     return `<tr>
       <td style="padding:13px 32px;background:${C_WHITE};vertical-align:top;font-family:${FONT_SANS};font-size:14px;line-height:1.45;color:${C_BLACK};${sep}">${label}</td>
@@ -214,7 +218,7 @@ function quoteGrid(quote: QuoteData | null): string {
     </tr>`;
   }).join("");
   const totalStr = `${quote.total.toLocaleString("fr-FR")} € HT`;
-  return `${sectionBar("Devis", quote.reference)}
+  return `${sectionBar("Devis")}
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">
     ${rows}
     <tr>
