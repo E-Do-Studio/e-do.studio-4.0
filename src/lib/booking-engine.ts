@@ -425,12 +425,12 @@ export function computePriceBreakdown({ plateau, slotIds, slots, lang, labels }:
     }
     const slotRentalHours = px.isCyclo ? (st.cycloMode === 'halfH' ? 5 : 10) : px.isVisite ? 1 : (st.slotType === 'hour' ? (st.hours||1) : st.slotType === 'half' ? Math.max(4,Math.min(7,st.hours||4)) : (st.hours||8));
     const slotTeam = st.team || {};
-    EQUIPE.forEach(e=>{ const val = slotTeam[e.k]; if (!val) return; if (e.unit === 'hour') { if (typeof val === 'number' && val>0) { const amt = +(e.price * slotRentalHours * val).toFixed(2); pRows.push({lbl:`${e[lang]} · ${val} × ${slotRentalHours}h`, amt}); } } else { if (val===true) pRows.push({lbl:`${e[lang]} · ${labels.onRequest}`, amt:0, onReq:true}); } });
+    EQUIPE.forEach(e=>{ const val = slotTeam[e.k]; if (!val) return; if (e.unit === 'hour') { if (typeof val === 'number' && val>0) { const amt = +(e.price * slotRentalHours * val).toFixed(2); pRows.push({lbl:`${e[lang]} · ${val} × ${slotRentalHours}h`, amt}); } } else { if (val===true) pRows.push({lbl:e[lang], amt:0, onReq:true}); } });
     const slotPostprod = st.postprod || {};
     if (slotPostprod.enabled) {
       const ppLbl = sameKeyCount[pk] > 1 ? `${prefix} · ${labels.postProduction}` : labels.postProduction;
       if ((slotPostprod.amount ?? 0) > 0) { pRows.push({ lbl: `${ppLbl} · ${slotPostprod.images ?? 0} ${labels.images}`, amt: slotPostprod.amount ?? 0, estimate: true, breakdown: slotPostprod.breakdown, perView: slotPostprod.perView }); }
-      else { pRows.push({ lbl: `${ppLbl} · ${labels.onRequest}`, amt: 0, onReq: true }); }
+      else { pRows.push({ lbl: ppLbl, amt: 0, onReq: true }); }
       if (slotPostprod.video) { pRows.push({ lbl: sameKeyCount[pk] > 1 ? `${prefix} · ${labels.videoEditing}` : labels.videoEditing, amt: 0, onReq: true }); }
     }
     const subtotal = pRows.reduce((s,r)=>s+r.amt, 0);
