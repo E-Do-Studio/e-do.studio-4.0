@@ -121,6 +121,19 @@ const GalleryOrder = () => {
     };
   }, [get]);
 
+  const handleShuffle = React.useCallback(() => {
+    setProjects((prev) => {
+      const next = [...prev];
+      // Fisher-Yates: ordre aléatoire uniforme, en place sur la copie.
+      for (let i = next.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [next[i], next[j]] = [next[j], next[i]];
+      }
+      return next;
+    });
+    setDirty(true);
+  }, []);
+
   const handleDragEnd = React.useCallback((event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -163,9 +176,18 @@ const GalleryOrder = () => {
         title="Ordre galerie"
         subtitle="Glissez-déposez les projets pour définir leur ordre d'affichage dans la galerie publique."
         primaryAction={
-          <Button onClick={handleSave} loading={saving} disabled={!dirty || saving}>
-            Enregistrer l'ordre
-          </Button>
+          <Flex gap={2}>
+            <Button
+              variant="secondary"
+              onClick={handleShuffle}
+              disabled={saving || projects.length < 2}
+            >
+              Mélanger
+            </Button>
+            <Button onClick={handleSave} loading={saving} disabled={!dirty || saving}>
+              Enregistrer l'ordre
+            </Button>
+          </Flex>
         }
       />
       <Layouts.Content>
