@@ -70,6 +70,15 @@ interface BookPageV2Props {
   forceManual?: boolean;
 }
 
+// CGV consent is deliberately not persisted across a real browser refresh (the
+// user must tick it again), but it MUST survive configurator step navigation:
+// each step is its own route, so BookPageV2 remounts and rehydrates from the
+// draft between steps. This module-scoped flag tells the two apart — a genuine
+// refresh re-evaluates the module (flag back to false), while in-session step
+// nav keeps it. Without this, the box ticked on the contact step is dropped by
+// the date step and the final "Réserver" submit fails its contact validation.
+let cgvConsentGivenThisSession = false;
+
 const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
   const { lang, setLang, openMenu, goto } = usePageContext();
   const navigate = useNavigate();
@@ -163,8 +172,11 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
   const [kwh, setKwh] = useStateBook<number>(() => draft ? draft.kwh : 0);
   const [team, setTeam] = useStateBook<TeamState>(() => draft ? draft.team as TeamState : {});
   const [pp, setPp] = useStateBook<Record<string, unknown>>(() => draft ? draft.pp : {});
-  const [contact, setContact] = useStateBook<ContactState>(() => draft ? { ...(draft.contact as unknown as ContactState), cgvAccepted: false } : { marque:'', societe:'', siren:'', adresseFacturation:'', nom:'', prenom:'', email:'', tel:'', typesArticles:[], quantiteArticles:'', vuesParArticle:'', autresInfos:'', cgvAccepted:false });
+  const [contact, setContact] = useStateBook<ContactState>(() => draft ? { ...(draft.contact as unknown as ContactState), cgvAccepted: cgvConsentGivenThisSession } : { marque:'', societe:'', siren:'', adresseFacturation:'', nom:'', prenom:'', email:'', tel:'', typesArticles:[], quantiteArticles:'', vuesParArticle:'', autresInfos:'', cgvAccepted:false });
   const [contactErrors, setContactErrors] = useStateBook<ContactFormErrors>({});
+  // Keep the session-scoped consent flag in sync with the live checkbox so it
+  // carries across step remounts (see cgvConsentGivenThisSession above).
+  React.useEffect(() => { cgvConsentGivenThisSession = contact.cgvAccepted; }, [contact.cgvAccepted]);
   const [saving, setSaving] = useStateBook<boolean>(false);
   const [saveError, setSaveError] = useStateBook<string | null>(null);
   const [availRefreshKey, setAvailRefreshKey] = useStateBook(0);
@@ -377,7 +389,13 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
   }), [slotIds, plateau, slots, configApplied, configSessions, contact.quantiteArticles, selected, arrivalHour]);
 
   const handleSubmit = useCallbackBook(async (submitMode: 'quote' | 'booking' | 'request') => {
-    if (!runContactValidation()) return;
+    if (!runContactValidation()) {
+      // Submit happens from the date step, but contact errors (incl. CGV)
+      // render on the contact step. Route there so the user sees what's
+      // missing instead of the button appearing to do nothing.
+      goToStep(5);
+      return;
+    }
     contentScrollRef.current?.requestSubmit();
     setSaving(true);
     setSaveError(null);
@@ -440,7 +458,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
     } finally {
       setSaving(false);
     }
-  }, [buildSessionsData, selected, slotIds, slots, contact, configGlobal, priceBreakdown, arrivalHour, lang, p, rentalHours, navigate]);
+  }, [buildSessionsData, selected, slotIds, slots, contact, configGlobal, priceBreakdown, arrivalHour, lang, p, rentalHours, navigate, goToStep]);
 
   return (
     <div className="edo-page-enter grid w-full edo-hairline md:h-full md:overflow-hidden md:grid-cols-book md:grid-rows-app">
