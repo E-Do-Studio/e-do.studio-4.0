@@ -32,6 +32,16 @@
       },
       "description": "Description par défaut du site (utilisée si aucune meta description spécifique n'est définie)."
     },
+    "announcement": {
+      "type": "string",
+      "maxLength": 100,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "description": "Texte d'annonce affiché à côté des horaires sur l'accueil (ex : « Studio climatisé »). Laisser vide pour ne rien afficher."
+    },
     "logo": {
       "type": "media",
       "multiple": false,
