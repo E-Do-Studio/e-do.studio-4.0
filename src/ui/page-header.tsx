@@ -24,6 +24,9 @@ interface PageHeaderProps {
   lang: Lang;
   title: ReactNode;
   subtitle?: ReactNode;
+  // Rendered as its own header cell (with a hairline divider) immediately to
+  // the right of the title cell. Used on the home page for the CMS announcement.
+  titleAside?: ReactNode;
   actions?: PageHeaderAction[];
   className?: string;
   // md+ subgrid placement overrides. Defaults match the plateau/contact
@@ -129,6 +132,7 @@ const PageHeader = ({
   lang,
   title,
   subtitle,
+  titleAside,
   actions = EMPTY_PAGE_HEADER_ACTIONS,
   className,
   titleClassName,
@@ -144,7 +148,8 @@ const PageHeader = ({
   const titleCell = (
     <div
       className={cn(
-        'hidden min-w-0 flex-1 items-center justify-start bg-background md:flex md:px-6',
+        'hidden min-w-0 items-center justify-start bg-background md:flex md:px-6',
+        titleAside ? 'md:flex-none' : 'flex-1',
         subgrid && 'lg:!border-r-0',
         subgrid && (titleClassName ?? DEFAULT_TITLE_CLASS),
       )}
@@ -194,6 +199,12 @@ const PageHeader = ({
       </div>
 
       {titleCell}
+
+      {titleAside && (
+        <div className="hidden min-w-0 flex-1 items-center justify-start overflow-hidden bg-background md:flex md:px-6">
+          {titleAside}
+        </div>
+      )}
 
       {subgrid ? (
         /* Subgrid mode — actions + lang are wrapped in a single right block
