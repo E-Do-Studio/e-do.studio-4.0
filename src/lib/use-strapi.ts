@@ -9,6 +9,7 @@ import {
   fetchSocialLinks,
   fetchContact,
   fetchStudioHours,
+  fetchAnnouncement,
   fetchSiteDefaults,
   fetchGalleryProjects,
   fetchGalleryCategories,
@@ -30,7 +31,7 @@ import {
   type LegalSectionsByDocument,
   type HomeHero,
 } from './strapi';
-import type { MachineInfo, DiscoveryPost, DiscoveryCategory, SocialLink } from '../types';
+import type { MachineInfo, DiscoveryPost, DiscoveryCategory, SocialLink, Bilingual } from '../types';
 import { isPreviewActive } from './preview-mode';
 
 type AsyncState<T> = { data: T | null; loading: boolean; error: Error | null };
@@ -168,6 +169,10 @@ export function useContact() {
 
 export function useStudioHours() {
   return useAsync<StudioHours>(fetchStudioHours, 'studioHours');
+}
+
+export function useAnnouncement() {
+  return useAsync<Bilingual>(fetchAnnouncement, 'announcement');
 }
 
 export function useSiteDefaults() {

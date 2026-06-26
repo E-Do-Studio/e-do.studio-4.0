@@ -181,6 +181,7 @@ interface StrapiClosurePeriod {
 interface StrapiSiteSettings {
   siteTitle?: string;
   siteDescription?: string;
+  announcement?: string;
   phone: string;
   phoneHref?: string;
   email: string;
@@ -1004,6 +1005,16 @@ export async function fetchStudioHours(): Promise<StudioHours> {
   return {
     weekday: { fr: weekdayFr, en: weekdayEn },
     weekend: { fr: weekendFr, en: weekendEn },
+  };
+}
+
+// Editorial announcement shown next to the studio hours on the home header
+// (e.g. "Studio climatisé"). Localized scalar on site-setting; empty = hidden.
+export async function fetchAnnouncement(): Promise<Bilingual> {
+  const resBI = await fetchStrapiBilingual<{ data: StrapiSiteSettings }>('site-setting');
+  return {
+    fr: resBI.fr.data.announcement ?? '',
+    en: resBI.en.data.announcement ?? '',
   };
 }
 

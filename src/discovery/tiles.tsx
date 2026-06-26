@@ -62,7 +62,10 @@ export const SplitArticleCard: React.FC<SplitArticleCardProps> = ({ post, lang, 
       )}
       <div className="flex min-h-0 min-w-0 origin-left flex-col justify-between gap-3.5 overflow-hidden px-7 py-6 transition-transform duration-200 ease-edo-out group-hover:scale-102">
         <div className="flex min-w-0 flex-col gap-2.5">
-          <h3 className="m-0 text-balance text-page-title font-light leading-tight tracking-headline text-foreground">
+          <h3 className={cn(
+            'm-0 edo-line-clamp-3 text-balance font-light leading-tight tracking-headline text-foreground',
+            cover ? 'text-tile-title' : 'text-page-title',
+          )}>
             {post.title[lang]}
           </h3>
           {post.sub?.[lang] && (

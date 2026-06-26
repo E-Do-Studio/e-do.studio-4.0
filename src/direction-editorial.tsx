@@ -4,7 +4,7 @@ import { BookCTATile } from './book-cta';
 import { SocialClientsBar } from './social-clients-bar';
 
 const AssistantChat = lazy(() => import('./assistant-chat'));
-import { useSocialLinks, useMachines, useContact, useHomeHero, useStudioHours, useSiteBusinessInfo } from './lib/use-strapi';
+import { useSocialLinks, useMachines, useContact, useHomeHero, useStudioHours, useSiteBusinessInfo, useAnnouncement } from './lib/use-strapi';
 import { useDocumentMeta } from './lib/use-document-meta';
 import { useStructuredData } from './lib/use-structured-data';
 import {
@@ -90,6 +90,8 @@ const DirectionA = () => {
   const { data: contact } = useContact();
   const { data: studioHours } = useStudioHours();
   const { data: business } = useSiteBusinessInfo();
+  const { data: announcement } = useAnnouncement();
+  const announcementText = announcement?.[lang]?.trim() ?? '';
   const { data: homeHero, loading: homeHeroLoading, error: homeHeroError } = useHomeHero();
   useStructuredData('home', [
     buildLocalBusinessSchema({ lang, contact, hours: studioHours, business, socials: socialLinks }),
@@ -133,6 +135,12 @@ const DirectionA = () => {
       <PageHeader
         lang={lang}
         title={homeMsg.monSatHours[lang]}
+        subtitle={announcementText ? (
+          <span className="inline-flex items-center gap-1.5">
+            <span aria-hidden className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+            {announcementText}
+          </span>
+        ) : undefined}
         className="col-span-2 h-14 md:col-start-1 md:col-span-12 md:row-start-1 md:h-full"
         subgrid={false}
         onMenuClick={openMenu}
@@ -148,6 +156,18 @@ const DirectionA = () => {
           { id: 'etouch', label: 'Etouch', href: 'https://etouch.e-do.studio/', target: '_blank', rel: 'noopener noreferrer', variant: 'dark', showArrow: false, className: 'hidden sm:flex' },
         ]}
       />
+
+      {/* Announcement on mobile: the desktop spot is the header subtitle next to
+          the hours, hidden on mobile — surface it here. md:hidden so the desktop
+          bento grid (explicit row placement) is untouched. */}
+      {announcementText && (
+        <div className="col-span-2 flex h-9 items-center gap-2 bg-background px-4 md:hidden">
+          <span aria-hidden className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+          <span className="truncate font-mono text-label tracking-ui text-muted-foreground">
+            {announcementText}
+          </span>
+        </div>
+      )}
 
       {/* ── Row 2: Social links + clients marquee ── */}
       <SocialClientsBar
