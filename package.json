@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "build": "vite build",
     "preview": "vite preview",
-    "chat:reindex": "node --env-file=.env scripts/build-chat-knowledge.mjs"
+    "chat:reindex": "node --env-file=.env scripts/build-chat-knowledge.mjs",
+    "hubspot:setup": "node --env-file=.env scripts/setup-hubspot-forms.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.1",
