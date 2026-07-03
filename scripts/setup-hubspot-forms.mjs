@@ -199,10 +199,30 @@ async function detectPortalId() {
   return res.ok && res.json?.portalId ? String(res.json.portalId) : '146117396';
 }
 
+// One authenticated read up front, so a bad token / missing scope fails once and
+// clearly instead of 20 times.
+async function preflight() {
+  const res = await hs('/crm/v3/properties/contacts/groups');
+  if (res.status === 401) {
+    console.error('✗ Token invalide ou manquant (HTTP 401).');
+    console.error('  As-tu bien remplacé "xxx" par le vrai token HubSpot ?');
+    console.error('  (app privée → onglet Auth → token au format pat-eu1-…)');
+    process.exit(1);
+  }
+  if (res.status === 403) {
+    console.error('✗ Token reconnu mais scope manquant (HTTP 403).');
+    console.error('  Ajoute à l\'app privée : forms, crm.schemas.contacts.write, crm.schemas.contacts.read');
+    console.error('  HubSpot → Settings → Integrations → Private Apps → (ton app) → Scopes → Commit changes');
+    process.exit(1);
+  }
+  if (!res.ok) { fail('vérification du token', res); process.exit(1); }
+}
+
 // ── Main ───────────────────────────────────────────────────────────────────
 
 console.log(DRY_RUN ? '· DRY-RUN — aucune écriture\n' : '· Setup HubSpot Forms\n');
 
+await preflight();
 await ensureGroup();
 for (const p of CUSTOM_PROPS) await ensureProp(p);
 console.log('');
