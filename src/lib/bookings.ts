@@ -1,9 +1,10 @@
 import { supabase } from './supabase';
 import type { Database } from './database.types';
-import type {
-  BookingSessionData,
-  BookingQuoteData,
-  CreateBookingInput,
+import {
+  isSlotInPast,
+  type BookingSessionData,
+  type BookingQuoteData,
+  type CreateBookingInput,
 } from './booking-engine';
 
 export type { BookingSessionData, BookingQuoteData, CreateBookingInput };
@@ -76,6 +77,12 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
 
   for (const r of resolvedSessions) {
     if (!r.date || r.arrivalHour == null) continue;
+    // The configurator only blocks past slots at render time, so a stale tab (or
+    // any non-UI caller) can reach here with a slot that has already started.
+    // Reject it — a booking in the past can never be honoured.
+    if (isSlotInPast(r.date, r.arrivalHour)) {
+      throw new Error('Ce créneau est déjà passé. Veuillez choisir une date et un horaire à venir.');
+    }
     const conflict = await findConflictingSession({
       plateauKey: r.session.plateauKey,
       date: r.date,
