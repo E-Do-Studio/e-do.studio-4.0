@@ -17,6 +17,7 @@ import {
   buildSessionsData,
   computePriceBreakdown,
   isSessionValid,
+  isSlotInPast,
   isValidSiren,
   planFromSessions,
   recommendSession,
@@ -152,6 +153,13 @@ export function prepareBooking(rawArgs: Record<string, any>, lang: Lang): Prepar
     }
     if (!si.date) missing.push(lang === "fr" ? `session ${n} : date` : `session ${n}: date`);
     if (si.arrivalHour == null) missing.push(lang === "fr" ? `session ${n} : heure d'arrivée` : `session ${n}: arrival hour`);
+    // A relative date the model resolved to today, or an hour already elapsed,
+    // must never reach a confirmation card — the studio cannot honour a past slot.
+    if (si.date && si.arrivalHour != null && isSlotInPast(si.date, si.arrivalHour)) {
+      missing.push(lang === "fr"
+        ? `session ${n} : le créneau ${si.date} à ${String(si.arrivalHour).padStart(2, "0")}h est déjà passé — propose une date/heure à venir`
+        : `session ${n}: the slot ${si.date} at ${String(si.arrivalHour).padStart(2, "0")}:00 is already past — offer an upcoming date/time`);
+    }
   });
 
   // Contact completeness (mirrors the form's required fields).

@@ -505,6 +505,49 @@ export function isValidSiren(raw: string): boolean {
   return sum % 10 === 0;
 }
 
+// The studio runs on Europe/Paris wall-clock time; a slot is a plain calendar
+// date + integer arrival hour in that zone. The host clock differs by path
+// (visitor's timezone in the browser, UTC in the edge function), so we resolve
+// "now" in Paris via Intl and compare parts — never the raw Date.
+function parisNowParts(now: Date): { y: number; m: number; d: number; hour: number } {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Europe/Paris',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', hourCycle: 'h23',
+  }).formatToParts(now);
+  const val = (t: string) => Number(parts.find((p) => p.type === t)?.value);
+  let hour = val('hour');
+  if (hour === 24) hour = 0; // some engines emit '24' for midnight
+  return { y: val('year'), m: val('month') - 1, d: val('day'), hour };
+}
+
+// A slot has already passed once its start (date @ arrivalHour, Paris) is at or
+// before the current Paris hour — mirrors the configurator's calendar guard,
+// where an arrival hour ≤ the current hour is unbookable. Guards the booking
+// write boundary so a stale browser tab or the chat path can't persist a bygone
+// slot. `now` is injectable for tests. A date string is 'YYYY-MM-DD'.
+export function isSlotInPast(
+  date: string | DateSelection,
+  arrivalHour: number | null,
+  now: Date = new Date(),
+): boolean {
+  let d: DateSelection;
+  if (typeof date === 'string') {
+    const mt = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
+    if (!mt) return false;
+    d = { y: Number(mt[1]), m: Number(mt[2]) - 1, d: Number(mt[3]) };
+  } else {
+    d = date;
+  }
+  const p = parisNowParts(now);
+  const slotDay = d.y * 10000 + d.m * 100 + d.d;
+  const nowDay = p.y * 10000 + p.m * 100 + p.d;
+  if (slotDay < nowDay) return true;
+  if (slotDay > nowDay) return false;
+  if (arrivalHour == null) return false; // today, no hour committed yet
+  return arrivalHour <= p.hour;
+}
+
 export interface PlanSessionInput {
   session: BookingSession;
   date?: DateSelection | null;
