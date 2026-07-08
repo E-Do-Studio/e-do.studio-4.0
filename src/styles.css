@@ -307,6 +307,49 @@
   }
 }
 
+/* ── Cookie consent pop-up ──
+   Floating card, bottom-right (bottom-center on mobile). Rises + fades in a beat
+   after load, and reverses on dismiss so the card animates out before `consent`
+   flips and unmounts it. prefers-reduced-motion: opacity-only, no delay. */
+.edo-cookie-pop-in {
+  animation: edo-cookie-pop-in 320ms cubic-bezier(0.2, 0, 0, 1) 500ms both;
+}
+
+.edo-cookie-pop-out {
+  animation: edo-cookie-pop-out 200ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+@keyframes edo-cookie-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes edo-cookie-pop-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .edo-cookie-pop-in {
+    animation: edo-bottom-sheet-fade-in 120ms ease 150ms both;
+  }
+  .edo-cookie-pop-out {
+    animation: edo-bottom-sheet-fade-out 120ms ease both;
+  }
+}
+
 /* ── Mobile legibility floor (audit: USE_LEGIBLE_FONT_SIZE) ──
    The editorial micro-scale dips to 9–11px, which fails the 12px minimum on
    phones (gallery, cyclorama and plateau read at 14–26% passing). On <768px we

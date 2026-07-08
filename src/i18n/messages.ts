@@ -151,7 +151,7 @@ export const legalPage = {
 export const cookieBanner = {
   title: { fr: 'Cookies', en: 'Cookies' } as B,
   body: {
-    fr: "Nous utilisons des cookies pour mesurer l'audience du site. Vous pouvez accepter ou refuser. En savoir plus :",
+    fr: "Nous utilisons des cookies pour mesurer l'audience du site. Vous pouvez accepter ou refuser. En savoir plus :",
     en: 'We use cookies to measure site audience. You can accept or refuse. Learn more:',
   } as B,
   accept: { fr: 'Accepter', en: 'Accept' } as B,
