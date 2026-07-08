@@ -12,7 +12,7 @@ export const BRANDS: readonly string[] = [
   'NUMÉRO',
   'JOHN LOBB',
   'HARTFORD',
-  'INOUI',
+  'INOUI EDITIONS',
   'DIPTYQUE',
   'RIMOWA',
   'NODALETO',
