@@ -81,19 +81,26 @@ const CUSTOM_PROPS = [
   N('total_ht', 'Total HT (€)'),
 ];
 
-// ── Form field definitions ─────────────────────────────────────────────────
-// objectTypeId "0-1" = contact. Names must match the keys sent by the site
-// (buildBookingHubspotFields in src/book-page.tsx / submitContactForm).
+// ── Form field definitions (legacy v2 form shape) ──────────────────────────
+// Names must match the keys sent by the site (buildBookingHubspotFields in
+// src/book-page.tsx / submitContactForm). We create forms with the v2 API — its
+// schema is far simpler than v3, and the GUID it returns works with the v3
+// submissions endpoint the site posts to.
 
-const F = (name, label, fieldType = 'single_line_text', required = false) => ({
-  objectTypeId: '0-1', name, label, fieldType, required, hidden: false,
+const F = (name, label, opts = {}) => ({
+  name,
+  label,
+  type: opts.number ? 'number' : 'string',
+  fieldType: opts.fieldType || (opts.number ? 'number' : 'text'),
+  required: !!opts.required,
+  hidden: false,
 });
 
 const BOOKING_FIELDS = [
-  F('email', 'Email', 'email', true),
+  F('email', 'Email', { required: true }),
   F('firstname', 'Prénom'),
   F('lastname', 'Nom'),
-  F('phone', 'Téléphone', 'phone'),
+  F('phone', 'Téléphone', { fieldType: 'phonenumber' }),
   F('company', 'Société'),
   F('brand', 'Marque'),
   F('siren', 'SIREN'),
@@ -108,9 +115,9 @@ const BOOKING_FIELDS = [
   F('plateaus', 'Plateaux'),
   F('preferred_date', 'Date souhaitée'),
   F('per_plateau_dates', 'Dates par plateau'),
-  F('arrival_hour', "Heure d'arrivée", 'number'),
-  F('rental_hours', 'Heures de location', 'number'),
-  F('total_ht', 'Total HT (€)', 'number'),
+  F('arrival_hour', "Heure d'arrivée", { number: true }),
+  F('rental_hours', 'Heures de location', { number: true }),
+  F('total_ht', 'Total HT (€)', { number: true }),
   F('booking_mode', 'Type de demande'),
   F('booking_reference', 'Référence'),
   F('cgv_accepted', 'CGV acceptées'),
@@ -118,41 +125,25 @@ const BOOKING_FIELDS = [
 ];
 
 const CONTACT_FIELDS = [
-  F('email', 'Email', 'email', true),
+  F('email', 'Email', { required: true }),
   F('firstname', 'Prénom'),
   F('lastname', 'Nom'),
-  F('phone', 'Téléphone', 'phone'),
+  F('phone', 'Téléphone', { fieldType: 'phonenumber' }),
   F('company', 'Société'),
   F('message', 'Message'),
 ];
 
+// A form field group holds at most 3 fields, so chunk the flat field list.
+function chunk3(arr) {
+  const out = [];
+  for (let i = 0; i < arr.length; i += 3) out.push(arr.slice(i, i + 3));
+  return out;
+}
+
 function formBody(name, fields) {
   return {
     name,
-    formType: 'hubspot',
-    fieldGroups: [{ groupType: 'default_group', richTextType: 'text', fields }],
-    configuration: {
-      language: 'fr',
-      cloneable: true,
-      editable: true,
-      archivable: true,
-      recaptchaEnabled: false,
-      notifyContactOwner: false,
-      notifyRecipients: [],
-      createNewContactForNewEmail: true,
-      prePopulateKnownValues: false,
-      allowLinkToResetKnownValues: false,
-      lifecycleStages: [],
-      postSubmitAction: { type: 'thank_you', value: 'Merci, votre demande a bien été reçue.' },
-    },
-    displayOptions: {
-      renderRawHtml: false,
-      theme: 'default_style',
-      submitButtonText: 'Envoyer',
-      cssClass: '',
-      style: {},
-    },
-    legalConsentOptions: { type: 'none' },
+    formFieldGroups: chunk3(fields).map((group) => ({ fields: group })),
   };
 }
 
@@ -179,17 +170,17 @@ async function ensureProp(p) {
 }
 
 async function ensureForm(name, fields) {
-  const list = await hs('/marketing/v3/forms?limit=100');
-  if (list.ok && Array.isArray(list.json?.results)) {
-    const existing = list.json.results.find((f) => f.name === name);
-    if (existing) { console.log(`• form "${name}" — déjà présent (${existing.id})`); return existing.id; }
+  const list = await hs('/forms/v2/forms');
+  if (list.ok && Array.isArray(list.json)) {
+    const existing = list.json.find((f) => f.name === name);
+    if (existing) { console.log(`• form "${name}" — déjà présent (${existing.guid})`); return existing.guid; }
   } else if (!list.ok) {
     fail('liste des forms', list);
     return null;
   }
   if (DRY_RUN) { console.log(`• form "${name}" — à créer (${fields.length} champs)`); return null; }
-  const res = await hs('/marketing/v3/forms', 'POST', formBody(name, fields));
-  if (res.ok) { console.log(`✓ form "${name}" créé (${res.json.id})`); return res.json.id; }
+  const res = await hs('/forms/v2/forms', 'POST', formBody(name, fields));
+  if (res.ok) { console.log(`✓ form "${name}" créé (${res.json.guid})`); return res.json.guid; }
   fail(`création form "${name}"`, res);
   return null;
 }

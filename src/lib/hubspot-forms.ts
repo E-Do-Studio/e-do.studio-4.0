@@ -9,15 +9,17 @@
 // The v3 integration submit endpoint is public (portalId + formGuid, no token),
 // so it is safe to call from the browser. CSP already allows api.hsforms.com.
 //
-// Inert until VITE_HUBSPOT_PORTAL_ID + the relevant form id are configured, so a
-// missing form never breaks a booking or a contact submission.
+// The portal id and form GUIDs are public (not secrets) — they are baked in as
+// defaults so the integration works without any deploy-time config, and can still
+// be overridden per environment via the VITE_HUBSPOT_* vars. The forms are created
+// by `pnpm hubspot:setup`.
 
-const PORTAL_ID = import.meta.env.VITE_HUBSPOT_PORTAL_ID as string | undefined;
+const PORTAL_ID = (import.meta.env.VITE_HUBSPOT_PORTAL_ID || '146117396') as string;
 
-export const HUBSPOT_BOOKING_FORM_ID = import.meta.env
-  .VITE_HUBSPOT_BOOKING_FORM_ID as string | undefined;
-export const HUBSPOT_CONTACT_FORM_ID = import.meta.env
-  .VITE_HUBSPOT_CONTACT_FORM_ID as string | undefined;
+export const HUBSPOT_BOOKING_FORM_ID = (import.meta.env.VITE_HUBSPOT_BOOKING_FORM_ID ||
+  'ca405450-abdb-46ae-aca5-2224e26c48bb') as string;
+export const HUBSPOT_CONTACT_FORM_ID = (import.meta.env.VITE_HUBSPOT_CONTACT_FORM_ID ||
+  '695867a8-e14f-42d4-90c5-c2f0d3ccd275') as string;
 
 export type HubspotFields = Record<string, string | number | boolean | null | undefined>;
 
