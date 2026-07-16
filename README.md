@@ -127,6 +127,8 @@ serveur dans `.env.example`) :
 | `VITE_GTM_ID` | Conteneur Google Tag Manager (non injecté si vide) |
 | `GEMINI_API_KEY`, `CHAT_ALLOWED_ORIGIN` | Secrets Edge Function chat (jamais bundlés) |
 | `HUBSPOT_PRIVATE_APP_TOKEN` | Sync CRM (secret Edge Function) |
+| `VITE_HUBSPOT_PORTAL_ID` | Portal HubSpot — active l'envoi vers l'API Forms (attribution source) |
+| `VITE_HUBSPOT_BOOKING_FORM_ID` / `VITE_HUBSPOT_CONTACT_FORM_ID` | GUID des forms HubSpot (générés par `pnpm hubspot:setup`) |
 
 Ne jamais committer `.env*` (déjà gitignoré).
 

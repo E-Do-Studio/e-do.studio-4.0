@@ -8,6 +8,7 @@ import { useStructuredData } from './lib/use-structured-data';
 import { buildWebPageSchema, buildBreadcrumbSchema } from './lib/structured-data';
 import { MarqueeCell } from './cells';
 import { createBooking } from './lib/bookings';
+import { submitHubspotForm, HUBSPOT_BOOKING_FORM_ID } from './lib/hubspot-forms';
 import { validateContact, type ContactFormErrors } from './lib/booking-schema';
 import { loadDraft, clearDraft, useBookingDraftSaver } from './lib/use-booking-draft';
 import { useAvailability, isHourBlocked, clearAvailabilityCache } from './lib/availability';
@@ -419,6 +420,27 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
         preferredDate: firstDate,
         arrivalHour: arrivalHour ?? null,
       });
+      // Best-effort HubSpot form submission, from the browser so the visitor's
+      // hubspotutk cookie preserves the contact's Original Source. Never awaited:
+      // a CRM issue must not block the confirmation.
+      void submitHubspotForm(
+        HUBSPOT_BOOKING_FORM_ID,
+        buildBookingHubspotFields({
+          mode: submitMode,
+          reference: result.reference ?? null,
+          contact,
+          projectType: configGlobal.projectType || null,
+          urgency: configGlobal.urgency || null,
+          plateau,
+          slotIds,
+          slots,
+          selected: firstDate,
+          arrivalHour: arrivalHour ?? null,
+          rentalHours,
+          total: priceBreakdown.total,
+        }),
+        { pageName: 'Booking' },
+      );
       const snapSessions: ConfirmationSessionSlot[] = sessionsData.map(s => {
         const px = BOOK_PLATEAUX.find(x => x.k === s.plateauKey);
         const h = s.cycloMode ? (s.cycloMode === 'halfH' ? 5 : 10) : (s.hours || 1);
@@ -458,7 +480,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
     } finally {
       setSaving(false);
     }
-  }, [buildSessionsData, selected, slotIds, slots, contact, configGlobal, priceBreakdown, arrivalHour, lang, p, rentalHours, navigate, goToStep]);
+  }, [buildSessionsData, selected, slotIds, slots, contact, configGlobal, priceBreakdown, arrivalHour, lang, p, plateau, rentalHours, navigate, goToStep]);
 
   return (
     <div className="edo-page-enter grid w-full edo-hairline md:h-full md:overflow-hidden md:grid-cols-book md:grid-rows-app">
@@ -718,6 +740,53 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
 
 const formatBookingDate = (d?: AnyProps | null) =>
   d ? `${d.y}-${String(d.m + 1).padStart(2, '0')}-${String(d.d).padStart(2, '0')}` : '';
+
+// Flattens the whole booking into the HubSpot form field set. Field names must
+// match the internal property names of the HubSpot booking form. Same values the
+// hidden BookingHubspotFields feed to Collected Forms, but sent authoritatively
+// through the Forms API (see src/lib/hubspot-forms.ts).
+const buildBookingHubspotFields = (p: AnyProps): Record<string, string> => {
+  const list: string[] = p.slotIds || [];
+  const slots = p.slots || {};
+  const plateauKeys = Array.from(new Set(list.map((id: string) => slots[id]?.plateauKey || id)));
+  const slotsHoursTotal = list.reduce((sum: number, id: string) => {
+    const st = slots[id] || {};
+    const px = BOOK_PLATEAUX.find(x => x.k === (st.plateauKey || id));
+    const h = px && px.isCyclo ? (st.cycloMode === 'halfH' ? 5 : 10) : px && px.isVisite ? 1 : (st.hours || 0);
+    return sum + h;
+  }, 0);
+  const datesBySlot = Object.fromEntries(
+    list.map((id: string) => [id, formatBookingDate(slots[id]?.date)]).filter(([, d]) => d),
+  );
+  const c = p.contact || {};
+  return {
+    firstname: c.prenom || '',
+    lastname: c.nom || '',
+    email: c.email || '',
+    phone: c.tel || '',
+    company: c.societe || '',
+    brand: c.marque || '',
+    siren: c.siren || '',
+    address: c.adresseFacturation || '',
+    message: c.autresInfos || '',
+    item_types: (c.typesArticles || []).join(', '),
+    other_item_type: c.autreType || '',
+    quantity_items: c.quantiteArticles || '',
+    views_per_item: c.vuesParArticle || '',
+    cgv_accepted: c.cgvAccepted ? 'true' : 'false',
+    booking_mode: p.mode || '',
+    booking_reference: p.reference || '',
+    project_type: p.projectType || '',
+    urgency: p.urgency || '',
+    plateau: p.plateau || '',
+    plateaus: plateauKeys.join(', '),
+    preferred_date: formatBookingDate(p.selected),
+    per_plateau_dates: JSON.stringify(datesBySlot),
+    arrival_hour: p.arrivalHour != null ? String(p.arrivalHour) : '',
+    rental_hours: String(slotsHoursTotal > 0 ? slotsHoursTotal : (p.rentalHours ?? '')),
+    total_ht: String(p.total ?? 0),
+  };
+};
 
 const BookingHubspotFields = ({
   mode, step, plateau, slotIds, slots,
