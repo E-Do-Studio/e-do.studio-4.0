@@ -53,6 +53,23 @@ const sampleSessions = [
     postprod_enabled: false,
     postprod_video: false,
   },
+  // Cyclo full day: hours/slot_type are stale noise — duration comes from
+  // cyclo_mode (fullH = 10 h). Must render "cyclorama (10h, journée)".
+  {
+    plateau_key: "cyclorama",
+    slot_type: "full",
+    hours: 8,
+    cyclo_mode: "fullH",
+    product_type: "cyclorama",
+    method: null,
+    submethod: null,
+    quantity: 1,
+    media: null,
+    views: [],
+    views_count: 0,
+    postprod_enabled: false,
+    postprod_video: false,
+  },
 ];
 
 const sampleQuote = {
