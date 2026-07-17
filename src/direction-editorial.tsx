@@ -138,7 +138,7 @@ const DirectionA = () => {
         titleAside={announcementText ? (
           <span className="flex min-w-0 items-center gap-2 font-mono text-cell font-medium text-foreground">
             <span aria-hidden className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-            <span className="truncate">{announcementText}</span>
+            <span className="truncate uppercase">{announcementText}</span>
           </span>
         ) : undefined}
         className="col-span-2 h-14 md:col-start-1 md:col-span-12 md:row-start-1 md:h-full"
