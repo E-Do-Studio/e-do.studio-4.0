@@ -4,14 +4,14 @@ import { DiscoveryShell } from './discovery/discovery-shell';
 import { useDocumentMeta } from './lib/use-document-meta';
 import { useStructuredData } from './lib/use-structured-data';
 import { buildBlogSchema, buildBreadcrumbSchema } from './lib/structured-data';
-import { useDiscoveryPosts } from './lib/use-strapi';
+import { useLoaderData } from '@tanstack/react-router';
 import { usePageContext } from './router';
 import { SocialClientsBar } from './social-clients-bar';
 
 const DiscoveryV2 = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
   useDocumentMeta('discovery', lang);
-  const { data: posts } = useDiscoveryPosts();
+  const { posts } = useLoaderData({ from: '/$lang/discovery' });
   useStructuredData('discovery', [
     buildBlogSchema(posts ?? [], lang, '/discovery'),
     buildBreadcrumbSchema(

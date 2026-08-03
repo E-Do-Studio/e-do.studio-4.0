@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import type { Lang } from '../types';
-import { useSiteDefaults } from './use-strapi';
+import { usePageContext } from './page-context';
 import { META } from './seo-meta';
 
 export interface SeoOverride {
@@ -18,7 +18,7 @@ export interface SeoOverride {
  *   4. META.home (final fallback)
  */
 export function useDocumentMeta(page: string, lang: Lang, override?: SeoOverride) {
-  const { data: defaults } = useSiteDefaults();
+  const { siteData: { siteDefaults: defaults } } = usePageContext();
   const defaultTitle = defaults?.seoTitle?.[lang] || '';
   const defaultDescription = defaults?.seoDescription?.[lang] || '';
   const defaultImageUrl = defaults?.seoImageUrl;

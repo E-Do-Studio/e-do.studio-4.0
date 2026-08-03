@@ -17,7 +17,27 @@ import { useGoogleAnalytics } from './lib/use-google-analytics';
 import { useGoogleTagManager } from './lib/use-google-tag-manager';
 import { DirectionA } from './direction-editorial';
 import { NotFoundPage } from './not-found-page';
-import { PageContext, type PageContextValue } from './lib/page-context';
+import { PageContext, type PageContextValue, type SiteData } from './lib/page-context';
+import {
+  fetchAnnouncement,
+  fetchContact,
+  fetchDiscoveryCategories,
+  fetchDiscoveryPost,
+  fetchDiscoveryPosts,
+  fetchGalleryCategories,
+  fetchGalleryProjects,
+  fetchHomeHero,
+  fetchLegalDocuments,
+  fetchLegalSectionsByDocument,
+  fetchMachines,
+  fetchPlateaux,
+  fetchPostProdTypes,
+  fetchSiteBusinessInfo,
+  fetchSiteDefaults,
+  fetchSocialLinks,
+  fetchStudioHours,
+  fetchTeamMembers,
+} from './lib/strapi';
 
 export { usePageContext } from './lib/page-context';
 
@@ -56,10 +76,11 @@ export const SCREEN_TO_PATH: Record<string, (lang: Lang) => string> = {
 function LangLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const siteData = rootRoute.useLoaderData();
   const pathname = useRouterState({ select: (s) => s.resolvedLocation?.pathname ?? '' });
   const langSegment = pathname.split('/')[1];
   const lang: Lang = VALID_LANGS.includes(langSegment as Lang) ? (langSegment as Lang) : DEFAULT_LANG;
-  useGoogleAnalytics();
+  useGoogleAnalytics(siteData.siteDefaults?.googleAnalyticsId);
   useGoogleTagManager();
 
   const setLang = (newLang: Lang) => {
@@ -79,6 +100,7 @@ function LangLayout() {
     setLang,
     openMenu: () => setMenuOpen(true),
     goto,
+    siteData,
   };
 
   return (
@@ -96,7 +118,26 @@ function LangLayout() {
   );
 }
 
-const rootRoute = createRootRoute({ component: LangLayout });
+// Une panne Strapi ne doit pas faire tomber le site : chaque source est résolue
+// indépendamment et retombe sur null, comme le faisaient les hooks qu'elle
+// remplace. Le prerender, lui, vérifiera la présence du contenu au build.
+const settle = <T,>(p: Promise<T>): Promise<T | null> => p.catch(() => null);
+
+const rootRoute = createRootRoute({
+  component: LangLayout,
+  loader: async (): Promise<SiteData> => {
+    const [contact, socialLinks, studioHours, businessInfo, machines, siteDefaults] =
+      await Promise.all([
+        settle(fetchContact()),
+        settle(fetchSocialLinks()),
+        settle(fetchStudioHours()),
+        settle(fetchSiteBusinessInfo()),
+        settle(fetchMachines()),
+        settle(fetchSiteDefaults()),
+      ]);
+    return { contact, socialLinks, studioHours, businessInfo, machines, siteDefaults };
+  },
+});
 
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -117,69 +158,111 @@ const langRoute = createRoute({
   },
 });
 
+// Chaque loader résout les données de la page avant son rendu. C'est ce qui rend
+// le contenu disponible pour un rendu côté Node — et donc présent dans le HTML
+// livré — là où un `useEffect` ne s'exécute que dans un navigateur.
+const galleryLoader = async () => {
+  const [projects, categories] = await Promise.all([
+    settle(fetchGalleryProjects()),
+    settle(fetchGalleryCategories()),
+  ]);
+  return { projects, categories };
+};
+
+const teamLoader = async () => ({ teamMembers: await settle(fetchTeamMembers()) });
+
 const homeRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/',
+  loader: async () => {
+    const [announcement, homeHero] = await Promise.all([
+      settle(fetchAnnouncement()),
+      settle(fetchHomeHero()),
+    ]);
+    return { announcement, homeHero };
+  },
   component: DirectionA,
 });
 
 const cycloramaRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/cyclorama',
+  loader: async () => ({ plateaux: await settle(fetchPlateaux()) }),
   component: lazyRouteComponent(() => import('./plateau-page'), 'CycloramaPage'),
 });
 
 const plateauRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/plateau/$slug',
+  loader: async () => ({ plateaux: await settle(fetchPlateaux()) }),
   component: lazyRouteComponent(() => import('./plateau-page'), 'PlateauSlugPage'),
 });
 
 const discoveryRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/discovery',
+  loader: async () => {
+    const [posts, categories] = await Promise.all([
+      settle(fetchDiscoveryPosts()),
+      settle(fetchDiscoveryCategories()),
+    ]);
+    return { posts, categories };
+  },
   component: lazyRouteComponent(() => import('./discovery-pages'), 'DiscoveryVariants'),
 });
 
 const discoveryPostRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/discovery/$slug',
+  loader: async ({ params }) => {
+    const [post, posts] = await Promise.all([
+      settle(fetchDiscoveryPost(params.slug)),
+      settle(fetchDiscoveryPosts()),
+    ]);
+    return { post, posts };
+  },
   component: lazyRouteComponent(() => import('./discovery-post-page'), 'DiscoveryPostPage'),
 });
 
 const postprodRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/post-production',
+  loader: async () => ({ postProdTypes: await settle(fetchPostProdTypes()) }),
   component: lazyRouteComponent(() => import('./postprod-page'), 'PostprodPage'),
 });
 
 const galleryRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/galerie',
+  loader: galleryLoader,
   component: lazyRouteComponent(() => import('./gallery-page'), 'GalleryPageV3'),
 });
 
 const galleryEnRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/gallery',
+  loader: galleryLoader,
   component: lazyRouteComponent(() => import('./gallery-page'), 'GalleryPageV3'),
 });
 
 const contactRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/contact',
+  loader: teamLoader,
   component: lazyRouteComponent(() => import('./contact-page'), 'ContactPage'),
 });
 
 const bookPickerFrRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/reserver',
+  loader: teamLoader,
   component: lazyRouteComponent(() => import('./book/book-picker'), 'BookPicker'),
 });
 
 const bookPickerEnRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/book',
+  loader: teamLoader,
   component: lazyRouteComponent(() => import('./book/book-picker'), 'BookPicker'),
 });
 
@@ -282,6 +365,13 @@ const confirmationEnRoute = createRoute({
 const legalRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/legal',
+  loader: async () => {
+    const [documents, sections] = await Promise.all([
+      settle(fetchLegalDocuments()),
+      settle(fetchLegalSectionsByDocument()),
+    ]);
+    return { documents, sections };
+  },
   component: lazyRouteComponent(() => import('./legal-page'), 'LegalPage'),
 });
 

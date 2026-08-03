@@ -15,7 +15,7 @@ import {
 import { useDocumentMeta, type SeoOverride } from './lib/use-document-meta';
 import { useStructuredData } from './lib/use-structured-data';
 import { buildPostProdServiceSchema, buildBreadcrumbSchema } from './lib/structured-data';
-import { usePostProdTypes } from './lib/use-strapi';
+import { useLoaderData } from '@tanstack/react-router';
 import type { PPCat as StrapiPPCat, PPSample, SeoMeta } from './lib/strapi';
 import type { Bilingual } from './types';
 import { usePageContext } from './router';
@@ -195,9 +195,9 @@ function adaptStrapiCats(strapi: StrapiPPCat[]): PPCat[] {
 
 const PostprodPage = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
-  const ppQuery = usePostProdTypes();
-  const cats: PPCat[] = ppQuery.data ? adaptStrapiCats(ppQuery.data) : [];
-  const strapiCats: StrapiPPCat[] = ppQuery.data ?? [];
+  const { postProdTypes } = useLoaderData({ from: '/$lang/post-production' });
+  const cats: PPCat[] = postProdTypes ? adaptStrapiCats(postProdTypes) : [];
+  const strapiCats: StrapiPPCat[] = postProdTypes ?? [];
 
   const [{ type }, setFilters] = useQueryStates(
     {
@@ -262,8 +262,8 @@ const PostprodPage = () => {
     ? [...breadcrumbBase, { name: cat[lang], pathname: `/post-production?type=${cat.k}` }]
     : breadcrumbBase;
   useStructuredData('postprod', [
-    ppQuery.data && ppQuery.data.length > 0
-      ? buildPostProdServiceSchema({ cats: ppQuery.data, lang, pathname: '/post-production' })
+    postProdTypes && postProdTypes.length > 0
+      ? buildPostProdServiceSchema({ cats: postProdTypes, lang, pathname: '/post-production' })
       : null,
     buildBreadcrumbSchema(breadcrumbItems, lang),
   ]);
@@ -274,16 +274,8 @@ const PostprodPage = () => {
   const lineCls = dark ? 'border-white/18' : 'border-border';
 
   if (!cat) {
-    // A stable, data-independent h1 stays in the tree in every state — including
-    // before Strapi resolves — so crawlers that snapshot the loading/empty page
-    // still see exactly one h1 (the category title below is rendered as an h2).
-    if (ppQuery.loading) {
-      return (
-        <main className="edo-page-enter">
-          <h1 className="sr-only">{postprodLabel}</h1>
-        </main>
-      );
-    }
+    // Le h1 reste dans l'arbre même sans catégorie, pour qu'il y en ait
+    // toujours exactement un (le titre de catégorie ci-dessous est un h2).
     return (
       <>
         <h1 className="sr-only">{postprodLabel}</h1>

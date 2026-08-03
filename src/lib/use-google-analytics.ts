@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { useRouterState } from '@tanstack/react-router';
-import { useSiteDefaults } from './use-strapi';
 import { useCookieConsent } from './use-cookie-consent';
 
 declare global {
@@ -13,10 +12,12 @@ declare global {
 const SCRIPT_ID = 'edo-ga-script';
 const INLINE_ID = 'edo-ga-inline';
 
-export function useGoogleAnalytics() {
-  const { data } = useSiteDefaults();
+// L'id GA vient du loader racine et descend en argument : ce hook est appelé
+// dans LangLayout, au-dessus du PageContext.Provider, donc hors de portée du
+// contexte.
+export function useGoogleAnalytics(googleAnalyticsId: string | undefined) {
   const { consent } = useCookieConsent();
-  const gaId = data?.googleAnalyticsId?.trim();
+  const gaId = googleAnalyticsId?.trim();
   const pathname = useRouterState({ select: (s) => s.resolvedLocation?.pathname ?? '' });
 
   useEffect(() => {

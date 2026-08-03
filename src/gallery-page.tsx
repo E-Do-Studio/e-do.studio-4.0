@@ -1,13 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import { useQueryStates, parseAsString } from "nuqs";
-import { Link } from "@tanstack/react-router";
+import { Link, useLoaderData } from "@tanstack/react-router";
 import { usePageContext, SCREEN_TO_PATH } from "./router";
 import { useDocumentMeta } from "./lib/use-document-meta";
 import { useStructuredData } from "./lib/use-structured-data";
 import { buildGalleryCollectionSchema, buildBreadcrumbSchema } from "./lib/structured-data";
-import { useGalleryProjects, useGalleryCategories } from "./lib/use-strapi";
-import type { GalleryProject } from "./lib/strapi";
+import type { GalleryCategory, GalleryProject } from "./lib/strapi";
 import type { Lang } from "./types";
 import { EmptyState, HoverMarquee, MobileNavStrip, PageHeader, ResponsiveImage, buildMainNav } from "./ui";
 import type { StripGroup } from "./ui";
@@ -452,11 +451,15 @@ const GalleryPageV3 = () => {
   const setPlateau = (p: string) =>
     setFilters({ plateau: p === "all" ? null : p });
 
-  const { data: strapiProjects } = useGalleryProjects();
-  const { data: strapiCategories } = useGalleryCategories();
+  // La page est servie par deux routes (/galerie en FR, /gallery en EN) qui
+  // partagent le même loader, d'où l'accès non strict à ses données.
+  const loaderData = useLoaderData({ strict: false }) as {
+    projects: GalleryProject[] | null;
+    categories: GalleryCategory[] | null;
+  };
 
-  const projects = strapiProjects ?? [];
-  const categories = strapiCategories ?? [];
+  const projects = loaderData.projects ?? [];
+  const categories = loaderData.categories ?? [];
 
   const [lightbox, setLightbox] = useState<{ projectId: number; imageIndex: number } | null>(null);
   const lightboxProject = useMemo(
@@ -648,7 +651,7 @@ const GalleryPageV3 = () => {
         <GalleryContent
           lang={lang}
           filtered={filtered}
-          loaded={strapiProjects !== null}
+          loaded={loaderData.projects !== null}
           resetFilters={resetFilters}
           onOpenLightbox={(projectId, imageIndex) =>
             setLightbox({ projectId, imageIndex })

@@ -1,6 +1,7 @@
 import React from 'react';
 import type { DiscoveryPost, Lang } from '../types';
-import { DiscoveryCoverMedia, hasCover } from './discovery-cover';
+import { DiscoveryCoverMedia } from './discovery-cover';
+import { hasCover } from './cover';
 import { ArrowIcon, CellBadge } from './shared';
 import { cn } from '../ui/cn';
 import { EmptyState } from '../ui';
@@ -45,6 +46,7 @@ export const SplitArticleCard: React.FC<SplitArticleCardProps> = ({ post, lang, 
   const cover = hasCover(post);
   return (
     <button
+      type="button"
       onClick={onOpen}
       className={cn(cellBase, 'edo-focus-ring group order-6 grid min-h-104 cursor-pointer grid-cols-1 border-0 bg-white p-0 text-left transition-opacity hover:opacity-95 lg:min-h-0', cover && 'sm:grid-cols-2', className)}
     >
@@ -114,6 +116,7 @@ interface BookCtaTileProps {
 
 export const BookCtaTile: React.FC<BookCtaTileProps> = ({ lang, goto, className }) => (
   <button
+    type="button"
     onClick={() => goto('book')}
     className={cn('edo-focus-ring group relative flex h-21 shrink-0 cursor-pointer items-center justify-between gap-3.5 overflow-hidden border-0 bg-primary px-cell-lg py-3.5 text-left text-white transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90', className)}
   >

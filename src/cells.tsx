@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import type { FormEvent } from 'react';
 import { CellLabel, CellTitle, HoverMarquee, IconArrowRight, IconPlay, IconMenu, Wordmark, LangSwitch, cn } from './ui';
-import { useMachines, useContact } from './lib/use-strapi';
+import { usePageContext } from './lib/page-context';
 import { BRANDS } from './lib/brands';
 import type { Lang, MachineInfo } from './types';
 import { common, cells as cellsMsg, assistant as assistantMsg } from './i18n/messages';
@@ -206,8 +206,8 @@ interface MachineListCellProps {
 }
 
 const MachineListCell = ({ lang, onSelect }: MachineListCellProps) => {
-  const { data: machines } = useMachines();
-  const list = machines ?? [];
+  const { siteData } = usePageContext();
+  const list = siteData.machines ?? [];
   return (
   <div className="flex h-full flex-col bg-white">
     <div className="border-b border-input px-4 py-3">
@@ -238,7 +238,7 @@ interface ContactCellProps {
 }
 
 const ContactCell = ({ lang }: ContactCellProps) => {
-  const { data: contact } = useContact();
+  const { siteData: { contact } } = usePageContext();
   return (
     <div className="flex h-full flex-col bg-white">
       <div className="flex flex-1 flex-col justify-between p-4">

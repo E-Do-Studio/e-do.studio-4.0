@@ -1,20 +1,17 @@
 import React from 'react';
 import type { DiscoveryCategory, Lang } from '../types';
-import { useDiscoveryCategories } from '../lib/use-strapi';
 import { Chip } from '../ui/chip';
 import { cn } from '../ui/cn';
 
 interface FilterChipsProps {
-  cats?: DiscoveryCategory[];
+  cats: DiscoveryCategory[];
   value: string;
   onChange: (k: string) => void;
   lang: Lang;
   compact?: boolean;
 }
 
-export const FilterChips: React.FC<FilterChipsProps> = ({ cats: catsProp, value, onChange, lang, compact = false }) => {
-  const { data: fetchedCats } = useDiscoveryCategories();
-  const cats = catsProp ?? fetchedCats ?? [];
+export const FilterChips: React.FC<FilterChipsProps> = ({ cats, value, onChange, lang, compact = false }) => {
   return (
   <div className={cn('flex flex-wrap', compact ? 'gap-1' : 'gap-1.5')}>
     {cats.map((cat) => (

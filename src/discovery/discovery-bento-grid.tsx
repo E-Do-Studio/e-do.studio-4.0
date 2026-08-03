@@ -1,14 +1,17 @@
 import React, { lazy, Suspense, useMemo, useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
+import { useLoaderData, useNavigate } from '@tanstack/react-router';
 import type { Lang } from '../types';
-import type { DiscoveryPost } from '../types';
+import type { DiscoveryCategory, DiscoveryPost } from '../types';
 import { MobileAssistantFab } from '../ui';
 
 const AssistantChat = lazy(() => import('../assistant-chat'));
 import { ArticleCard, ArticleEmptyCard } from './article-card';
-import { useDiscoveryPosts } from '../lib/use-strapi';
 import { MorePostsCard } from './more-posts-card';
 import { BookCtaTile, NewsletterCard, SplitArticleCard, SplitArticleEmptyCard } from './tiles';
+
+// Stable reference so the memos below don't re-run on every loading render.
+const EMPTY_POSTS: DiscoveryPost[] = [];
+const EMPTY_CATS: DiscoveryCategory[] = [];
 
 interface DiscoveryBentoGridProps {
   lang: Lang;
@@ -18,8 +21,9 @@ interface DiscoveryBentoGridProps {
 export const DiscoveryBentoGrid: React.FC<DiscoveryBentoGridProps> = ({ lang, goto }) => {
   const [cat, setCat] = useState('all');
   const navigate = useNavigate();
-  const { data: posts } = useDiscoveryPosts();
-  const allPosts = posts ?? [];
+  const { posts, categories } = useLoaderData({ from: '/$lang/discovery' });
+  const allPosts = posts ?? EMPTY_POSTS;
+  const cats = categories ?? EMPTY_CATS;
 
   const openPost = (post: DiscoveryPost) =>
     navigate({ to: '/$lang/discovery/$slug', params: { lang, slug: post.slug } });
@@ -95,6 +99,7 @@ export const DiscoveryBentoGrid: React.FC<DiscoveryBentoGridProps> = ({ lang, go
 
         <MorePostsCard
           posts={morePosts}
+          cats={cats}
           lang={lang}
           onOpen={openPost}
           cat={cat}

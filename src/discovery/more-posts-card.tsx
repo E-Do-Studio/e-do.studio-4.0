@@ -1,7 +1,8 @@
 import React from 'react';
-import type { DiscoveryPost, Lang } from '../types';
+import type { DiscoveryCategory, DiscoveryPost, Lang } from '../types';
 import { ArticleMeta, CellBadge } from './shared';
-import { DiscoveryCoverMedia, hasCover } from './discovery-cover';
+import { DiscoveryCoverMedia } from './discovery-cover';
+import { hasCover } from './cover';
 import { FilterChips } from './filter-chips';
 import { cn } from '../ui/cn';
 import { EmptyState } from '../ui';
@@ -10,6 +11,7 @@ import { discoveryPage } from '../i18n/messages';
 
 interface MorePostsCardProps {
   posts: DiscoveryPost[];
+  cats: DiscoveryCategory[];
   lang: Lang;
   onOpen: (post: DiscoveryPost) => void;
   cat: string;
@@ -18,7 +20,7 @@ interface MorePostsCardProps {
   badge?: number;
 }
 
-export const MorePostsCard: React.FC<MorePostsCardProps> = ({ posts, lang, onOpen, cat, setCat, className, badge }) => {
+export const MorePostsCard: React.FC<MorePostsCardProps> = ({ posts, cats, lang, onOpen, cat, setCat, className, badge }) => {
   const filteredPosts = cat === 'all' ? posts : posts.filter((post) => post.cat === cat);
 
   return (
@@ -34,7 +36,7 @@ export const MorePostsCard: React.FC<MorePostsCardProps> = ({ posts, lang, onOpe
             {filteredPosts.length}/{posts.length}
           </span>
         </div>
-        <FilterChips value={cat} onChange={setCat} lang={lang} compact />
+        <FilterChips cats={cats} value={cat} onChange={setCat} lang={lang} compact />
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto">
@@ -43,6 +45,7 @@ export const MorePostsCard: React.FC<MorePostsCardProps> = ({ posts, lang, onOpe
           return (
             <button
               key={post.id}
+              type="button"
               onClick={() => onOpen(post)}
               className={cn(
                 'edo-focus-ring group grid w-full cursor-pointer items-center gap-3 border-0 border-b border-border bg-white px-cell pb-3.5 pt-3 text-left transition-colors hover:bg-muted',

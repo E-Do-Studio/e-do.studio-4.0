@@ -1,4 +1,4 @@
-import { useSocialLinks } from '../lib/use-strapi';
+import { usePageContext } from '../lib/page-context';
 import type { SocialLink } from '../types';
 import { cn } from './cn';
 import { SocialIcon } from './social-icon';
@@ -23,8 +23,8 @@ const LAYOUT_CLASSES: Record<'auto' | 'row', string> = {
 };
 
 const SocialLinksRow = ({ className, layout = 'auto' }: SocialLinksRowProps) => {
-  const { data } = useSocialLinks();
-  const items: SocialLink[] = data ?? [];
+  const { siteData } = usePageContext();
+  const items: SocialLink[] = siteData.socialLinks ?? [];
   return (
     <div className={cn(LAYOUT_CLASSES[layout], className)}>
       {items.map((s) => (

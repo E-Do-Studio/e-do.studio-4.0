@@ -573,7 +573,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                 ↻ {common.reset[lang]}
               </button>
               <button type="button" onClick={()=>goToStep(0, 'config')}
-                className="edo-focus-ring flex-1 bg-primary border-l border-hairline px-5 py-3 md:py-0 cursor-pointer font-mono text-label tracking-code uppercase text-white whitespace-nowrap leading-normal font-semibold inline-flex items-center justify-center transition-all duration-150 hover:opacity-90">
+                className="edo-focus-ring flex-1 bg-primary border-l border-hairline px-5 py-3 md:py-0 cursor-pointer font-mono text-label tracking-code uppercase text-white whitespace-nowrap leading-normal font-semibold inline-flex items-center justify-center transition-opacity duration-150 hover:opacity-90">
                 ← {bookingMsg.configurator[lang]}
               </button>
             </div>
@@ -960,7 +960,7 @@ const Step0Configurator = ({ lang, global, setGlobal, sessions, setSessions, act
         <span className="font-mono text-micro tracking-code uppercase text-muted-foreground px-5 py-3 md:py-0 md:self-center md:pl-5 md:pr-3 flex-1 min-w-0 leading-relaxed">{lang==='fr'?'Notre configurateur vous accompagne — ou ':'Our configurator guides you — or '}<span className="text-primary font-semibold">{lang==='fr'?'choisissez manuellement →':'pick manually →'}</span></span>
         <div className="flex items-stretch border-t border-hairline md:border-t-0 md:flex-none md:w-1/2">
           <button type="button" onClick={()=>{ setSessions([makeBlankSession()]); setActiveIdx(0); setOpenQ(null); setTouchedQs(new Set()); if (onReset) onReset(); }} className="edo-focus-ring flex-1 bg-transparent border-l border-hairline px-5 py-3 md:py-0 cursor-pointer font-mono text-micro tracking-code uppercase text-foreground whitespace-nowrap leading-normal inline-flex items-center justify-center transition-colors duration-150 hover:bg-white">↻ {lang==='fr'?'Réinitialiser':'Reset'}</button>
-          <button type="button" onClick={onSkip} className="edo-focus-ring flex-1 bg-primary border-l border-hairline px-5 py-3 md:py-0 cursor-pointer font-mono text-label tracking-code uppercase text-white whitespace-nowrap leading-normal font-semibold inline-flex items-center justify-center transition-all duration-150 hover:opacity-90">{lang==='fr'?'Choisir manuellement':'Choose manually'} →</button>
+          <button type="button" onClick={onSkip} className="edo-focus-ring flex-1 bg-primary border-l border-hairline px-5 py-3 md:py-0 cursor-pointer font-mono text-label tracking-code uppercase text-white whitespace-nowrap leading-normal font-semibold inline-flex items-center justify-center transition-opacity duration-150 hover:opacity-90">{lang==='fr'?'Choisir manuellement':'Choose manually'} →</button>
         </div>
       </div>
       {sessions.length > 1 && (<>

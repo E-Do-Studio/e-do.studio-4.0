@@ -15,11 +15,6 @@ interface DiscoveryCoverMediaProps {
   controls?: boolean;
 }
 
-// A post has a "real" cover only when coverUrl is set. DiscoveryCoverMedia
-// already renders nothing without it; the bento cards use this to also collapse
-// the surrounding layout (no empty cover box).
-export const hasCover = (post: DiscoveryPost): boolean => Boolean(post.coverUrl);
-
 // Wraps the cover decision: video (autoplay loop muet) or image (responsive).
 // No procedural fallback — nothing renders when the post has no coverMedia.
 export const DiscoveryCoverMedia: React.FC<DiscoveryCoverMediaProps> = ({

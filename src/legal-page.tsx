@@ -7,7 +7,7 @@ import { buildWebPageSchema, buildBreadcrumbSchema } from './lib/structured-data
 import type { Lang } from './types';
 import { usePageContext } from './router';
 import { common, legalPage } from './i18n/messages';
-import { useLegalDocuments, useLegalSections } from './lib/use-strapi';
+import { useLoaderData } from '@tanstack/react-router';
 import type { LegalSectionContent, LegalDocumentKey } from './lib/strapi';
 import { renderStrapiBlocks, type BlockNode, type InlineNode } from './lib/render-blocks';
 
@@ -164,8 +164,7 @@ const LegalPage = () => {
       .withOptions({ clearOnDefault: true }),
   );
   const [navSheetOpen, setNavSheetOpen] = useState(false);
-  const { data: legalDocs } = useLegalDocuments();
-  const { data: legalSectionsByDoc } = useLegalSections();
+  const { documents: legalDocs, sections: legalSectionsByDoc } = useLoaderData({ from: '/$lang/legal' });
 
   const sections = legalDocs ?? [];
   const active = sections.find((s) => s.k === sec) ?? sections[0];

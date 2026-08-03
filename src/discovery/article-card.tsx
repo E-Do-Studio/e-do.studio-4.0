@@ -1,6 +1,7 @@
 import React from 'react';
 import type { DiscoveryPost, Lang } from '../types';
-import { DiscoveryCoverMedia, hasCover } from './discovery-cover';
+import { DiscoveryCoverMedia } from './discovery-cover';
+import { hasCover } from './cover';
 import { CellBadge } from './shared';
 import { cn } from '../ui/cn';
 import { EmptyState } from '../ui';
@@ -20,6 +21,7 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({ post, lang, onOpen, he
   const cover = hasCover(post);
   return (
     <button
+      type="button"
       onClick={onOpen}
       className={cn(
         cellBase,
