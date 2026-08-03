@@ -28,7 +28,11 @@ import {
   fetchSocialLinks,
   fetchStudioHours,
 } from '../lib/strapi';
-import appCss from '../styles.css?url';
+// Import à effet de bord, et non `?url` : ce dernier était résolu dans
+// l'environnement serveur, qui calcule son propre hash de fichier. Le href posé
+// dans le head() ne correspondait donc pas à la feuille réellement émise par le
+// build client — 404, page peinte sans style, puis restylée par le JS.
+import '../styles.css';
 
 const VALID_LANGS: Lang[] = ['fr', 'en'];
 const DEFAULT_LANG: Lang = 'fr';
@@ -210,7 +214,8 @@ export const Route = createRootRoute({
       { name: 'twitter:image', content: 'https://e-do.studio/twitter-card.png' },
     ],
     links: [
-      { rel: 'stylesheet', href: appCss },
+      // Pas de lien vers la feuille ici : Vite l'émet depuis son manifeste,
+      // avec le hash réel.
       { rel: 'preconnect', href: 'https://cms.e-do.studio', crossOrigin: '' },
       { rel: 'dns-prefetch', href: 'https://cms.e-do.studio' },
       // Coupes critiques : Light (titres), Regular (corps) et Mono Book
