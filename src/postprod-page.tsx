@@ -1,17 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { useQueryStates, parseAsString } from 'nuqs';
-import {
-  BottomSheet,
-  Button,
-  EmptyState,
-  HoverMarquee,
-  IconArrowRight,
-  IconSelector,
-  PageHeader,
-  ResponsiveImage,
-  buildMainNav,
-  cn,
-} from './ui';
+import { useNavigate, useSearch } from '@tanstack/react-router';
+import { BottomSheet } from './ui/bottom-sheet';
+import { Button } from './ui/button';
+import { cn } from './ui/cn';
+import { EmptyState } from './ui/empty-state';
+import { HoverMarquee } from './ui/hover-marquee';
+import { IconArrowRight, IconSelector } from './ui/icons';
+import { PageHeader, buildMainNav } from './ui/page-header';
+import { ResponsiveImage } from './ui/responsive-image';
 import { useDocumentMeta, type SeoOverride } from './lib/use-document-meta';
 import { useStructuredData } from './lib/use-structured-data';
 import { buildPostProdServiceSchema, buildBreadcrumbSchema } from './lib/structured-data';
@@ -199,12 +195,10 @@ const PostprodPage = () => {
   const cats: PPCat[] = postProdTypes ? adaptStrapiCats(postProdTypes) : [];
   const strapiCats: StrapiPPCat[] = postProdTypes ?? [];
 
-  const [{ type }, setFilters] = useQueryStates(
-    {
-      type: parseAsString.withDefault(''),
-    },
-    { history: 'push', clearOnDefault: true },
-  );
+  const { type = '' } = useSearch({ from: '/$lang/post-production' });
+  const navigate = useNavigate();
+  const setFilters = (next: string | null) =>
+    navigate({ to: '.', search: next ? { type: next } : {} });
 
   // Auto-select the first available cat when the URL param is missing OR points
   // to a slug that no longer exists in Strapi. The auto-selection must NOT
@@ -212,16 +206,17 @@ const PostprodPage = () => {
   const hasValidType = !!type && cats.some(c => c.k === type);
   useEffect(() => {
     if (type && cats.length > 0 && !cats.some(c => c.k === type)) {
-      setFilters({ type: null });
+      setFilters(null);
     }
-  }, [type, cats, setFilters]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [type, cats]);
 
   const k = hasValidType ? type : (cats[0]?.k ?? '');
   const cat = cats.find(c => c.k === k) || cats[0];
 
   const defaultK = cats[0]?.k;
   const setType = (next: string) => {
-    setFilters({ type: !next || next === defaultK ? null : next });
+    setFilters(!next || next === defaultK ? null : next);
   };
 
   const [navSheetOpen, setNavSheetOpen] = useState(false);

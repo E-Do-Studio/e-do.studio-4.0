@@ -37,6 +37,8 @@ import {
   fetchSocialLinks,
   fetchStudioHours,
   fetchTeamMembers,
+  LEGAL_DOCUMENT_KEYS,
+  type LegalDocumentKey,
 } from './lib/strapi';
 
 export { usePageContext } from './lib/page-context';
@@ -161,6 +163,18 @@ const langRoute = createRoute({
 // Chaque loader résout les données de la page avant son rendu. C'est ce qui rend
 // le contenu disponible pour un rendu côté Node — et donc présent dans le HTML
 // livré — là où un `useEffect` ne s'exécute que dans un navigateur.
+// `?cat=` est une cible de redirection 301 depuis les URLs v3 (/galerie?category=…
+// → /fr/galerie?cat=…, cf. Caddyfile). « all » est l'état par défaut : il n'est
+// jamais écrit dans l'URL.
+const galleryValidateSearch = (
+  search: Record<string, unknown>,
+): { cat?: string; plateau?: string } => {
+  const keep = (v: unknown) => (typeof v === 'string' && v && v !== 'all' ? v : undefined);
+  const cat = keep(search.cat);
+  const plateau = keep(search.plateau);
+  return { ...(cat ? { cat } : {}), ...(plateau ? { plateau } : {}) };
+};
+
 const galleryLoader = async () => {
   const [projects, categories] = await Promise.all([
     settle(fetchGalleryProjects()),
@@ -227,6 +241,12 @@ const discoveryPostRoute = createRoute({
 const postprodRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/post-production',
+  // `?type=` est une cible de redirection 301 depuis les URLs v3
+  // (/post-production/lookbook → /fr/post-production?type=lookbook, cf.
+  // Caddyfile) : le paramètre absent équivaut à la catégorie par défaut, et
+  // n'est jamais écrit dans l'URL.
+  validateSearch: (search: Record<string, unknown>): { type?: string } =>
+    typeof search.type === 'string' && search.type ? { type: search.type } : {},
   loader: async () => ({ postProdTypes: await settle(fetchPostProdTypes()) }),
   component: lazyRouteComponent(() => import('./postprod-page'), 'PostprodPage'),
 });
@@ -234,6 +254,7 @@ const postprodRoute = createRoute({
 const galleryRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/galerie',
+  validateSearch: galleryValidateSearch,
   loader: galleryLoader,
   component: lazyRouteComponent(() => import('./gallery-page'), 'GalleryPageV3'),
 });
@@ -241,6 +262,7 @@ const galleryRoute = createRoute({
 const galleryEnRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/gallery',
+  validateSearch: galleryValidateSearch,
   loader: galleryLoader,
   component: lazyRouteComponent(() => import('./gallery-page'), 'GalleryPageV3'),
 });
@@ -272,6 +294,13 @@ const ConfigStep3 = lazyRouteComponent(() => import('./book/book-step-routes'), 
 const ConfigStep5 = lazyRouteComponent(() => import('./book/book-step-routes'), 'ConfigStep5');
 const ConfigStep6 = lazyRouteComponent(() => import('./book/book-step-routes'), 'ConfigStep6');
 const ManualBook = lazyRouteComponent(() => import('./book/book-step-routes'), 'ManualBook');
+
+// Le mode manuel garde une seule URL et suit l'étape courante via `?step=N`
+// (le configurateur, lui, a une route par étape et ignore ce paramètre).
+const manualStepSearch = (search: Record<string, unknown>): { step?: number } => {
+  const step = Number(search.step);
+  return Number.isInteger(step) ? { step } : {};
+};
 const BookConfirmation = lazyRouteComponent(() => import('./book/book-confirmation'), 'BookConfirmation');
 
 const bookContactRedirect = (lang: Lang) => () => {
@@ -306,6 +335,7 @@ const configFrDatesRoute = createRoute({
 const manualFrRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/reserver/manuel',
+  validateSearch: manualStepSearch,
   component: ManualBook,
 });
 const bookFrContactRedirect = createRoute({
@@ -348,6 +378,7 @@ const configEnDatesRoute = createRoute({
 const manualEnRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/book/manual',
+  validateSearch: manualStepSearch,
   component: ManualBook,
 });
 const bookEnContactRedirect = createRoute({
@@ -365,6 +396,12 @@ const confirmationEnRoute = createRoute({
 const legalRoute = createRoute({
   getParentRoute: () => langRoute,
   path: '/legal',
+  // `?doc=` sélectionne le document affiché ; « mentions » est le défaut et
+  // n'est jamais écrit dans l'URL.
+  validateSearch: (search: Record<string, unknown>): { doc?: LegalDocumentKey } =>
+    LEGAL_DOCUMENT_KEYS.includes(search.doc as LegalDocumentKey) && search.doc !== 'mentions'
+      ? { doc: search.doc as LegalDocumentKey }
+      : {},
   loader: async () => {
     const [documents, sections] = await Promise.all([
       settle(fetchLegalDocuments()),

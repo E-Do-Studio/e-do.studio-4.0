@@ -1,15 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
-import { useQueryStates, parseAsString } from "nuqs";
-import { Link, useLoaderData } from "@tanstack/react-router";
+import { Link, useLoaderData, useNavigate, useSearch } from "@tanstack/react-router";
 import { usePageContext, SCREEN_TO_PATH } from "./router";
 import { useDocumentMeta } from "./lib/use-document-meta";
 import { useStructuredData } from "./lib/use-structured-data";
 import { buildGalleryCollectionSchema, buildBreadcrumbSchema } from "./lib/structured-data";
 import type { GalleryCategory, GalleryProject } from "./lib/strapi";
 import type { Lang } from "./types";
-import { EmptyState, HoverMarquee, MobileNavStrip, PageHeader, ResponsiveImage, buildMainNav } from "./ui";
-import type { StripGroup } from "./ui";
+import { EmptyState } from "./ui/empty-state";
+import { HoverMarquee } from "./ui/hover-marquee";
+import { MobileNavStrip } from "./ui/mobile-nav-strip";
+import { PageHeader, buildMainNav } from "./ui/page-header";
+import { ResponsiveImage } from "./ui/responsive-image";
+import type { StripGroup } from "./ui/mobile-nav-strip";
 import { cn } from "./ui/cn";
 import { common, galleryPage, mobileNav } from "./i18n/messages";
 import { GalleryLightbox } from "./gallery-lightbox";
@@ -435,18 +438,35 @@ const ProjectCoverFallback = ({ project, seed }: { project: GalleryProject; seed
   );
 };
 
-const filterParser = parseAsString.withDefault("all").withOptions({ clearOnDefault: true });
+type GalleryFilters = { cat?: string; plateau?: string };
 
 const GalleryPageV3 = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
   useDocumentMeta('gallery', lang);
-  const [{ cat, plateau }, setFilters] = useQueryStates(
-    {
-      cat: parseAsString.withDefault("all"),
-      plateau: parseAsString.withDefault("all"),
-    },
-    { history: "push", clearOnDefault: true },
-  );
+  // Page servie par deux routes (/galerie en FR, /gallery en EN), d'où l'accès
+  // non strict aux search params comme aux données du loader.
+  const search = useSearch({ strict: false }) as GalleryFilters;
+  const cat = search.cat ?? "all";
+  const plateau = search.plateau ?? "all";
+  const navigate = useNavigate();
+
+  // Mise à jour partielle : une clé absente de `next` garde sa valeur courante,
+  // une clé à null est retirée de l'URL (« all » n'y est jamais écrit).
+  const setFilters = (next: { cat?: string | null; plateau?: string | null }) =>
+    navigate({
+      to: '.',
+      search: (prev: GalleryFilters) => {
+        const merged: GalleryFilters = { ...prev };
+        for (const key of ['cat', 'plateau'] as const) {
+          if (!(key in next)) continue;
+          const value = next[key];
+          if (value) merged[key] = value;
+          else delete merged[key];
+        }
+        return merged;
+      },
+    });
+
   const setCat = (c: string) => setFilters({ cat: c === "all" ? null : c });
   const setPlateau = (p: string) =>
     setFilters({ plateau: p === "all" ? null : p });

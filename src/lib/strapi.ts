@@ -1075,7 +1075,12 @@ export interface SiteDefaults {
   googleAnalyticsId?: string;
 }
 
-export type LegalDocumentKey = 'mentions' | 'cgv' | 'cgu' | 'privacy' | 'cookies';
+// Tuple runtime + type dérivé : la liste sert aussi à valider le `?doc=` de la
+// route legal (src/router.tsx), qui ne peut pas importer la page sans casser le
+// code-splitting.
+export const LEGAL_DOCUMENT_KEYS = ['mentions', 'cgv', 'cgu', 'privacy', 'cookies'] as const;
+
+export type LegalDocumentKey = (typeof LEGAL_DOCUMENT_KEYS)[number];
 
 export interface LegalSection {
   documentKey: LegalDocumentKey;
@@ -1342,9 +1347,10 @@ export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
       })
       .filter((m): m is GalleryMedia => m !== null);
     // Iframe embeds (360° packshots) follow the uploaded files in slot order.
-    const embeds: GalleryMedia[] = (p.embeds ?? [])
-      .filter((e) => !!e.url)
-      .map((e) => ({ kind: 'embed', url: normalizeEmbedUrl(e.url), alt: e.alt ?? '' }));
+    const embeds: GalleryMedia[] = [];
+    for (const e of p.embeds ?? []) {
+      if (e.url) embeds.push({ kind: 'embed', url: normalizeEmbedUrl(e.url), alt: e.alt ?? '' });
+    }
     const media: GalleryMedia[] = [...files, ...embeds];
     return {
       id: p.id,

@@ -1,8 +1,10 @@
 import React, { Fragment, useState as useStateBook, useMemo as useMemoBook, useCallback as useCallbackBook } from 'react';
-import { useNavigate } from '@tanstack/react-router';
-import { useQueryState, parseAsInteger } from 'nuqs';
+import { useNavigate, useSearch } from '@tanstack/react-router';
 import { usePageContext } from './router';
-import { CellLabel, EmptyState, IconArrowRight, PageHeader, buildMainNav } from './ui';
+import { EmptyState } from './ui/empty-state';
+import { IconArrowRight } from './ui/icons';
+import { PageHeader, buildMainNav } from './ui/page-header';
+import { CellLabel } from './ui/typography';
 import { useDocumentMeta } from './lib/use-document-meta';
 import { useStructuredData } from './lib/use-structured-data';
 import { buildWebPageSchema, buildBreadcrumbSchema } from './lib/structured-data';
@@ -80,6 +82,16 @@ interface BookPageV2Props {
 // the date step and the final "Réserver" submit fails its contact validation.
 let cgvConsentGivenThisSession = false;
 
+// Placeholder used until a plateau is picked. Module-scoped so `p` keeps a
+// stable identity across renders — inline, it was a fresh object every render
+// and every hook depending on `p` (notably `handleSubmit`) re-created itself.
+const NO_PLATEAU: BookPlateau = {
+  k: '', fr: '—', en: '—',
+  desc: { fr: '', en: '' },
+  rates: { hour: 0, half: 0, full: 0 },
+  hdUnit: 'half', fdUnit: 'full',
+};
+
 const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
   const { lang, setLang, openMenu, goto } = usePageContext();
   const navigate = useNavigate();
@@ -106,14 +118,14 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
   const today = new Date();
   const [draft] = useStateBook(() => loadDraft());
   // Manual mode keeps a single URL (/reserver/manuel) and tracks the current
-  // step via nuqs (`?step=N`) instead of routing per step. This way back /
-  // forward navigation works and reloading the page keeps the user on the
-  // step they were on. Configurator mode uses TanStack routes per step and
-  // ignores this query parameter.
-  const [manualStepQuery, setManualStepQuery] = useQueryState(
-    'step',
-    parseAsInteger,
-  );
+  // step in the `?step=N` search param instead of routing per step, so
+  // reloading the page keeps the user on the step they were on. Configurator
+  // mode uses TanStack routes per step and ignores this query parameter.
+  // Non-strict: BookPageV2 also renders on the configurator routes, which
+  // don't declare `step`.
+  const { step: manualStepQuery = null } = useSearch({ strict: false }) as { step?: number };
+  const setManualStepQuery = (n: number) =>
+    navigate({ to: '.', search: { step: n }, replace: true });
   const [step, setStep] = useStateBook<number>(() => {
     if (forceManual && manualStepQuery != null) return manualStepQuery;
     if (forcedStep != null) return forcedStep;
@@ -219,7 +231,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
   }, [lang, configApplied, forceManual, navigate]);
   const months = lang==='fr' ? MONTHS_FR : MONTHS_EN;
   const days = lang==='fr' ? DAYS_FR : DAYS_EN;
-  const p = BOOK_PLATEAUX.find(x=>x.k===plateau) || {k:'', fr:'—', en:'—', desc:{fr:'',en:''}, rates:{hour:0,half:0,full:0}, hdUnit:'half', fdUnit:'full'};
+  const p = BOOK_PLATEAUX.find(x=>x.k===plateau) || NO_PLATEAU;
   const rentalHours = p.isCyclo ? (cycloMode==='halfH' ? 5 : 10) : p.isVisite ? 1 : (slotType==='hour' ? hours : (slotType==='half' ? Math.max(4,Math.min(7,hours)) : 8));
   const quoteLabels = useMemoBook<QuoteLabels>(() => ({
     cyclo5h: bookingMsg.cyclo5h[lang],
@@ -246,13 +258,18 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
     const result = validateContact(contact, lang as 'fr' | 'en', { requireProductFields });
     return result.success;
   };
-  const runContactValidation = () => {
+  // Memoised because `handleSubmit` captures it: as a plain function it was only
+  // kept fresh by `configApplied` transitively re-creating `buildSessionsData`,
+  // which is in handleSubmit's deps. Depend on `p.isCyclo`/`p.isVisite` rather
+  // than `p` — `p` is a new object literal on every render when no plateau
+  // matches, which would defeat the memo.
+  const runContactValidation = useCallbackBook(() => {
     const requireProductFields = !p.isCyclo && !p.isVisite && !configApplied;
     const result = validateContact(contact, lang as 'fr' | 'en', { requireProductFields });
     if (!result.success) { setContactErrors(result.errors); return false; }
     setContactErrors({});
     return true;
-  };
+  }, [p.isCyclo, p.isVisite, configApplied, contact, lang]);
   const handleContactNext = (nextN: number | null) => {
     if (!runContactValidation()) return;
     if (nextN !== null) goToStep(nextN);
@@ -480,7 +497,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
     } finally {
       setSaving(false);
     }
-  }, [buildSessionsData, selected, slotIds, slots, contact, configGlobal, priceBreakdown, arrivalHour, lang, p, plateau, rentalHours, navigate, goToStep]);
+  }, [runContactValidation, buildSessionsData, selected, slotIds, slots, contact, configGlobal, priceBreakdown, arrivalHour, lang, p, plateau, rentalHours, navigate, goToStep]);
 
   return (
     <div className="edo-page-enter grid w-full edo-hairline md:h-full md:overflow-hidden md:grid-cols-book md:grid-rows-app">
@@ -755,9 +772,11 @@ const buildBookingHubspotFields = (p: AnyProps): Record<string, string> => {
     const h = px && px.isCyclo ? (st.cycloMode === 'halfH' ? 5 : 10) : px && px.isVisite ? 1 : (st.hours || 0);
     return sum + h;
   }, 0);
-  const datesBySlot = Object.fromEntries(
-    list.map((id: string) => [id, formatBookingDate(slots[id]?.date)]).filter(([, d]) => d),
-  );
+  const datesBySlot: Record<string, string> = {};
+  for (const id of list as string[]) {
+    const d = formatBookingDate(slots[id]?.date);
+    if (d) datesBySlot[id] = d;
+  }
   const c = p.contact || {};
   return {
     firstname: c.prenom || '',

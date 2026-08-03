@@ -1,6 +1,11 @@
 import { useState } from 'react';
-import { useQueryState, parseAsStringLiteral } from 'nuqs';
-import { BottomSheet, Button, HoverMarquee, IconArrowRight, IconSelector, PageHeader, buildMainNav, cn } from './ui';
+import { useNavigate, useSearch } from '@tanstack/react-router';
+import { BottomSheet } from './ui/bottom-sheet';
+import { Button } from './ui/button';
+import { cn } from './ui/cn';
+import { HoverMarquee } from './ui/hover-marquee';
+import { IconArrowRight, IconSelector } from './ui/icons';
+import { PageHeader, buildMainNav } from './ui/page-header';
 import { useDocumentMeta } from './lib/use-document-meta';
 import { useStructuredData } from './lib/use-structured-data';
 import { buildWebPageSchema, buildBreadcrumbSchema } from './lib/structured-data';
@@ -134,8 +139,6 @@ const StrapiSectionsRenderer = ({ sections, lang }: SectionRendererProps) => (
   </>
 );
 
-const LEGAL_DOC_KEYS = ['mentions', 'cgv', 'cgu', 'privacy', 'cookies'] as const satisfies readonly LegalDocumentKey[];
-
 const LegalPage = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
   useDocumentMeta('legal', lang);
@@ -157,12 +160,11 @@ const LegalPage = () => {
       lang,
     ),
   ]);
-  const [sec, setSec] = useQueryState(
-    'doc',
-    parseAsStringLiteral(LEGAL_DOC_KEYS)
-      .withDefault('mentions')
-      .withOptions({ clearOnDefault: true }),
-  );
+  const { doc } = useSearch({ from: '/$lang/legal' });
+  const sec = doc ?? 'mentions';
+  const navigate = useNavigate();
+  const setSec = (next: LegalDocumentKey) =>
+    navigate({ to: '.', search: next === 'mentions' ? {} : { doc: next } });
   const [navSheetOpen, setNavSheetOpen] = useState(false);
   const { documents: legalDocs, sections: legalSectionsByDoc } = useLoaderData({ from: '/$lang/legal' });
 
