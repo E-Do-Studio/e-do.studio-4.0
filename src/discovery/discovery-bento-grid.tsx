@@ -3,6 +3,7 @@ import { useLoaderData, useNavigate } from '@tanstack/react-router';
 import type { Lang } from '../types';
 import type { DiscoveryCategory, DiscoveryPost } from '../types';
 import { MobileAssistantFab } from '../ui/mobile-assistant-fab';
+import { useIsDesktop } from '../ui/use-is-desktop';
 
 const AssistantChat = lazy(() => import('../assistant-chat'));
 import { ArticleCard, ArticleEmptyCard } from './article-card';
@@ -20,6 +21,7 @@ interface DiscoveryBentoGridProps {
 
 export const DiscoveryBentoGrid: React.FC<DiscoveryBentoGridProps> = ({ lang, goto }) => {
   const [cat, setCat] = useState('all');
+  const isDesktop = useIsDesktop();
   const navigate = useNavigate();
   const { posts, categories } = useLoaderData({ from: '/$lang/discovery/' });
   const allPosts = posts ?? EMPTY_POSTS;
@@ -123,19 +125,26 @@ export const DiscoveryBentoGrid: React.FC<DiscoveryBentoGridProps> = ({ lang, go
         {/* Inline AssistantChat: shown md+ where it fits inside the bento.
             On mobile the tile would push the rest of the page down, so it
             is replaced by a floating button (see MobileAssistantFab below). */}
-        <Suspense
-          fallback={
-            <div
-              aria-hidden
-              className="hidden md:flex order-8 min-h-88 bg-white md:col-span-2 lg:col-start-7 lg:col-span-2 lg:row-start-4 lg:row-span-3 lg:order-none lg:min-h-0"
+        {isDesktop ? (
+          <Suspense
+            fallback={
+              <div
+                aria-hidden
+                className="hidden md:flex order-8 min-h-88 bg-white md:col-span-2 lg:col-start-7 lg:col-span-2 lg:row-start-4 lg:row-span-3 lg:order-none lg:min-h-0"
+              />
+            }
+          >
+            <AssistantChat
+              lang={lang}
+              className="hidden md:flex order-8 min-h-88 md:col-span-2 lg:col-start-7 lg:col-span-2 lg:row-start-4 lg:row-span-3 lg:order-none lg:min-h-0"
             />
-          }
-        >
-          <AssistantChat
-            lang={lang}
-            className="hidden md:flex order-8 min-h-88 md:col-span-2 lg:col-start-7 lg:col-span-2 lg:row-start-4 lg:row-span-3 lg:order-none lg:min-h-0"
+          </Suspense>
+        ) : (
+          <div
+            aria-hidden
+            className="hidden md:flex order-8 min-h-88 bg-white md:col-span-2 lg:col-start-7 lg:col-span-2 lg:row-start-4 lg:row-span-3 lg:order-none lg:min-h-0"
           />
-        </Suspense>
+        )}
       </main>
 
       <MobileAssistantFab lang={lang} />

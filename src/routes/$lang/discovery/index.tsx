@@ -1,4 +1,5 @@
-import { createFileRoute, lazyRouteComponent } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
+import { DiscoveryVariants } from '../../../discovery-pages';
 import { settle } from '../../../lib/route-data';
 import { fetchDiscoveryCategories, fetchDiscoveryPosts } from '../../../lib/strapi';
 import type { Lang } from '../../../types';
@@ -19,5 +20,5 @@ export const Route = createFileRoute('/$lang/discovery/')({
     ]);
     return { posts, categories };
   },
-  component: lazyRouteComponent(() => import('../../../discovery-pages'), 'DiscoveryVariants'),
+  component: DiscoveryVariants,
 });

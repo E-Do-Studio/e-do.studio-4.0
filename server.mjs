@@ -16,6 +16,12 @@ import { Readable } from 'node:stream';
 
 import handler from './dist/server/server.js';
 
+// Selon l'entrée serveur, Start exporte soit le handler directement (entrée
+// applicative, src/server.ts), soit un objet `{ fetch }` (entrée générée par
+// défaut). On accepte les deux plutôt que de dépendre d'un détail interne.
+const fetchHandler =
+  typeof handler === 'function' ? handler : handler.fetch.bind(handler);
+
 const PORT = Number(process.env.PORT) || 3000;
 const CLIENT_DIR = new URL('./dist/client/', import.meta.url).pathname;
 
@@ -79,23 +85,55 @@ const server = createServer(async (req, res) => {
           ? 'public, max-age=31536000, immutable'
           : 'public, max-age=3600',
       });
-      createReadStream(filePath).pipe(res);
+      pipeSafely(createReadStream(filePath), res, req.url);
       return;
     }
 
-    const response = await handler.fetch(toWebRequest(req));
+    const response = await fetchHandler(toWebRequest(req));
     res.writeHead(response.status, Object.fromEntries(response.headers));
     if (response.body) {
-      Readable.fromWeb(response.body).pipe(res);
+      pipeSafely(Readable.fromWeb(response.body), res, req.url);
     } else {
       res.end();
     }
   } catch (error) {
-    // Une erreur de rendu ne doit pas tuer le process : on log et on renvoie 500.
-    console.error('[server] échec du rendu', req.url, error);
-    if (!res.headersSent) res.writeHead(500, { 'Content-Type': 'text/plain' });
-    res.end('Internal Server Error');
+    fail(res, req.url, error);
   }
+});
+
+// Une erreur survenue APRÈS l'envoi des en-têtes ne peut plus donner lieu à un
+// 500 : la seule issue correcte est de couper la réponse. Sans ce garde,
+// l'erreur remontait non gérée et tuait le process — une page en échec mettait
+// donc tout le site à terre.
+function pipeSafely(source, res, url) {
+  const onError = (error) => {
+    source.destroy();
+    fail(res, url, error);
+  };
+  source.on('error', onError);
+  res.on('error', onError);
+  res.on('close', () => source.destroy());
+  source.pipe(res);
+}
+
+function fail(res, url, error) {
+  console.error('[server] échec du rendu', url, error);
+  if (res.writableEnded || res.destroyed) return;
+  if (res.headersSent) {
+    res.destroy();
+    return;
+  }
+  res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
+  res.end('Internal Server Error');
+}
+
+// Filet de dernier recours : on journalise sans quitter. Le défaut d'une requête
+// ne doit jamais emporter les requêtes en vol ni provoquer un redémarrage.
+process.on('uncaughtException', (error) => {
+  console.error('[server] exception non gérée', error);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('[server] rejet non géré', reason);
 });
 
 server.listen(PORT, () => {
