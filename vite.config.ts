@@ -11,6 +11,10 @@ export default defineConfig({
     // Pas de `prerender` : le rendu se fait à la requête. Le build produit
     // dist/client (assets) et dist/server/server.js, qui exporte un handler
     // `fetch` — c'est server.mjs qui l'expose en HTTP.
+    // Les composants de route sont importés statiquement : le rendu serveur
+    // n'étant pas streamé, il ne peut pas attendre un React.lazy et rendrait le
+    // fallback à la place du contenu. Le découpage pour le client reste assuré
+    // par le plugin, qui émet un chunk par route sans passer par Suspense.
     tanstackStart(),
     react(),
     tailwindcss(),

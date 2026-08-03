@@ -1,4 +1,5 @@
-import { createFileRoute, lazyRouteComponent } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
+import { PostprodPage } from '../../postprod-page';
 import { settle } from '../../lib/route-data';
 import { fetchPostProdTypes } from '../../lib/strapi';
 import type { Lang } from '../../types';
@@ -31,5 +32,5 @@ export const Route = createFileRoute('/$lang/post-production')({
       noIndex: strapiSeo?.noIndex,
     });
   },
-  component: lazyRouteComponent(() => import('../../postprod-page'), 'PostprodPage'),
+  component: PostprodPage,
 });

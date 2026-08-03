@@ -1,4 +1,5 @@
-import { createFileRoute, lazyRouteComponent } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
+import { LegalPage } from '../../legal-page';
 import { settle } from '../../lib/route-data';
 import {
   fetchLegalDocuments,
@@ -25,5 +26,5 @@ export const Route = createFileRoute('/$lang/legal')({
     ]);
     return { documents, sections };
   },
-  component: lazyRouteComponent(() => import('../../legal-page'), 'LegalPage'),
+  component: LegalPage,
 });

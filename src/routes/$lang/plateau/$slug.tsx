@@ -1,4 +1,5 @@
-import { createFileRoute, lazyRouteComponent } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
+import { PlateauSlugPage } from '../../../plateau-page';
 import { settle } from '../../../lib/route-data';
 import { fetchPlateaux } from '../../../lib/strapi';
 import type { Lang } from '../../../types';
@@ -13,5 +14,5 @@ export const Route = createFileRoute('/$lang/plateau/$slug')({
       pathname: `/plateau/${params.slug}`,
       ...loaderData?.plateaux?.[params.slug]?.seo?.[params.lang as Lang],
     }),
-  component: lazyRouteComponent(() => import('../../../plateau-page'), 'PlateauSlugPage'),
+  component: PlateauSlugPage,
 });
