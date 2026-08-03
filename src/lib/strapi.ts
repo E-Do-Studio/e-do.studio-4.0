@@ -13,7 +13,13 @@ const cache = new Map<string, { data: unknown; ts: number }>();
 const CACHE_TTL = 5 * 60 * 1000;
 
 async function fetchStrapi<T>(path: string, params?: Record<string, string>): Promise<T> {
-  const url = new URL(`/api/${path}`, API_ORIGIN || window.location.origin);
+  // En dev, API_ORIGIN est vide pour passer par le proxy Vite (`/api` →
+  // cms.e-do.studio) et éviter le CORS côté navigateur. Mais les loaders
+  // tournent aussi côté Node (SSR en dev, prerender au build), où `window`
+  // n'existe pas : on y vise le CMS en absolu, Node n'étant pas soumis au CORS.
+  const base =
+    API_ORIGIN || (typeof window !== 'undefined' ? window.location.origin : STRAPI_URL);
+  const url = new URL(`/api/${path}`, base);
   if (params) {
     Object.entries(params).forEach(([k, v]) => {
       if (k === 'populate' && v.includes(',')) {

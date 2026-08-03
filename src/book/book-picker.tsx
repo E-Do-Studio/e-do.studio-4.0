@@ -4,8 +4,6 @@ import { SCREEN_TO_PATH } from '../lib/screens';
 import { cn } from '../ui/cn';
 import { IconArrowRight } from '../ui/icons';
 import { PageHeader, buildMainNav } from '../ui/page-header';
-import { useDocumentMeta } from '../lib/use-document-meta';
-import { useStructuredData } from '../lib/use-structured-data';
 import { buildWebPageSchema, buildBreadcrumbSchema } from '../lib/structured-data';
 import { bookPicker, booking } from '../i18n/messages';
 import { configuratorPath, manualPath } from './book-routes';
@@ -69,23 +67,7 @@ const PickerTile = ({ index, label, description, variant, onClick, lang }: TileP
 const BookPicker = () => {
   const { lang, setLang, openMenu, goto, siteData } = usePageContext();
   const navigate = useNavigate();
-  useDocumentMeta('book-picker', lang, { noIndex: true });
   const bookPathname = lang === 'fr' ? '/reserver' : '/book';
-  useStructuredData('book-picker', [
-    buildWebPageSchema({
-      lang,
-      pathname: bookPathname,
-      name: lang === 'fr' ? 'Réserver — E-Do Studio Paris' : 'Book — E-Do Studio Paris',
-      description: bookPicker.subtitle[lang],
-    }),
-    buildBreadcrumbSchema(
-      [
-        { name: lang === 'fr' ? 'Accueil' : 'Home', pathname: '' },
-        { name: lang === 'fr' ? 'Réserver' : 'Book', pathname: bookPathname },
-      ],
-      lang,
-    ),
-  ]);
 
   const contact = siteData.contact;
   const hours = siteData.studioHours;

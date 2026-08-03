@@ -13,8 +13,6 @@ import { SocialClientsBar } from './social-clients-bar';
 
 const AssistantChat = lazy(() => import('./assistant-chat'));
 import { useLoaderData } from '@tanstack/react-router';
-import { useDocumentMeta } from './lib/use-document-meta';
-import { useStructuredData } from './lib/use-structured-data';
 import {
   buildLocalBusinessSchema,
   buildWebSiteSchema,
@@ -91,15 +89,10 @@ function useIsDesktop(): boolean {
 
 const DirectionA = () => {
   const { lang, setLang, openMenu, goto, siteData } = usePageContext();
-  useDocumentMeta('home', lang);
   const isDesktop = useIsDesktop();
   const { socialLinks, machines, contact, studioHours, businessInfo: business } = siteData;
   const { announcement, homeHero } = useLoaderData({ from: '/$lang/' });
   const announcementText = announcement?.[lang]?.trim() ?? '';
-  useStructuredData('home', [
-    buildLocalBusinessSchema({ lang, contact, hours: studioHours, business, socials: socialLinks }),
-    buildWebSiteSchema(lang),
-  ]);
   // SHOWREEL cell (small video tile): always video, as it was before EDO-176.
   // The multi-image rotation lives on the GALERIE cell (see below).
   const heroCmsVideo = homeHero?.videoUrl;
@@ -154,7 +147,7 @@ const DirectionA = () => {
             : []),
           { id: 'contact', label: common.contactUs[lang], onClick: () => goto('contact'), className: 'hidden md:flex' },
           { id: 'legal', label: 'Legal', onClick: () => goto('legal'), showArrow: false, className: 'hidden md:flex' },
-          { id: 'etouch', label: 'Etouch', href: 'https://etouch.e-do.studio/', target: '_blank', rel: 'noopener noreferrer', variant: 'dark', showArrow: false, className: 'hidden sm:flex' },
+          { id: 'etouch', label: 'Etouch', href: 'https://etouch.e-do.studio', target: '_blank', rel: 'noopener noreferrer', variant: 'dark', showArrow: false, className: 'hidden sm:flex' },
         ]}
       />
 

@@ -3,8 +3,6 @@ import type { CSSProperties, ReactNode } from "react";
 import { Link, useLoaderData, useNavigate, useSearch } from "@tanstack/react-router";
 import { usePageContext } from "./lib/page-context";
 import { SCREEN_TO_PATH } from "./lib/screens";
-import { useDocumentMeta } from "./lib/use-document-meta";
-import { useStructuredData } from "./lib/use-structured-data";
 import { buildGalleryCollectionSchema, buildBreadcrumbSchema } from "./lib/structured-data";
 import type { GalleryCategory, GalleryProject } from "./lib/strapi";
 import type { Lang } from "./types";
@@ -443,7 +441,6 @@ type GalleryFilters = { cat?: string; plateau?: string };
 
 const GalleryPageV3 = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
-  useDocumentMeta('gallery', lang);
   // Page servie par deux routes (/galerie en FR, /gallery en EN), d'où l'accès
   // non strict aux search params comme aux données du loader.
   const search = useSearch({ strict: false }) as GalleryFilters;
@@ -487,16 +484,6 @@ const GalleryPageV3 = () => {
     () => (lightbox ? projects.find((p) => p.id === lightbox.projectId) ?? null : null),
     [lightbox, projects],
   );
-  useStructuredData('gallery', [
-    buildGalleryCollectionSchema(projects, categories, lang, '/galerie'),
-    buildBreadcrumbSchema(
-      [
-        { name: lang === 'fr' ? 'Accueil' : 'Home', pathname: '' },
-        { name: common.gallery[lang], pathname: '/galerie' },
-      ],
-      lang,
-    ),
-  ]);
 
   const plateauOptions = useMemo(() => {
     const slugs = new Set(projects.map((p) => p.plateau));

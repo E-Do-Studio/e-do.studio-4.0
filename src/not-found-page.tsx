@@ -1,5 +1,4 @@
 import { useNavigate } from '@tanstack/react-router';
-import { useDocumentMeta } from './lib/use-document-meta';
 import { usePageContext } from './lib/page-context';
 import { SCREEN_TO_PATH } from './lib/screens';
 import type { Lang } from './types';
@@ -84,7 +83,6 @@ const NavLink = ({ href, label, navigate }: NavLinkProps) => (
 export const NotFoundPage = () => {
   const { lang } = usePageContext();
   const navigate = useNavigate();
-  useDocumentMeta('not-found', lang, { noIndex: true });
   const copy = COPY[lang];
 
   const homeHref = SCREEN_TO_PATH.home(lang);

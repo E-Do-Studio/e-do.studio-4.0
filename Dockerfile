@@ -16,7 +16,16 @@ ARG VITE_HUBSPOT_BOOKING_FORM_ID
 ARG VITE_HUBSPOT_CONTACT_FORM_ID
 RUN pnpm build
 
-FROM caddy:2-alpine
-COPY --from=build /app/dist /srv
-COPY Caddyfile /etc/caddy/Caddyfile
-EXPOSE 80
+# Le rendu se fait à la requête : l'image finale embarque un runtime Node, plus
+# un serveur statique. dist/server/server.js garde des imports externes (react,
+# @tanstack/*), d'où les dépendances de production installées ici.
+FROM node:20-alpine AS runtime
+WORKDIR /app
+ENV NODE_ENV=production
+RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --prod --frozen-lockfile && pnpm store prune
+COPY --from=build /app/dist ./dist
+COPY server.mjs ./
+EXPOSE 3000
+CMD ["node", "server.mjs"]

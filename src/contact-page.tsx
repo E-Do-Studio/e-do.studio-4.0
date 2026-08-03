@@ -4,8 +4,6 @@ import { cn } from './ui/cn';
 import { PageHeader, buildMainNav } from './ui/page-header';
 import { SocialLinksRow } from './ui/social-links-row';
 import { CellLabel } from './ui/typography';
-import { useDocumentMeta } from './lib/use-document-meta';
-import { useStructuredData } from './lib/use-structured-data';
 import { buildContactPageSchema, buildBreadcrumbSchema } from './lib/structured-data';
 import { useLoaderData } from '@tanstack/react-router';
 import type { ContactInfo, StudioHours as StudioHoursData, TeamMember as StrapiTeamMember, ClosurePeriod } from './lib/strapi';
@@ -350,18 +348,7 @@ const TeamMemberRow = ({ member, lang }: TeamMemberRowProps) => (
 
 const ContactPage = () => {
   const { lang, setLang, openMenu, goto, siteData } = usePageContext();
-  useDocumentMeta('contact', lang);
   const contact = siteData.contact;
-  useStructuredData('contact', [
-    buildContactPageSchema(lang, '/contact', contact),
-    buildBreadcrumbSchema(
-      [
-        { name: lang === 'fr' ? 'Accueil' : 'Home', pathname: '' },
-        { name: lang === 'fr' ? 'Contact' : 'Contact', pathname: '/contact' },
-      ],
-      lang,
-    ),
-  ]);
   const hours = siteData.studioHours;
   const { teamMembers } = useLoaderData({ from: '/$lang/contact' });
   const team = teamMembers ?? [];

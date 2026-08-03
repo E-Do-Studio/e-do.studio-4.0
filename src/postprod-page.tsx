@@ -8,8 +8,6 @@ import { HoverMarquee } from './ui/hover-marquee';
 import { IconArrowRight, IconSelector } from './ui/icons';
 import { PageHeader, buildMainNav } from './ui/page-header';
 import { ResponsiveImage } from './ui/responsive-image';
-import { useDocumentMeta, type SeoOverride } from './lib/use-document-meta';
-import { useStructuredData } from './lib/use-structured-data';
 import { buildPostProdServiceSchema, buildBreadcrumbSchema } from './lib/structured-data';
 import { useLoaderData } from '@tanstack/react-router';
 import type { PPCat as StrapiPPCat, PPSample, SeoMeta } from './lib/strapi';
@@ -227,27 +225,6 @@ const PostprodPage = () => {
   const currentIndex = Math.max(0, cats.findIndex(c => c.k === k));
   const currentNumber = String(currentIndex + 1).padStart(2, '0');
 
-  // SEO override per type — prefer Strapi-provided seo, fall back to a
-  // computed title/description so every type still has unique meta.
-  const strapiSeo: SeoMeta | undefined = cat
-    ? strapiCats.find(c => c.k === cat.k)?.seo?.[lang]
-    : undefined;
-  const computedOverride: SeoOverride | undefined = cat
-    ? {
-        title: `${cat[lang]} — ${lang === 'fr' ? 'Post-production' : 'Post-production'} — E-Do Studio Paris`,
-        description: cat.tagline[lang] || cat.features[lang]?.[0] || undefined,
-      }
-    : undefined;
-  const seoOverride: SeoOverride | undefined = strapiSeo
-    ? {
-        title: strapiSeo.title || computedOverride?.title,
-        description: strapiSeo.description || computedOverride?.description,
-        imageUrl: strapiSeo.imageUrl,
-        noIndex: strapiSeo.noIndex,
-      }
-    : computedOverride;
-  useDocumentMeta('postprod', lang, seoOverride);
-
   const postprodLabel = lang === 'fr' ? 'Post-production' : 'Post-production';
   const breadcrumbBase: { name: string; pathname: string }[] = [
     { name: lang === 'fr' ? 'Accueil' : 'Home', pathname: '' },
@@ -256,12 +233,6 @@ const PostprodPage = () => {
   const breadcrumbItems = cat && hasValidType
     ? [...breadcrumbBase, { name: cat[lang], pathname: `/post-production?type=${cat.k}` }]
     : breadcrumbBase;
-  useStructuredData('postprod', [
-    postProdTypes && postProdTypes.length > 0
-      ? buildPostProdServiceSchema({ cats: postProdTypes, lang, pathname: '/post-production' })
-      : null,
-    buildBreadcrumbSchema(breadcrumbItems, lang),
-  ]);
   const dark = !!cat?.featured;
   const bgCls = dark ? 'bg-foreground' : 'bg-white';
   const fgCls = dark ? 'text-white' : 'text-foreground';

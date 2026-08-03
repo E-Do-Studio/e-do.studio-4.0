@@ -6,8 +6,6 @@ import { cn } from './ui/cn';
 import { HoverMarquee } from './ui/hover-marquee';
 import { IconArrowRight, IconSelector } from './ui/icons';
 import { PageHeader, buildMainNav } from './ui/page-header';
-import { useDocumentMeta } from './lib/use-document-meta';
-import { useStructuredData } from './lib/use-structured-data';
 import { buildWebPageSchema, buildBreadcrumbSchema } from './lib/structured-data';
 import type { Lang } from './types';
 import { usePageContext } from './lib/page-context';
@@ -141,25 +139,6 @@ const StrapiSectionsRenderer = ({ sections, lang }: SectionRendererProps) => (
 
 const LegalPage = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
-  useDocumentMeta('legal', lang);
-  useStructuredData('legal', [
-    buildWebPageSchema({
-      lang,
-      pathname: '/legal',
-      name: lang === 'fr' ? 'Mentions légales — E-Do Studio' : 'Legal — E-Do Studio',
-      description:
-        lang === 'fr'
-          ? 'Mentions légales, politique de confidentialité et conditions générales d\'utilisation du site E-Do Studio.'
-          : 'Legal notice, privacy policy and terms of use for the E-Do Studio website.',
-    }),
-    buildBreadcrumbSchema(
-      [
-        { name: lang === 'fr' ? 'Accueil' : 'Home', pathname: '' },
-        { name: common.legal[lang], pathname: '/legal' },
-      ],
-      lang,
-    ),
-  ]);
   const { doc } = useSearch({ from: '/$lang/legal' });
   const sec = doc ?? 'mentions';
   const navigate = useNavigate();

@@ -1,7 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
 import { useLoaderData, useNavigate } from '@tanstack/react-router';
-import { useDocumentMeta } from './lib/use-document-meta';
-import { useStructuredData } from './lib/use-structured-data';
 import { buildBlogPostingSchema, buildBreadcrumbSchema } from './lib/structured-data';
 import { renderMarkdown } from './lib/render-markdown';
 import { DiscoveryCoverMedia } from './discovery/discovery-cover';
@@ -9,9 +7,9 @@ import { SplitArticleCard } from './discovery/tiles';
 import { GalleryLightbox } from './gallery-lightbox';
 import type { GalleryMedia } from './lib/strapi';
 import { ArticleMeta, ArrowIcon } from './discovery/shared';
-import { HoverMarquee } from './ui';
+import { HoverMarquee } from './ui/hover-marquee';
 import { discoveryPage } from './i18n/messages';
-import { usePageContext } from './router';
+import { usePageContext } from './lib/page-context';
 import { NotFoundPage } from './not-found-page';
 
 export const DiscoveryPostPage = () => {
@@ -82,24 +80,6 @@ export const DiscoveryPostPage = () => {
     : post
       ? { title: post.title[lang], description: post.sub[lang], imageUrl: post.coverUrl }
       : undefined;
-
-  useDocumentMeta('discovery', lang, seoOverride);
-  useStructuredData(
-    post ? `post-${post.slug}` : 'post-loading',
-    post
-      ? [
-          buildBlogPostingSchema(post, lang, `/discovery/${post.slug}`),
-          buildBreadcrumbSchema(
-            [
-              { name: lang === 'fr' ? 'Accueil' : 'Home', pathname: '' },
-              { name: 'Discovery', pathname: '/discovery' },
-              { name: post.title[lang], pathname: `/discovery/${post.slug}` },
-            ],
-            lang,
-          ),
-        ]
-      : [],
-  );
 
   if (!post) {
     return <NotFoundPage />;

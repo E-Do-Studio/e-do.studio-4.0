@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
 import type { ChatMessage } from '../types';
 
 const STORAGE_KEY = 'edo-chat-sessions';
@@ -85,20 +85,45 @@ export interface UseChatSessions {
   deleteSession: (id: string) => void;
 }
 
-export function useChatSessions(): UseChatSessions {
-  const [store, setStore] = useState<ChatSessionsStore>(() => readStore());
+// Re-read on any write: same tab via CustomEvent, other tabs via `storage`,
+// so the inline desktop card and the mobile FAB stay in sync.
+function subscribe(onStoreChange: () => void): () => void {
+  window.addEventListener(CHANGE_EVENT, onStoreChange);
+  window.addEventListener('storage', onStoreChange);
+  return () => {
+    window.removeEventListener(CHANGE_EVENT, onStoreChange);
+    window.removeEventListener('storage', onStoreChange);
+  };
+}
 
-  // Re-read on any write (same tab via CustomEvent, other tabs via `storage`)
-  // so the inline desktop card and the mobile FAB stay in sync.
-  useEffect(() => {
-    const onChange = () => setStore(readStore());
-    window.addEventListener(CHANGE_EVENT, onChange);
-    window.addEventListener('storage', onChange);
-    return () => {
-      window.removeEventListener(CHANGE_EVENT, onChange);
-      window.removeEventListener('storage', onChange);
-    };
-  }, []);
+// useSyncExternalStore calls getSnapshot on every render and only bails out when
+// the reference is identical — readStore() allocates a new object every call, so
+// returning it directly would loop forever. The raw string is the cache key:
+// unchanged storage ⇒ same reference, changed storage ⇒ parse once.
+let snapshotRaw: string | null | undefined;
+let snapshotStore: ChatSessionsStore = emptyStore();
+
+function getSnapshot(): ChatSessionsStore {
+  let raw: string | null;
+  try {
+    raw = localStorage.getItem(STORAGE_KEY);
+  } catch {
+    return snapshotStore;
+  }
+  if (raw === snapshotRaw) return snapshotStore;
+  snapshotRaw = raw;
+  snapshotStore = readStore();
+  return snapshotStore;
+}
+
+// Les conversations vivent dans localStorage : côté serveur il n'y en a aucune.
+// La référence doit être stable, useSyncExternalStore bouclant sur un nouvel
+// objet à chaque rendu.
+const SERVER_SNAPSHOT: ChatSessionsStore = emptyStore();
+const getServerSnapshot = (): ChatSessionsStore => SERVER_SNAPSHOT;
+
+export function useChatSessions(): UseChatSessions {
+  const store = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   // Persist then let the event listener pull the pruned store back into state —
   // single source of truth, no divergence between instances.
