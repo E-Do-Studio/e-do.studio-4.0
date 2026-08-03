@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { cn } from './ui/cn';
+import { useIsDesktop } from './ui/use-is-desktop';
 import { HoverMarquee } from './ui/hover-marquee';
 import { IconArrowRight, IconLock } from './ui/icons';
 import { ImageCrossfade } from './ui/image-crossfade';
@@ -71,22 +72,6 @@ const MachineRow = ({ idx, m, lang, onClick, isLast }: MachineRowProps) => (
     <IconArrowRight className="text-muted-foreground transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5" width="16" height="16" />
   </button>
 );
-
-// The chat cell takes a 3×2 desktop slot but is `hidden` on mobile. Without
-// a viewport gate the lazy chunk (and Supabase) would still load on phones
-// for an offscreen widget — defer the mount to desktop and let the FAB
-// own the mobile path.
-function useIsDesktop(): boolean {
-  const [isDesktop, setIsDesktop] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia('(min-width: 768px)');
-    const update = () => setIsDesktop(mq.matches);
-    update();
-    mq.addEventListener('change', update);
-    return () => mq.removeEventListener('change', update);
-  }, []);
-  return isDesktop;
-}
 
 const DirectionA = () => {
   const { lang, setLang, openMenu, goto, siteData } = usePageContext();

@@ -1,4 +1,5 @@
-import { createFileRoute, lazyRouteComponent } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
+import { DiscoveryPostPage } from '../../../discovery-post-page';
 import { settle } from '../../../lib/route-data';
 import { fetchDiscoveryPost, fetchDiscoveryPosts } from '../../../lib/strapi';
 import type { Lang } from '../../../types';
@@ -21,5 +22,5 @@ export const Route = createFileRoute('/$lang/discovery/$slug')({
       description: loaderData?.post?.seo?.[params.lang as Lang]?.description || loaderData?.post?.sub?.[params.lang as Lang],
       noIndex: true,
     }),
-  component: lazyRouteComponent(() => import('../../../discovery-post-page'), 'DiscoveryPostPage'),
+  component: DiscoveryPostPage,
 });
