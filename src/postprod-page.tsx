@@ -14,7 +14,7 @@ import { buildPostProdServiceSchema, buildBreadcrumbSchema } from './lib/structu
 import { useLoaderData } from '@tanstack/react-router';
 import type { PPCat as StrapiPPCat, PPSample, SeoMeta } from './lib/strapi';
 import type { Bilingual } from './types';
-import { usePageContext } from './router';
+import { usePageContext } from './lib/page-context';
 import { common, postprod as postprodMsg } from './i18n/messages';
 
 interface PPPrice {

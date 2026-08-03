@@ -1,8 +1,9 @@
 import { useNavigate } from '@tanstack/react-router';
 import { useDocumentMeta } from './lib/use-document-meta';
-import { usePageContext, SCREEN_TO_PATH } from './router';
+import { usePageContext } from './lib/page-context';
+import { SCREEN_TO_PATH } from './lib/screens';
 import type { Lang } from './types';
-import { cn } from './ui';
+import { cn } from './ui/cn';
 
 const COPY = {
   fr: {

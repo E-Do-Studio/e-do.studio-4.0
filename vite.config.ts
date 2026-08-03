@@ -1,6 +1,7 @@
 import { defineConfig, loadEnv, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
+import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import { promises as fs } from 'node:fs';
 import * as path from 'node:path';
 import {
@@ -270,7 +271,16 @@ function edoPrerender(): Plugin {
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
   return {
-    plugins: [react(), tailwindcss(), gtmTags(env.VITE_GTM_ID), edoPrerender()],
+    plugins: [
+      // Doit précéder react() : génère src/routeTree.gen.ts depuis src/routes/.
+      // Le code-splitting reste explicite (lazyRouteComponent dans chaque
+      // fichier de route), d'où autoCodeSplitting désactivé.
+      tanstackRouter({ target: 'react', autoCodeSplitting: false }),
+      react(),
+      tailwindcss(),
+      gtmTags(env.VITE_GTM_ID),
+      edoPrerender(),
+    ],
     server: {
       proxy: {
         '/api': {

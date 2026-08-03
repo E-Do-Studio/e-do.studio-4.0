@@ -1,5 +1,13 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { CellLabel, HoverMarquee, IconArrowRight, IconLock, ImageCrossfade, MobileAssistantFab, PageHeader, ResponsiveImage, VideoLoop, cn } from './ui';
+import { cn } from './ui/cn';
+import { HoverMarquee } from './ui/hover-marquee';
+import { IconArrowRight, IconLock } from './ui/icons';
+import { ImageCrossfade } from './ui/image-crossfade';
+import { MobileAssistantFab } from './ui/mobile-assistant-fab';
+import { PageHeader } from './ui/page-header';
+import { ResponsiveImage } from './ui/responsive-image';
+import { CellLabel } from './ui/typography';
+import { VideoLoop } from './ui/video-loop';
 import { BookCTATile } from './book-cta';
 import { SocialClientsBar } from './social-clients-bar';
 
@@ -12,7 +20,7 @@ import {
   buildWebSiteSchema,
 } from './lib/structured-data';
 import type { Lang } from './types';
-import { usePageContext } from './router';
+import { usePageContext } from './lib/page-context';
 import { common, home as homeMsg } from './i18n/messages';
 
 interface MachineRowItem {

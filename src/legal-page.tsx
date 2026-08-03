@@ -10,7 +10,7 @@ import { useDocumentMeta } from './lib/use-document-meta';
 import { useStructuredData } from './lib/use-structured-data';
 import { buildWebPageSchema, buildBreadcrumbSchema } from './lib/structured-data';
 import type { Lang } from './types';
-import { usePageContext } from './router';
+import { usePageContext } from './lib/page-context';
 import { common, legalPage } from './i18n/messages';
 import { useLoaderData } from '@tanstack/react-router';
 import type { LegalSectionContent, LegalDocumentKey } from './lib/strapi';

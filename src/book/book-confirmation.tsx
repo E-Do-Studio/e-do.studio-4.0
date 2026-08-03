@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { usePageContext, SCREEN_TO_PATH } from '../router';
-import { Button, PageHeader, buildMainNav, IconArrowRight } from '../ui';
+import { usePageContext } from '../lib/page-context';
+import { SCREEN_TO_PATH } from '../lib/screens';
+import { Button } from '../ui/button';
+import { IconArrowRight } from '../ui/icons';
+import { PageHeader, buildMainNav } from '../ui/page-header';
 import { useDocumentMeta } from '../lib/use-document-meta';
 import { clearDraft } from '../lib/use-booking-draft';
 import { booking, bookPicker, common } from '../i18n/messages';

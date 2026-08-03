@@ -1,13 +1,16 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { CellLabel, PageHeader, SocialLinksRow, buildMainNav, cn } from './ui';
+import { cn } from './ui/cn';
+import { PageHeader, buildMainNav } from './ui/page-header';
+import { SocialLinksRow } from './ui/social-links-row';
+import { CellLabel } from './ui/typography';
 import { useDocumentMeta } from './lib/use-document-meta';
 import { useStructuredData } from './lib/use-structured-data';
 import { buildContactPageSchema, buildBreadcrumbSchema } from './lib/structured-data';
 import { useLoaderData } from '@tanstack/react-router';
 import type { ContactInfo, StudioHours as StudioHoursData, TeamMember as StrapiTeamMember, ClosurePeriod } from './lib/strapi';
 import type { Lang, ContactFormData, Bilingual } from './types';
-import { usePageContext } from './router';
+import { usePageContext } from './lib/page-context';
 import { submitContactForm } from './lib/contact';
 import { common, contact as contactMsg } from './i18n/messages';
 import { ContactForm, ContactSuccess, INITIAL_FORM } from './contact-form';

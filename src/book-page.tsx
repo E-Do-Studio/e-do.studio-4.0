@@ -1,6 +1,6 @@
 import React, { Fragment, useState as useStateBook, useMemo as useMemoBook, useCallback as useCallbackBook } from 'react';
 import { useNavigate, useSearch } from '@tanstack/react-router';
-import { usePageContext } from './router';
+import { usePageContext } from './lib/page-context';
 import { EmptyState } from './ui/empty-state';
 import { IconArrowRight } from './ui/icons';
 import { PageHeader, buildMainNav } from './ui/page-header';

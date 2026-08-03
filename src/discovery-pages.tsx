@@ -5,13 +5,13 @@ import { useDocumentMeta } from './lib/use-document-meta';
 import { useStructuredData } from './lib/use-structured-data';
 import { buildBlogSchema, buildBreadcrumbSchema } from './lib/structured-data';
 import { useLoaderData } from '@tanstack/react-router';
-import { usePageContext } from './router';
+import { usePageContext } from './lib/page-context';
 import { SocialClientsBar } from './social-clients-bar';
 
 const DiscoveryV2 = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
   useDocumentMeta('discovery', lang);
-  const { posts } = useLoaderData({ from: '/$lang/discovery' });
+  const { posts } = useLoaderData({ from: '/$lang/discovery/' });
   useStructuredData('discovery', [
     buildBlogSchema(posts ?? [], lang, '/discovery'),
     buildBreadcrumbSchema(

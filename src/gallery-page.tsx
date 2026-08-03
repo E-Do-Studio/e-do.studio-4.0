@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import { Link, useLoaderData, useNavigate, useSearch } from "@tanstack/react-router";
-import { usePageContext, SCREEN_TO_PATH } from "./router";
+import { usePageContext } from "./lib/page-context";
+import { SCREEN_TO_PATH } from "./lib/screens";
 import { useDocumentMeta } from "./lib/use-document-meta";
 import { useStructuredData } from "./lib/use-structured-data";
 import { buildGalleryCollectionSchema, buildBreadcrumbSchema } from "./lib/structured-data";

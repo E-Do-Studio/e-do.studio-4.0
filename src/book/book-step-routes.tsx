@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { BookPageV2 } from '../book-page';
-import { usePageContext } from '../router';
+import { usePageContext } from '../lib/page-context';
 import { loadDraft } from '../lib/use-booking-draft';
 import { configuratorPath } from './book-routes';
 

@@ -1,6 +1,9 @@
 import { useLoaderData, useNavigate } from '@tanstack/react-router';
-import { usePageContext, SCREEN_TO_PATH } from '../router';
-import { PageHeader, buildMainNav, IconArrowRight, cn } from '../ui';
+import { usePageContext } from '../lib/page-context';
+import { SCREEN_TO_PATH } from '../lib/screens';
+import { cn } from '../ui/cn';
+import { IconArrowRight } from '../ui/icons';
+import { PageHeader, buildMainNav } from '../ui/page-header';
 import { useDocumentMeta } from '../lib/use-document-meta';
 import { useStructuredData } from '../lib/use-structured-data';
 import { buildWebPageSchema, buildBreadcrumbSchema } from '../lib/structured-data';

@@ -2,7 +2,7 @@ import React, { lazy, Suspense, useMemo, useState } from 'react';
 import { useLoaderData, useNavigate } from '@tanstack/react-router';
 import type { Lang } from '../types';
 import type { DiscoveryCategory, DiscoveryPost } from '../types';
-import { MobileAssistantFab } from '../ui';
+import { MobileAssistantFab } from '../ui/mobile-assistant-fab';
 
 const AssistantChat = lazy(() => import('../assistant-chat'));
 import { ArticleCard, ArticleEmptyCard } from './article-card';
@@ -21,7 +21,7 @@ interface DiscoveryBentoGridProps {
 export const DiscoveryBentoGrid: React.FC<DiscoveryBentoGridProps> = ({ lang, goto }) => {
   const [cat, setCat] = useState('all');
   const navigate = useNavigate();
-  const { posts, categories } = useLoaderData({ from: '/$lang/discovery' });
+  const { posts, categories } = useLoaderData({ from: '/$lang/discovery/' });
   const allPosts = posts ?? EMPTY_POSTS;
   const cats = categories ?? EMPTY_CATS;
 
