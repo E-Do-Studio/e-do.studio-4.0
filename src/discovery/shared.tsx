@@ -1,5 +1,6 @@
 import React from 'react';
-import { IconArrowRight, HeaderAction, HeaderActionText } from '../ui';
+import { HeaderAction, HeaderActionText } from '../ui/header-action';
+import { IconArrowRight } from '../ui/icons';
 import { cn } from '../ui/cn';
 import { microBase } from './styles';
 

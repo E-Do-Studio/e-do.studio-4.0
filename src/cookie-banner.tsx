@@ -1,4 +1,4 @@
-import { Button } from './ui';
+import { Button } from './ui/button';
 import { useCookieConsent } from './lib/use-cookie-consent';
 import { cookieBanner } from './i18n/messages';
 import type { Lang } from './types';

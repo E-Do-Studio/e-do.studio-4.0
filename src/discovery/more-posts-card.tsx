@@ -5,7 +5,7 @@ import { DiscoveryCoverMedia } from './discovery-cover';
 import { hasCover } from './cover';
 import { FilterChips } from './filter-chips';
 import { cn } from '../ui/cn';
-import { EmptyState } from '../ui';
+import { EmptyState } from '../ui/empty-state';
 import { cellBase, labelBase } from './styles';
 import { discoveryPage } from '../i18n/messages';
 

@@ -527,12 +527,13 @@ export function planFromSessions(
   inputs: PlanSessionInput[],
   global: ConfigGlobal | Record<string, unknown>,
 ): SessionPlan {
-  const valid = inputs
-    .map((inp, idx) => ({ inp, idx }))
-    .filter(({ inp }) => {
-      const s = inp.session;
-      return (s.projectType === 'cyclorama') || (s.projectType === 'ecom' && !!s.product && Number(s.quantity) > 0);
-    });
+  const valid: { inp: PlanSessionInput; idx: number }[] = [];
+  inputs.forEach((inp, idx) => {
+    const s = inp.session;
+    if ((s.projectType === 'cyclorama') || (s.projectType === 'ecom' && !!s.product && Number(s.quantity) > 0)) {
+      valid.push({ inp, idx });
+    }
+  });
   if (valid.length === 0) return { slots: {}, slotIds: [], plateau: null };
   const proj = recommendProjectLevel(valid.map((v) => v.inp.session), global);
   const slots: Record<string, SlotState> = {};

@@ -154,8 +154,10 @@ Deno.serve(async (req: Request) => {
     : {
         calendar_synced_at: null,
         calendar_sync_error: results
-          .filter((r) => !r.ok)
-          .map((r) => `${r.sessionId}: ${r.status} ${r.statusText}`)
+          .reduce<string[]>((acc, r) => {
+            if (!r.ok) acc.push(`${r.sessionId}: ${r.status} ${r.statusText}`);
+            return acc;
+          }, [])
           .join("; ")
           .slice(0, 1000),
       };

@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { useRouterState } from '@tanstack/react-router';
-import { IconArrowRight, IconPlus, IconTrash, IconX, cn } from './ui';
+import { cn } from './ui/cn';
+import { IconArrowRight, IconPlus, IconTrash, IconX } from './ui/icons';
 import type { Lang, ChatMessage } from './types';
 import { assistant as assistantMsg, common } from './i18n/messages';
 import { supabase } from './lib/supabase';

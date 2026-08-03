@@ -4,7 +4,7 @@ import { DiscoveryCoverMedia } from './discovery-cover';
 import { hasCover } from './cover';
 import { ArrowIcon, CellBadge } from './shared';
 import { cn } from '../ui/cn';
-import { EmptyState } from '../ui';
+import { EmptyState } from '../ui/empty-state';
 import { cellBase, labelBase } from './styles';
 import { common, discoveryPage } from '../i18n/messages';
 import { renderInlineMarkdown } from '../lib/render-markdown';

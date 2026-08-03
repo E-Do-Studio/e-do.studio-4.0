@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import type { FormEvent } from 'react';
-import { CellLabel, CellTitle, HoverMarquee, IconArrowRight, IconPlay, IconMenu, Wordmark, LangSwitch, cn } from './ui';
+import { Wordmark, LangSwitch } from './ui/brand';
+import { cn } from './ui/cn';
+import { HoverMarquee } from './ui/hover-marquee';
+import { IconArrowRight, IconPlay, IconMenu } from './ui/icons';
+import { CellLabel, CellTitle } from './ui/typography';
 import { usePageContext } from './lib/page-context';
 import { BRANDS } from './lib/brands';
 import type { Lang, MachineInfo } from './types';

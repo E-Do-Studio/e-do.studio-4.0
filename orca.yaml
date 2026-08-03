@@ -1,0 +1,5 @@
+scripts:
+  # Runs once after Orca creates a new worktree. Orca exports $ORCA_ROOT_PATH
+  # (the main checkout) and runs this from the new worktree — the script reads
+  # $ORCA_ROOT_PATH to copy the gitignored .env / .env.local over.
+  setup: bash scripts/worktree-setup.sh

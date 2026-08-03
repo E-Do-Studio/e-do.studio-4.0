@@ -1,6 +1,6 @@
 import React from 'react';
 import type { DiscoveryPost, Lang } from '../types';
-import { ResponsiveImage } from '../ui';
+import { ResponsiveImage } from '../ui/responsive-image';
 import { VideoLoop } from '../ui/video-loop';
 
 interface DiscoveryCoverMediaProps {
