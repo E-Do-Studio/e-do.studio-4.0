@@ -37,10 +37,11 @@ export async function submitHubspotForm(
 ): Promise<void> {
   if (!PORTAL_ID || !formId) return;
 
-  const payloadFields = Object.entries(fields)
-    .map(([name, value]) => [name, value == null ? '' : String(value)] as const)
-    .filter(([, value]) => value.trim() !== '')
-    .map(([name, value]) => ({ name, value }));
+  const payloadFields: { name: string; value: string }[] = [];
+  for (const [name, raw] of Object.entries(fields)) {
+    const value = raw == null ? '' : String(raw);
+    if (value.trim() !== '') payloadFields.push({ name, value });
+  }
 
   if (payloadFields.length === 0) return;
 

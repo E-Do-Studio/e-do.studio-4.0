@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react';
-import { useParams } from '@tanstack/react-router';
+import { useLoaderData, useParams } from '@tanstack/react-router';
 import { Pause, Play } from 'lucide-react';
-import { BottomSheet, CarouselNav, CellLabel, HoverMarquee, IconArrowRight, IconSelector, PageHeader, ResponsiveImage, buildMainNav } from './ui';
+import { BottomSheet } from './ui/bottom-sheet';
+import { CarouselNav } from './ui/carousel-nav';
+import { HoverMarquee } from './ui/hover-marquee';
+import { IconArrowRight, IconSelector } from './ui/icons';
+import { PageHeader, buildMainNav } from './ui/page-header';
+import { ResponsiveImage } from './ui/responsive-image';
+import { CellLabel } from './ui/typography';
 import { cn } from './ui/cn';
 import { VideoLoop } from './ui/video-loop';
-import { useDocumentMeta } from './lib/use-document-meta';
-import { useStructuredData } from './lib/use-structured-data';
 import { buildPlateauServiceSchema, buildBreadcrumbSchema } from './lib/structured-data';
-import { usePageContext } from './router';
-import { usePlateaux } from './lib/use-strapi';
+import { usePageContext } from './lib/page-context';
+import type { PlateauSpec } from './lib/strapi';
 import { common, plateau as plateauMsg } from './i18n/messages';
 import type { Lang } from './types';
 import type { MediaItem } from './lib/strapi';
@@ -169,30 +173,20 @@ const ThumbStrip = ({ items, lang, plateauName, activeIndex, onSelect, className
   );
 };
 
-const PlateauPage = ({ slug }: { slug: string }) => {
+interface PlateauPageProps {
+  slug: string;
+  plateaux: Record<string, PlateauSpec> | null;
+}
+
+const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
   const { lang, setLang, openMenu, goto } = usePageContext();
   const metaKey = slug === 'cyclorama' ? 'cyclorama' : `plateau-${slug}`;
-  const { data: plateaux, loading } = usePlateaux();
   const seoOverride = plateaux?.[slug]?.seo?.[lang];
-  useDocumentMeta(metaKey, lang, seoOverride);
   const pathname = slug === 'cyclorama' ? '/cyclorama' : `/plateau/${slug}`;
   const plateauForSchema = plateaux?.[slug];
-  useStructuredData(`plateau-${slug}`, [
-    plateauForSchema
-      ? buildPlateauServiceSchema({ plateau: plateauForSchema, slug, lang, pathname })
-      : null,
-    buildBreadcrumbSchema(
-      [
-        { name: lang === 'fr' ? 'Accueil' : 'Home', pathname: '' },
-        { name: common.stages[lang], pathname },
-        { name: plateauForSchema?.name || slug, pathname },
-      ],
-      lang,
-    ),
-  ]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [navSheetOpen, setNavSheetOpen] = useState(false);
-  if (loading || !plateaux) return null;
+  if (!plateaux) return null;
   const p = plateaux[slug] || plateaux.cyclorama;
   if (!p) return null;
   const order = ['live','eclipse','horizontal','vertical','cyclorama'];
@@ -434,11 +428,15 @@ const PlateauPage = ({ slug }: { slug: string }) => {
   );
 };
 
-const CycloramaPage = () => <PlateauPage slug="cyclorama" />;
+const CycloramaPage = () => {
+  const { plateaux } = useLoaderData({ from: '/$lang/cyclorama' });
+  return <PlateauPage slug="cyclorama" plateaux={plateaux} />;
+};
 
 const PlateauSlugPage = () => {
   const { slug } = useParams({ strict: false }) as { slug: string };
-  return <PlateauPage key={slug} slug={slug} />;
+  const { plateaux } = useLoaderData({ from: '/$lang/plateau/$slug' });
+  return <PlateauPage key={slug} slug={slug} plateaux={plateaux} />;
 };
 
 export { PlateauPage, CycloramaPage, PlateauSlugPage };

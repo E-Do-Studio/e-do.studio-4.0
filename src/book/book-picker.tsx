@@ -1,18 +1,14 @@
-import { useNavigate } from '@tanstack/react-router';
-import { usePageContext, SCREEN_TO_PATH } from '../router';
-import { PageHeader, buildMainNav, IconArrowRight, cn } from '../ui';
-import { useDocumentMeta } from '../lib/use-document-meta';
-import { useStructuredData } from '../lib/use-structured-data';
+import { useLoaderData, useNavigate } from '@tanstack/react-router';
+import { usePageContext } from '../lib/page-context';
+import { SCREEN_TO_PATH } from '../lib/screens';
+import { cn } from '../ui/cn';
+import { IconArrowRight } from '../ui/icons';
+import { PageHeader, buildMainNav } from '../ui/page-header';
 import { buildWebPageSchema, buildBreadcrumbSchema } from '../lib/structured-data';
 import { bookPicker, booking } from '../i18n/messages';
 import { configuratorPath, manualPath } from './book-routes';
 import { ContactRail, ContactRightColumn } from '../contact-page';
-import {
-  useContact,
-  useStudioHours,
-  useTeamMembers,
-  useSiteBusinessInfo,
-} from '../lib/use-strapi';
+import type { TeamMember } from '../lib/strapi';
 import type { Lang } from '../types';
 
 interface TileProps {
@@ -69,32 +65,16 @@ const PickerTile = ({ index, label, description, variant, onClick, lang }: TileP
 };
 
 const BookPicker = () => {
-  const { lang, setLang, openMenu, goto } = usePageContext();
+  const { lang, setLang, openMenu, goto, siteData } = usePageContext();
   const navigate = useNavigate();
-  useDocumentMeta('book-picker', lang, { noIndex: true });
   const bookPathname = lang === 'fr' ? '/reserver' : '/book';
-  useStructuredData('book-picker', [
-    buildWebPageSchema({
-      lang,
-      pathname: bookPathname,
-      name: lang === 'fr' ? 'Réserver — E-Do Studio Paris' : 'Book — E-Do Studio Paris',
-      description: bookPicker.subtitle[lang],
-    }),
-    buildBreadcrumbSchema(
-      [
-        { name: lang === 'fr' ? 'Accueil' : 'Home', pathname: '' },
-        { name: lang === 'fr' ? 'Réserver' : 'Book', pathname: bookPathname },
-      ],
-      lang,
-    ),
-  ]);
 
-  const contact = useContact();
-  const hours = useStudioHours();
-  const teamState = useTeamMembers();
-  const team = teamState.data ?? [];
-  const businessState = useSiteBusinessInfo();
-  const closures = businessState.data?.closures ?? [];
+  const contact = siteData.contact;
+  const hours = siteData.studioHours;
+  // Servie par deux routes (/reserver en FR, /book en EN) au loader partagé.
+  const { teamMembers } = useLoaderData({ strict: false }) as { teamMembers: TeamMember[] | null };
+  const team = teamMembers ?? [];
+  const closures = siteData.businessInfo?.closures ?? [];
 
   const configHref = configuratorPath(lang, 0);
   const manualHref = manualPath(lang);

@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Lang } from '../types';
-import { PageHeader } from '../ui';
+import { PageHeader } from '../ui/page-header';
 import { common } from '../i18n/messages';
 
 interface DiscoveryHeaderProps {

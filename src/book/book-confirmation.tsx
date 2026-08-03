@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { usePageContext, SCREEN_TO_PATH } from '../router';
-import { Button, PageHeader, buildMainNav, IconArrowRight } from '../ui';
-import { useDocumentMeta } from '../lib/use-document-meta';
+import { usePageContext } from '../lib/page-context';
+import { SCREEN_TO_PATH } from '../lib/screens';
+import { Button } from '../ui/button';
+import { IconArrowRight } from '../ui/icons';
+import { PageHeader, buildMainNav } from '../ui/page-header';
 import { clearDraft } from '../lib/use-booking-draft';
 import { booking, bookPicker, common } from '../i18n/messages';
 import { loadConfirmation, clearConfirmation, type ConfirmationSnapshot } from './confirmation-snapshot';
@@ -245,7 +247,6 @@ const ConfirmedView = ({
 const BookConfirmation = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
   const navigate = useNavigate();
-  useDocumentMeta('book-confirmation', lang, { noIndex: true });
   const [snapshot, setSnapshot] = useState<ConfirmationSnapshot | null>(null);
   const [hydrated, setHydrated] = useState(false);
 

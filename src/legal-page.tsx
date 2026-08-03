@@ -1,13 +1,16 @@
 import { useState } from 'react';
-import { useQueryState, parseAsStringLiteral } from 'nuqs';
-import { BottomSheet, Button, HoverMarquee, IconArrowRight, IconSelector, PageHeader, buildMainNav, cn } from './ui';
-import { useDocumentMeta } from './lib/use-document-meta';
-import { useStructuredData } from './lib/use-structured-data';
+import { useNavigate, useSearch } from '@tanstack/react-router';
+import { BottomSheet } from './ui/bottom-sheet';
+import { Button } from './ui/button';
+import { cn } from './ui/cn';
+import { HoverMarquee } from './ui/hover-marquee';
+import { IconArrowRight, IconSelector } from './ui/icons';
+import { PageHeader, buildMainNav } from './ui/page-header';
 import { buildWebPageSchema, buildBreadcrumbSchema } from './lib/structured-data';
 import type { Lang } from './types';
-import { usePageContext } from './router';
+import { usePageContext } from './lib/page-context';
 import { common, legalPage } from './i18n/messages';
-import { useLegalDocuments, useLegalSections } from './lib/use-strapi';
+import { useLoaderData } from '@tanstack/react-router';
 import type { LegalSectionContent, LegalDocumentKey } from './lib/strapi';
 import { renderStrapiBlocks, type BlockNode, type InlineNode } from './lib/render-blocks';
 
@@ -134,38 +137,15 @@ const StrapiSectionsRenderer = ({ sections, lang }: SectionRendererProps) => (
   </>
 );
 
-const LEGAL_DOC_KEYS = ['mentions', 'cgv', 'cgu', 'privacy', 'cookies'] as const satisfies readonly LegalDocumentKey[];
-
 const LegalPage = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
-  useDocumentMeta('legal', lang);
-  useStructuredData('legal', [
-    buildWebPageSchema({
-      lang,
-      pathname: '/legal',
-      name: lang === 'fr' ? 'Mentions légales — E-Do Studio' : 'Legal — E-Do Studio',
-      description:
-        lang === 'fr'
-          ? 'Mentions légales, politique de confidentialité et conditions générales d\'utilisation du site E-Do Studio.'
-          : 'Legal notice, privacy policy and terms of use for the E-Do Studio website.',
-    }),
-    buildBreadcrumbSchema(
-      [
-        { name: lang === 'fr' ? 'Accueil' : 'Home', pathname: '' },
-        { name: common.legal[lang], pathname: '/legal' },
-      ],
-      lang,
-    ),
-  ]);
-  const [sec, setSec] = useQueryState(
-    'doc',
-    parseAsStringLiteral(LEGAL_DOC_KEYS)
-      .withDefault('mentions')
-      .withOptions({ clearOnDefault: true }),
-  );
+  const { doc } = useSearch({ from: '/$lang/legal' });
+  const sec = doc ?? 'mentions';
+  const navigate = useNavigate();
+  const setSec = (next: LegalDocumentKey) =>
+    navigate({ to: '.', search: next === 'mentions' ? {} : { doc: next } });
   const [navSheetOpen, setNavSheetOpen] = useState(false);
-  const { data: legalDocs } = useLegalDocuments();
-  const { data: legalSectionsByDoc } = useLegalSections();
+  const { documents: legalDocs, sections: legalSectionsByDoc } = useLoaderData({ from: '/$lang/legal' });
 
   const sections = legalDocs ?? [];
   const active = sections.find((s) => s.k === sec) ?? sections[0];

@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { CellLabel, PageHeader, SocialLinksRow, buildMainNav, cn } from './ui';
-import { useDocumentMeta } from './lib/use-document-meta';
-import { useStructuredData } from './lib/use-structured-data';
+import { cn } from './ui/cn';
+import { PageHeader, buildMainNav } from './ui/page-header';
+import { SocialLinksRow } from './ui/social-links-row';
+import { CellLabel } from './ui/typography';
 import { buildContactPageSchema, buildBreadcrumbSchema } from './lib/structured-data';
-import { useContact, useStudioHours, useTeamMembers, useSiteBusinessInfo } from './lib/use-strapi';
+import { useLoaderData } from '@tanstack/react-router';
 import type { ContactInfo, StudioHours as StudioHoursData, TeamMember as StrapiTeamMember, ClosurePeriod } from './lib/strapi';
 import type { Lang, ContactFormData, Bilingual } from './types';
-import { usePageContext } from './router';
+import { usePageContext } from './lib/page-context';
 import { submitContactForm } from './lib/contact';
 import { common, contact as contactMsg } from './i18n/messages';
 import { ContactForm, ContactSuccess, INITIAL_FORM } from './contact-form';
@@ -30,8 +31,8 @@ function parseMetroLabel(label: string): { line: string | null; name: string } {
 
 interface ContactRailProps {
   lang: Lang;
-  contact: { data: ContactInfo | null; loading: boolean; error: Error | null };
-  hours: { data: StudioHoursData | null; loading: boolean; error: Error | null };
+  contact: ContactInfo | null;
+  hours: StudioHoursData | null;
 }
 
 const ContactRail = ({ lang, contact, hours, closures }: ContactRailProps & { closures: ClosurePeriod[] }) => {
@@ -97,13 +98,13 @@ const ClosuresSection = ({ lang, closures, className }: ClosuresSectionProps) =>
 
 interface FindUsSectionProps {
   lang: Lang;
-  contact: { data: ContactInfo | null; loading: boolean; error: Error | null };
+  contact: ContactInfo | null;
   className?: string;
 }
 
 const FindUsSection = ({ lang, contact, className }: FindUsSectionProps) => {
-  const c = contact.data;
-  const showFallback = !contact.loading && (contact.error || !c);
+  const c = contact;
+  const showFallback = !c;
   const eyebrowFromEntries = c?.entries && c.entries.length > 0
     ? c.entries.map((e) => `${e.label}${e.address ? ` ${e.address}` : ''}`).join(' · ')
     : null;
@@ -162,13 +163,13 @@ const MetroLine = ({ line, label, className }: MetroLineProps) => (
 
 interface HoursSectionProps {
   lang: Lang;
-  hours: { data: StudioHoursData | null; loading: boolean; error: Error | null };
+  hours: StudioHoursData | null;
   className?: string;
 }
 
 const HoursSection = ({ lang, hours, className }: HoursSectionProps) => {
-  const h = hours.data;
-  const showFallback = !hours.loading && (hours.error || !h);
+  const h = hours;
+  const showFallback = !h;
   return (
     <section className={cn('border-b border-border bg-white p-6 md:border-b-0', className)}>
       <CellLabel className="mb-5 block">{contactMsg.hours[lang]}</CellLabel>
@@ -201,13 +202,13 @@ const HoursRow = ({ label, value, muted = false }: HoursRowProps) => (
 
 interface PhoneSectionProps {
   lang: Lang;
-  contact: { data: ContactInfo | null; loading: boolean; error: Error | null };
+  contact: ContactInfo | null;
   className?: string;
 }
 
 const PhoneSection = ({ lang, contact, className }: PhoneSectionProps) => {
-  const c = contact.data;
-  const showFallback = !contact.loading && (contact.error || !c);
+  const c = contact;
+  const showFallback = !c;
   return (
     <section className={cn('bg-white p-6', className)}>
       <CellLabel className="mb-5 block">{contactMsg.phone[lang]}</CellLabel>
@@ -260,7 +261,7 @@ const ContactFormPanel = ({ lang, form, sent, sending, sendError, setForm, setSe
 
 interface ContactRightColumnProps {
   lang: Lang;
-  contact: { data: ContactInfo | null; loading: boolean; error: Error | null };
+  contact: ContactInfo | null;
   team: StrapiTeamMember[];
 }
 
@@ -285,13 +286,13 @@ function forceMapPlanView(url: string): string {
 
 interface ContactMapProps {
   lang: Lang;
-  contact: { data: ContactInfo | null; loading: boolean; error: Error | null };
+  contact: ContactInfo | null;
   className?: string;
 }
 
 const ContactMap = ({ lang, contact, className }: ContactMapProps) => {
-  const c = contact.data;
-  const showFallback = !contact.loading && (contact.error || !c);
+  const c = contact;
+  const showFallback = !c;
   const embedUrl = forceMapPlanView(
     c?.mapsEmbedUrl
     || buildMapsEmbedFallback(c?.fullAddress, c?.address.street, c?.address.postalCode, c?.address.city),
@@ -346,24 +347,12 @@ const TeamMemberRow = ({ member, lang }: TeamMemberRowProps) => (
 );
 
 const ContactPage = () => {
-  const { lang, setLang, openMenu, goto } = usePageContext();
-  useDocumentMeta('contact', lang);
-  const contact = useContact();
-  useStructuredData('contact', [
-    buildContactPageSchema(lang, '/contact', contact.data),
-    buildBreadcrumbSchema(
-      [
-        { name: lang === 'fr' ? 'Accueil' : 'Home', pathname: '' },
-        { name: lang === 'fr' ? 'Contact' : 'Contact', pathname: '/contact' },
-      ],
-      lang,
-    ),
-  ]);
-  const hours = useStudioHours();
-  const teamState = useTeamMembers();
-  const team = teamState.data ?? [];
-  const businessState = useSiteBusinessInfo();
-  const closures = businessState.data?.closures ?? [];
+  const { lang, setLang, openMenu, goto, siteData } = usePageContext();
+  const contact = siteData.contact;
+  const hours = siteData.studioHours;
+  const { teamMembers } = useLoaderData({ from: '/$lang/contact' });
+  const team = teamMembers ?? [];
+  const closures = siteData.businessInfo?.closures ?? [];
   const [form, setForm] = useState<ContactFormData>(INITIAL_FORM);
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);

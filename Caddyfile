@@ -70,33 +70,16 @@
     }
 
     # ===== Top-level inconnu → vrai HTTP 404 =====
-    # Remplace l'ancien @legacy_catchall (qui redirigeait vers /fr en 301 — soft
-    # handling). Toute URL en dehors des préfixes lang/assets/fichiers connus
-    # renvoie un 404 propre, servi par le 404.html FR prerendered (noindex
-    # baked-in). Les routes SPA sous /fr|/en gardent le try_files + soft 404
-    # côté React (NotFoundPage + noindex runtime).
-    @invalid_top_level {
-        not path /fr* /en* /assets/* /fonts/* /index.html /404.html /500.html /503.html /robots.txt /sitemap.xml /favicon.ico /favicon.svg /favicon-16x16.png /favicon-32x32.png /apple-touch-icon.png /site.webmanifest /og-image.png /twitter-card.png
-        not path *.css *.js *.woff2 *.woff *.ttf *.otf *.avif *.webp *.jpg *.jpeg *.png *.svg *.ico *.mp4 *.webm *.json *.xml *.txt
-    }
-    handle @invalid_top_level {
-        rewrite * /fr/404.html
-        file_server {
-            status 404
-        }
-    }
+    # Désormais géré par l'application : le garde `beforeLoad` de la route
+    # $lang (src/routes/$lang/route.tsx) répond 404 pour tout premier segment
+    # qui n'est pas une langue, et le SSR renvoie le bon statut HTTP. Plus de
+    # règle dupliquée ici, ni de soft 404.
 
-    # Vite-hashed bundles — content-addressed, safe for long-lived immutable cache.
-    @hashed path /assets/*
-    header @hashed Cache-Control "public, max-age=31536000, immutable"
-
-    # Stable-name static assets (fonts, brand images, posters, favicons).
+    # Les en-têtes de cache des assets sont posés par le serveur Node
+    # (server.mjs) : /assets/* est content-addressed donc immuable, le reste
+    # des fichiers statiques a un cache plus court.
     @static path /fonts/* /*.woff2 /*.woff /*.ttf /*.otf /*.avif /*.webp /*.jpg /*.jpeg /*.png /*.svg /*.ico /*.mp4 /*.webm
-    header @static Cache-Control "public, max-age=31536000, immutable"
     header @static Access-Control-Allow-Origin "*"
-
-    @html path /index.html /
-    header @html Cache-Control "no-cache, must-revalidate"
 
     header {
         # Lighthouse "Best Practices" + standard hardening.
@@ -136,24 +119,18 @@
     # TEMP: CSP désactivée le temps de débugger le tag assistant + GTM — à réactiver.
     # header @preview Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://*.googletagmanager.com https://*.google-analytics.com https://www.googleadservices.com https://*.g.doubleclick.net https://*.hs-scripts.com https://*.hs-analytics.net https://*.hs-banner.com https://*.hsadspixel.net https://*.hsforms.net https://*.hscollectedforms.net https://*.hsappstatic.net https://*.hubspot.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://cms.e-do.studio https://pub-9b79de66b20440cdb7e8bae53605296c.r2.dev https://*.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://*.g.doubleclick.net https://www.googleadservices.com https://www.google.com https://www.google.fr https://*.hubspot.com https://*.hsforms.com; media-src 'self' https://cms.e-do.studio https://pub-9b79de66b20440cdb7e8bae53605296c.r2.dev; connect-src 'self' https://cms.e-do.studio https://pub-9b79de66b20440cdb7e8bae53605296c.r2.dev https://*.supabase.co https://*.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://*.g.doubleclick.net https://www.googleadservices.com https://www.google.com https://www.google.fr https://*.hubspot.com https://*.hubapi.com https://*.hsforms.com https://*.hscollectedforms.net https://*.hsappstatic.net https://*.hs-analytics.net; frame-src https://www.google.com https://*.googletagmanager.com https://td.doubleclick.net https://*.hsforms.net https://*.hsforms.com; frame-ancestors https://cms.e-do.studio; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
 
-    # Per-route prerendered HTML (emitted by edo-prerender, see vite.config.ts)
-    # is served first; falls through to the SPA shell for routes without a
-    # build-time variant (booking flow, legal, dynamic posts/projects).
-    try_files {path} {path}/index.html /index.html
-    file_server
+    # Le rendu est fait par TanStack Start côté serveur, à chaque requête.
+    # Caddy ne sert plus de fichiers : il reste devant pour les redirections
+    # 301 legacy, les en-têtes de sécurité et le mode maintenance, et passe
+    # tout le reste — pages comme assets — au process Node (server.mjs).
+    reverse_proxy {env.APP_UPSTREAM}
 
-    # ===== handle_errors — fallback générique 4xx / 5xx =====
-    # Belt-and-braces : si une directive en amont émet un 404 (asset cassé,
-    # match orphelin) ou un 5xx (file_server qui plante), on sert la bonne
-    # page d'erreur avec le bon status au lieu de l'erreur Caddy par défaut.
+    # ===== handle_errors — filet quand l'upstream ne répond pas =====
+    # Les 404 viennent maintenant de l'application (SSR, vrai statut HTTP) et
+    # traversent le reverse_proxy tels quels : plus de branche 404 ici. Ne
+    # reste que le cas où Node est indisponible — Caddy sert alors une page
+    # statique locale plutôt que son erreur par défaut.
     handle_errors {
-        @404 expression `{err.status_code} == 404`
-        handle @404 {
-            rewrite * /fr/404.html
-            file_server {
-                status 404
-            }
-        }
         @5xx expression `{err.status_code} >= 500`
         handle @5xx {
             rewrite * /500.html

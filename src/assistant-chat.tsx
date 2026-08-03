@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { useRouterState } from '@tanstack/react-router';
-import { IconArrowRight, IconPlus, IconTrash, IconX, cn } from './ui';
+import { cn } from './ui/cn';
+import { IconArrowRight, IconPlus, IconTrash, IconX } from './ui/icons';
 import type { Lang, ChatMessage } from './types';
 import { assistant as assistantMsg, common } from './i18n/messages';
 import { supabase } from './lib/supabase';
@@ -506,10 +507,10 @@ const BookingRecapCard = ({ proposal, lang, cgv, setCgv, busy, error, onConfirm 
       </div>
 
       <div className="mb-2 flex flex-col gap-1">
-        {proposal.sessions.map((s, i) => {
+        {proposal.sessions.map((s) => {
           const px = BOOK_PLATEAUX.find((p) => p.k === s.plateauKey);
           return (
-            <div key={i} className="flex justify-between gap-2 text-detail">
+            <div key={`${s.plateauKey}-${s.date}-${s.arrivalHour ?? ''}`} className="flex justify-between gap-2 text-detail">
               <span className="text-foreground">
                 {px ? px[lang] : s.plateauKey} · {fmtRecapDate(s.date, lang)}
                 {s.arrivalHour != null ? ` · ${s.arrivalHour}h` : ''}
@@ -521,8 +522,8 @@ const BookingRecapCard = ({ proposal, lang, cgv, setCgv, busy, error, onConfirm 
       </div>
 
       <div className="mb-2 flex flex-col gap-0.5 border-t border-hairline pt-2">
-        {proposal.quote.rows.map((r, i) => (
-          <div key={i} className="flex justify-between gap-2 text-micro">
+        {proposal.quote.rows.map((r) => (
+          <div key={r.lbl} className="flex justify-between gap-2 text-micro">
             <span className="text-muted-foreground">{r.lbl}</span>
             <span className="text-foreground">{r.onReq ? '—' : `${fmtEUR(r.amt)} €`}</span>
           </div>

@@ -1,19 +1,26 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { CellLabel, HoverMarquee, IconArrowRight, IconLock, ImageCrossfade, MobileAssistantFab, PageHeader, ResponsiveImage, VideoLoop, cn } from './ui';
+import { cn } from './ui/cn';
+import { HoverMarquee } from './ui/hover-marquee';
+import { IconArrowRight, IconLock } from './ui/icons';
+import { ImageCrossfade } from './ui/image-crossfade';
+import { MobileAssistantFab } from './ui/mobile-assistant-fab';
+import { PageHeader } from './ui/page-header';
+import { ResponsiveImage } from './ui/responsive-image';
+import { CellLabel } from './ui/typography';
+import { VideoLoop } from './ui/video-loop';
 import { BookCTATile } from './book-cta';
 import { SocialClientsBar } from './social-clients-bar';
 
 const AssistantChat = lazy(() => import('./assistant-chat'));
-import { useSocialLinks, useMachines, useContact, useHomeHero, useStudioHours, useSiteBusinessInfo, useAnnouncement } from './lib/use-strapi';
-import { useDocumentMeta } from './lib/use-document-meta';
-import { useStructuredData } from './lib/use-structured-data';
+import { useLoaderData } from '@tanstack/react-router';
 import {
   buildLocalBusinessSchema,
   buildWebSiteSchema,
 } from './lib/structured-data';
 import type { Lang } from './types';
-import { usePageContext } from './router';
+import { usePageContext } from './lib/page-context';
 import { common, home as homeMsg } from './i18n/messages';
+import { fetchPriority } from './ui/fetch-priority';
 
 interface MachineRowItem {
   slug: string;
@@ -82,35 +89,23 @@ function useIsDesktop(): boolean {
 }
 
 const DirectionA = () => {
-  const { lang, setLang, openMenu, goto } = usePageContext();
-  useDocumentMeta('home', lang);
+  const { lang, setLang, openMenu, goto, siteData } = usePageContext();
   const isDesktop = useIsDesktop();
-  const { data: socialLinks } = useSocialLinks();
-  const { data: machines } = useMachines();
-  const { data: contact } = useContact();
-  const { data: studioHours } = useStudioHours();
-  const { data: business } = useSiteBusinessInfo();
-  const { data: announcement } = useAnnouncement();
+  const { socialLinks, machines, contact, studioHours, businessInfo: business } = siteData;
+  const { announcement, homeHero } = useLoaderData({ from: '/$lang/' });
   const announcementText = announcement?.[lang]?.trim() ?? '';
-  const { data: homeHero, loading: homeHeroLoading, error: homeHeroError } = useHomeHero();
-  useStructuredData('home', [
-    buildLocalBusinessSchema({ lang, contact, hours: studioHours, business, socials: socialLinks }),
-    buildWebSiteSchema(lang),
-  ]);
   // SHOWREEL cell (small video tile): always video, as it was before EDO-176.
   // The multi-image rotation lives on the GALERIE cell (see below).
-  const heroResolved = !homeHeroLoading;
   const heroCmsVideo = homeHero?.videoUrl;
   const heroPosters = homeHero?.posters ?? [];
   const galleryHasCmsPosters = heroPosters.length > 0;
   const galleryUseCrossfade = heroPosters.length >= 2;
-  const heroUseFallback = heroResolved && !heroCmsVideo;
+  const heroUseFallback = !heroCmsVideo;
   const heroVideo = heroCmsVideo ?? (heroUseFallback ? '/videos/showreel.mp4' : undefined);
   const heroVideoPoster = heroUseFallback ? '/showreel-preview.webp' : undefined;
-  // Render the static preview as the base layer for the showreel cell — when
-  // the CMS resolves to a video, VideoLoop fades in on top. Without this, the
-  // tile flashes empty on refresh while we wait for the home-hero fetch.
-  const heroShowStaticPicture = !heroCmsVideo || !!homeHeroError;
+  // Aperçu statique en couche de base de la cellule showreel ; quand le CMS
+  // fournit une vidéo, VideoLoop apparaît par-dessus en fondu.
+  const heroShowStaticPicture = !heroCmsVideo;
   // Subtitles for the homepage machine grid are pinned in the codebase so
   // marketing wording stays consistent regardless of Strapi content.
   const ecomMachines: MachineRowItem[] = machines
@@ -153,7 +148,7 @@ const DirectionA = () => {
             : []),
           { id: 'contact', label: common.contactUs[lang], onClick: () => goto('contact'), className: 'hidden md:flex' },
           { id: 'legal', label: 'Legal', onClick: () => goto('legal'), showArrow: false, className: 'hidden md:flex' },
-          { id: 'etouch', label: 'Etouch', href: 'https://etouch.e-do.studio/', target: '_blank', rel: 'noopener noreferrer', variant: 'dark', showArrow: false, className: 'hidden sm:flex' },
+          { id: 'etouch', label: 'Etouch', href: 'https://etouch.e-do.studio', target: '_blank', rel: 'noopener noreferrer', variant: 'dark', showArrow: false, className: 'hidden sm:flex' },
         ]}
       />
 
@@ -244,7 +239,7 @@ const DirectionA = () => {
               alt=""
               width={1280}
               height={986}
-              fetchPriority="high"
+              {...fetchPriority(true)}
               decoding="async"
               className="pointer-events-none absolute inset-0 h-full w-full object-cover"
             />
@@ -340,7 +335,7 @@ const DirectionA = () => {
               <img
                 src="/showreel-preview.webp"
                 alt=""
-                fetchPriority="high"
+                {...fetchPriority(true)}
                 decoding="async"
                 className="pointer-events-none absolute inset-0 h-full w-full object-cover"
               />

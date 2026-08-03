@@ -1,24 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
-import { useQueryStates, parseAsString } from 'nuqs';
-import {
-  BottomSheet,
-  Button,
-  EmptyState,
-  HoverMarquee,
-  IconArrowRight,
-  IconSelector,
-  PageHeader,
-  ResponsiveImage,
-  buildMainNav,
-  cn,
-} from './ui';
-import { useDocumentMeta, type SeoOverride } from './lib/use-document-meta';
-import { useStructuredData } from './lib/use-structured-data';
+import { useNavigate, useSearch } from '@tanstack/react-router';
+import { BottomSheet } from './ui/bottom-sheet';
+import { Button } from './ui/button';
+import { cn } from './ui/cn';
+import { EmptyState } from './ui/empty-state';
+import { HoverMarquee } from './ui/hover-marquee';
+import { IconArrowRight, IconSelector } from './ui/icons';
+import { PageHeader, buildMainNav } from './ui/page-header';
+import { ResponsiveImage } from './ui/responsive-image';
 import { buildPostProdServiceSchema, buildBreadcrumbSchema } from './lib/structured-data';
-import { usePostProdTypes } from './lib/use-strapi';
+import { useLoaderData } from '@tanstack/react-router';
 import type { PPCat as StrapiPPCat, PPSample, SeoMeta } from './lib/strapi';
 import type { Bilingual } from './types';
-import { usePageContext } from './router';
+import { usePageContext } from './lib/page-context';
 import { common, postprod as postprodMsg } from './i18n/messages';
 
 interface PPPrice {
@@ -195,16 +189,14 @@ function adaptStrapiCats(strapi: StrapiPPCat[]): PPCat[] {
 
 const PostprodPage = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
-  const ppQuery = usePostProdTypes();
-  const cats: PPCat[] = ppQuery.data ? adaptStrapiCats(ppQuery.data) : [];
-  const strapiCats: StrapiPPCat[] = ppQuery.data ?? [];
+  const { postProdTypes } = useLoaderData({ from: '/$lang/post-production' });
+  const cats: PPCat[] = postProdTypes ? adaptStrapiCats(postProdTypes) : [];
+  const strapiCats: StrapiPPCat[] = postProdTypes ?? [];
 
-  const [{ type }, setFilters] = useQueryStates(
-    {
-      type: parseAsString.withDefault(''),
-    },
-    { history: 'push', clearOnDefault: true },
-  );
+  const { type = '' } = useSearch({ from: '/$lang/post-production' });
+  const navigate = useNavigate();
+  const setFilters = (next: string | null) =>
+    navigate({ to: '.', search: next ? { type: next } : {} });
 
   // Auto-select the first available cat when the URL param is missing OR points
   // to a slug that no longer exists in Strapi. The auto-selection must NOT
@@ -212,16 +204,17 @@ const PostprodPage = () => {
   const hasValidType = !!type && cats.some(c => c.k === type);
   useEffect(() => {
     if (type && cats.length > 0 && !cats.some(c => c.k === type)) {
-      setFilters({ type: null });
+      setFilters(null);
     }
-  }, [type, cats, setFilters]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [type, cats]);
 
   const k = hasValidType ? type : (cats[0]?.k ?? '');
   const cat = cats.find(c => c.k === k) || cats[0];
 
   const defaultK = cats[0]?.k;
   const setType = (next: string) => {
-    setFilters({ type: !next || next === defaultK ? null : next });
+    setFilters(!next || next === defaultK ? null : next);
   };
 
   const [navSheetOpen, setNavSheetOpen] = useState(false);
@@ -232,27 +225,6 @@ const PostprodPage = () => {
   const currentIndex = Math.max(0, cats.findIndex(c => c.k === k));
   const currentNumber = String(currentIndex + 1).padStart(2, '0');
 
-  // SEO override per type — prefer Strapi-provided seo, fall back to a
-  // computed title/description so every type still has unique meta.
-  const strapiSeo: SeoMeta | undefined = cat
-    ? strapiCats.find(c => c.k === cat.k)?.seo?.[lang]
-    : undefined;
-  const computedOverride: SeoOverride | undefined = cat
-    ? {
-        title: `${cat[lang]} — ${lang === 'fr' ? 'Post-production' : 'Post-production'} — E-Do Studio Paris`,
-        description: cat.tagline[lang] || cat.features[lang]?.[0] || undefined,
-      }
-    : undefined;
-  const seoOverride: SeoOverride | undefined = strapiSeo
-    ? {
-        title: strapiSeo.title || computedOverride?.title,
-        description: strapiSeo.description || computedOverride?.description,
-        imageUrl: strapiSeo.imageUrl,
-        noIndex: strapiSeo.noIndex,
-      }
-    : computedOverride;
-  useDocumentMeta('postprod', lang, seoOverride);
-
   const postprodLabel = lang === 'fr' ? 'Post-production' : 'Post-production';
   const breadcrumbBase: { name: string; pathname: string }[] = [
     { name: lang === 'fr' ? 'Accueil' : 'Home', pathname: '' },
@@ -261,12 +233,6 @@ const PostprodPage = () => {
   const breadcrumbItems = cat && hasValidType
     ? [...breadcrumbBase, { name: cat[lang], pathname: `/post-production?type=${cat.k}` }]
     : breadcrumbBase;
-  useStructuredData('postprod', [
-    ppQuery.data && ppQuery.data.length > 0
-      ? buildPostProdServiceSchema({ cats: ppQuery.data, lang, pathname: '/post-production' })
-      : null,
-    buildBreadcrumbSchema(breadcrumbItems, lang),
-  ]);
   const dark = !!cat?.featured;
   const bgCls = dark ? 'bg-foreground' : 'bg-white';
   const fgCls = dark ? 'text-white' : 'text-foreground';
@@ -274,16 +240,8 @@ const PostprodPage = () => {
   const lineCls = dark ? 'border-white/18' : 'border-border';
 
   if (!cat) {
-    // A stable, data-independent h1 stays in the tree in every state — including
-    // before Strapi resolves — so crawlers that snapshot the loading/empty page
-    // still see exactly one h1 (the category title below is rendered as an h2).
-    if (ppQuery.loading) {
-      return (
-        <main className="edo-page-enter">
-          <h1 className="sr-only">{postprodLabel}</h1>
-        </main>
-      );
-    }
+    // Le h1 reste dans l'arbre même sans catégorie, pour qu'il y en ait
+    // toujours exactement un (le titre de catégorie ci-dessous est un h2).
     return (
       <>
         <h1 className="sr-only">{postprodLabel}</h1>

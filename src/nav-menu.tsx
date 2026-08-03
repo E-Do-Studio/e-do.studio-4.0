@@ -1,5 +1,8 @@
 import { useNavigate } from '@tanstack/react-router';
-import { CellLabel, IconLock, IconX, SocialLinksRow, cn } from './ui';
+import { cn } from './ui/cn';
+import { IconLock, IconX } from './ui/icons';
+import { SocialLinksRow } from './ui/social-links-row';
+import { CellLabel } from './ui/typography';
 import { nav, common, home as homeMsg } from './i18n/messages';
 import type { Lang } from './types';
 

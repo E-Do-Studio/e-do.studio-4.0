@@ -1,8 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { useParams, useNavigate } from '@tanstack/react-router';
-import { useDocumentMeta } from './lib/use-document-meta';
-import { useStructuredData } from './lib/use-structured-data';
-import { useDiscoveryPost, useDiscoveryPosts } from './lib/use-strapi';
+import { useLoaderData, useNavigate } from '@tanstack/react-router';
 import { buildBlogPostingSchema, buildBreadcrumbSchema } from './lib/structured-data';
 import { renderMarkdown } from './lib/render-markdown';
 import { DiscoveryCoverMedia } from './discovery/discovery-cover';
@@ -10,17 +7,15 @@ import { SplitArticleCard } from './discovery/tiles';
 import { GalleryLightbox } from './gallery-lightbox';
 import type { GalleryMedia } from './lib/strapi';
 import { ArticleMeta, ArrowIcon } from './discovery/shared';
-import { Loader, HoverMarquee } from './ui';
+import { HoverMarquee } from './ui/hover-marquee';
 import { discoveryPage } from './i18n/messages';
-import { usePageContext } from './router';
+import { usePageContext } from './lib/page-context';
 import { NotFoundPage } from './not-found-page';
 
 export const DiscoveryPostPage = () => {
   const { lang, goto } = usePageContext();
-  const { slug } = useParams({ strict: false }) as { slug?: string };
   const navigate = useNavigate();
-  const { data: post, loading } = useDiscoveryPost(slug);
-  const { data: posts } = useDiscoveryPosts();
+  const { post, posts } = useLoaderData({ from: '/$lang/discovery/$slug' });
 
   const bodyHtml = useMemo(() => (post ? renderMarkdown(post.body[lang]) : ''), [post, lang]);
 
@@ -39,10 +34,8 @@ export const DiscoveryPostPage = () => {
   const bodyRef = useRef<HTMLDivElement>(null);
   const [lightbox, setLightbox] = useState<{ media: GalleryMedia[]; index: number } | null>(null);
 
-  const onBodyClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const img = (e.target as HTMLElement).closest('img');
-    if (!img || !bodyRef.current?.contains(img)) return;
-    e.preventDefault();
+  const openLightboxFor = (img: Element) => {
+    if (!bodyRef.current) return;
     const els = Array.from(bodyRef.current.querySelectorAll('img, video'));
     const media: GalleryMedia[] = els.map((el) => {
       if (el instanceof HTMLVideoElement) {
@@ -60,6 +53,23 @@ export const DiscoveryPostPage = () => {
     setLightbox({ media, index: Math.max(0, els.indexOf(img)) });
   };
 
+  const onBodyClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const img = (e.target as HTMLElement).closest('img');
+    if (!img || !bodyRef.current?.contains(img)) return;
+    e.preventDefault();
+    openLightboxFor(img);
+  };
+
+  // Body images carry tabindex+role from renderMarkdown, so keyboard users reach
+  // them; delegation here gives them the same activation as a click.
+  const onBodyKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const img = (e.target as HTMLElement).closest('img');
+    if (!img || !bodyRef.current?.contains(img)) return;
+    e.preventDefault();
+    openLightboxFor(img);
+  };
+
   const seoOverride = post?.seo?.[lang]
     ? {
         title: post.seo[lang].title,
@@ -71,27 +81,6 @@ export const DiscoveryPostPage = () => {
       ? { title: post.title[lang], description: post.sub[lang], imageUrl: post.coverUrl }
       : undefined;
 
-  useDocumentMeta('discovery', lang, seoOverride);
-  useStructuredData(
-    post ? `post-${post.slug}` : 'post-loading',
-    post
-      ? [
-          buildBlogPostingSchema(post, lang, `/discovery/${post.slug}`),
-          buildBreadcrumbSchema(
-            [
-              { name: lang === 'fr' ? 'Accueil' : 'Home', pathname: '' },
-              { name: 'Discovery', pathname: '/discovery' },
-              { name: post.title[lang], pathname: `/discovery/${post.slug}` },
-            ],
-            lang,
-          ),
-        ]
-      : [],
-  );
-
-  if (loading) {
-    return <Loader lang={lang} size="page" />;
-  }
   if (!post) {
     return <NotFoundPage />;
   }
@@ -144,7 +133,8 @@ export const DiscoveryPostPage = () => {
             <div
               ref={bodyRef}
               onClick={onBodyClick}
-              className="prose prose-sm m-0 max-w-none text-foreground [&_a]:text-primary [&_a]:underline [&_blockquote]:border-l-2 [&_blockquote]:border-border [&_blockquote]:pl-4 [&_blockquote]:italic [&_h2]:mt-6 [&_h2]:text-lg [&_h2]:font-medium [&_h3]:mt-4 [&_h3]:text-base [&_h3]:font-medium [&_hr]:my-6 [&_hr]:border-border [&_figure]:my-4 [&_figure_img]:block [&_figure_img]:w-full [&_figure_img]:cursor-zoom-in [&_figure_video]:block [&_figure_video]:w-full [&_figure_video]:h-auto [&_figcaption]:mt-1.5 [&_figcaption]:text-micro [&_figcaption]:leading-snug [&_figcaption]:text-muted-foreground [&_li]:ml-4 [&_p]:leading-relaxed [&_ul]:my-2 [&_ul]:list-disc"
+              onKeyDown={onBodyKeyDown}
+              className="prose prose-sm m-0 max-w-none text-foreground [&_a]:text-primary [&_a]:underline [&_blockquote]:border-l-2 [&_blockquote]:border-border [&_blockquote]:pl-4 [&_blockquote]:italic [&_h2]:mt-6 [&_h2]:text-lg [&_h2]:font-medium [&_h3]:mt-4 [&_h3]:text-base [&_h3]:font-medium [&_hr]:my-6 [&_hr]:border-border [&_figure]:my-4 [&_figure_img]:block [&_figure_img]:w-full [&_figure_img]:cursor-zoom-in [&_figure_img:focus-visible]:[outline:1.5px_solid_var(--ring)] [&_figure_img:focus-visible]:[outline-offset:2px] [&_figure_video]:block [&_figure_video]:w-full [&_figure_video]:h-auto [&_figcaption]:mt-1.5 [&_figcaption]:text-micro [&_figcaption]:leading-snug [&_figcaption]:text-muted-foreground [&_li]:ml-4 [&_p]:leading-relaxed [&_ul]:my-2 [&_ul]:list-disc"
               dangerouslySetInnerHTML={{ __html: bodyHtml }}
             />
           )}

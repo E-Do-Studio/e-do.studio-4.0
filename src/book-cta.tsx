@@ -1,6 +1,7 @@
 import { common, home as homeMsg } from './i18n/messages';
 import type { Lang } from './types';
-import { IconArrowRight, cn } from './ui';
+import { cn } from './ui/cn';
+import { IconArrowRight } from './ui/icons';
 
 interface BookCTAProps {
   lang: Lang;

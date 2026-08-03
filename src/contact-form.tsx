@@ -3,7 +3,9 @@ import type { FormEvent, InputHTMLAttributes, TextareaHTMLAttributes } from 'rea
 import type { ContactFormData, Lang } from './types';
 import { submitContactForm } from './lib/contact';
 import { common, contact as contactMsg } from './i18n/messages';
-import { Button, IconArrowRight, cn } from './ui';
+import { Button } from './ui/button';
+import { cn } from './ui/cn';
+import { IconArrowRight } from './ui/icons';
 
 export const INITIAL_FORM: ContactFormData = {
   nom: '',

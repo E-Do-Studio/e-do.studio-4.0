@@ -22,7 +22,7 @@ const RULES: [RegExp, string | ((...m: string[]) => string)][] = [
   [/(^|[^\w])_(?!_)(.+?)_(?!\w)/g, '$1<em>$2</em>'],
   [/`([^`]+)`/g, '<code>$1</code>'],
   [/!\[([^\]]*)\]\(([^)]+)\)/g, (_m: string, alt: string, url: string) =>
-    `<figure class="edo-fig"><img src="${url}" alt="${alt}" loading="lazy" />${captionTag(alt)}</figure>`],
+    `<figure class="edo-fig"><img src="${url}" alt="${alt}" loading="lazy" tabindex="0" role="button" />${captionTag(alt)}</figure>`],
   [VIDEO_LINK_RE, (_m: string, label: string, url: string) =>
     `<figure class="edo-fig"><video src="${url}" controls preload="metadata" playsinline aria-label="${label}"></video>${captionTag(label)}</figure>`],
   [/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'],
