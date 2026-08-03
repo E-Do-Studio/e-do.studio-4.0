@@ -20,6 +20,7 @@ import {
 import type { Lang } from './types';
 import { usePageContext } from './lib/page-context';
 import { common, home as homeMsg } from './i18n/messages';
+import { fetchPriority } from './ui/fetch-priority';
 
 interface MachineRowItem {
   slug: string;
@@ -238,7 +239,7 @@ const DirectionA = () => {
               alt=""
               width={1280}
               height={986}
-              fetchPriority="high"
+              {...fetchPriority(true)}
               decoding="async"
               className="pointer-events-none absolute inset-0 h-full w-full object-cover"
             />
@@ -334,7 +335,7 @@ const DirectionA = () => {
               <img
                 src="/showreel-preview.webp"
                 alt=""
-                fetchPriority="high"
+                {...fetchPriority(true)}
                 decoding="async"
                 className="pointer-events-none absolute inset-0 h-full w-full object-cover"
               />

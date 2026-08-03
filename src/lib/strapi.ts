@@ -12,6 +12,11 @@ const API_ORIGIN = import.meta.env.DEV ? '' : STRAPI_URL;
 const cache = new Map<string, { data: unknown; ts: number }>();
 const CACHE_TTL = 5 * 60 * 1000;
 
+// Requêtes en vol, par clé. En SSR, plusieurs visiteurs simultanés sur un cache
+// froid déclenchaient autant d'appels Strapi ; ils partagent maintenant la même
+// promesse. Purgée dès la résolution.
+const inflight = new Map<string, Promise<unknown>>();
+
 async function fetchStrapi<T>(path: string, params?: Record<string, string>): Promise<T> {
   // En dev, API_ORIGIN est vide pour passer par le proxy Vite (`/api` →
   // cms.e-do.studio) et éviter le CORS côté navigateur. Mais les loaders
@@ -39,12 +44,6 @@ async function fetchStrapi<T>(path: string, params?: Record<string, string>): Pr
   }
 
   const key = url.toString();
-  // Skip the in-memory cache while previewing so editors see their latest
-  // changes without waiting for the 5-minute TTL.
-  if (!preview.active) {
-    const hit = cache.get(key);
-    if (hit && Date.now() - hit.ts < CACHE_TTL) return hit.data as T;
-  }
 
   // After the users-permissions plugin removal, the public website
   // authenticates with a read-only API token via VITE_STRAPI_TOKEN.
@@ -54,11 +53,36 @@ async function fetchStrapi<T>(path: string, params?: Record<string, string>): Pr
   const headers: Record<string, string> = {};
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const res = await fetch(key, { headers });
-  if (!res.ok) throw new Error(`Strapi ${path}: ${res.status}`);
-  const json = await res.json();
-  if (!preview.active) cache.set(key, { data: json, ts: Date.now() });
-  return json;
+  const load = (): Promise<T> => {
+    const pending = inflight.get(key) as Promise<T> | undefined;
+    if (pending) return pending;
+    const p = (async () => {
+      const res = await fetch(key, { headers });
+      if (!res.ok) throw new Error(`Strapi ${path}: ${res.status}`);
+      const json = (await res.json()) as T;
+      if (!preview.active) cache.set(key, { data: json, ts: Date.now() });
+      return json;
+    })().finally(() => inflight.delete(key));
+    inflight.set(key, p);
+    return p;
+  };
+
+  // Le mode preview court-circuite le cache : les éditeurs doivent voir leurs
+  // modifications sans attendre l'expiration du TTL.
+  if (preview.active) return load();
+
+  const hit = cache.get(key);
+  if (hit) {
+    // Stale-while-revalidate : passé le TTL, on rend l'entrée périmée tout de
+    // suite et on rafraîchit en fond. Sans ça, en SSR, le premier visiteur
+    // après chaque expiration payait l'aller-retour Strapi (jusqu'à 2,3 s sur
+    // la galerie). L'échec du rafraîchissement est ignoré — l'entrée périmée
+    // reste servie, et le prochain appel réessaiera.
+    if (Date.now() - hit.ts >= CACHE_TTL) void load().catch(() => {});
+    return hit.data as T;
+  }
+
+  return load();
 }
 
 async function fetchStrapiBilingual<T>(path: string, params?: Record<string, string>): Promise<{ fr: T; en: T }> {

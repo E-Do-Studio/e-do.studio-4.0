@@ -4,11 +4,12 @@ import {
   Outlet,
   Scripts,
   useNavigate,
+  useRouter,
   useRouterState,
 } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import type { Lang } from '../types';
-import { initPreviewMode } from '../lib/preview-mode';
+import { initPreviewMode, isPreviewActive } from '../lib/preview-mode';
 import { NavMenu } from '../nav-menu';
 import { CookieBanner } from '../cookie-banner';
 import { PreviewBanner } from '../preview-banner';
@@ -70,10 +71,21 @@ const BASELINE_JSONLD = JSON.stringify({
 const CRITICAL_CSS =
   'html,body,#root{margin:0;padding:0;height:100%;background:#fff;font-family:var(--font-sans);color:#141414;overflow:hidden}';
 
-// Doit précéder le premier fetch Strapi pour que celui-ci voie le drapeau
-// preview. Côté Node (prerender), getPreviewState() retombe sur « inactif » :
-// le HTML prérendu contient donc toujours le contenu publié, jamais un brouillon.
+// Doit précéder le premier fetch Strapi côté client pour qu'il voie le drapeau
+// preview. Côté Node, getPreviewState() retombe toujours sur « inactif » — le
+// drapeau vit dans sessionStorage, inaccessible au serveur. Aucun risque de
+// servir un brouillon à un visiteur, mais le rendu serveur d'une entrée preview
+// contient le contenu publié : d'où l'invalidation ci-dessous.
 if (typeof window !== 'undefined') initPreviewMode();
+
+// Le SSR ayant rendu le contenu publié, on rejoue les loaders côté client dès
+// que le mode preview est actif, pour que l'éditeur voie ses brouillons sans
+// avoir à naviguer.
+function usePreviewRevalidation(router: ReturnType<typeof useRouter>) {
+  useEffect(() => {
+    if (isPreviewActive()) void router.invalidate();
+  }, [router]);
+}
 
 // Clic droit et glisser-déposer désactivés sur les médias — les visuels sont
 // ceux des clients du studio.
@@ -106,7 +118,12 @@ function LangLayout() {
   const navigate = useNavigate();
   const siteData = Route.useLoaderData();
   useMediaGuards();
-  const pathname = useRouterState({ select: (s) => s.resolvedLocation?.pathname ?? '' });
+  usePreviewRevalidation(useRouter());
+  // `location` et non `resolvedLocation` : ce dernier est indéfini au premier
+  // rendu, côté serveur comme côté client. La langue retombait alors sur `fr`,
+  // et /en était servi avec <html lang="fr"> et une navigation en français —
+  // d'où un échec d'hydratation sur toutes les routes anglaises.
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const langSegment = pathname.split('/')[1];
   const lang: Lang = VALID_LANGS.includes(langSegment as Lang) ? (langSegment as Lang) : DEFAULT_LANG;
   useGoogleAnalytics(siteData.siteDefaults?.googleAnalyticsId);

@@ -1,5 +1,6 @@
 import { buildStrapiSrcset, getStrapiLargeUrl } from '../lib/strapi';
 import { cn } from './cn';
+import { fetchPriority } from './fetch-priority';
 
 type Props = {
   src: string | undefined | null;
@@ -45,7 +46,7 @@ export function ResponsiveImage({
       height={height}
       loading={priority ? 'eager' : 'lazy'}
       decoding="async"
-      fetchPriority={priority ? 'high' : 'auto'}
+      {...fetchPriority(priority)}
       className={cn(className)}
       onClick={onClick}
       draggable={draggable}

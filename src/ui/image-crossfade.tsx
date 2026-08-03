@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { buildStrapiSrcset, getStrapiLargeUrl } from '../lib/strapi';
 import { cn } from './cn';
+import { fetchPriority } from './fetch-priority';
 
 interface ImageCrossfadeSlide {
   url: string;
@@ -60,7 +61,7 @@ const ImageCrossfade = ({
         srcSet={buildStrapiSrcset(only.url)}
         sizes="100vw"
         alt={only.alt}
-        fetchPriority={priority ? 'high' : 'auto'}
+        {...fetchPriority(priority)}
         loading={priority ? 'eager' : 'lazy'}
         decoding="async"
         className={cn('pointer-events-none absolute inset-0 h-full w-full object-cover', className)}
@@ -80,7 +81,7 @@ const ImageCrossfade = ({
             srcSet={buildStrapiSrcset(img.url)}
             sizes="100vw"
             alt={active ? img.alt : ''}
-            fetchPriority={priority && isFirst ? 'high' : 'auto'}
+            {...fetchPriority(priority && isFirst)}
             loading={isFirst ? 'eager' : 'lazy'}
             decoding="async"
             aria-hidden={!active}
