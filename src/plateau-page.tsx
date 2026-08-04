@@ -158,9 +158,8 @@ const ThumbStrip = ({
   className,
 }: ThumbStripProps) => {
   if (items.length === 0) return null;
-  // Tiles touch — `gap-px bg-border` forces `gap: 0` on the strip, and each tile's
-  // 1.5px right-border serves as the visible separator. The bases must sum to
-  // exactly 100% so the last tile aligns with the column boundary above.
+  // Les bases doivent totaliser exactement 100 % pour que la dernière tuile
+  // s'aligne sur la frontière de colonne au-dessus.
   const tileBasis = `${100 / items.length}%`;
   // Strip occupies ~60vw on desktop (same column span as the cover) and 100vw
   // on mobile, divided by n tiles. Without this hint the browser would pick
@@ -168,7 +167,7 @@ const ThumbStrip = ({
   const tileSizes = `(min-width: 768px) ${Math.ceil(60 / items.length)}vw, ${Math.ceil(100 / items.length)}vw`;
 
   return (
-    <div className={cn('relative gap-px bg-border h-16 md:h-full', className)}>
+    <div className={cn('relative h-16 md:h-full', className)}>
       <div className="flex h-full gap-px bg-border overflow-hidden">
         {items.map((item, i) => {
           const isActive = i === activeIndex;
@@ -374,9 +373,16 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
               }
               variant="cell"
               size="cell"
-              className={`flex-none gap-1 px-4 py-3.5
- md:border-b md:border-border
- ${active ? 'bg-muted border-b-2 border-b-primary md:border-b-border md:border-l-2 md:border-l-primary' : 'bg-background border-b-2 border-b-transparent md:border-b-border md:border-l-2 md:border-l-transparent hover:bg-muted'}`}
+              aria-pressed={active}
+              // La colonne est `hidden md:flex` : une classe sans préfixe
+              // `md:` ne vaudrait qu'en dessous du palier, où l'élément
+              // n'existe pas. Seul l'état `md:` a donc un sens ici.
+              className={cn(
+                'flex-none gap-1 border-b border-l-2 border-b-border px-4 py-3.5',
+                active
+                  ? 'border-l-primary bg-muted'
+                  : 'border-l-transparent bg-background hover:bg-muted',
+              )}
             >
               <span
                 className={`font-mono text-xs tracking-widest ${active ? 'text-primary' : 'text-muted-foreground'}`}
@@ -442,10 +448,10 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
       <div className="bg-background p-3 px-4 flex flex-col gap-1.5 md:col-start-4 md:row-start-3">
         <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground">{t('plateau.specs')}</span>
         <div className="flex flex-col flex-1 min-h-0">
-          {p.specs.map((s, i) => (
+          {p.specs.map((s) => (
             <div
               key={s.k.fr}
-              className={`flex justify-between items-baseline gap-3 text-xs py-1 ${i < p.specs.length - 1 ? 'border-b border-border' : ''}`}
+              className="flex items-baseline justify-between gap-3 border-b border-border py-1 text-xs last:border-b-0"
             >
               <span className="text-muted-foreground shrink-0">
                 {s.k[lang]}
@@ -462,10 +468,10 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
       <div className="bg-background px-4 pt-2.5 pb-3 flex flex-col gap-1 md:col-start-4 md:row-start-4">
         <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground">{t('plateau.rates')}</span>
         <div className="flex flex-col flex-1 min-h-0">
-          {p.rates.map((r, i) => (
+          {p.rates.map((r) => (
             <div
               key={r.k.fr}
-              className={`flex justify-between items-baseline text-xs py-1 ${i < p.rates.length - 1 ? 'border-b border-border' : ''}`}
+              className="flex items-baseline justify-between border-b border-border py-1 text-xs last:border-b-0"
             >
               <span className="text-muted-foreground">{r.k[lang]}</span>
               <span className="text-foreground font-mono tracking-wide text-xs">
