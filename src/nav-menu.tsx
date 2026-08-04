@@ -149,17 +149,17 @@ const NavFooter = ({ lang, setLang, onClose, navigate }: NavFooterProps) => {
       >
         {t('common.langToggleLabel')}
       </Button>
-      <a
-        href={bookingHref}
-        onClick={(e) => {
+      <Button
+        render={<a href={bookingHref} />}
+        onClick={(e: React.MouseEvent) => {
           e.preventDefault();
           onClose();
           navigate({ to: bookingHref });
         }}
-        className="font-mono text-xs uppercase tracking-widest text-primary-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50 h-12 flex cursor-pointer items-center justify-center border-0 bg-primary no-underline transition-[color,background-color,opacity] duration-150 ease-out hover:opacity-90"
+        className="h-12 border-0 no-underline"
       >
         {t('common.bookNow')}
-      </a>
+      </Button>
     </div>
   );
 };

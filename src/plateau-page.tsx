@@ -518,7 +518,8 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
           } catch (e) {}
           goto('book');
         }}
-        className="p-4 border-0 flex flex-col justify-between text-left font-[inherit] min-h-20 transition-[color,background-color,opacity] duration-150 ease-out hover:opacity-90 md:col-start-4 md:row-start-5"
+        size="cell"
+        className="min-h-20 justify-between border-0 md:col-start-4 md:row-start-5"
       >
         <span className="font-mono text-xs uppercase tracking-widest text-primary-foreground/80">
           06 · {t('common.bookNow')}

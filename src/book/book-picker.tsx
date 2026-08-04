@@ -28,17 +28,12 @@ const PickerTile = ({
   lang,
 }: TileProps) => {
   const t = useT();
-  const onDark = variant === 'primary' || variant === 'foreground';
   const palette =
     variant === 'primary'
       ? 'bg-primary text-primary-foreground hover:bg-primary/90'
       : variant === 'foreground'
         ? 'bg-foreground text-background hover:bg-foreground'
         : 'bg-background text-foreground hover:bg-muted';
-  const subtleTone = onDark ? 'text-muted-foreground' : 'text-muted-foreground';
-  const labelMutedTone = subtleTone;
-  const descTone = subtleTone;
-  const idxTone = subtleTone;
   return (
     <Button
       variant="cell"
@@ -51,7 +46,7 @@ const PickerTile = ({
     >
       <div className="flex items-start justify-between">
         <span
-          className={cn('font-mono text-xs tracking-widest uppercase', idxTone)}
+          className="font-mono text-xs uppercase tracking-widest text-muted-foreground"
         >
           {String(index).padStart(2, '0')}
         </span>
@@ -63,10 +58,7 @@ const PickerTile = ({
       </div>
       <div className="mt-auto flex flex-col gap-2">
         <span
-          className={cn(
-            'font-mono text-xs uppercase tracking-widest',
-            labelMutedTone,
-          )}
+          className="font-mono text-xs uppercase tracking-widest text-muted-foreground"
         >
           {t('bookPicker.modeLabel')}
         </span>
@@ -74,10 +66,7 @@ const PickerTile = ({
           {label}
         </span>
         <span
-          className={cn(
-            'text-sm leading-snug tracking-tight md:min-h-[2lh]',
-            descTone,
-          )}
+          className="text-sm leading-snug tracking-tight text-muted-foreground md:min-h-[2lh]"
         >
           {description}
         </span>
