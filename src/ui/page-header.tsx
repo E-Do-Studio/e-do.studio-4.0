@@ -111,12 +111,17 @@ const PageHeaderActionButton = ({
 
 const DEFAULT_TITLE_CLASS = 'lg:col-start-2';
 const DEFAULT_RIGHT_BLOCK_CLASS = 'lg:col-start-3 lg:col-span-2';
-// `divide-x` génère exactement `:where(& > :not(:last-child))` avec
-// `border-inline-end-width` — le même sélecteur que celui qui était écrit à la
-// main ici, mais enveloppé dans `:where()`, donc de spécificité nulle. C'est ce
-// qui permet de le neutraliser par une classe ordinaire au lieu d'un
-// `!important`.
-const RIGHT_BLOCK_BASE_CLASS = 'flex min-w-0 divide-x divide-border';
+// Le filet entre deux cellules du header appartient au conteneur.
+//
+// Ne pas remplacer par `divide-x` : Tailwind émet les utilitaires `divide-*`
+// dans `:where(…)`, donc à spécificité nulle, et ils perdent alors contre le
+// `border-0` que pose `variant="header"` — les filets disparaissent en
+// silence, sans rien casser au typecheck ni au build. Le sélecteur ci-dessous
+// compile en `.classe > *:not(:last-child)`, soit 0,2,0, et passe devant.
+const CELL_DIVIDERS =
+  '[&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-border';
+
+const RIGHT_BLOCK_BASE_CLASS = `flex min-w-0 ${CELL_DIVIDERS}`;
 
 const LangButton = ({
   onLangToggle,
@@ -185,12 +190,18 @@ const PageHeader = ({
   return (
     <header
       className={cn(
-        'sticky top-0 z-40 flex min-w-0 divide-x divide-border bg-background',
+        'sticky top-0 z-40 flex min-w-0 bg-background',
+        CELL_DIVIDERS,
         subgrid && 'lg:grid lg:grid-cols-subgrid',
         className,
       )}
     >
-      <div className="flex h-full flex-none basis-44 divide-x divide-border md:basis-60 lg:col-start-1">
+      <div
+        className={cn(
+          'flex h-full flex-none basis-44 md:basis-60 lg:col-start-1',
+          CELL_DIVIDERS,
+        )}
+      >
         <Button
           variant="header"
           onClick={onMenuClick}
