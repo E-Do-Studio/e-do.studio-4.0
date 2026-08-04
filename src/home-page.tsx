@@ -242,7 +242,7 @@ const HomePage = () => {
         aria-label={t('common.gallery')}
         variant="cell"
         size="cell"
-        className="dark group relative col-span-2 aspect-[6/5] items-stretch justify-end overflow-hidden bg-background p-6 transition-all hover:brightness-75 hover:bg-background md:col-start-7 md:col-end-13 md:row-start-3 md:row-end-5 md:aspect-auto"
+        className="dark group relative col-span-2 aspect-[6/5] items-stretch justify-end overflow-hidden bg-background transition-all hover:brightness-75 hover:bg-background md:col-start-7 md:col-end-13 md:row-start-3 md:row-end-5 md:aspect-auto"
       >
         {galleryUseCrossfade ? (
           <ImageCrossfade
@@ -308,7 +308,7 @@ const HomePage = () => {
         onClick={() => goto('cyclorama')}
         variant="cell"
         size="cell"
-        className="group col-span-1 h-36 justify-between p-5 md:col-span-3 md:col-start-4 md:col-end-7 md:row-start-5 md:row-end-7 md:h-auto md:min-h-0"
+        className="group col-span-1 h-36 justify-between md:col-span-3 md:col-start-4 md:col-end-7 md:row-start-5 md:row-end-7 md:h-auto md:min-h-0"
       >
         <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Espace</span>
         <div className="flex items-end justify-between gap-3">
@@ -346,7 +346,7 @@ const HomePage = () => {
         <Button
           onClick={() => goto('book')}
           size="cell"
-          className="group hidden justify-between border-0 p-5 md:flex"
+          className="group hidden justify-between border-0 md:flex"
         >
           <span className="font-mono text-xs uppercase tracking-widest text-primary-foreground/75">
             {t('home.requestQuoteOr')}
@@ -367,7 +367,7 @@ const HomePage = () => {
           onClick={() => goto('postprod')}
           variant="cell"
           size="cell"
-          className="group col-span-1 h-36 justify-between p-5 md:h-auto"
+          className="group col-span-1 h-36 justify-between md:h-auto"
         >
           <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
             Service

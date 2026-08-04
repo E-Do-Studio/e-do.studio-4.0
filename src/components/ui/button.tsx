@@ -53,7 +53,7 @@ const buttonVariants = cva(
         //
         // `whitespace-normal` annule le `nowrap` de la base, qui vaut pour un
         // bouton d'une ligne et non pour une cellule à contenu empilé.
-        cell: "h-auto min-w-0 flex-col items-stretch justify-start gap-1.5 overflow-hidden px-4.5 py-4 text-left normal-case tracking-normal whitespace-normal",
+        cell: "h-auto min-w-0 flex-col items-stretch justify-start gap-1.5 overflow-hidden p-5 text-left normal-case tracking-normal whitespace-normal",
         // Action d'en-tête : prend la hauteur de la bande qui la contient.
         header: "h-full gap-2 px-5",
         icon: "size-8",
