@@ -394,6 +394,8 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
   );
   const quoteLabels = useMemo<QuoteLabels>(
     () => ({
+      fullDayWithHours: (count: number) =>
+        t('booking.fullDayWithHours', { count }),
       cyclo5h: t('booking.cyclo5h'),
       cyclo10h: t('booking.cyclo10h'),
       cyclo10hEditorial: t('booking.cyclo10hEditorial'),

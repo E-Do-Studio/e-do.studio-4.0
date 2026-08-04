@@ -28,6 +28,7 @@ const L: QuoteLabels = {
   images: 'images',
   videoEditing: 'montage',
   onRequest: 'sur-demande',
+  fullDayWithHours: (n: number) => `journee-x${n}`,
 };
 
 const slot = (over: Partial<SlotState> = {}): SlotState => ({
@@ -247,8 +248,12 @@ describe('rentalHoursFor — durée totale facturée', () => {
 
   it('compte le total réel sur une journée complète étalée sur plusieurs jours', () => {
     expect(rentalHoursFor(slot({ slotType: 'full', hours: 8 }), live)).toBe(8);
-    expect(rentalHoursFor(slot({ slotType: 'full', hours: 16 }), live)).toBe(16);
-    expect(rentalHoursFor(slot({ slotType: 'full', hours: 24 }), live)).toBe(24);
+    expect(rentalHoursFor(slot({ slotType: 'full', hours: 16 }), live)).toBe(
+      16,
+    );
+    expect(rentalHoursFor(slot({ slotType: 'full', hours: 24 }), live)).toBe(
+      24,
+    );
   });
 
   it('exprime le cyclorama en journées et la visite en une heure', () => {
@@ -267,8 +272,12 @@ describe('dailyOccupancyHoursFor — occupation sur une seule journée', () => {
   // journée complète : une réservation de 2 jours rendait TOUTES les dates
   // indisponibles, y compris sur une journée vide.
   it('plafonne une réservation multi-jours à une journée ouvrable', () => {
-    expect(dailyOccupancyHoursFor(slot({ slotType: 'full', hours: 16 }), live)).toBe(8);
-    expect(dailyOccupancyHoursFor(slot({ slotType: 'full', hours: 24 }), live)).toBe(8);
+    expect(
+      dailyOccupancyHoursFor(slot({ slotType: 'full', hours: 16 }), live),
+    ).toBe(8);
+    expect(
+      dailyOccupancyHoursFor(slot({ slotType: 'full', hours: 24 }), live),
+    ).toBe(8);
   });
 
   it('ne dépasse jamais la fenêtre exploitable par le calendrier', () => {
@@ -280,7 +289,9 @@ describe('dailyOccupancyHoursFor — occupation sur une seule journée', () => {
   });
 
   it('laisse le cyclorama intact, déjà exprimé en journées', () => {
-    expect(dailyOccupancyHoursFor(slot({ cycloMode: 'fullH' }), cyclo)).toBe(10);
+    expect(dailyOccupancyHoursFor(slot({ cycloMode: 'fullH' }), cyclo)).toBe(
+      10,
+    );
   });
 
   it("coïncide avec la durée facturée tant qu'on tient dans une journée", () => {

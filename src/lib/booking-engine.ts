@@ -681,6 +681,9 @@ export interface QuoteLabels {
   images: string;
   videoEditing: string;
   onRequest: string;
+  /** « journée (8h) » / « journées (8h) » — l'appelant tranche le pluriel :
+      le moteur ne peut pas dépendre d'i18next (importé par les Edge Functions). */
+  fullDayWithHours: (count: number) => string;
 }
 
 export interface PriceBreakdownArgs {
@@ -774,7 +777,7 @@ export function computePriceBreakdown({
         const extraH = totalH - fullDays * 8;
         if (fullDays > 0) {
           pRows.push({
-            lbl: `${prefix} · ${fullDays} ${lang === 'fr' ? (fullDays > 1 ? 'journées (8h)' : 'journée (8h)') : fullDays > 1 ? 'days (8h)' : 'day (8h)'}`,
+            lbl: `${prefix} · ${fullDays} ${labels.fullDayWithHours(fullDays)}`,
             amt: +((px.rates.full ?? 0) * fullDays).toFixed(2),
           });
         }
