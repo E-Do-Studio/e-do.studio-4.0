@@ -1,4 +1,4 @@
-import { Button } from './ui/button';
+import { Button } from '@/components/ui/button';
 import { useCookieConsent } from './lib/use-cookie-consent';
 import { Trans } from 'react-i18next';
 import { useT } from './i18n/use-t';
@@ -52,14 +52,14 @@ const CookieBanner = ({ lang, onLegalClick }: CookieBannerProps) => {
           <Button
             variant="outline"
             onClick={reject}
-            className="h-auto! self-stretch px-6! md:px-8! border-0! border-t! border-l! border-hairline! md:border-t-0!"
+            className="h-auto self-stretch border-0 border-t border-l border-hairline px-6 md:border-t-0 md:px-8"
           >
             {t('cookieBanner.reject')}
           </Button>
           <Button
             variant="default"
             onClick={accept}
-            className="h-auto! self-stretch px-6! md:px-8! border-0! border-t! border-l! border-hairline! md:border-t-0!"
+            className="h-auto self-stretch border-0 border-t border-l border-hairline px-6 md:border-t-0 md:px-8"
           >
             {t('cookieBanner.accept')}
           </Button>

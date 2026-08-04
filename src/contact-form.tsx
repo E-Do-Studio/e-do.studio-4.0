@@ -7,7 +7,7 @@ import type {
 import type { ContactFormData, Lang } from './types';
 import { submitContactForm } from './lib/contact';
 import { useT } from './i18n/use-t';
-import { Button } from './ui/button';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { IconArrowRight } from './ui/icons';
 

@@ -1,5 +1,4 @@
 import type React from 'react';
-import { HeaderAction, HeaderActionText } from '../ui/header-action';
 import { IconArrowRight } from '../ui/icons';
 import { cn } from '@/lib/utils';
 import { microBase } from './styles';
@@ -39,4 +38,3 @@ export const ArticleMeta = ({
   </span>
 );
 
-export { HeaderAction, HeaderActionText };
