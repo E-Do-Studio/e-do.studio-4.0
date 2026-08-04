@@ -12,50 +12,7 @@ import {
   type ConfirmationSnapshot,
 } from './confirmation-snapshot';
 import type { Lang } from '../types';
-
-const MONTHS_FR = [
-  'Janvier',
-  'Février',
-  'Mars',
-  'Avril',
-  'Mai',
-  'Juin',
-  'Juillet',
-  'Août',
-  'Septembre',
-  'Octobre',
-  'Novembre',
-  'Décembre',
-];
-const MONTHS_EN = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-];
-
-const fmtEUR = (n: unknown): string => {
-  if (n == null || Number.isNaN(Number(n))) return '0';
-  const num = Number(n);
-  const truncated = Math.trunc(num * 100) / 100;
-  const hasDecimals = truncated !== Math.trunc(truncated);
-  return truncated.toLocaleString('fr-FR', {
-    minimumFractionDigits: hasDecimals
-      ? truncated * 10 !== Math.trunc(truncated * 10)
-        ? 2
-        : 1
-      : 0,
-    maximumFractionDigits: 2,
-  });
-};
+import { MONTHS, fmtEUR } from '../lib/format';
 
 const fmtTime = (h: number) => `${String(h).padStart(2, '0')}:00`;
 
@@ -78,7 +35,7 @@ const ConfirmedView = ({
   goto,
   onNewRequest,
 }: ConfirmedViewProps) => {
-  const months = lang === 'fr' ? MONTHS_FR : MONTHS_EN;
+  const months = MONTHS[lang];
   const isMultiPlateau = (snapshot.slotIds || []).filter(Boolean).length > 1;
   const ref = useMemo(() => {
     if (snapshot.savedRef) return snapshot.savedRef;

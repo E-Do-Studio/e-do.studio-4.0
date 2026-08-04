@@ -11,10 +11,10 @@ import { useChatSessions, type ChatSession } from './lib/use-chat-sessions';
 import { createBooking } from './lib/bookings';
 import {
   BOOK_PLATEAUX,
-  fmtEUR,
   isValidSiren,
   type CreateBookingInput,
 } from './lib/booking-engine';
+import { fmtEUR } from './lib/format';
 
 const MAX_INPUT_CHARS = 1500;
 

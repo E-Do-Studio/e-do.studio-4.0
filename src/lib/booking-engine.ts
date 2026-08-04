@@ -255,6 +255,9 @@ export const BOOK_PLATEAUX: BookPlateau[] = [
 
 export const CYCLO_EXTRAS = { paint: 110, kwh: 1.4 };
 
+// Duplique src/lib/format.ts à dessein : ce module est importé par les Edge
+// Functions Deno (supabase/functions/chat), qui ne doivent tirer aucune
+// dépendance front. Toute correction ici doit être reportée là-bas.
 export const fmtEUR = (n: unknown): string => {
   if (n == null || Number.isNaN(Number(n))) return '0';
   const num = Number(n);
@@ -406,7 +409,8 @@ export function rentalHoursFor(
   if (plateau?.isCyclo) return slot.cycloMode === 'halfH' ? 5 : 10;
   if (plateau?.isVisite) return 1;
   if (slot.slotType === 'hour') return slot.hours || 1;
-  if (slot.slotType === 'half') return Math.max(4, Math.min(7, slot.hours || 4));
+  if (slot.slotType === 'half')
+    return Math.max(4, Math.min(7, slot.hours || 4));
   return slot.hours || HOURS_PER_FULL_DAY;
 }
 
