@@ -12,19 +12,25 @@ import { getT } from '../../i18n';
 export const Route = createFileRoute('/$lang/gallery')({
   head: ({ params, loaderData }) => {
     const lang = params.lang as Lang;
+    // La galerie répond sous les deux slugs dans les deux langues : /fr/galerie,
+    // /fr/gallery, /en/galerie et /en/gallery rendent tous la même page. Le
+    // canonical pointe donc toujours le slug de la langue courante : sans ça,
+    // les quatre URLs se référencent chacune elle-même et Google indexe quatre
+    // pages au contenu identique.
+    const canonical = lang === 'fr' ? '/galerie' : '/gallery';
     return buildSeoHead({
       metaKey: 'gallery',
       lang,
-      pathname: '/gallery',
+      pathname: canonical,
       jsonLd: [
         buildGalleryCollectionSchema(
           loaderData?.projects ?? [],
           loaderData?.categories ?? [],
           lang,
-          '/gallery',
+          canonical,
         ),
         buildPageBreadcrumb(lang, [
-          { name: getT(lang)('common.gallery'), pathname: '/gallery' },
+          { name: getT(lang)('common.gallery'), pathname: canonical },
         ]),
       ],
     });
