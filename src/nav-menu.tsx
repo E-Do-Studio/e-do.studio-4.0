@@ -1,5 +1,11 @@
 import { useNavigate } from '@tanstack/react-router';
-import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetTitle,
+} from '@/components/ui/sheet';
 import { Lock, X } from 'lucide-react';
 import { SocialLinksRow } from './ui/social-links-row';
 import { CellLabel } from './ui/typography';
@@ -26,43 +32,25 @@ interface NavItemDef {
   disabled?: boolean;
 }
 
-interface NavOverlayProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-const NavOverlay = ({ isOpen, onClose }: NavOverlayProps) => (
-  <div
-    onClick={onClose}
-    aria-hidden="true"
-    className={cn(
-      'fixed inset-0 z-overlay bg-black/40 backdrop-blur-sm transition-opacity duration-300',
-      isOpen
-        ? 'pointer-events-auto opacity-100'
-        : 'pointer-events-none opacity-0',
-    )}
-  />
-);
-
-interface NavHeaderProps {
-  onClose: () => void;
-}
-
-const NavHeader = ({ onClose }: NavHeaderProps) => {
+const NavHeader = () => {
   const t = useT();
   return (
     <div className="grid grid-cols-fluid-auto border-b border-hairline">
       <div className="flex items-center px-4 py-3.5">
-        <CellLabel>Navigation</CellLabel>
+        <SheetTitle>Navigation</SheetTitle>
       </div>
-      <button
-        type="button"
-        onClick={onClose}
+      <SheetClose
         aria-label={t('common.close')}
-        className="edo-focus-ring flex h-12 w-12 cursor-pointer items-center justify-center border-0 border-l border-hairline bg-white transition-colors hover:bg-muted"
+        render={
+          <Button
+            variant="header"
+            size="icon"
+            className="size-12 border-l border-hairline"
+          />
+        }
       >
-        <X width="20" height="20" aria-hidden="true" />
-      </button>
+        <X aria-hidden="true" />
+      </SheetClose>
     </div>
   );
 };
@@ -188,20 +176,19 @@ const NavMenu = ({ lang, isOpen, onClose, setLang }: NavMenuProps) => {
   const t = useT();
 
   return (
-    <>
-      <NavOverlay isOpen={isOpen} onClose={onClose} />
-      <aside
-        role="dialog"
-        aria-modal="true"
+    <Sheet
+      open={isOpen}
+      onOpenChange={(next: boolean) => {
+        if (!next) onClose();
+      }}
+    >
+      <SheetContent
+        side="left"
+        showCloseButton={false}
         aria-label={t('common.menu')}
-        aria-hidden={isOpen ? undefined : true}
-        {...({ inert: isOpen ? undefined : '' } as Record<string, unknown>)}
-        className={cn(
-          'fixed left-0 top-0 z-sheet flex h-full w-72 flex-col border-r border-hairline bg-white transition-transform duration-300 ease-edo-out',
-          isOpen ? 'translate-x-0' : '-translate-x-full',
-        )}
+        className="w-72 border-r border-hairline sm:max-w-72"
       >
-        <NavHeader onClose={onClose} />
+        <NavHeader />
 
         <nav
           className="flex flex-1 flex-col overflow-y-auto"
@@ -234,8 +221,8 @@ const NavMenu = ({ lang, isOpen, onClose, setLang }: NavMenuProps) => {
           onClose={onClose}
           navigate={navigate}
         />
-      </aside>
-    </>
+      </SheetContent>
+    </Sheet>
   );
 };
 
