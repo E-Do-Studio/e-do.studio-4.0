@@ -29,9 +29,16 @@
     "errorFallback": "Sorry, I couldn't process your request. Contact us directly at contact@e-do.studio.",
     "history": "History",
     "historyEmpty": "No conversations yet.",
+    "justNow": "just now",
     "label": "E-Do assistant",
     "newConversation": "New conversation",
     "placeholder": "Type your request…",
+    "prompt": "A <accent>quote</accent>? A <accent>tour</accent>? A question about <accent>post-prod</accent>?",
+    "quickReplyAvailability": "Next-week availability",
+    "quickReplyBooking": "Guided booking",
+    "quickReplyDelivery": "Post-prod delivery",
+    "quickReplyRates": "Cyclo rates",
+    "quickReplyTour": "Studio tour",
     "rateLimited": "Too many messages, please try again in a few minutes or email us at contact@e-do.studio.",
     "untitledConversation": "Untitled"
   },
@@ -164,8 +171,7 @@
   "cookieBanner": {
     "accept": "Accept",
     "ariaLabel": "Cookie consent banner",
-    "body": "We use cookies to measure site audience. You can accept or refuse. Learn more:",
-    "legalLink": "cookie policy",
+    "bodyWithLink": "We use cookies to measure site audience. You can accept or refuse. Learn more: <legal>cookie policy</legal>",
     "reject": "Refuse",
     "title": "Cookies"
   },

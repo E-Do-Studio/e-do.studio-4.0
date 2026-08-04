@@ -3,7 +3,7 @@ import { CellLabel } from './typography';
 import { IconChat, IconX } from './icons';
 import { cn } from './cn';
 import type { Lang } from '../types';
-import { common, assistant as assistantMsg } from '../i18n/messages';
+import { useT } from '../i18n/use-t';
 
 const AssistantChat = lazy(() => import('../assistant-chat'));
 
@@ -16,6 +16,7 @@ interface MobileAssistantFabProps {
 // instance below md and mount this FAB instead, so the chat never pushes
 // page content down on small screens.
 export const MobileAssistantFab = ({ lang }: MobileAssistantFabProps) => {
+  const t = useT();
   const [open, setOpen] = useState(false);
 
   return (
@@ -23,7 +24,7 @@ export const MobileAssistantFab = ({ lang }: MobileAssistantFabProps) => {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label={assistantMsg.label[lang]}
+        aria-label={t('assistant.label')}
         className="edo-focus-ring fixed bottom-3 right-3 z-overlay flex h-10 w-10 cursor-pointer items-center justify-center border border-foreground/40 bg-foreground/85 text-white shadow-sm backdrop-blur-sm transition-all duration-150 hover:bg-foreground hover:shadow-md md:hidden"
       >
         <IconChat width="16" height="16" />
@@ -32,7 +33,7 @@ export const MobileAssistantFab = ({ lang }: MobileAssistantFabProps) => {
       <div
         role="dialog"
         aria-modal="true"
-        aria-label={assistantMsg.label[lang]}
+        aria-label={t('assistant.label')}
         aria-hidden={open ? undefined : true}
         {...({ inert: open ? undefined : '' } as Record<string, unknown>)}
         className={cn(
@@ -43,11 +44,11 @@ export const MobileAssistantFab = ({ lang }: MobileAssistantFabProps) => {
         )}
       >
         <div className="flex shrink-0 items-center justify-between border-b border-hairline px-4 py-3">
-          <CellLabel>{assistantMsg.label[lang]}</CellLabel>
+          <CellLabel>{t('assistant.label')}</CellLabel>
           <button
             type="button"
             onClick={() => setOpen(false)}
-            aria-label={common.close[lang]}
+            aria-label={t('common.close')}
             className="edo-focus-ring flex h-10 w-10 cursor-pointer items-center justify-center border-0 bg-transparent text-foreground transition-colors hover:bg-muted"
           >
             <IconX width="20" height="20" />

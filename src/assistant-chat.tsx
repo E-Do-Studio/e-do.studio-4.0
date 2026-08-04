@@ -5,7 +5,9 @@ import { useRouterState } from '@tanstack/react-router';
 import { cn } from './ui/cn';
 import { IconArrowRight, IconPlus, IconTrash, IconX } from './ui/icons';
 import type { Lang, ChatMessage } from './types';
-import { assistant as assistantMsg, common } from './i18n/messages';
+import { Trans } from 'react-i18next';
+import { getT } from './i18n';
+import { useT } from './i18n/use-t';
 import { supabase } from './lib/supabase';
 import { useChatSessions, type ChatSession } from './lib/use-chat-sessions';
 import { createBooking } from './lib/bookings';
@@ -18,22 +20,16 @@ import { fmtEUR } from './lib/format';
 
 const MAX_INPUT_CHARS = 1500;
 
-const getQuickReplies = (lang: Lang) =>
-  lang === 'fr'
-    ? [
-        'Réservation guidée',
-        'Tarifs cyclo',
-        'Dispos semaine prochaine',
-        'Livraison post-prod',
-        'Visite studio',
-      ]
-    : [
-        'Guided booking',
-        'Cyclo rates',
-        'Next-week availability',
-        'Post-prod delivery',
-        'Studio tour',
-      ];
+const getQuickReplies = (lang: Lang) => {
+  const t = getT(lang);
+  return [
+    t('assistant.quickReplyBooking'),
+    t('assistant.quickReplyRates'),
+    t('assistant.quickReplyAvailability'),
+    t('assistant.quickReplyDelivery'),
+    t('assistant.quickReplyTour'),
+  ];
+};
 
 type ChatError = 'rate_limited' | 'other';
 
@@ -112,51 +108,54 @@ const AssistantHeader = ({
   historyCount,
   onNewSession,
   onOpenHistory,
-}: AssistantHeaderProps) => (
-  <div className="flex shrink-0 items-center justify-between">
-    <div className="flex items-center gap-2">
-      <span className="edo-cell-label">Assistant</span>
-      {mode === 'chat' && (
-        <span
-          className={cn(
-            'h-1.5 w-1.5 rounded-full',
-            loading ? 'animate-pulse bg-primary' : 'bg-primary',
-          )}
-        />
-      )}
-    </div>
+}: AssistantHeaderProps) => {
+  const t = useT();
+  return (
+    <div className="flex shrink-0 items-center justify-between">
+      <div className="flex items-center gap-2">
+        <span className="edo-cell-label">Assistant</span>
+        {mode === 'chat' && (
+          <span
+            className={cn(
+              'h-1.5 w-1.5 rounded-full',
+              loading ? 'animate-pulse bg-primary' : 'bg-primary',
+            )}
+          />
+        )}
+      </div>
 
-    <div className="-mr-1 flex items-center gap-0.5">
-      {historyCount > 0 && (
-        <button
-          type="button"
-          onClick={onOpenHistory}
-          className="edo-focus-ring flex cursor-pointer items-center gap-1.5 border-0 bg-transparent px-1.5 py-1 font-mono text-micro uppercase tracking-code text-muted-foreground transition-colors hover:text-foreground"
-        >
-          {assistantMsg.history[lang]}
-          <span className="flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-muted px-1 text-nano text-muted-foreground">
-            {historyCount}
-          </span>
-        </button>
-      )}
-      {mode === 'chat' && (
-        <button
-          type="button"
-          onClick={onNewSession}
-          aria-label={assistantMsg.newConversation[lang]}
-          title={assistantMsg.newConversation[lang]}
-          className="edo-focus-ring flex h-7 w-7 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <IconPlus width="15" height="15" />
-        </button>
-      )}
+      <div className="-mr-1 flex items-center gap-0.5">
+        {historyCount > 0 && (
+          <button
+            type="button"
+            onClick={onOpenHistory}
+            className="edo-focus-ring flex cursor-pointer items-center gap-1.5 border-0 bg-transparent px-1.5 py-1 font-mono text-micro uppercase tracking-code text-muted-foreground transition-colors hover:text-foreground"
+          >
+            {t('assistant.history')}
+            <span className="flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-muted px-1 text-nano text-muted-foreground">
+              {historyCount}
+            </span>
+          </button>
+        )}
+        {mode === 'chat' && (
+          <button
+            type="button"
+            onClick={onNewSession}
+            aria-label={t('assistant.newConversation')}
+            title={t('assistant.newConversation')}
+            className="edo-focus-ring flex h-7 w-7 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <IconPlus width="15" height="15" />
+          </button>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const formatRelative = (ts: number, lang: Lang): string => {
   const diffMin = Math.round((Date.now() - ts) / 60000);
-  if (diffMin < 1) return lang === 'fr' ? "à l'instant" : 'just now';
+  if (diffMin < 1) return getT(lang)('assistant.justNow');
   const rtf = new Intl.RelativeTimeFormat(lang, { numeric: 'auto' });
   if (diffMin < 60) return rtf.format(-diffMin, 'minute');
   const diffHr = Math.round(diffMin / 60);
@@ -187,74 +186,77 @@ const ChatSessionList = ({
   onDelete,
   onNew,
   onClose,
-}: ChatSessionListProps) => (
-  <div className="absolute inset-0 z-40 flex flex-col bg-white">
-    <div className="flex shrink-0 items-center justify-between border-b border-hairline px-cell py-3">
-      <span className="edo-cell-label">{assistantMsg.history[lang]}</span>
-      <button
-        type="button"
-        onClick={onClose}
-        aria-label={common.close[lang]}
-        className="edo-focus-ring -mr-1 flex h-7 w-7 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <IconX width="16" height="16" />
-      </button>
-    </div>
+}: ChatSessionListProps) => {
+  const t = useT();
+  return (
+    <div className="absolute inset-0 z-40 flex flex-col bg-white">
+      <div className="flex shrink-0 items-center justify-between border-b border-hairline px-cell py-3">
+        <span className="edo-cell-label">{t('assistant.history')}</span>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={t('common.close')}
+          className="edo-focus-ring -mr-1 flex h-7 w-7 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <IconX width="16" height="16" />
+        </button>
+      </div>
 
-    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto scrollbar-thin">
-      <button
-        type="button"
-        onClick={onNew}
-        className="edo-focus-ring group flex shrink-0 cursor-pointer items-center gap-2.5 border-b border-hairline bg-transparent px-cell py-3 text-left transition-colors hover:bg-muted"
-      >
-        <IconPlus width="15" height="15" className="text-primary" />
-        <span className="text-detail leading-none text-foreground">
-          {assistantMsg.newConversation[lang]}
-        </span>
-      </button>
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto scrollbar-thin">
+        <button
+          type="button"
+          onClick={onNew}
+          className="edo-focus-ring group flex shrink-0 cursor-pointer items-center gap-2.5 border-b border-hairline bg-transparent px-cell py-3 text-left transition-colors hover:bg-muted"
+        >
+          <IconPlus width="15" height="15" className="text-primary" />
+          <span className="text-detail leading-none text-foreground">
+            {t('assistant.newConversation')}
+          </span>
+        </button>
 
-      {sessions.length === 0 ? (
-        <p className="px-cell py-4 text-detail leading-normal text-muted-foreground">
-          {assistantMsg.historyEmpty[lang]}
-        </p>
-      ) : (
-        sessions.map((session) => {
-          const isActive = session.id === activeId;
-          return (
-            <div
-              key={session.id}
-              className={cn(
-                'group/row flex items-center gap-2 border-b border-hairline transition-colors',
-                isActive ? 'bg-muted' : 'hover:bg-muted',
-              )}
-            >
-              <button
-                type="button"
-                onClick={() => onSelect(session.id)}
-                className="edo-focus-ring flex min-w-0 flex-1 cursor-pointer flex-col items-start gap-1 border-0 bg-transparent py-2.5 pl-cell pr-2 text-left"
+        {sessions.length === 0 ? (
+          <p className="px-cell py-4 text-detail leading-normal text-muted-foreground">
+            {t('assistant.historyEmpty')}
+          </p>
+        ) : (
+          sessions.map((session) => {
+            const isActive = session.id === activeId;
+            return (
+              <div
+                key={session.id}
+                className={cn(
+                  'group/row flex items-center gap-2 border-b border-hairline transition-colors',
+                  isActive ? 'bg-muted' : 'hover:bg-muted',
+                )}
               >
-                <span className="w-full truncate text-detail leading-none text-foreground">
-                  {session.title || assistantMsg.untitledConversation[lang]}
-                </span>
-                <span className="text-caption leading-none text-muted-foreground">
-                  {formatRelative(session.updatedAt, lang)}
-                </span>
-              </button>
-              <button
-                type="button"
-                onClick={() => onDelete(session.id)}
-                aria-label={assistantMsg.deleteConversation[lang]}
-                className="edo-focus-ring mr-1.5 flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-muted-foreground opacity-0 transition-opacity hover:text-foreground focus-visible:opacity-100 group-hover/row:opacity-100"
-              >
-                <IconTrash width="14" height="14" />
-              </button>
-            </div>
-          );
-        })
-      )}
+                <button
+                  type="button"
+                  onClick={() => onSelect(session.id)}
+                  className="edo-focus-ring flex min-w-0 flex-1 cursor-pointer flex-col items-start gap-1 border-0 bg-transparent py-2.5 pl-cell pr-2 text-left"
+                >
+                  <span className="w-full truncate text-detail leading-none text-foreground">
+                    {session.title || t('assistant.untitledConversation')}
+                  </span>
+                  <span className="text-caption leading-none text-muted-foreground">
+                    {formatRelative(session.updatedAt, lang)}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onDelete(session.id)}
+                  aria-label={t('assistant.deleteConversation')}
+                  className="edo-focus-ring mr-1.5 flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-muted-foreground opacity-0 transition-opacity hover:text-foreground focus-visible:opacity-100 group-hover/row:opacity-100"
+                >
+                  <IconTrash width="14" height="14" />
+                </button>
+              </div>
+            );
+          })
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 interface AssistantPromptProps {
   lang: Lang;
@@ -263,20 +265,14 @@ interface AssistantPromptProps {
 
 const AssistantPrompt = ({ lang, onSend }: AssistantPromptProps) => (
   <>
+    {/* Une clé par langue au lieu de deux sous-arbres JSX complets : la
+        ponctuation et l'espacement diffèrent entre FR et EN et vivaient dans
+        le code. Le même <accent> est cloné à chaque occurrence. */}
     <div className="text-cell font-normal leading-snug tracking-headline text-foreground">
-      {lang === 'fr' ? (
-        <>
-          Un <span className="text-primary">devis</span> ? Une{' '}
-          <span className="text-primary">visite</span> ? Une question sur la{' '}
-          <span className="text-primary">post-production</span> ?
-        </>
-      ) : (
-        <>
-          A <span className="text-primary">quote</span>? A{' '}
-          <span className="text-primary">tour</span>? A question about{' '}
-          <span className="text-primary">post-prod</span>?
-        </>
-      )}
+      <Trans
+        i18nKey="assistant.prompt"
+        components={{ accent: <span className="text-primary" /> }}
+      />
     </div>
 
     <div className="flex flex-wrap gap-1.5">
@@ -454,38 +450,41 @@ const AssistantInput = ({
   lang,
   onSend,
   inputRef,
-}: AssistantInputProps) => (
-  <form
-    name="assistant-chat"
-    aria-label="Assistant chat"
-    onSubmit={(event) => {
-      event.preventDefault();
-      onSend(input);
-    }}
-    className="mt-auto flex shrink-0 items-center gap-2.5 border-t border-hairline pt-2.5"
-  >
-    <input
-      ref={inputRef}
-      name="message"
-      value={input}
-      onChange={(event) =>
-        setInput(event.target.value.slice(0, MAX_INPUT_CHARS))
-      }
-      disabled={loading}
-      maxLength={MAX_INPUT_CHARS}
-      placeholder={assistantMsg.placeholder[lang]}
-      className="min-w-0 flex-1 border-0 bg-transparent font-sans text-detail text-foreground caret-primary opacity-100 outline-none placeholder:text-muted-foreground disabled:opacity-50"
-    />
-    <button
-      type="submit"
-      disabled={loading || !input.trim()}
-      aria-label={common.send[lang]}
-      className="edo-focus-ring flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-muted-foreground transition-colors hover:text-foreground disabled:cursor-default disabled:opacity-30 disabled:hover:text-muted-foreground"
+}: AssistantInputProps) => {
+  const t = useT();
+  return (
+    <form
+      name="assistant-chat"
+      aria-label="Assistant chat"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSend(input);
+      }}
+      className="mt-auto flex shrink-0 items-center gap-2.5 border-t border-hairline pt-2.5"
     >
-      <IconArrowRight width="16" height="16" />
-    </button>
-  </form>
-);
+      <input
+        ref={inputRef}
+        name="message"
+        value={input}
+        onChange={(event) =>
+          setInput(event.target.value.slice(0, MAX_INPUT_CHARS))
+        }
+        disabled={loading}
+        maxLength={MAX_INPUT_CHARS}
+        placeholder={t('assistant.placeholder')}
+        className="min-w-0 flex-1 border-0 bg-transparent font-sans text-detail text-foreground caret-primary opacity-100 outline-none placeholder:text-muted-foreground disabled:opacity-50"
+      />
+      <button
+        type="submit"
+        disabled={loading || !input.trim()}
+        aria-label={t('common.send')}
+        className="edo-focus-ring flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-muted-foreground transition-colors hover:text-foreground disabled:cursor-default disabled:opacity-30 disabled:hover:text-muted-foreground"
+      >
+        <IconArrowRight width="16" height="16" />
+      </button>
+    </form>
+  );
+};
 
 const MONTHS_SHORT: Record<Lang, string[]> = {
   fr: [
@@ -529,6 +528,7 @@ interface ContactFormProps {
 }
 
 const ContactForm = ({ lang, onSubmit }: ContactFormProps) => {
+  const t = useT();
   const [f, setF] = useState({
     prenom: '',
     nom: '',
@@ -554,15 +554,15 @@ const ContactForm = ({ lang, onSubmit }: ContactFormProps) => {
       !f.societe.trim() ||
       !f.adresseFacturation.trim()
     ) {
-      setErr(assistantMsg.contactErrRequired[lang]);
+      setErr(t('assistant.contactErrRequired'));
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim())) {
-      setErr(assistantMsg.contactErrEmail[lang]);
+      setErr(t('assistant.contactErrEmail'));
       return;
     }
     if (f.siren.trim() && !isValidSiren(f.siren)) {
-      setErr(assistantMsg.contactErrSiren[lang]);
+      setErr(t('assistant.contactErrSiren'));
       return;
     }
     const parts = [
@@ -589,19 +589,19 @@ const ContactForm = ({ lang, onSubmit }: ContactFormProps) => {
       className="shrink-0 border border-border bg-white p-3"
     >
       <div className="mb-2 font-mono text-nano uppercase tracking-code text-primary">
-        {assistantMsg.contactFormTitle[lang]}
+        {t('assistant.contactFormTitle')}
       </div>
       <div className="flex flex-col gap-1.5">
         <div className="flex gap-1.5">
           <input
             className={inputCls}
-            placeholder={assistantMsg.contactFirstName[lang]}
+            placeholder={t('assistant.contactFirstName')}
             value={f.prenom}
             onChange={upd('prenom')}
           />
           <input
             className={inputCls}
-            placeholder={assistantMsg.contactLastName[lang]}
+            placeholder={t('assistant.contactLastName')}
             value={f.nom}
             onChange={upd('nom')}
           />
@@ -609,44 +609,44 @@ const ContactForm = ({ lang, onSubmit }: ContactFormProps) => {
         <input
           className={inputCls}
           type="email"
-          placeholder={assistantMsg.contactEmail[lang]}
+          placeholder={t('assistant.contactEmail')}
           value={f.email}
           onChange={upd('email')}
         />
         <input
           className={inputCls}
           type="tel"
-          placeholder={assistantMsg.contactPhone[lang]}
+          placeholder={t('assistant.contactPhone')}
           value={f.tel}
           onChange={upd('tel')}
         />
         <input
           className={inputCls}
-          placeholder={assistantMsg.contactCompany[lang]}
+          placeholder={t('assistant.contactCompany')}
           value={f.societe}
           onChange={upd('societe')}
         />
         <input
           className={inputCls}
-          placeholder={assistantMsg.contactBillingAddress[lang]}
+          placeholder={t('assistant.contactBillingAddress')}
           value={f.adresseFacturation}
           onChange={upd('adresseFacturation')}
         />
         <input
           className={inputCls}
-          placeholder={assistantMsg.contactBrand[lang]}
+          placeholder={t('assistant.contactBrand')}
           value={f.marque}
           onChange={upd('marque')}
         />
         <input
           className={inputCls}
-          placeholder={assistantMsg.contactSiren[lang]}
+          placeholder={t('assistant.contactSiren')}
           value={f.siren}
           onChange={upd('siren')}
         />
         <input
           className={inputCls}
-          placeholder={assistantMsg.contactNotes[lang]}
+          placeholder={t('assistant.contactNotes')}
           value={f.autresInfos}
           onChange={upd('autresInfos')}
         />
@@ -656,7 +656,7 @@ const ContactForm = ({ lang, onSubmit }: ContactFormProps) => {
         type="submit"
         className="edo-focus-ring mt-2 flex w-full cursor-pointer items-center justify-center border-0 bg-primary px-3 py-2 text-detail text-white transition-opacity hover:opacity-90"
       >
-        {assistantMsg.contactSubmit[lang]}
+        {t('assistant.contactSubmit')}
       </button>
     </form>
   );
@@ -681,11 +681,12 @@ const BookingRecapCard = ({
   error,
   onConfirm,
 }: BookingRecapCardProps) => {
+  const t = useT();
   const ttc = Math.round(proposal.quote.total * 1.2);
   return (
     <div className="shrink-0 border border-border bg-white p-3">
       <div className="mb-2 font-mono text-nano uppercase tracking-code text-primary">
-        {assistantMsg.bookingRecapTitle[lang]}
+        {t('assistant.bookingRecapTitle')}
       </div>
 
       <div className="mb-2 flex flex-col gap-1">
@@ -718,22 +719,22 @@ const BookingRecapCard = ({
       </div>
 
       <div className="flex justify-between border-t border-hairline pt-2 text-detail font-semibold text-foreground">
-        <span>{assistantMsg.bookingTotalHT[lang]}</span>
+        <span>{t('assistant.bookingTotalHT')}</span>
         <span>{fmtEUR(proposal.quote.total)} €</span>
       </div>
       <div className="mb-2 text-right font-mono text-micro text-muted-foreground">
-        {fmtEUR(ttc)} € {assistantMsg.bookingTotalTTC[lang]}
+        {fmtEUR(ttc)} € {t('assistant.bookingTotalTTC')}
       </div>
 
       <div className="mb-2 border-t border-hairline pt-2 text-micro text-muted-foreground">
-        {assistantMsg.bookingContact[lang]}: {proposal.contact.prenom}{' '}
+        {t('assistant.bookingContact')}: {proposal.contact.prenom}{' '}
         {proposal.contact.nom} · {proposal.contact.email} ·{' '}
         {proposal.contact.tel}
         {proposal.contact.siren ? ` · SIREN ${proposal.contact.siren}` : ''}
       </div>
 
       <div className="mb-2 text-micro italic text-muted-foreground">
-        {assistantMsg.bookingEstimateNote[lang]}
+        {t('assistant.bookingEstimateNote')}
       </div>
 
       <label className="mb-2 flex cursor-pointer items-start gap-2 text-micro text-foreground">
@@ -743,7 +744,7 @@ const BookingRecapCard = ({
           onChange={(e) => setCgv(e.target.checked)}
           className="mt-0.5 accent-primary"
         />
-        <span>{assistantMsg.bookingCgv[lang]}</span>
+        <span>{t('assistant.bookingCgv')}</span>
       </label>
 
       {error && <div className="mb-2 text-micro text-primary">{error}</div>}
@@ -755,8 +756,8 @@ const BookingRecapCard = ({
         className="edo-focus-ring flex w-full cursor-pointer items-center justify-center border-0 bg-primary px-3 py-2 text-detail text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
       >
         {busy
-          ? assistantMsg.bookingConfirming[lang]
-          : assistantMsg.bookingConfirm[lang]}
+          ? t('assistant.bookingConfirming')
+          : t('assistant.bookingConfirm')}
       </button>
     </div>
   );
@@ -769,6 +770,7 @@ interface AssistantChatProps {
 }
 
 const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
+  const t = useT();
   const {
     sessions,
     activeId,
@@ -837,8 +839,8 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
       } else {
         const fallback =
           result.error === 'rate_limited'
-            ? assistantMsg.rateLimited[lang]
-            : assistantMsg.errorFallback[lang];
+            ? t('assistant.rateLimited')
+            : t('assistant.errorFallback');
         setActiveMessages([
           ...nextMessages,
           { role: 'assistant', content: fallback },
@@ -847,7 +849,7 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
     } catch (_error) {
       setActiveMessages([
         ...nextMessages,
-        { role: 'assistant', content: assistantMsg.errorFallback[lang] },
+        { role: 'assistant', content: t('assistant.errorFallback') },
       ]);
     } finally {
       setLoading(false);
@@ -874,10 +876,7 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
         ...messages,
         {
           role: 'assistant',
-          content: assistantMsg.bookingSuccess[lang].replace(
-            '{ref}',
-            result.reference,
-          ),
+          content: t('assistant.bookingSuccess', { ref: result.reference }),
         },
       ]);
     } catch (e) {
@@ -886,8 +885,8 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
         msg.includes('réservé') || msg.includes('already booked');
       setBookingErr(
         isConflict
-          ? assistantMsg.bookingConflict[lang]
-          : assistantMsg.bookingError[lang],
+          ? t('assistant.bookingConflict')
+          : t('assistant.bookingError'),
       );
     } finally {
       setBookingBusy(false);
