@@ -233,7 +233,10 @@ export const BOOK_PLATEAUX: BookPlateau[] = [
     fr: 'Cyclorama',
     en: 'Cyclorama',
     desc: { fr: 'Cyclo blanc 30 m²', en: 'White cyclo 30 m²' },
-    rates: { hour: null, halfH: 650, fullH: 880, editorial: 660 },
+    // Pas de tarif éditorial : ce mode est facturé « sur demande »
+    // (cf. computePriceBreakdown, branche `cycloMode === 'editorial'`), et le
+    // CMS le déclare également sans montant.
+    rates: { hour: null, halfH: 650, fullH: 880 },
     hdUnit: 'halfH',
     fdUnit: 'fullH',
     isCyclo: true,
@@ -385,6 +388,44 @@ export const packshotRate = (entry: CfgEntry, views: string[]) => {
   const key = packshotViews.sort().join('+') || 'face';
   return entry.rates?.[key] || entry.rates?.face || 50;
 };
+
+/** Une journée complète, en heures — l'unité du tarif `rates.full`. */
+export const HOURS_PER_FULL_DAY = 8;
+
+// Durée TOTALE facturée d'un créneau, en heures. C'est le nombre qui facture
+// l'équipe (computePriceBreakdown) et celui qu'on persiste sur la réservation.
+// Une journée complète sur deux jours vaut 16, pas 8 — `hours` fait foi.
+// La demi-journée est bornée à [4,7] ; au-delà, c'est une journée.
+//
+// Domicile unique de cette règle : elle était recopiée dans le chemin de rendu
+// mono-plateau et dans le chemin multi-plateau, et les copies divergeaient.
+export function rentalHoursFor(
+  slot: SlotState,
+  plateau: BookPlateau | null | undefined,
+): number {
+  if (plateau?.isCyclo) return slot.cycloMode === 'halfH' ? 5 : 10;
+  if (plateau?.isVisite) return 1;
+  if (slot.slotType === 'hour') return slot.hours || 1;
+  if (slot.slotType === 'half') return Math.max(4, Math.min(7, slot.hours || 4));
+  return slot.hours || HOURS_PER_FULL_DAY;
+}
+
+// Heures occupées sur UNE journée — la question que pose le calendrier, et qui
+// n'est pas celle de la facturation. `useAvailability` cherche un créneau libre
+// de N heures consécutives à l'intérieur d'une seule journée d'ouverture ; lui
+// passer le total facturé d'une réservation multi-jours (16, 24) ne décrit aucune
+// journée réelle et rendait toutes les dates indisponibles, y compris sur une
+// journée vide — le client ne pouvait plus réserver du tout.
+//
+// Le cyclorama est déjà exprimé en journées (5h ou 10h) et n'a rien à plafonner.
+export function dailyOccupancyHoursFor(
+  slot: SlotState,
+  plateau: BookPlateau | null | undefined,
+): number {
+  const total = rentalHoursFor(slot, plateau);
+  if (plateau?.isCyclo) return total;
+  return Math.min(total, HOURS_PER_FULL_DAY);
+}
 
 export const computePostprodPrice = (session: BookingSession) => {
   const cfgKey = cfgMatrixKey(session);
@@ -750,17 +791,7 @@ export function computePriceBreakdown({
         }
       }
     }
-    const slotRentalHours = px.isCyclo
-      ? st.cycloMode === 'halfH'
-        ? 5
-        : 10
-      : px.isVisite
-        ? 1
-        : st.slotType === 'hour'
-          ? st.hours || 1
-          : st.slotType === 'half'
-            ? Math.max(4, Math.min(7, st.hours || 4))
-            : st.hours || 8;
+    const slotRentalHours = rentalHoursFor(st, px);
     const slotTeam = st.team || {};
     EQUIPE.forEach((e) => {
       const val = slotTeam[e.k];

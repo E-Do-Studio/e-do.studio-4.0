@@ -39,6 +39,8 @@ import {
   makeBlankSession,
   isSessionValid,
   computePriceBreakdown,
+  rentalHoursFor,
+  dailyOccupancyHoursFor,
   buildSessionsData as buildSessionsDataEngine,
 } from './lib/booking-engine';
 import type {
@@ -411,17 +413,13 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
   const months = lang === 'fr' ? MONTHS_FR : MONTHS_EN;
   const days = lang === 'fr' ? DAYS_FR : DAYS_EN;
   const p = BOOK_PLATEAUX.find((x) => x.k === plateau) || NO_PLATEAU;
-  const rentalHours = p.isCyclo
-    ? cycloMode === 'halfH'
-      ? 5
-      : 10
-    : p.isVisite
-      ? 1
-      : slotType === 'hour'
-        ? hours
-        : slotType === 'half'
-          ? Math.max(4, Math.min(7, hours))
-          : 8;
+  // Deux questions distinctes : ce qu'on facture et persiste (rentalHours), et ce
+  // que le calendrier doit trouver de libre sur une seule journée (availabilityHours).
+  const rentalHours = rentalHoursFor({ slotType, hours, cycloMode }, p);
+  const availabilityHours = dailyOccupancyHoursFor(
+    { slotType, hours, cycloMode },
+    p,
+  );
   const quoteLabels = useMemo<QuoteLabels>(
     () => ({
       cyclo5h: bookingMsg.cyclo5h[lang],
@@ -1255,7 +1253,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                     setSelected={setSelected}
                     arrivalHour={arrivalHour}
                     setArrivalHour={setArrivalHour}
-                    rentalHours={rentalHours}
+                    rentalHours={availabilityHours}
                     isPast={isPast}
                     nextMonth={nextMonth}
                     prevMonth={prevMonth}
@@ -1273,22 +1271,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                   ...prev,
                   [id]: { ...(prev[id] || {}), plateauKey: pk, ...patch },
                 }));
-              const stHours =
-                st.hours != null
-                  ? st.hours
-                  : st.slotType === 'hour'
-                    ? 1
-                    : st.slotType === 'half'
-                      ? 4
-                      : 8;
-              const stRentalHours =
-                px && px.isCyclo
-                  ? (st.cycloMode || 'halfH') === 'halfH'
-                    ? 5
-                    : 10
-                  : px && px.isVisite
-                    ? 1
-                    : stHours;
+              const stRentalHours = dailyOccupancyHoursFor(st, px);
               const stSelected = st.date || null;
               const stArrival = st.arrivalHour != null ? st.arrivalHour : 10;
               const sameKeyCount: Record<string, number> = {};
