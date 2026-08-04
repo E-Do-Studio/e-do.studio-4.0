@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { validateContact } from './booking-schema';
+import { validateContact, validateIdentity } from './booking-schema';
 
 const complet = {
   marque: 'ACME',
@@ -71,5 +71,57 @@ describe('validateContact', () => {
   it('accepte un SIREN de 9 chiffres même sans clé de Luhn valide', () => {
     expect(errs({ siren: '123456789' })).toEqual({});
     expect(errs({ siren: '12345678' })).toHaveProperty('siren');
+  });
+});
+
+// Le formulaire de l'assistant portait sa propre regex email et ses propres
+// contrôles de présence. Ces cas verrouillent le partage des règles avec le
+// tunnel de réservation.
+describe('validateIdentity', () => {
+  const identity = (over: Record<string, unknown> = {}) => ({
+    prenom: 'Ada',
+    nom: 'Lovelace',
+    email: 'ada@example.com',
+    tel: '+33 6 12 34 56 78',
+    societe: 'Analytical Engines',
+    adresseFacturation: '1 rue de la Machine, Paris',
+    ...over,
+  });
+
+  it('accepte une identité complète sans SIREN', () => {
+    expect(validateIdentity(identity(), 'fr').success).toBe(true);
+  });
+
+  it('applique la même règle email que le tunnel', () => {
+    const r = validateIdentity(identity({ email: 'ada@example' }), 'fr');
+    expect(r.success).toBe(false);
+    if (!r.success) expect(r.errors.email).toBeTruthy();
+  });
+
+  it('exige les champs de contact', () => {
+    for (const k of [
+      'prenom',
+      'nom',
+      'societe',
+      'adresseFacturation',
+    ] as const) {
+      const r = validateIdentity(identity({ [k]: '' }), 'fr');
+      expect(r.success).toBe(false);
+      if (!r.success) expect(r.errors[k]).toBeTruthy();
+    }
+  });
+
+  it('rejette un téléphone trop court', () => {
+    expect(validateIdentity(identity({ tel: '12' }), 'fr').success).toBe(false);
+  });
+
+  it('laisse passer un SIREN absent mais vérifie la clé de Luhn sinon', () => {
+    expect(validateIdentity(identity({ siren: '' }), 'fr').success).toBe(true);
+    expect(validateIdentity(identity({ siren: '552100554' }), 'fr').success).toBe(
+      true,
+    );
+    expect(validateIdentity(identity({ siren: '123456789' }), 'fr').success).toBe(
+      false,
+    );
   });
 });

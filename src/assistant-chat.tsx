@@ -2,6 +2,9 @@ import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { useRouterState } from '@tanstack/react-router';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { ArrowRight, Plus, Trash2, X } from 'lucide-react';
 import type { Lang, ChatMessage } from './types';
@@ -13,9 +16,9 @@ import { useChatSessions, type ChatSession } from './lib/use-chat-sessions';
 import { createBooking } from './lib/bookings';
 import {
   BOOK_PLATEAUX,
-  isValidSiren,
   type CreateBookingInput,
 } from './lib/booking-engine';
+import { validateIdentity } from './lib/booking-schema';
 import { fmtEUR } from './lib/format';
 
 const MAX_INPUT_CHARS = 1500;
@@ -462,7 +465,7 @@ const AssistantInput = ({
       }}
       className="mt-auto flex shrink-0 items-center gap-2.5 border-t border-hairline pt-2.5"
     >
-      <input
+      <Input
         ref={inputRef}
         name="message"
         value={input}
@@ -472,16 +475,18 @@ const AssistantInput = ({
         disabled={loading}
         maxLength={MAX_INPUT_CHARS}
         placeholder={t('assistant.placeholder')}
-        className="min-w-0 flex-1 border-0 bg-transparent font-sans text-detail text-foreground caret-primary opacity-100 outline-none placeholder:text-muted-foreground disabled:opacity-50"
+        className="h-auto flex-1 rounded-none border-0 bg-transparent font-sans text-detail caret-primary disabled:bg-transparent"
       />
-      <button
+      <Button
         type="submit"
+        variant="ghost"
+        size="icon-sm"
         disabled={loading || !input.trim()}
         aria-label={t('common.send')}
-        className="edo-focus-ring flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-muted-foreground transition-colors hover:text-foreground disabled:cursor-default disabled:opacity-30 disabled:hover:text-muted-foreground"
+        className="shrink-0 text-muted-foreground hover:text-foreground"
       >
-        <ArrowRight width="16" height="16" />
-      </button>
+        <ArrowRight />
+      </Button>
     </form>
   );
 };
@@ -546,23 +551,12 @@ const ContactForm = ({ lang, onSubmit }: ContactFormProps) => {
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (
-      !f.prenom.trim() ||
-      !f.nom.trim() ||
-      !f.email.trim() ||
-      !f.tel.trim() ||
-      !f.societe.trim() ||
-      !f.adresseFacturation.trim()
-    ) {
-      setErr(t('assistant.contactErrRequired'));
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim())) {
-      setErr(t('assistant.contactErrEmail'));
-      return;
-    }
-    if (f.siren.trim() && !isValidSiren(f.siren)) {
-      setErr(t('assistant.contactErrSiren'));
+    // Mêmes règles que le tunnel de réservation : la regex email en ligne et
+    // les contrôles de présence vivaient ici en double.
+    const check = validateIdentity(f, lang);
+    if (!check.success) {
+      const firstError = Object.values(check.errors)[0];
+      setErr(firstError ?? t('assistant.contactErrRequired'));
       return;
     }
     const parts = [
@@ -580,9 +574,6 @@ const ContactForm = ({ lang, onSubmit }: ContactFormProps) => {
     onSubmit('Mes coordonnées — ' + parts.join(' · '));
   };
 
-  const inputCls =
-    'w-full border border-border bg-white px-2 py-1.5 text-detail text-foreground outline-none transition-colors focus:border-foreground';
-
   return (
     <form
       onSubmit={submit}
@@ -593,59 +584,50 @@ const ContactForm = ({ lang, onSubmit }: ContactFormProps) => {
       </div>
       <div className="flex flex-col gap-1.5">
         <div className="flex gap-1.5">
-          <input
-            className={inputCls}
+          <Input
             placeholder={t('assistant.contactFirstName')}
             value={f.prenom}
             onChange={upd('prenom')}
           />
-          <input
-            className={inputCls}
+          <Input
             placeholder={t('assistant.contactLastName')}
             value={f.nom}
             onChange={upd('nom')}
           />
         </div>
-        <input
-          className={inputCls}
+        <Input
           type="email"
           placeholder={t('assistant.contactEmail')}
           value={f.email}
           onChange={upd('email')}
         />
-        <input
-          className={inputCls}
+        <Input
           type="tel"
           placeholder={t('assistant.contactPhone')}
           value={f.tel}
           onChange={upd('tel')}
         />
-        <input
-          className={inputCls}
+        <Input
           placeholder={t('assistant.contactCompany')}
           value={f.societe}
           onChange={upd('societe')}
         />
-        <input
-          className={inputCls}
+        <Input
           placeholder={t('assistant.contactBillingAddress')}
           value={f.adresseFacturation}
           onChange={upd('adresseFacturation')}
         />
-        <input
-          className={inputCls}
+        <Input
           placeholder={t('assistant.contactBrand')}
           value={f.marque}
           onChange={upd('marque')}
         />
-        <input
-          className={inputCls}
+        <Input
           placeholder={t('assistant.contactSiren')}
           value={f.siren}
           onChange={upd('siren')}
         />
-        <input
-          className={inputCls}
+        <Input
           placeholder={t('assistant.contactNotes')}
           value={f.autresInfos}
           onChange={upd('autresInfos')}
@@ -738,11 +720,10 @@ const BookingRecapCard = ({
       </div>
 
       <label className="mb-2 flex cursor-pointer items-start gap-2 text-micro text-foreground">
-        <input
-          type="checkbox"
+        <Checkbox
           checked={cgv}
-          onChange={(e) => setCgv(e.target.checked)}
-          className="mt-0.5 accent-primary"
+          onCheckedChange={(next: boolean) => setCgv(next)}
+          className="mt-0.5"
         />
         <span>{t('assistant.bookingCgv')}</span>
       </label>
