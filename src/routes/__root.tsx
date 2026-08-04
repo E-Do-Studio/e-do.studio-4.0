@@ -44,11 +44,7 @@ import { NavMenu } from '../nav-menu';
 import { NotFoundPage } from '../not-found-page';
 import { PreviewBanner } from '../preview-banner';
 import type { Lang } from '../types';
-// Import à effet de bord, et non `?url` : ce dernier était résolu dans
-// l'environnement serveur, qui calcule son propre hash de fichier. Le href posé
-// dans le head() ne correspondait donc pas à la feuille réellement émise par le
-// build client — 404, page peinte sans style, puis restylée par le JS.
-import '../styles.css';
+import appCss from '../styles.css?url';
 
 const VALID_LANGS: Lang[] = ['fr', 'en'];
 const DEFAULT_LANG: Lang = 'fr';
@@ -267,8 +263,13 @@ export const Route = createRootRoute({
       },
     ],
     links: [
-      // Pas de lien vers la feuille ici : Vite l'émet depuis son manifeste,
-      // avec le hash réel.
+      // Sur Vite, TanStack Start impose de lier la feuille explicitement ici
+      // (l'import à effet de bord est le schéma Rsbuild). Sans ce lien, le HTML
+      // arrive sans style et n'est peint qu'au chargement du JS ; et la feuille,
+      // entrée dans le graphe de modules, se fait dupliquer en dev par
+      // l'agrégateur de styles — Tailwind y émet alors son thème par défaut,
+      // qui écrase le nôtre. Cf. la doc « Tailwind CSS Integration ».
+      { rel: 'stylesheet', href: appCss },
       { rel: 'preconnect', href: 'https://cms.e-do.studio', crossOrigin: '' },
       { rel: 'dns-prefetch', href: 'https://cms.e-do.studio' },
       // Coupes critiques : Light (titres), Regular (corps) et Mono Book
