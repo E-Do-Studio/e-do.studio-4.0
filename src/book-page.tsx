@@ -56,7 +56,8 @@ import type {
   Recommendation,
   QuoteLabels,
 } from './lib/booking-engine';
-import { common, booking as bookingMsg } from './i18n/messages';
+import { useT } from './i18n/use-t';
+import { DAYS, MONTHS } from './lib/format';
 import { cn } from '@/lib/utils';
 import {
   pathForStep,
@@ -88,37 +89,6 @@ interface ContactState {
   autreType?: string;
 }
 
-const MONTHS_FR = [
-  'Janvier',
-  'Février',
-  'Mars',
-  'Avril',
-  'Mai',
-  'Juin',
-  'Juillet',
-  'Août',
-  'Septembre',
-  'Octobre',
-  'Novembre',
-  'Décembre',
-];
-const MONTHS_EN = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-];
-const DAYS_FR = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
-const DAYS_EN = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-
 interface BookPageV2Props {
   forcedStep?: number;
   forceManual?: boolean;
@@ -147,6 +117,7 @@ const NO_PLATEAU: BookPlateau = {
 };
 
 const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
+  const t = useT();
   const { lang, setLang, openMenu, goto } = usePageContext();
   const navigate = useNavigate();
   const today = new Date();
@@ -410,8 +381,8 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
     },
     [lang, configApplied, forceManual, navigate],
   );
-  const months = lang === 'fr' ? MONTHS_FR : MONTHS_EN;
-  const days = lang === 'fr' ? DAYS_FR : DAYS_EN;
+  const months = MONTHS[lang];
+  const days = DAYS[lang];
   const p = BOOK_PLATEAUX.find((x) => x.k === plateau) || NO_PLATEAU;
   // Deux questions distinctes : ce qu'on facture et persiste (rentalHours), et ce
   // que le calendrier doit trouver de libre sur une seule journée (availabilityHours).
@@ -422,18 +393,18 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
   );
   const quoteLabels = useMemo<QuoteLabels>(
     () => ({
-      cyclo5h: bookingMsg.cyclo5h[lang],
-      cyclo10h: bookingMsg.cyclo10h[lang],
-      cyclo10hEditorial: bookingMsg.cyclo10hEditorial[lang],
-      cycloPaint: bookingMsg.cycloPaint[lang],
-      electricity: bookingMsg.electricity[lang],
-      studioVisit: bookingMsg.studioVisit[lang],
-      halfDay: bookingMsg.halfDay[lang],
-      proRataDay: bookingMsg.proRataDay[lang],
-      postProduction: bookingMsg.postProduction[lang],
-      images: bookingMsg.images[lang],
-      videoEditing: bookingMsg.videoEditing[lang],
-      onRequest: common.onRequest[lang],
+      cyclo5h: t('booking.cyclo5h'),
+      cyclo10h: t('booking.cyclo10h'),
+      cyclo10hEditorial: t('booking.cyclo10hEditorial'),
+      cycloPaint: t('booking.cycloPaint'),
+      electricity: t('booking.electricity'),
+      studioVisit: t('booking.studioVisit'),
+      halfDay: t('booking.halfDay'),
+      proRataDay: t('booking.proRataDay'),
+      postProduction: t('booking.postProduction'),
+      images: t('booking.images'),
+      videoEditing: t('booking.videoEditing'),
+      onRequest: t('common.onRequest'),
     }),
     [lang],
   );
@@ -656,11 +627,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
     );
     const briefLines: string[] = [];
     if (recs.length > 1) {
-      briefLines.push(
-        lang === 'fr'
-          ? `Projet multi-plateaux (${recs.length} sessions).`
-          : `Multi-stage project (${recs.length} sessions).`,
-      );
+      briefLines.push(t('booking.multiStageProject', { count: recs.length }));
     }
     recs.forEach((r, i) => {
       const px = BOOK_PLATEAUX.find((x) => x.k === r.plateau);
@@ -672,7 +639,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
         ? ` (${(s.media || []).join('+')})`
         : '';
       const dur = r.onRequest
-        ? common.onRequest[lang]
+        ? t('common.onRequest')
         : r.slotType === 'full'
           ? (() => {
               const totalH = r.hours || (r.totalDays ? r.totalDays * 8 : 8);
@@ -685,21 +652,19 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
             ? `${r.hours}h (½j)`
             : `${r.hours}h`;
       briefLines.push(
-        `\n${bookingMsg.session[lang]} ${i + 1} — ${productLbl}${subLbl}${mediaLbl} → ${px ? px[lang] : r.plateau} · ${dur}`,
+        `\n${t('booking.session')} ${i + 1} — ${productLbl}${subLbl}${mediaLbl} → ${px ? px[lang] : r.plateau} · ${dur}`,
       );
       briefLines.push(
-        ` ${bookingMsg.quantity[lang]} : ${s.quantity} ${bookingMsg.products[lang]}`,
+        ` ${t('booking.quantity')} : ${s.quantity} ${t('booking.products')}`,
       );
       if (s.views && s.views.length) {
-        briefLines.push(` ${bookingMsg.views[lang]} : ${s.views.join(', ')}`);
+        briefLines.push(` ${t('booking.views')} : ${s.views.join(', ')}`);
       } else if (s.viewsCount) {
-        briefLines.push(
-          ` ${bookingMsg.viewsPerProduct[lang]} : ${s.viewsCount}`,
-        );
+        briefLines.push(` ${t('booking.viewsPerProduct')} : ${s.viewsCount}`);
       }
       if (s.postprod) {
         briefLines.push(
-          ` ${bookingMsg.postProduction[lang]} : ${bookingMsg.yes[lang]}${s.postprodVideo ? ` + ${bookingMsg.videoEdit[lang]}` : ''}`,
+          ` ${t('booking.postProduction')} : ${t('booking.yes')}${s.postprodVideo ? ` + ${t('booking.videoEdit')}` : ''}`,
         );
       }
     });
@@ -869,7 +834,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
           clearAvailabilityCache();
           setAvailRefreshKey((k) => k + 1);
         }
-        setSaveError(msg || bookingMsg.saveError[lang]);
+        setSaveError(msg || t('booking.saveError'));
       } finally {
         setSaving(false);
       }
@@ -900,7 +865,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
           (cols 1-3), the title sits in col 2 and the right block in col 3. */}
       <PageHeader
         lang={lang}
-        title={bookingMsg.title[lang]}
+        title={t('booking.title')}
         className="col-span-full h-14 md:col-start-1 md:col-end-4 md:row-start-1 md:h-full"
         titleClassName="lg:col-start-2 lg:col-span-1"
         rightBlockClassName="lg:col-start-3"
@@ -913,12 +878,12 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
       {/* Desktop col 4 – dark label matching quote panel below */}
       <div className="hidden md:flex h-full items-center bg-foreground px-6 md:col-start-4 md:row-start-1">
         <CellLabel className="text-white/55">
-          {bookingMsg.yourQuote[lang]}
+          {t('booking.yourQuote')}
         </CellLabel>
       </div>
 
       <nav
-        aria-label={lang === 'fr' ? 'Étapes de réservation' : 'Booking steps'}
+        aria-label={t('booking.bookingSteps')}
         className="md:hidden bg-white border-b border-hairline"
       >
         <ol className="flex items-center px-5 pt-4">
@@ -1023,10 +988,8 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
         {mode === 'manual' && (
           <div className="flex flex-col md:flex-row md:items-stretch md:min-h-control bg-muted box-border shrink-0 border-b border-hairline">
             <span className="font-mono text-micro tracking-code uppercase text-muted-foreground px-5 py-3 md:py-0 md:self-center md:pl-5 md:pr-3 flex-1 min-w-0 leading-relaxed">
-              {bookingMsg.manualOr[lang]}
-              <span className="text-foreground">
-                {bookingMsg.letUsGuide[lang]}
-              </span>
+              {t('booking.manualOr')}
+              <span className="text-foreground">{t('booking.letUsGuide')}</span>
             </span>
             <div className="flex items-stretch border-t border-hairline md:border-t-0 md:flex-none md:w-1/2">
               <button
@@ -1047,14 +1010,14 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                 }}
                 className="edo-focus-ring flex-1 bg-transparent border-l border-hairline px-5 py-3 md:py-0 cursor-pointer font-mono text-micro tracking-code uppercase text-foreground whitespace-nowrap leading-normal inline-flex items-center justify-center transition-colors duration-150 hover:bg-white"
               >
-                ↻ {common.reset[lang]}
+                ↻ {t('common.reset')}
               </button>
               <button
                 type="button"
                 onClick={() => goToStep(0, 'config')}
                 className="edo-focus-ring flex-1 bg-primary border-l border-hairline px-5 py-3 md:py-0 cursor-pointer font-mono text-label tracking-code uppercase text-white whitespace-nowrap leading-normal font-semibold inline-flex items-center justify-center transition-opacity duration-150 hover:opacity-90"
               >
-                ← {bookingMsg.configurator[lang]}
+                ← {t('booking.configurator')}
               </button>
             </div>
           </div>
@@ -1130,12 +1093,12 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                 return (
                   <div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local">
                     <span className="edo-cell-label text-primary whitespace-nowrap">
-                      02 · {bookingMsg.rentalDuration[lang]}
+                      02 · {t('booking.rentalDuration')}
                     </span>
                     <span className="font-mono text-label tracking-caption text-muted-foreground">
                       {list.length > 1
-                        ? bookingMsg.chooseDurationEach[lang]
-                        : bookingMsg.chooseDurationSingle[lang]}
+                        ? t('booking.chooseDurationEach')
+                        : t('booking.chooseDurationSingle')}
                     </span>
                   </div>
                 );
@@ -1168,7 +1131,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
               topBanner={
                 <div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local">
                   <span className="edo-cell-label text-primary whitespace-nowrap">
-                    03 · {bookingMsg.teamOptional[lang]}
+                    03 · {t('booking.teamOptional')}
                   </span>
                 </div>
               }
@@ -1203,7 +1166,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
               topBanner={
                 <div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local">
                   <span className="edo-cell-label text-primary whitespace-nowrap">
-                    04 · {bookingMsg.postProdOptional[lang]}
+                    04 · {t('booking.postProdOptional')}
                   </span>
                 </div>
               }
@@ -1308,7 +1271,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                 <div>
                   <div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 md:gap-4 bg-white flex-wrap sticky top-0 z-10">
                     <span className="edo-cell-label text-primary whitespace-nowrap">
-                      {lang === 'fr' ? 'Plateau' : 'Stage'}{' '}
+                      {t('booking.stageFallback')}{' '}
                       {String(safeIdx + 1).padStart(2, '0')} /{' '}
                       {String(list.length).padStart(2, '0')}
                     </span>
@@ -1396,14 +1359,10 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
               <div className="bg-foreground text-white shrink-0">
                 <div className="flex flex-col md:flex-row md:items-stretch border-b border-white/10">
                   <span className="font-mono text-label tracking-meta uppercase tracking-label text-primary px-5 md:pl-6 md:pr-3 py-2 flex-1 min-w-0 md:self-center">
-                    {lang === 'fr'
-                      ? 'Récap — recommandation'
-                      : 'Recap — recommendation'}
+                    {t('booking.recapRecommendation')}
                   </span>
                   <span className="font-mono text-micro tracking-ui text-white/45 px-5 py-2 border-t border-white/10 md:border-t-0 md:self-center md:w-1/2 md:border-l md:border-white/10">
-                    {lang === 'fr'
-                      ? 'estimation, ajustable'
-                      : 'estimate, tweakable'}
+                    {t('booking.estimateTweakable')}
                   </span>
                 </div>
                 {recs.map((r, i) => {
@@ -1413,30 +1372,21 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                   const pr = PRODUCTS.find((x) => x.k === r.session.product);
                   const productLabel =
                     r.session.projectType === 'cyclorama'
-                      ? lang === 'fr'
-                        ? 'Cyclorama'
-                        : 'Cyclorama'
+                      ? t('booking.cyclorama')
                       : pr?.[lang] || '';
                   const totalHours = r.estimatedHours || r.hours || 0;
                   let dur: string;
                   if (r.onRequest) {
-                    dur = lang === 'fr' ? 'sur demande' : 'on request';
+                    dur = t('booking.onRequestLower');
                   } else if (totalHours <= 16) {
                     dur = `${totalHours}h`;
                   } else {
                     const d = Math.floor(totalHours / 8);
                     const h = totalHours - d * 8;
-                    const dLbl =
-                      lang === 'fr'
-                        ? d > 1
-                          ? 'jours'
-                          : 'jour'
-                        : d > 1
-                          ? 'days'
-                          : 'day';
+                    const dLbl = t('booking.dayUnit', { count: d });
                     dur =
                       h > 0
-                        ? `${d} ${dLbl} ${lang === 'fr' ? 'et' : '+'} ${h}h (${totalHours}h)`
+                        ? `${d} ${dLbl} ${t('booking.andConjunction')} ${h}h (${totalHours}h)`
                         : `${d} ${dLbl} (${totalHours}h)`;
                   }
                   return (
@@ -1458,7 +1408,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                           {productLabel}
                           {r.session.projectType === 'cyclorama'
                             ? ''
-                            : ` · ${r.session.quantity} ${lang === 'fr' ? 'produits' : 'products'}`}
+                            : ` · ${r.session.quantity} ${t('booking.products')}`}
                           {r.session.projectType === 'cyclorama'
                             ? ''
                             : (() => {
@@ -1468,11 +1418,11 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                                 const v = vc || vLen || 0;
                                 const n = q * v;
                                 return n > 0
-                                  ? ` · ${n} ${lang === 'fr' ? 'images' : 'images'}`
+                                  ? ` · ${n} ${t('booking.images')}`
                                   : '';
                               })()}
                           {r.cadence
-                            ? ` · ${lang === 'fr' ? `Estimation : ${r.cadence} produits/jour` : `Estimate: ${r.cadence} products/day`}`
+                            ? ` · ${t('booking.cadenceEstimate', { count: r.cadence })}`
                             : ''}
                         </div>
                       </div>
@@ -1490,9 +1440,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
               disabled={!canNext()}
               className={`edo-focus-ring bg-primary border-0 cursor-pointer text-white font-mono text-caption tracking-meta uppercase px-5 py-3 md:py-0 inline-flex items-center justify-center gap-2 flex-1 min-w-0 transition-opacity duration-150 hover:opacity-90${canNext() ? '' : ' opacity-30 cursor-not-allowed'}`}
             >
-              {lang === 'fr'
-                ? 'Continuer vers la réservation'
-                : 'Continue to booking'}{' '}
+              {t('booking.continueToBooking')}{' '}
               <ArrowRight width="14" height="14" />
             </button>
           </div>
@@ -1560,7 +1508,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                         : '')
                     }
                   >
-                    ← {lang === 'fr' ? 'Retour' : 'Back'}
+                    ← {t('booking.back')}
                   </button>
                   <div className="flex items-stretch md:flex-none md:w-1/2">
                     {step < 5 ? (
@@ -1581,12 +1529,8 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                         }
                       >
                         {step === 0
-                          ? lang === 'fr'
-                            ? 'Continuer vers la réservation'
-                            : 'Continue to booking'
-                          : lang === 'fr'
-                            ? 'Continuer'
-                            : 'Continue'}{' '}
+                          ? t('booking.continueToBooking')
+                          : t('booking.continue')}{' '}
                         <ArrowRight width="14" height="14" />
                       </button>
                     ) : p.isCyclo ? (
@@ -1596,7 +1540,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                           onClick={() => handleContactNext(nextN)}
                           className={navBtnPrimaryCls}
                         >
-                          {lang === 'fr' ? 'Continuer' : 'Continue'}{' '}
+                          {t('booking.continue')}{' '}
                           <ArrowRight width="14" height="14" />
                         </button>
                       ) : isMultiDate && !onLastDateSub ? (
@@ -1611,9 +1555,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                               : ' opacity-30 cursor-not-allowed')
                           }
                         >
-                          {lang === 'fr'
-                            ? 'Valider · plateau suivant'
-                            : 'Validate · next stage'}{' '}
+                          {t('booking.validateNextStage')}{' '}
                           <ArrowRight width="14" height="14" />
                         </button>
                       ) : (
@@ -1631,12 +1573,8 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                           }
                         >
                           {saving
-                            ? lang === 'fr'
-                              ? 'Envoi…'
-                              : 'Sending…'
-                            : lang === 'fr'
-                              ? 'Envoyer la demande'
-                              : 'Submit request'}{' '}
+                            ? t('booking.sending')
+                            : t('booking.submitRequest')}{' '}
                           <ArrowRight width="14" height="14" />
                         </button>
                       )
@@ -1646,11 +1584,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                           type="button"
                           onClick={() => !saving && handleSubmit('quote')}
                           disabled={saving}
-                          title={
-                            lang === 'fr'
-                              ? 'Sans bloquer de date'
-                              : 'No date held'
-                          }
+                          title={t('booking.noDateHeld')}
                           className={
                             navBtnSecondaryCls +
                             (canQuote() && !saving
@@ -1659,12 +1593,8 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                           }
                         >
                           {saving
-                            ? lang === 'fr'
-                              ? 'Envoi…'
-                              : 'Sending…'
-                            : lang === 'fr'
-                              ? 'Recevoir mon devis'
-                              : 'Receive my quote'}{' '}
+                            ? t('booking.sending')
+                            : t('booking.receiveMyQuote')}{' '}
                           <ArrowRight width="14" height="14" />
                         </button>
                         {step === 5 ? (
@@ -1673,7 +1603,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                             onClick={() => handleContactNext(nextN)}
                             className={navBtnPrimaryCls}
                           >
-                            {lang === 'fr' ? 'Choisir une date' : 'Pick a date'}{' '}
+                            {t('booking.pickADate')}{' '}
                             <ArrowRight width="14" height="14" />
                           </button>
                         ) : isMultiDate && !onLastDateSub ? (
@@ -1688,9 +1618,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                                 : ' opacity-30 cursor-not-allowed')
                             }
                           >
-                            {lang === 'fr'
-                              ? 'Valider · plateau suivant'
-                              : 'Validate · next stage'}{' '}
+                            {t('booking.validateNextStage')}{' '}
                             <ArrowRight width="14" height="14" />
                           </button>
                         ) : (
@@ -1708,12 +1636,8 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                             }
                           >
                             {saving
-                              ? lang === 'fr'
-                                ? 'Réservation…'
-                                : 'Booking…'
-                              : lang === 'fr'
-                                ? 'Réserver'
-                                : 'Book now'}{' '}
+                              ? t('booking.booking')
+                              : t('common.bookNow')}{' '}
                             <ArrowRight width="14" height="14" />
                           </button>
                         )}
@@ -2206,6 +2130,7 @@ const Step0Configurator = ({
   onSkip,
   onReset,
 }: AnyProps) => {
+  const t = useT();
   const active = sessions[activeIdx] || sessions[0];
   const [openQ, setOpenQ] = useState(null);
   const [touchedQs, setTouchedQs] = useState(new Set());
@@ -2286,12 +2211,11 @@ const Step0Configurator = ({
   };
   const sessionValid = isSessionValid;
   const S = active;
-  const labelFor = (fr, en) => (lang === 'fr' ? fr : en);
   const qList: AnyProps[] = [];
   qList.push({
     key: 'projectType',
     num: '00',
-    label: labelFor('Type de projet', 'Project type'),
+    label: t('booking.projectType'),
     visible: true,
     answered: !!S.projectType,
     summary: S.projectType
@@ -2302,7 +2226,7 @@ const Step0Configurator = ({
     qList.push({
       key: 'product',
       num: '01',
-      label: labelFor('Type de produit', 'Product type'),
+      label: t('booking.productType'),
       visible: true,
       answered: !!S.product,
       summary: S.product
@@ -2314,7 +2238,7 @@ const Step0Configurator = ({
     qList.push({
       key: 'method',
       num: '02',
-      label: labelFor('Méthode', 'Method'),
+      label: t('booking.method'),
       visible: true,
       answered: !!S.method,
       summary: S.method
@@ -2326,7 +2250,7 @@ const Step0Configurator = ({
     qList.push({
       key: 'submethod',
       num: '03',
-      label: labelFor('Type de packshot', 'Packshot type'),
+      label: t('booking.packshotType'),
       visible: true,
       answered: !!S.submethod,
       summary: S.submethod
@@ -2338,7 +2262,7 @@ const Step0Configurator = ({
     qList.push({
       key: 'submethod',
       num: '02',
-      label: labelFor("Type d'accessoire", 'Accessory type'),
+      label: t('booking.accessoryType'),
       visible: true,
       answered: !!S.submethod,
       summary: S.submethod
@@ -2356,7 +2280,7 @@ const Step0Configurator = ({
     qList.push({
       key: 'media',
       num: mediaNum,
-      label: labelFor('Média', 'Media'),
+      label: t('booking.media'),
       visible: true,
       multi: true,
       answered: (S.media || []).length > 0,
@@ -2370,19 +2294,17 @@ const Step0Configurator = ({
     qList.push({
       key: 'quantity',
       num: '04',
-      label: labelFor('Nombre de produits', 'Number of products'),
+      label: t('booking.numberOfProducts'),
       visible: true,
       answered: !!Number(S.quantity),
-      summary: S.quantity
-        ? `${S.quantity} ${labelFor('produits', 'products')}`
-        : '',
+      summary: S.quantity ? `${S.quantity} ${t('booking.products')}` : '',
     });
   }
   if (S.product === 'pap' && S.method === 'packshot' && S.submethod) {
     qList.push({
       key: 'views',
       num: '05',
-      label: labelFor('Vues par produit', 'Views per product'),
+      label: t('booking.viewsPerProduct'),
       visible: true,
       multi: true,
       answered: (S.views || []).some((v) => v !== 'detail'),
@@ -2402,12 +2324,12 @@ const Step0Configurator = ({
       key: 'qtyViews',
       num:
         S.product === 'pap' ? '04' : S.product === 'accessoires' ? '04' : '03',
-      label: labelFor('Produits & vues', 'Products & views'),
+      label: t('booking.productsViews'),
       visible: true,
       answered: !!Number(S.quantity) && !!Number(S.viewsCount),
       summary:
         S.quantity && S.viewsCount
-          ? `${S.quantity} ${labelFor('prod.', 'prod.')} × ${S.viewsCount} ${labelFor('vues', 'views')}`
+          ? `${S.quantity} ${t('booking.prod')} × ${S.viewsCount} ${t('booking.views2')}`
           : '',
     });
   }
@@ -2416,14 +2338,14 @@ const Step0Configurator = ({
     qList.push({
       key: 'postprod',
       num: 'pp',
-      label: labelFor('Post-production', 'Post-production'),
+      label: t('nav.postprod'),
       visible: true,
       answered: true,
       summary: S.postprod
         ? S.postprodVideo
-          ? labelFor('Oui + vidéo', 'Yes + video')
-          : labelFor('Oui', 'Yes')
-        : labelFor('Non', 'No'),
+          ? t('booking.yesVideo')
+          : t('booking.yes')
+        : t('booking.no'),
     });
   }
   const firstUnansweredIdx = qList.findIndex((q) => !q.answered);
@@ -2470,7 +2392,7 @@ const Step0Configurator = ({
             {q.summary || '—'}
           </span>
           <span className="edo-cell-label text-muted-foreground shrink-0">
-            {lang === 'fr' ? 'modifier' : 'edit'}
+            {t('booking.edit')}
           </span>
         </button>
       );
@@ -2490,11 +2412,9 @@ const Step0Configurator = ({
     <div className="min-w-0 overflow-y-auto h-full">
       <div className="flex flex-col md:flex-row md:items-stretch md:min-h-control bg-muted box-border sticky top-0 z-local border-b border-hairline">
         <span className="font-mono text-micro tracking-code uppercase text-muted-foreground px-5 py-3 md:py-0 md:self-center md:pl-5 md:pr-3 flex-1 min-w-0 leading-relaxed">
-          {lang === 'fr'
-            ? 'Notre configurateur vous accompagne — ou '
-            : 'Our configurator guides you — or '}
+          {t('booking.ourConfiguratorGuidesYouOr')}
           <span className="text-primary font-semibold">
-            {lang === 'fr' ? 'choisissez manuellement →' : 'pick manually →'}
+            {t('booking.pickManually')}
           </span>
         </span>
         <div className="flex items-stretch border-t border-hairline md:border-t-0 md:flex-none md:w-1/2">
@@ -2509,14 +2429,14 @@ const Step0Configurator = ({
             }}
             className="edo-focus-ring flex-1 bg-transparent border-l border-hairline px-5 py-3 md:py-0 cursor-pointer font-mono text-micro tracking-code uppercase text-foreground whitespace-nowrap leading-normal inline-flex items-center justify-center transition-colors duration-150 hover:bg-white"
           >
-            ↻ {lang === 'fr' ? 'Réinitialiser' : 'Reset'}
+            ↻ {t('mobileNav.reset')}
           </button>
           <button
             type="button"
             onClick={onSkip}
             className="edo-focus-ring flex-1 bg-primary border-l border-hairline px-5 py-3 md:py-0 cursor-pointer font-mono text-label tracking-code uppercase text-white whitespace-nowrap leading-normal font-semibold inline-flex items-center justify-center transition-opacity duration-150 hover:opacity-90"
           >
-            {lang === 'fr' ? 'Choisir manuellement' : 'Choose manually'} →
+            {t('booking.chooseManually')} →
           </button>
         </div>
       </div>
@@ -2524,15 +2444,14 @@ const Step0Configurator = ({
         <>
           <div className="px-6 pt-3.5 pb-1 flex items-baseline justify-between gap-4 flex-wrap">
             <span className="edo-cell-label text-primary">
-              {lang === 'fr' ? 'Sessions produit' : 'Product sessions'} —{' '}
-              {sessions.length}
+              {t('booking.productSessions')} — {sessions.length}
             </span>
             <button
               type="button"
               onClick={addSession}
               className="edo-focus-ring bg-white border border-border px-3.5 py-2 cursor-pointer font-mono text-label tracking-meta uppercase text-foreground flex items-center gap-2 h-8"
             >
-              + {lang === 'fr' ? 'Ajouter une session' : 'Add a session'}
+              + {t('booking.addASession')}
             </button>
           </div>
           <div
@@ -2548,14 +2467,10 @@ const Step0Configurator = ({
               const p = PRODUCTS.find((x) => x.k === s.product);
               const label =
                 s.projectType === 'cyclorama'
-                  ? lang === 'fr'
-                    ? 'Cyclorama'
-                    : 'Cyclorama'
+                  ? t('booking.cyclorama')
                   : p
                     ? p[lang]
-                    : lang === 'fr'
-                      ? 'À définir'
-                      : 'To define';
+                    : t('booking.toDefine');
               return (
                 <button
                   type="button"
@@ -2571,8 +2486,7 @@ const Step0Configurator = ({
                     <span
                       className={`font-mono text-label tracking-meta ${isActive ? 'text-primary' : 'text-muted-foreground'}`}
                     >
-                      {lang === 'fr' ? 'Session' : 'Session'}{' '}
-                      {String(i + 1).padStart(2, '0')}
+                      {t('booking.session')} {String(i + 1).padStart(2, '0')}
                     </span>
                     <span
                       onClick={(e) => {
@@ -2580,7 +2494,7 @@ const Step0Configurator = ({
                         removeSession(i);
                       }}
                       className={`text-detail cursor-pointer px-1 leading-none ${isActive ? 'text-white/50' : 'text-muted-foreground'}`}
-                      title={lang === 'fr' ? 'Retirer' : 'Remove'}
+                      title={t('booking.remove')}
                     >
                       ×
                     </span>
@@ -2593,13 +2507,9 @@ const Step0Configurator = ({
                   >
                     {valid
                       ? s.projectType === 'cyclorama'
-                        ? lang === 'fr'
-                          ? 'sur demande'
-                          : 'on request'
-                        : `${s.quantity} ${lang === 'fr' ? 'produits' : 'products'}`
-                      : lang === 'fr'
-                        ? 'incomplet'
-                        : 'incomplete'}
+                        ? t('booking.onRequestLower')
+                        : `${s.quantity} ${t('booking.products')}`
+                      : t('booking.incomplete')}
                   </div>
                 </button>
               );
@@ -2612,7 +2522,7 @@ const Step0Configurator = ({
         <>
           <div className="px-5 sm:px-6 border-b border-hairline flex items-center min-h-control py-4 sm:py-0 gap-3 box-border">
             <span className="edo-cell-label text-primary">
-              00 · {lang === 'fr' ? 'Type de projet' : 'Project type'}
+              00 · {t('booking.projectType')}
             </span>
           </div>
           <div className="grid grid-cols-2 gap-hairline bg-edo-pure-black border-b border-hairline">
@@ -2635,7 +2545,7 @@ const Step0Configurator = ({
           <>
             <div className="px-5 sm:px-6 border-b border-hairline flex items-center min-h-control py-4 sm:py-0 gap-3 box-border">
               <span className="edo-cell-label text-primary">
-                01 · {lang === 'fr' ? 'Type de produit' : 'Product type'}
+                01 · {t('booking.productType')}
               </span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-hairline bg-edo-pure-black border-b border-hairline">
@@ -2658,7 +2568,7 @@ const Step0Configurator = ({
           <>
             <div className="px-5 sm:px-6 border-b border-hairline flex items-center min-h-control py-4 sm:py-0 gap-3 box-border">
               <span className="edo-cell-label text-primary">
-                02 · {lang === 'fr' ? 'Méthode' : 'Method'}
+                02 · {t('booking.method')}
               </span>
             </div>
             <div className="grid grid-cols-2 gap-hairline bg-edo-pure-black border-b border-hairline">
@@ -2682,7 +2592,7 @@ const Step0Configurator = ({
           <>
             <div className="px-5 sm:px-6 border-b border-hairline flex items-center min-h-control py-4 sm:py-0 gap-3 box-border">
               <span className="edo-cell-label text-primary">
-                03 · {lang === 'fr' ? 'Type de packshot' : 'Packshot type'}
+                03 · {t('booking.packshotType')}
               </span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-hairline bg-edo-pure-black border-b border-hairline">
@@ -2705,7 +2615,7 @@ const Step0Configurator = ({
           <>
             <div className="px-5 sm:px-6 border-b border-hairline flex items-center min-h-control py-4 sm:py-0 gap-3 box-border">
               <span className="edo-cell-label text-primary">
-                02 · {lang === 'fr' ? "Type d'accessoire" : 'Accessory type'}
+                02 · {t('booking.accessoryType')}
               </span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-hairline bg-edo-pure-black border-b border-hairline">
@@ -2735,10 +2645,10 @@ const Step0Configurator = ({
                   : S.product === 'accessoires'
                     ? '03'
                     : '02'}{' '}
-                · {lang === 'fr' ? 'Média' : 'Media'}
+                · {t('booking.media')}
               </span>
               <span className="font-mono text-label tracking-caption text-muted-foreground ml-3">
-                {lang === 'fr' ? '(un ou les deux)' : '(one or both)'}
+                {t('booking.oneOrBoth')}
               </span>
             </div>
             <div className="grid grid-cols-2 gap-hairline bg-edo-pure-black border-b border-hairline">
@@ -2776,8 +2686,7 @@ const Step0Configurator = ({
           <>
             <div className="px-5 sm:px-6 border-b border-hairline flex items-center min-h-control py-4 sm:py-0 gap-3 box-border">
               <span className="edo-cell-label text-primary">
-                04 ·{' '}
-                {lang === 'fr' ? 'Nombre de produits' : 'Number of products'}
+                04 · {t('booking.numberOfProducts')}
               </span>
             </div>
             <div className="grid grid-cols-1 gap-hairline bg-edo-pure-black border-b border-hairline">
@@ -2807,10 +2716,10 @@ const Step0Configurator = ({
           <>
             <div className="px-5 sm:px-6 border-b border-hairline flex items-center min-h-control py-4 sm:py-0 gap-3 box-border flex-wrap">
               <span className="edo-cell-label text-primary">
-                05 · {lang === 'fr' ? 'Vues par produit' : 'Views per product'}
+                05 · {t('booking.viewsPerProduct')}
               </span>
               <span className="font-mono text-label tracking-caption text-muted-foreground ml-3">
-                {lang === 'fr' ? '(multi-sélection)' : '(multi-select)'}
+                {t('booking.multiSelect')}
               </span>
             </div>
             <div className="grid gap-hairline bg-edo-pure-black border-b border-hairline grid-cols-auto-tiles">
@@ -2869,13 +2778,13 @@ const Step0Configurator = ({
                   : S.product === 'accessoires'
                     ? '04'
                     : '03'}{' '}
-                · {lang === 'fr' ? 'Produits & vues' : 'Products & views'}
+                · {t('booking.productsViews')}
               </span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-hairline bg-edo-pure-black border-b border-hairline">
               <div className="bg-white px-4 sm:px-3 py-4 sm:py-2.5 flex flex-col gap-2 min-w-0">
                 <span className="edo-cell-label text-muted-foreground">
-                  {lang === 'fr' ? 'Nombre de produits' : 'Number of products'}
+                  {t('booking.numberOfProducts')}
                 </span>
                 <div className="flex items-center gap-1.5 min-w-0">
                   <input
@@ -2893,7 +2802,7 @@ const Step0Configurator = ({
               </div>
               <div className="bg-white px-4 sm:px-3 py-4 sm:py-2.5 flex flex-col gap-2 min-w-0">
                 <span className="edo-cell-label text-muted-foreground">
-                  {lang === 'fr' ? 'Vues par produit' : 'Views per product'}
+                  {t('booking.viewsPerProduct')}
                 </span>
                 <div className="flex items-center gap-1.5 min-w-0">
                   <input
@@ -2920,7 +2829,7 @@ const Step0Configurator = ({
           <>
             <div className="px-5 sm:px-6 border-b border-hairline flex items-center min-h-control py-4 sm:py-0 gap-3 box-border">
               <span className="edo-cell-label text-primary">
-                {lang === 'fr' ? 'Post-production' : 'Post-production'}
+                {t('nav.postprod')}
               </span>
             </div>
             <div
@@ -2935,16 +2844,12 @@ const Step0Configurator = ({
               <div className="bg-white px-4 sm:px-3.5 py-4 sm:py-2.5 flex items-center justify-between gap-3">
                 <div>
                   <div className="text-detail font-medium tracking-copy-tight">
-                    {lang === 'fr'
-                      ? 'Post-production par E-DO ?'
-                      : 'Post-production by E-DO?'}
+                    {t('booking.postProductionByEDo')}
                   </div>
                   <div
                     className={`font-mono text-label text-muted-foreground mt-0.5`}
                   >
-                    {lang === 'fr'
-                      ? 'Prix estimatif affiché — ajusté après brief'
-                      : 'Estimated price shown — adjusted after brief'}
+                    {t('booking.estimatedPriceShownAdjustedAfter')}
                   </div>
                 </div>
                 <Toggle
@@ -2961,14 +2866,12 @@ const Step0Configurator = ({
                 <div className="bg-white px-4 sm:px-3.5 py-4 sm:py-2.5 flex items-center justify-between gap-3">
                   <div>
                     <div className="text-detail font-medium tracking-copy-tight">
-                      {lang === 'fr' ? 'Montage vidéo ?' : 'Video editing?'}
+                      {t('booking.videoEditing2')}
                     </div>
                     <div
                       className={`font-mono text-label text-muted-foreground mt-0.5`}
                     >
-                      {lang === 'fr'
-                        ? 'Uniquement pour les projets vidéo'
-                        : 'Only for video projects'}
+                      {t('booking.onlyForVideoProjects')}
                     </div>
                   </div>
                   <Toggle
@@ -2985,14 +2888,10 @@ const Step0Configurator = ({
       {S.projectType === 'cyclorama' && (
         <div className="bg-muted p-5 border-t border-b border-hairline text-center">
           <div className="text-cell font-normal tracking-headline mb-2">
-            {lang === 'fr'
-              ? 'Cyclorama / Production libre'
-              : 'Cyclorama / Free production'}
+            {t('booking.cycloramaFreeProduction')}
           </div>
           <div className="text-detail text-muted-foreground max-w-xl mx-auto leading-normal">
-            {lang === 'fr'
-              ? 'Besoin sur-mesure, nous établissons un devis personnalisé.'
-              : "Custom needs — we'll prepare a tailored quote based on stage, duration and technical resources."}
+            {t('booking.customNeedsWeLlPrepare')}
           </div>
         </div>
       )}
@@ -3003,10 +2902,7 @@ const Step0Configurator = ({
             onClick={addSession}
             className="edo-focus-ring bg-white border border-border px-4 py-1.5 cursor-pointer font-mono text-label tracking-meta uppercase text-foreground flex items-center gap-2 h-7"
           >
-            +{' '}
-            {lang === 'fr'
-              ? 'Ajouter une autre session produit'
-              : 'Add another product session'}
+            + {t('booking.addAnotherProductSession')}
           </button>
         </div>
       )}
@@ -3024,11 +2920,12 @@ const MultiPlateauStep = ({
   renderOne,
   topBanner,
 }: AnyProps) => {
+  const t = useT();
   const list: string[] = slotIds && slotIds.length > 0 ? slotIds : [];
   if (list.length === 0) {
     return (
       <Empty size="compact">
-        <EmptyTitle>{bookingMsg.noStageSelected[lang]}</EmptyTitle>
+        <EmptyTitle>{t('booking.noStageSelected')}</EmptyTitle>
       </Empty>
     );
   }
@@ -3060,14 +2957,14 @@ const MultiPlateauStep = ({
         const dupIdx = seenIdxByKey[pk];
         const label =
           sameKeyCount[pk] > 1
-            ? `${px[lang]} · ${bookingMsg.session[lang]} ${String(dupIdx).padStart(2, '0')}`
+            ? `${px[lang]} · ${t('booking.session')} ${String(dupIdx).padStart(2, '0')}`
             : px[lang];
         return (
           <div key={id}>
             {list.length > 1 && (
               <div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 bg-white flex-wrap">
                 <span className="edo-cell-label text-primary whitespace-nowrap">
-                  {lang === 'fr' ? 'Plateau' : 'Stage'}{' '}
+                  {t('booking.stageFallback')}{' '}
                   {String(idx + 1).padStart(2, '0')}
                 </span>
                 <span className="text-detail font-normal tracking-copy-tight text-foreground">
@@ -3096,121 +2993,122 @@ const Step1Plateau = ({
   setSlotType,
   setHours,
   onConfigurator,
-}: AnyProps) => (
-  <div>
-    <div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local">
-      <span className="edo-cell-label text-primary whitespace-nowrap">
-        01 · {lang === 'fr' ? 'Plateau' : 'Stage'}
-      </span>
-      <span className="font-mono text-label tracking-caption text-muted-foreground">
-        {lang === 'fr'
-          ? 'Sélection multiple possible'
-          : 'Multi-select possible'}
-      </span>
-    </div>
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 edo-hairline w-full auto-rows-bento">
-      {BOOK_PLATEAUX.map((px, i) => {
-        const on = (plateaus || []).includes(px.k);
-        const priceRows = px.isVisite
-          ? [
-              {
-                lbl: lang === 'fr' ? 'Visite' : 'Visit',
-                val: lang === 'fr' ? 'Gratuit' : 'Free',
-              },
-            ]
-          : px.isCyclo
+}: AnyProps) => {
+  const t = useT();
+  return (
+    <div>
+      <div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local">
+        <span className="edo-cell-label text-primary whitespace-nowrap">
+          01 · {t('booking.stageFallback')}
+        </span>
+        <span className="font-mono text-label tracking-caption text-muted-foreground">
+          {t('booking.multiSelectPossible')}
+        </span>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 edo-hairline w-full auto-rows-bento">
+        {BOOK_PLATEAUX.map((px, i) => {
+          const on = (plateaus || []).includes(px.k);
+          const priceRows = px.isVisite
             ? [
                 {
-                  lbl: lang === 'fr' ? '½ journée (5h)' : 'Half day (5h)',
-                  val: `${px.rates.halfH} €`,
-                },
-                {
-                  lbl: lang === 'fr' ? 'Journée (10h)' : 'Full day (10h)',
-                  val: `${px.rates.fullH} €`,
-                },
-                {
-                  lbl: lang === 'fr' ? 'Éditorial (10h)' : 'Editorial (10h)',
-                  val: lang === 'fr' ? 'Sur demande' : 'On request',
+                  lbl: t('booking.visit'),
+                  val: t('booking.free'),
                 },
               ]
-            : [
-                {
-                  lbl: lang === 'fr' ? 'Heure' : 'Hourly',
-                  val: `${px.rates.hour} €`,
-                },
-                {
-                  lbl: lang === 'fr' ? '½ journée (4h)' : 'Half day (4h)',
-                  val: `${px.rates.half} €`,
-                },
-                {
-                  lbl: lang === 'fr' ? 'Journée (8h)' : 'Full day (8h)',
-                  val: `${px.rates.full} €`,
-                },
-              ];
-        return (
-          <button
-            type="button"
-            key={px.k}
-            onClick={() => {
-              togglePlateau(px.k);
-            }}
-            className={`group edo-focus-ring ${on ? 'bg-foreground text-white' : 'bg-white text-foreground hover:bg-muted'} border-0 px-cell py-4 text-left cursor-pointer font-inherit flex flex-col gap-1.5 transition-all duration-150 min-w-0`}
-          >
-            <div className="flex justify-between items-start">
-              <span
-                className={`font-mono text-label tracking-meta ${on ? 'text-white/60' : 'text-muted-foreground'}`}
-              >
-                {String(i + 1).padStart(2, '0')}
-              </span>
-              {on ? (
-                <span className="text-primary text-cell leading-none">●</span>
-              ) : (
+            : px.isCyclo
+              ? [
+                  {
+                    lbl: t('booking.cyclo5h'),
+                    val: `${px.rates.halfH} €`,
+                  },
+                  {
+                    lbl: t('booking.cyclo10h'),
+                    val: `${px.rates.fullH} €`,
+                  },
+                  {
+                    lbl: t('booking.editorial10h'),
+                    val: t('common.onRequest'),
+                  },
+                ]
+              : [
+                  {
+                    lbl: t('booking.hourly'),
+                    val: `${px.rates.hour} €`,
+                  },
+                  {
+                    lbl: t('booking.halfDay4h'),
+                    val: `${px.rates.half} €`,
+                  },
+                  {
+                    lbl: t('booking.fullDay8h'),
+                    val: `${px.rates.full} €`,
+                  },
+                ];
+          return (
+            <button
+              type="button"
+              key={px.k}
+              onClick={() => {
+                togglePlateau(px.k);
+              }}
+              className={`group edo-focus-ring ${on ? 'bg-foreground text-white' : 'bg-white text-foreground hover:bg-muted'} border-0 px-cell py-4 text-left cursor-pointer font-inherit flex flex-col gap-1.5 transition-all duration-150 min-w-0`}
+            >
+              <div className="flex justify-between items-start">
                 <span
-                  data-plateau-arrow
-                  className={`text-primary text-cell leading-none transition-all duration-200 origin-right ${on ? '' : 'opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 group-hover:scale-110'}`}
+                  className={`font-mono text-label tracking-meta ${on ? 'text-white/60' : 'text-muted-foreground'}`}
                 >
-                  →
+                  {String(i + 1).padStart(2, '0')}
                 </span>
-              )}
-            </div>
-            <div
-              data-plateau-label
-              className={`text-page-title font-light tracking-headline mt-1 transition-transform duration-200 origin-left ${on ? '' : 'group-hover:scale-102'}`}
-            >
-              {px[lang]}
-            </div>
-            <div
-              className={`text-detail ${on ? 'text-white/65' : 'text-muted-foreground'} leading-snug`}
-            >
-              {px.desc[lang]}
-            </div>
-            {priceRows.length > 0 && (
-              <div
-                className={`mt-auto pt-3 flex flex-col gap-1 border-t ${on ? 'border-t-white/15' : 'border-t-border'}`}
-              >
-                {priceRows.map((pr) => (
-                  <div
-                    key={pr.lbl}
-                    className="flex justify-between items-baseline gap-2 whitespace-nowrap"
+                {on ? (
+                  <span className="text-primary text-cell leading-none">●</span>
+                ) : (
+                  <span
+                    data-plateau-arrow
+                    className={`text-primary text-cell leading-none transition-all duration-200 origin-right ${on ? '' : 'opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 group-hover:scale-110'}`}
                   >
-                    <span
-                      className={`font-mono text-label tracking-caption ${on ? 'text-white/55' : 'text-muted-foreground'} uppercase overflow-hidden text-ellipsis`}
-                    >
-                      {pr.lbl}
-                    </span>
-                    <span className="text-detail font-medium tabular-nums">
-                      {pr.val}
-                    </span>
-                  </div>
-                ))}
+                    →
+                  </span>
+                )}
               </div>
-            )}
-          </button>
-        );
-      })}
+              <div
+                data-plateau-label
+                className={`text-page-title font-light tracking-headline mt-1 transition-transform duration-200 origin-left ${on ? '' : 'group-hover:scale-102'}`}
+              >
+                {px[lang]}
+              </div>
+              <div
+                className={`text-detail ${on ? 'text-white/65' : 'text-muted-foreground'} leading-snug`}
+              >
+                {px.desc[lang]}
+              </div>
+              {priceRows.length > 0 && (
+                <div
+                  className={`mt-auto pt-3 flex flex-col gap-1 border-t ${on ? 'border-t-white/15' : 'border-t-border'}`}
+                >
+                  {priceRows.map((pr) => (
+                    <div
+                      key={pr.lbl}
+                      className="flex justify-between items-baseline gap-2 whitespace-nowrap"
+                    >
+                      <span
+                        className={`font-mono text-label tracking-caption ${on ? 'text-white/55' : 'text-muted-foreground'} uppercase overflow-hidden text-ellipsis`}
+                      >
+                        {pr.lbl}
+                      </span>
+                      <span className="text-detail font-medium tabular-nums">
+                        {pr.val}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </button>
+          );
+        })}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const Step2Date = ({
   lang,
@@ -3230,6 +3128,7 @@ const Step2Date = ({
   prevMonth,
   refreshKey = 0,
 }: AnyProps) => {
+  const t = useT();
   const {
     availMap,
     bookedHoursMap,
@@ -3253,7 +3152,6 @@ const Step2Date = ({
     selected.m === todayM &&
     selected.d === todayD;
   const maxStart = 19 - rentalHours;
-  const fr = lang === 'fr';
   const selectedDayBooked = selected ? bookedHoursMap[selected.d] : undefined;
   // Ne boucle pas : après correction, arrivalHour <= maxStart et la condition
   // est fausse.
@@ -3331,7 +3229,7 @@ const Step2Date = ({
   return (
     <div>
       <div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local">
-        <span className="edo-cell-label text-primary whitespace-nowrap">{`06 · ${fr ? 'Choisir une date' : 'Pick a date'}`}</span>
+        <span className="edo-cell-label text-primary whitespace-nowrap">{`06 · ${t('booking.pickADate')}`}</span>
       </div>
 
       <div className="flex min-w-0 edo-hairline">
@@ -3343,7 +3241,7 @@ const Step2Date = ({
           <div className="flex items-center gap-x-3 gap-y-1.5 font-mono text-label tracking-ui uppercase text-muted-foreground flex-wrap">
             {availLoading && (
               <span className="text-primary animate-pulse">
-                {bookingMsg.calLoading[lang]}
+                {t('booking.calLoading')}
               </span>
             )}
             <span className="inline-flex items-center gap-2">
@@ -3351,35 +3249,35 @@ const Step2Date = ({
                 aria-hidden
                 className="inline-block w-2.5 h-2.5 bg-white border border-foreground"
               />
-              {bookingMsg.calFreeLegend[lang]}
+              {t('booking.calFreeLegend')}
             </span>
             <span className="inline-flex items-center gap-2">
               <span
                 aria-hidden
                 className="inline-block w-2.5 h-2.5 bg-edo-sand border border-edo-sand"
               />
-              {bookingMsg.calPartialLegend[lang]}
+              {t('booking.calPartialLegend')}
             </span>
             <span className="inline-flex items-center gap-2">
               <span
                 aria-hidden
                 className="inline-block w-2.5 h-2.5 bg-edo-gray-50 border border-input"
               />
-              {bookingMsg.calUnavailableLegend[lang]}
+              {t('booking.calUnavailableLegend')}
             </span>
             <span className="inline-flex items-center gap-2">
               <span
                 aria-hidden
                 className="inline-block w-2.5 h-2.5 bg-primary border border-primary"
               />
-              {bookingMsg.calSelectedLegend[lang]}
+              {t('booking.calSelectedLegend')}
             </span>
           </div>
         </div>
         <button
           type="button"
           onClick={prevMonth}
-          aria-label={bookingMsg.calPrevMonth[lang]}
+          aria-label={t('booking.calPrevMonth')}
           className="edo-focus-ring flex basis-header flex-none cursor-pointer items-center justify-center border-0 bg-white font-mono text-detail text-foreground transition-colors hover:bg-muted"
         >
           {'←'}
@@ -3387,7 +3285,7 @@ const Step2Date = ({
         <button
           type="button"
           onClick={nextMonth}
-          aria-label={bookingMsg.calNextMonth[lang]}
+          aria-label={t('booking.calNextMonth')}
           className="edo-focus-ring flex basis-header flex-none cursor-pointer items-center justify-center border-0 bg-white font-mono text-detail text-foreground transition-colors hover:bg-muted"
         >
           {'→'}
@@ -3440,13 +3338,9 @@ const Step2Date = ({
               onClick={() => setSelected({ y: viewY, m: viewM, d })}
               title={
                 weekendBlocked
-                  ? fr
-                    ? `Week-end : journée complète uniquement`
-                    : 'Weekend: full-day booking only'
+                  ? t('booking.weekendFullDayOnly')
                   : tdy
-                    ? fr
-                      ? "Aujourd'hui"
-                      : 'Today'
+                    ? t('booking.today')
                     : ''
               }
               className={[
@@ -3487,16 +3381,12 @@ const Step2Date = ({
                 <span
                   className={`font-mono text-nano sm:text-micro tracking-caption uppercase mt-auto ${sel ? 'text-white/70' : partial ? 'text-muted-foreground' : tdy ? 'text-primary/70' : 'text-muted-foreground'}`}
                 >
-                  {partial
-                    ? bookingMsg.calPartial[lang]
-                    : fr
-                      ? 'libre'
-                      : 'free'}
+                  {partial ? t('booking.calPartial') : t('booking.freeLower')}
                 </span>
               )}
               {weekendBlocked && !past && (
                 <span className="font-mono text-nano sm:text-micro tracking-caption uppercase mt-auto text-muted-foreground/50">
-                  {fr ? `journée` : 'full day'}
+                  {t('booking.fullDayLower')}
                 </span>
               )}
             </button>
@@ -3505,9 +3395,7 @@ const Step2Date = ({
       </div>
 
       <div className="border-b border-hairline bg-white px-5 md:px-6 py-2.5 flex items-center gap-3 md:gap-5 flex-wrap">
-        <span className="edo-cell-label">
-          {fr ? "Heure d'arrivée" : 'Arrival time'}
-        </span>
+        <span className="edo-cell-label">{t('booking.arrivalTime')}</span>
         <span className="font-mono text-label tracking-ui text-muted-foreground">
           {String(arrivalHour).padStart(2, '0')}:00 {'→'}{' '}
           {String(arrivalHour + rentalHours).padStart(2, '0')}:00 {'·'}{' '}
@@ -3529,17 +3417,11 @@ const Step2Date = ({
               onClick={() => !disabled && setArrivalHour(h)}
               title={
                 booked
-                  ? fr
-                    ? 'Créneau déjà réservé'
-                    : 'Time slot already booked'
+                  ? t('booking.slotAlreadyBooked')
                   : pastHour
-                    ? fr
-                      ? 'Créneau passé'
-                      : 'Past time slot'
+                    ? t('booking.pastTimeSlot')
                     : endsTooLate
-                      ? fr
-                        ? `Termine à ${h + rentalHours}h, après la fermeture`
-                        : `Ends at ${h + rentalHours}h, past closing`
+                      ? t('booking.endsPastClosing', { hour: h + rentalHours })
                       : ''
               }
               className={`${on ? 'bg-foreground text-white' : disabled ? 'bg-muted text-muted-foreground' : 'bg-white text-foreground hover:bg-edo-gray-100'} border-0 ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'} flex items-center justify-center font-mono text-caption tracking-caption min-w-0 py-3 sm:py-0 sm:aspect-arrival transition-colors duration-100${booked ? ' line-through' : ''}`}
@@ -3573,61 +3455,64 @@ const BentoSlotTile = ({
   price,
   hint,
   lang,
-}: AnyProps) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={`group edo-focus-ring ${on ? 'bg-foreground text-white' : 'bg-white text-foreground hover:bg-muted'} border-0 px-cell py-4 text-left cursor-pointer font-inherit flex flex-col gap-1.5 transition-all duration-150 min-w-0 min-h-44`}
-  >
-    <div className="flex justify-between items-start">
-      <span
-        className={`font-mono text-label tracking-meta ${on ? 'text-white/60' : 'text-muted-foreground'}`}
-      >
-        {String(idx).padStart(2, '0')}
-      </span>
-      {on ? (
-        <span className="text-primary text-cell leading-none">●</span>
-      ) : (
+}: AnyProps) => {
+  const t = useT();
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`group edo-focus-ring ${on ? 'bg-foreground text-white' : 'bg-white text-foreground hover:bg-muted'} border-0 px-cell py-4 text-left cursor-pointer font-inherit flex flex-col gap-1.5 transition-all duration-150 min-w-0 min-h-44`}
+    >
+      <div className="flex justify-between items-start">
         <span
-          data-slot-arrow
-          className={`text-primary text-cell leading-none transition-all duration-200 origin-right ${on ? '' : 'opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 group-hover:scale-110'}`}
+          className={`font-mono text-label tracking-meta ${on ? 'text-white/60' : 'text-muted-foreground'}`}
         >
-          →
+          {String(idx).padStart(2, '0')}
         </span>
+        {on ? (
+          <span className="text-primary text-cell leading-none">●</span>
+        ) : (
+          <span
+            data-slot-arrow
+            className={`text-primary text-cell leading-none transition-all duration-200 origin-right ${on ? '' : 'opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 group-hover:scale-110'}`}
+          >
+            →
+          </span>
+        )}
+      </div>
+      <div
+        data-slot-label
+        className={`text-page-title font-light tracking-headline mt-1 transition-transform duration-200 origin-left ${on ? '' : 'group-hover:scale-102'}`}
+      >
+        {label}
+      </div>
+      {sub && (
+        <div
+          className={`font-mono text-label tracking-code uppercase ${on ? 'text-white/55' : 'text-muted-foreground'}`}
+        >
+          {sub}
+        </div>
       )}
-    </div>
-    <div
-      data-slot-label
-      className={`text-page-title font-light tracking-headline mt-1 transition-transform duration-200 origin-left ${on ? '' : 'group-hover:scale-102'}`}
-    >
-      {label}
-    </div>
-    {sub && (
+      {desc && (
+        <div
+          className={`text-detail ${on ? 'text-white/65' : 'text-muted-foreground'} leading-snug`}
+        >
+          {desc}
+        </div>
+      )}
       <div
-        className={`font-mono text-label tracking-code uppercase ${on ? 'text-white/55' : 'text-muted-foreground'}`}
+        className={`mt-auto pt-3 flex justify-between items-baseline border-t ${on ? 'border-t-white/15' : 'border-t-border'}`}
       >
-        {sub}
+        <span
+          className={`font-mono text-label tracking-caption ${on ? 'text-white/55' : 'text-muted-foreground'} uppercase`}
+        >
+          {hint || t('booking.rateExVat')}
+        </span>
+        <span className="text-cell font-medium tabular-nums">{price}</span>
       </div>
-    )}
-    {desc && (
-      <div
-        className={`text-detail ${on ? 'text-white/65' : 'text-muted-foreground'} leading-snug`}
-      >
-        {desc}
-      </div>
-    )}
-    <div
-      className={`mt-auto pt-3 flex justify-between items-baseline border-t ${on ? 'border-t-white/15' : 'border-t-border'}`}
-    >
-      <span
-        className={`font-mono text-label tracking-caption ${on ? 'text-white/55' : 'text-muted-foreground'} uppercase`}
-      >
-        {hint || (lang === 'fr' ? 'Tarif HT' : 'Rate ex. VAT')}
-      </span>
-      <span className="text-cell font-medium tabular-nums">{price}</span>
-    </div>
-  </button>
-);
+    </button>
+  );
+};
 
 const Step3Slot = ({
   lang,
@@ -3639,6 +3524,7 @@ const Step3Slot = ({
   cycloMode,
   setCycloMode,
 }: AnyProps) => {
+  const t = useT();
   if (p.isCyclo) {
     return (
       <div>
@@ -3647,13 +3533,9 @@ const Step3Slot = ({
             idx={1}
             on={cycloMode === 'halfH'}
             onClick={() => setCycloMode('halfH')}
-            label={lang === 'fr' ? 'Demi-journée' : 'Half day'}
+            label={t('booking.halfDay')}
             sub="5 heures"
-            desc={
-              lang === 'fr'
-                ? 'Bloc de 5h, parfait pour un shoot packshot ciblé.'
-                : '5-hour block, perfect for a focused packshot shoot.'
-            }
+            desc={t('booking.HourBlockPerfectFor')}
             price="650 €"
             lang={lang}
           />
@@ -3661,13 +3543,9 @@ const Step3Slot = ({
             idx={2}
             on={cycloMode === 'fullH'}
             onClick={() => setCycloMode('fullH')}
-            label={lang === 'fr' ? 'Journée' : 'Full day'}
+            label={t('booking.fullDay')}
             sub="10 heures"
-            desc={
-              lang === 'fr'
-                ? 'Bloc de 10h, volume e-commerce ou campagne.'
-                : '10-hour block, e-commerce volume or campaign.'
-            }
+            desc={t('booking.HourBlockECommerce')}
             price="880 €"
             lang={lang}
           />
@@ -3675,15 +3553,11 @@ const Step3Slot = ({
             idx={3}
             on={cycloMode === 'editorial'}
             onClick={() => setCycloMode('editorial')}
-            label={lang === 'fr' ? 'Éditorial' : 'Editorial'}
+            label={t('booking.editorial')}
             sub="10 heures"
-            desc={
-              lang === 'fr'
-                ? 'Tarif réduit presse, usage personnel ou portfolio.'
-                : 'Reduced rate for press, personal or portfolio use.'
-            }
-            price={lang === 'fr' ? 'Sur demande' : 'On request'}
-            hint={lang === 'fr' ? 'Presse / personnel' : 'Press / personal'}
+            desc={t('booking.reducedRateForPressPersonal')}
+            price={t('common.onRequest')}
+            hint={t('booking.pressPersonal')}
             lang={lang}
           />
         </div>
@@ -3697,12 +3571,8 @@ const Step3Slot = ({
           <StepIntro
             n="02"
             lang={lang}
-            t={lang === 'fr' ? 'Visite du studio' : 'Studio visit'}
-            s={
-              lang === 'fr'
-                ? 'La visite est gratuite et dure environ une heure. Nous vous recontactons pour confirmer le créneau.'
-                : 'Studio visit is free and lasts about an hour. We will confirm the slot by phone.'
-            }
+            t={t('booking.studioVisit')}
+            s={t('booking.studioVisitIsFreeAnd')}
           />
         </div>
         <div className="grid grid-cols-1 gap-hairline bg-white border-t border-b border-hairline w-full">
@@ -3711,9 +3581,7 @@ const Step3Slot = ({
               0 €
             </span>
             <span className="font-mono text-caption tracking-meta uppercase text-muted-foreground">
-              {lang === 'fr'
-                ? 'Gratuit · sur rendez-vous'
-                : 'Free · by appointment'}
+              {t('booking.freeByAppointment')}
             </span>
           </div>
         </div>
@@ -3730,13 +3598,9 @@ const Step3Slot = ({
             setSlotType('hour');
             setHours(1);
           }}
-          label={lang === 'fr' ? "À l'heure" : 'Hourly'}
-          sub={lang === 'fr' ? '1 à 3 heures' : '1 to 3 hours'}
-          desc={
-            lang === 'fr'
-              ? 'Idéal pour un essai ou un shoot rapide.'
-              : 'Ideal for a test or a quick shoot.'
-          }
+          label={t('booking.hourly2')}
+          sub={t('booking.To3Hours')}
+          desc={t('booking.idealForATestOr')}
           price={`${p.rates.hour} €/h`}
           lang={lang}
         />
@@ -3747,13 +3611,9 @@ const Step3Slot = ({
             setSlotType('half');
             setHours(4);
           }}
-          label={lang === 'fr' ? 'Demi-journée' : 'Half day'}
-          sub={lang === 'fr' ? '4 à 7 heures' : '4 to 7 hours'}
-          desc={
-            lang === 'fr'
-              ? "Bloc 4h, prorata au-delà jusqu'à 7h."
-              : '4-hour block, pro-rata up to 7 hours.'
-          }
+          label={t('booking.halfDay')}
+          sub={t('booking.To7Hours')}
+          desc={t('booking.HourBlockProRata')}
           price={`${p.rates.half} €`}
           lang={lang}
         />
@@ -3764,13 +3624,9 @@ const Step3Slot = ({
             setSlotType('full');
             setHours(8);
           }}
-          label={lang === 'fr' ? 'Journée' : 'Full day'}
-          sub={lang === 'fr' ? '8 heures' : '8 hours'}
-          desc={
-            lang === 'fr'
-              ? 'Journée complète, tarif le plus avantageux.'
-              : 'Full day, best rate.'
-          }
+          label={t('booking.fullDay')}
+          sub={t('booking.Hours')}
+          desc={t('booking.fullDayBestRate')}
           price={`${p.rates.full} €`}
           lang={lang}
         />
@@ -3781,21 +3637,13 @@ const Step3Slot = ({
             <div className="flex flex-col gap-1 min-w-0">
               <span className="edo-cell-label">
                 {slotType === 'hour'
-                  ? lang === 'fr'
-                    ? "Nombre d'heures"
-                    : 'Number of hours'
-                  : lang === 'fr'
-                    ? "Nombre d'heures · demi-journée"
-                    : 'Hours · half day'}
+                  ? t('booking.numberOfHours')
+                  : t('booking.hoursHalfDay')}
               </span>
               <span className="font-mono text-label tracking-caption text-muted-foreground leading-normal">
                 {slotType === 'hour'
-                  ? lang === 'fr'
-                    ? '↗ Dès 4h, bascule en demi-journée. Dès 8h, journée complète.'
-                    : '↗ From 4h, switches to half day. From 8h, full day.'
-                  : lang === 'fr'
-                    ? `↗ 4h = ${p.rates.half} €. Au-delà, prorata (${p.rates.half}/4 × h). Dès 8h, journée complète.`
-                    : `↗ 4h = €${p.rates.half}. Beyond, pro-rata (${p.rates.half}/4 × h). From 8h, full day.`}
+                  ? t('booking.from4hSwitchesToHalf')
+                  : t('booking.proRataHint', { price: p.rates.half })}
               </span>
             </div>
             <div className="flex items-center gap-3.5">
@@ -3841,21 +3689,28 @@ const Step3Slot = ({
           <div className="bg-white px-5 md:px-12 py-5 flex items-center justify-between gap-5 flex-wrap">
             <div className="flex flex-col gap-1 min-w-0">
               <span className="edo-cell-label">
-                {lang === 'fr' ? 'Durée totale' : 'Total duration'}
+                {t('booking.totalDuration')}
               </span>
               <span className="font-mono text-label tracking-caption text-muted-foreground leading-normal">
                 {(() => {
                   const fullDays = Math.floor(hours / 8);
                   const extraH = hours - fullDays * 8;
                   if (extraH === 0) {
-                    return lang === 'fr'
-                      ? `↗ ${fullDays} ${fullDays > 1 ? 'journées' : 'journée'} (${hours}h) · ${(p.rates.full * fullDays).toFixed(0)} €`
-                      : `↗ ${fullDays} ${fullDays > 1 ? 'days' : 'day'} (${hours}h) · €${(p.rates.full * fullDays).toFixed(0)}`;
+                    return t('booking.fullDaysTotal', {
+                      days: fullDays,
+                      unit: t('booking.fullDayUnit', { count: fullDays }),
+                      hours,
+                      amount: (p.rates.full * fullDays).toFixed(0),
+                    });
                   }
                   const extraAmt = +((p.rates.full / 8) * extraH).toFixed(2);
-                  return lang === 'fr'
-                    ? `↗ ${fullDays} ${fullDays > 1 ? 'journées' : 'journée'} (${fullDays * 8}h) + ${extraH}h · ${(p.rates.full * fullDays + extraAmt).toFixed(0)} €`
-                    : `↗ ${fullDays} ${fullDays > 1 ? 'days' : 'day'} (${fullDays * 8}h) + ${extraH}h · €${(p.rates.full * fullDays + extraAmt).toFixed(0)}`;
+                  return t('booking.fullDaysPlusExtra', {
+                    days: fullDays,
+                    unit: t('booking.fullDayUnit', { count: fullDays }),
+                    baseHours: fullDays * 8,
+                    extraHours: extraH,
+                    amount: (p.rates.full * fullDays + extraAmt).toFixed(0),
+                  });
                 })()}
               </span>
             </div>
@@ -3886,6 +3741,7 @@ const Step3Slot = ({
 };
 
 const Step5Team = ({ lang, p, team, setTeam, configSessions }: AnyProps) => {
+  const t = useT();
   const setDays = (k, val) =>
     setTeam((prev) => {
       const n = { ...prev };
@@ -3937,16 +3793,14 @@ const Step5Team = ({ lang, p, team, setTeam, configSessions }: AnyProps) => {
                   <span>{e[lang]}</span>
                   {recommended[e.k] && (
                     <span className="font-mono text-micro tracking-ui uppercase text-primary border border-primary px-1.5 py-0.5 leading-none">
-                      {lang === 'fr' ? 'Recommandé' : 'Recommended'}
+                      {t('booking.recommended')}
                     </span>
                   )}
                 </div>
                 <div className="font-mono text-label text-muted-foreground mt-0.5">
                   {isHourly
-                    ? `${fmtEUR(e.price)} € / ${e.unit === 'hour' ? 'h' : lang === 'fr' ? 'jour' : 'day'}`
-                    : lang === 'fr'
-                      ? 'Tarif sur demande selon le brief'
-                      : 'Rate on request based on brief'}
+                    ? `${fmtEUR(e.price)} € / ${e.unit === 'hour' ? 'h' : t('booking.day')}`
+                    : t('booking.rateOnRequestBasedOn')}
                 </div>
               </div>
               {isHourly ? (
@@ -3954,13 +3808,7 @@ const Step5Team = ({ lang, p, team, setTeam, configSessions }: AnyProps) => {
                   <span
                     className={`font-mono text-label tracking-ui uppercase ${n > 0 ? 'text-primary' : 'text-muted-foreground'}`}
                   >
-                    {n > 0
-                      ? lang === 'fr'
-                        ? 'Inclus'
-                        : 'Included'
-                      : lang === 'fr'
-                        ? 'Ajouter'
-                        : 'Add'}
+                    {n > 0 ? t('booking.included') : t('booking.add')}
                   </span>
                   <span
                     onClick={() => setDays(e.k, n > 0 ? 0 : 1)}
@@ -3974,7 +3822,7 @@ const Step5Team = ({ lang, p, team, setTeam, configSessions }: AnyProps) => {
                   <span
                     className={`font-mono text-label tracking-ui uppercase ${onReq ? 'text-primary' : 'text-muted-foreground'}`}
                   >
-                    {lang === 'fr' ? 'Sur demande' : 'On request'}
+                    {t('common.onRequest')}
                   </span>
                   <span
                     onClick={() => toggleReq(e.k)}
@@ -3998,6 +3846,7 @@ const Step6Postprod = ({
   setPostprod,
   plateauKey,
 }: AnyProps) => {
+  const t = useT();
   const enabled = !!postprod.enabled;
   const video = !!postprod.video;
   const videoAllowed = plateauKey !== 'vertical' && plateauKey !== 'horizontal';
@@ -4015,27 +3864,17 @@ const Step6Postprod = ({
         >
           <div>
             <div className="text-cell font-medium tracking-copy-tight">
-              {lang === 'fr'
-                ? 'Post-production par E-DO'
-                : 'Post-production by E-DO'}
+              {t('booking.postProductionByEDo2')}
             </div>
             <div className="font-mono text-label text-muted-foreground mt-1 leading-normal">
-              {lang === 'fr'
-                ? 'Sélection, retouche, livraison — chiffrage sur demande selon le volume.'
-                : 'Selection, retouching, delivery — quoted on request based on volume.'}
+              {t('booking.selectionRetouchingDeliveryQuotedOn')}
             </div>
           </div>
           <div className="flex items-center gap-3">
             <span
               className={`font-mono text-label tracking-code uppercase ${enabled ? 'text-primary' : 'text-muted-foreground'}`}
             >
-              {lang === 'fr'
-                ? enabled
-                  ? 'Oui'
-                  : 'Non'
-                : enabled
-                  ? 'Yes'
-                  : 'No'}
+              {enabled ? t('booking.yes') : t('booking.no')}
             </span>
             <Toggle
               on={enabled}
@@ -4055,19 +3894,17 @@ const Step6Postprod = ({
           >
             <div>
               <div className="text-cell font-medium tracking-copy-tight">
-                {lang === 'fr' ? 'Montage vidéo' : 'Video editing'}
+                {t('booking.videoEditing3')}
               </div>
               <div className="font-mono text-label text-muted-foreground mt-1 leading-normal">
-                {lang === 'fr'
-                  ? 'Uniquement si votre projet inclut de la vidéo — chiffrage sur demande.'
-                  : 'Only if your project includes video — quoted on request.'}
+                {t('booking.onlyIfYourProjectIncludes')}
               </div>
             </div>
             <div className="flex items-center gap-3">
               <span
                 className={`font-mono text-label tracking-code uppercase ${video ? 'text-primary' : 'text-muted-foreground'}`}
               >
-                {lang === 'fr' ? (video ? 'Oui' : 'Non') : video ? 'Yes' : 'No'}
+                {video ? t('booking.yes') : t('booking.no')}
               </span>
               <Toggle
                 on={video}
@@ -4137,6 +3974,7 @@ const Step7Contact = ({
   configMode,
   errors = {},
 }: AnyProps) => {
+  const t = useT();
   const isCyclo = p && p.isCyclo;
   const hideProductFields = !!configMode;
   const toggleType = (k) => {
@@ -4148,12 +3986,12 @@ const Step7Contact = ({
     <div>
       <div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local">
         <span className="edo-cell-label text-primary whitespace-nowrap">
-          05 · {lang === 'fr' ? 'Vos coordonnées' : 'Your details'}
+          05 · {t('assistant.contactFormTitle')}
         </span>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 edo-hairline">
         <div className="col-span-1 sm:col-span-2 grid grid-cols-1 sm:grid-cols-3 edo-hairline">
-          <BentoField label={lang === 'fr' ? 'Marque' : 'Brand'}>
+          <BentoField label={t('booking.brand')}>
             <BentoInput
               name="brand"
               value={contact.marque}
@@ -4161,10 +3999,7 @@ const Step7Contact = ({
               placeholder="—"
             />
           </BentoField>
-          <BentoField
-            label={lang === 'fr' ? 'Société *' : 'Company *'}
-            error={errors.societe}
-          >
+          <BentoField label={t('booking.company2')} error={errors.societe}>
             <BentoInput
               name="company"
               autoComplete="organization"
@@ -4184,9 +4019,7 @@ const Step7Contact = ({
           </BentoField>
         </div>
         <BentoField
-          label={
-            lang === 'fr' ? 'Adresse de facturation *' : 'Billing address *'
-          }
+          label={t('booking.billingAddress')}
           span="1 / -1"
           error={errors.adresseFacturation}
         >
@@ -4198,10 +4031,7 @@ const Step7Contact = ({
             placeholder="—"
           />
         </BentoField>
-        <BentoField
-          label={lang === 'fr' ? 'Nom *' : 'Last name *'}
-          error={errors.nom}
-        >
+        <BentoField label={t('booking.lastName')} error={errors.nom}>
           <BentoInput
             name="lastname"
             autoComplete="family-name"
@@ -4210,10 +4040,7 @@ const Step7Contact = ({
             placeholder="—"
           />
         </BentoField>
-        <BentoField
-          label={lang === 'fr' ? 'Prénom *' : 'First name *'}
-          error={errors.prenom}
-        >
+        <BentoField label={t('booking.firstName')} error={errors.prenom}>
           <BentoInput
             name="firstname"
             autoComplete="given-name"
@@ -4232,10 +4059,7 @@ const Step7Contact = ({
             placeholder="—"
           />
         </BentoField>
-        <BentoField
-          label={lang === 'fr' ? 'Téléphone *' : 'Phone *'}
-          error={errors.tel}
-        >
+        <BentoField label={t('booking.phone')} error={errors.tel}>
           <BentoInput
             name="phone"
             autoComplete="tel"
@@ -4251,7 +4075,7 @@ const Step7Contact = ({
               className={`bg-white px-3 py-1.5 col-span-1 sm:col-span-2 flex flex-col gap-1 min-h-control ${errors.typesArticles ? 'ring-1 ring-inset ring-red-400' : ''}`}
             >
               <span className="edo-cell-label text-muted-foreground text-micro tracking-meta">
-                {lang === 'fr' ? "Type d'articles *" : 'Item types *'}
+                {t('booking.itemTypes')}
               </span>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1">
                 {ARTICLE_TYPES.map((t) => {
@@ -4282,11 +4106,7 @@ const Step7Contact = ({
                   onChange={(e) =>
                     setContact({ ...contact, autreType: e.target.value })
                   }
-                  placeholder={
-                    lang === 'fr'
-                      ? "Précisez (autre type d'articles)…"
-                      : 'Specify (other item type)…'
-                  }
+                  placeholder={t('booking.specifyOtherItemType')}
                   className="mt-0.5 bg-transparent border-0 border-b border-b-border outline-none py-1 px-0 font-inherit text-caption tracking-copy-tight w-full text-foreground"
                 />
               )}
@@ -4297,9 +4117,7 @@ const Step7Contact = ({
               )}
             </div>
             <BentoField
-              label={
-                lang === 'fr' ? 'Qté articles (SKUs) *' : 'Qty items (SKUs) *'
-              }
+              label={t('booking.qtyItemsSkus')}
               error={errors.quantiteArticles}
             >
               <BentoInput
@@ -4313,7 +4131,7 @@ const Step7Contact = ({
               />
             </BentoField>
             <BentoField
-              label={lang === 'fr' ? 'Vues / article *' : 'Views / item *'}
+              label={t('booking.viewsItem')}
               error={errors.vuesParArticle}
             >
               <BentoInput
@@ -4328,7 +4146,7 @@ const Step7Contact = ({
         )}
         <div className="bg-white px-3 py-1.5 col-span-1 sm:col-span-2 flex flex-col gap-0.5 min-h-control">
           <span className="edo-cell-label text-muted-foreground text-micro tracking-meta">
-            {lang === 'fr' ? 'Autres informations' : 'Other information'}
+            {t('booking.otherInformation')}
           </span>
           <textarea
             name="message"
@@ -4336,11 +4154,7 @@ const Step7Contact = ({
             onChange={(e) =>
               setContact({ ...contact, autresInfos: e.target.value })
             }
-            placeholder={
-              lang === 'fr'
-                ? 'Contraintes, inspirations, références… (facultatif)'
-                : 'Constraints, inspirations, references… (optional)'
-            }
+            placeholder={t('booking.constraintsInspirationsReferencesOptional')}
             className="w-full box-border bg-transparent border-0 outline-none p-0 font-inherit text-caption min-h-7 resize-y text-foreground"
           />
         </div>
@@ -4416,44 +4230,35 @@ const SidePanel = ({
   slotIds,
   slots,
 }: AnyProps) => {
+  const t = useT();
   const slotLbl = isPreview
-    ? lang === 'fr'
-      ? 'estimation live'
-      : 'live estimate'
+    ? t('booking.liveEstimate')
     : p.isCyclo
       ? cycloMode === 'halfH'
         ? '5h'
         : cycloMode === 'fullH'
           ? '10h'
-          : lang === 'fr'
-            ? '10h éditorial'
-            : '10h editorial'
+          : t('booking.cyclo10hEditorial')
       : p.isVisite
-        ? lang === 'fr'
-          ? 'visite'
-          : 'visit'
+        ? t('booking.visit2')
         : slotType === 'hour'
           ? `${hours}h`
           : slotType === 'half'
             ? (() => {
                 const hh = Math.max(4, Math.min(7, hours || 4));
-                return hh === 4 ? (lang === 'fr' ? '½ j' : '½ d') : `${hh}h`;
+                return hh === 4 ? t('booking.D') : `${hh}h`;
               })()
             : (() => {
                 const totalH = hours || 8;
                 const fullDays = Math.floor(totalH / 8);
                 const extraH = totalH - fullDays * 8;
-                const dUnit = lang === 'fr' ? 'j' : 'd';
+                const dUnit = t('booking.d');
                 let s = `${fullDays} ${dUnit}`;
-                if (extraH === 4) s += lang === 'fr' ? ' + ½ j' : ' + ½ d';
+                if (extraH === 4) s += t('booking.D2');
                 else if (extraH > 0) s += ` + ${extraH}h`;
                 return s;
               })();
-  const title = isPreview
-    ? lang === 'fr'
-      ? 'Estimation'
-      : 'Estimate'
-    : p[lang];
+  const title = isPreview ? t('booking.estimate') : p[lang];
   const list: string[] = (slotIds || []).filter(Boolean);
   const isMulti = list.length > 1;
   const sameKeyCount: Record<string, number> = {};
@@ -4466,7 +4271,7 @@ const SidePanel = ({
     <div className="bg-foreground md:col-start-4 md:row-start-2 text-white px-5 py-6 md:p-6 overflow-auto flex flex-col gap-4 md:gap-3.5 min-h-0">
       <div>
         <span className="edo-cell-label text-white/55 md:hidden">
-          {lang === 'fr' ? 'Votre devis' : 'Your quote'}
+          {t('booking.yourQuote')}
         </span>
         <h2 className="m-0 mt-2 md:mt-0 text-tile-large font-light tracking-headline text-white/85">
           {title}
@@ -4497,7 +4302,7 @@ const SidePanel = ({
           return (
             <div className="pt-3.5 border-t border-white/10">
               <span className="edo-cell-label text-white/55 mb-1.5 block">
-                {lang === 'fr' ? 'Dates' : 'Dates'}
+                {t('booking.dates')}
               </span>
               <div className="flex flex-col gap-1.5">
                 {datedList.map(({ id, label, d }: AnyProps) => (
@@ -4521,7 +4326,7 @@ const SidePanel = ({
         return (
           <div className="pt-3.5 border-t border-white/10">
             <span className="edo-cell-label text-white/55 mb-1.5 block">
-              {lang === 'fr' ? 'Date' : 'Date'}
+              {t('booking.date')}
             </span>
             <div className="text-cell tracking-copy-tight">
               {selected.d} {months[selected.m]} {selected.y}
@@ -4531,7 +4336,7 @@ const SidePanel = ({
       })()}
       <div className="pt-3.5 border-t border-white/10 flex-1 min-h-0 flex flex-col">
         <span className="edo-cell-label text-white/55 mb-2.5 block">
-          {lang === 'fr' ? 'Détail' : 'Breakdown'}
+          {t('booking.breakdown')}
         </span>
         <div className="flex flex-col gap-1.5 overflow-auto pr-1">
           {rows.length === 0 && (
@@ -4558,11 +4363,7 @@ const SidePanel = ({
                   })()}
                 </span>
                 <span className="font-mono tabular-nums text-white whitespace-nowrap">
-                  {r.onReq
-                    ? lang === 'fr'
-                      ? 'sur demande'
-                      : 'on request'
-                    : `${fmtEUR(r.amt)} €`}
+                  {r.onReq ? t('booking.onRequestLower') : `${fmtEUR(r.amt)} €`}
                 </span>
               </div>
               {r.breakdown && r.breakdown.length > 0 && (
@@ -4606,9 +4407,7 @@ const SidePanel = ({
         </div>
         {rows.some((r: AnyProps) => r.estimate) && (
           <div className="font-mono text-micro text-white/45 mt-1.5 tracking-caption leading-normal">
-            {lang === 'fr'
-              ? '⚠ Prix post-production estimatif — ajusté après brief selon volume et complexité.'
-              : '⚠ Post-production price is an estimate — adjusted after brief based on volume and complexity.'}
+            {t('booking.postProductionPriceIsAn')}
           </div>
         )}
       </div>
