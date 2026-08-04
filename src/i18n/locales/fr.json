@@ -196,10 +196,8 @@
     "requestQuoteOr": "Demander un devis ou",
     "retouchPhotoVideo": "Retouche · Photo & Vidéo",
     "srTitle": "Studio photo et vidéo professionnel à Paris",
-    "studioHeadlineAccent": "e-commerce",
-    "studioHeadlineLead": "Le studio qui alimente votre",
-    "studioSubtitleLead": "Photo, vidéo et retouche — ",
-    "studioSubtitleStrong": "du créateur indépendant à la maison de luxe.",
+    "studioHeadline": "Le studio qui alimente votre <accent>e-commerce</accent>.",
+    "studioSubtitle": "Photo, vidéo et retouche — <strong>du créateur indépendant à la maison de luxe.</strong>",
     "tellMeMore": "Dites-m'en plus"
   },
   "legalPage": {

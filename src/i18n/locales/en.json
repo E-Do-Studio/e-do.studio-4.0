@@ -196,10 +196,8 @@
     "requestQuoteOr": "Request a quote or",
     "retouchPhotoVideo": "Retouching · Photo & Video",
     "srTitle": "Professional photo and video studio in Paris",
-    "studioHeadlineAccent": "e-commerce",
-    "studioHeadlineLead": "The studio that powers your",
-    "studioSubtitleLead": "Photo, video and retouching — ",
-    "studioSubtitleStrong": "from independent creator to luxury house.",
+    "studioHeadline": "The studio that powers your <accent>e-commerce</accent>.",
+    "studioSubtitle": "Photo, video and retouching — <strong>from independent creator to luxury house.</strong>",
     "tellMeMore": "Tell me more"
   },
   "legalPage": {

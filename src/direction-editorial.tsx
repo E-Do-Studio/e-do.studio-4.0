@@ -15,7 +15,9 @@ import { SocialClientsBar } from './social-clients-bar';
 const AssistantChat = lazy(() => import('./assistant-chat'));
 import { useLoaderData } from '@tanstack/react-router';
 import { usePageContext } from './lib/page-context';
-import { common, home as homeMsg } from './i18n/messages';
+import type { Bilingual } from './types';
+import { Trans } from 'react-i18next';
+import { useT } from './i18n/use-t';
 import { fetchPriority } from './ui/fetch-priority';
 
 interface MachineRowItem {
@@ -24,9 +26,22 @@ interface MachineRowItem {
   en: { t: string; sub: string };
 }
 
+// Sous-titres imposés aux machines servies par Strapi. Ce n'est pas de l'UI
+// traduite mais un override de contenu CMS, consommé bilingue des deux côtés à
+// la fois (cf. ecomMachines) : il reste donc en Bilingual, hors i18next.
+const MACHINE_SUB_OVERRIDES: Record<string, Bilingual> = {
+  horizontal: { fr: 'Packshot à plat', en: 'Flat packshot' },
+  vertical: { fr: 'Packshot ghost / piqué', en: 'Ghost / pinned packshot' },
+  eclipse: {
+    fr: 'Photo et vidéo objets et access',
+    en: 'Object & accessory photo / video',
+  },
+  live: { fr: 'Photo et vidéo Porté', en: 'On-model photo & video' },
+};
+
 // Rendered before Strapi resolves so the four ecommerce cells don't flash
 // empty on first refresh. Titles match the Strapi `machines` collection and
-// subs mirror homeMsg.machineSubs (the same overrides we apply at runtime).
+// subs mirror MACHINE_SUB_OVERRIDES (the same overrides we apply at runtime).
 const HOME_FALLBACK_MACHINES: MachineRowItem[] = [
   {
     slug: 'horizontal',
@@ -51,6 +66,7 @@ const HOME_FALLBACK_MACHINES: MachineRowItem[] = [
 ];
 
 const DirectionA = () => {
+  const t = useT();
   const { lang, setLang, openMenu, goto, siteData } = usePageContext();
   const isDesktop = useIsDesktop();
   const { machines, contact } = siteData;
@@ -77,7 +93,7 @@ const DirectionA = () => {
     ? machines
         .filter((m) => m.slug !== 'cyclorama')
         .map((m) => {
-          const override = homeMsg.machineSubs[m.slug];
+          const override = MACHINE_SUB_OVERRIDES[m.slug];
           return {
             slug: m.slug,
             fr: { t: m.fr.t, sub: override?.fr ?? m.fr.sub },
@@ -89,12 +105,12 @@ const DirectionA = () => {
   return (
     /* Mobile: 2-col grid, vertical scroll. Desktop (md+): 12-col bento, fixed viewport */
     <main className="edo-page-enter grid w-full grid-cols-2 edo-hairline md:h-full md:grid-cols-12 md:grid-rows-home md:overflow-hidden">
-      <h1 className="sr-only">E-Do Studio — {homeMsg.srTitle[lang]}</h1>
+      <h1 className="sr-only">E-Do Studio — {t('home.srTitle')}</h1>
 
       {/* ── Row 1: Header ── */}
       <PageHeader
         lang={lang}
-        title={homeMsg.monSatHours[lang]}
+        title={t('home.monSatHours')}
         titleAside={
           announcementText ? (
             <span className="flex min-w-0 items-center gap-2 font-mono text-cell font-medium text-foreground">
@@ -114,7 +130,7 @@ const DirectionA = () => {
         actions={[
           {
             id: 'book',
-            label: common.book[lang],
+            label: t('common.book'),
             onClick: () => goto('book'),
             variant: 'primary',
             className: 'md:hidden',
@@ -134,7 +150,7 @@ const DirectionA = () => {
             : []),
           {
             id: 'contact',
-            label: common.contactUs[lang],
+            label: t('common.contactUs'),
             onClick: () => goto('contact'),
             className: 'hidden md:flex',
           },
@@ -164,18 +180,20 @@ const DirectionA = () => {
       {/* ── Rows 3-4 left: E-commerce section ── */}
       <div className="col-span-2 min-h-72 flex flex-col overflow-hidden bg-white md:col-start-1 md:col-end-7 md:row-start-3 md:row-end-5 md:min-h-0">
         <div className="flex flex-shrink-0 flex-col gap-4 px-5 pt-6 pb-5 md:flex-1 md:min-h-0 md:px-7 md:pt-5 md:pb-4">
+          {/* Une seule clé par phrase, le fragment stylé étant balisé dans la
+              traduction : découper la phrase en deux clés figeait l'ordre des
+              mots et la ponctuation finale. */}
           <h2 className="m-0 text-balance text-[clamp(1.5rem,2.2vw,2rem)] font-light tracking-display leading-tight text-foreground">
-            {homeMsg.studioHeadlineLead[lang]}{' '}
-            <span className="italic text-primary">
-              {homeMsg.studioHeadlineAccent[lang]}
-            </span>
-            .
+            <Trans
+              i18nKey="home.studioHeadline"
+              components={{ accent: <span className="italic text-primary" /> }}
+            />
           </h2>
           <p className="m-0 text-pretty font-mono text-detail leading-relaxed text-muted-foreground">
-            {homeMsg.studioSubtitleLead[lang]}
-            <span className="text-foreground">
-              {homeMsg.studioSubtitleStrong[lang]}
-            </span>
+            <Trans
+              i18nKey="home.studioSubtitle"
+              components={{ strong: <span className="text-foreground" /> }}
+            />
           </p>
         </div>
 
@@ -219,21 +237,21 @@ const DirectionA = () => {
       {/* ── Rows 3-4 right: Gallery hero ── */}
       <button
         onClick={() => goto('gallery')}
-        aria-label={common.gallery[lang]}
+        aria-label={t('common.gallery')}
         className="edo-focus-ring group relative col-span-2 aspect-[6/5] flex flex-col items-stretch justify-end overflow-hidden border-0 bg-edo-dark p-6 text-white transition-all duration-150 hover:brightness-75 md:col-start-7 md:col-end-13 md:row-start-3 md:row-end-5 md:aspect-auto"
       >
         {galleryUseCrossfade ? (
           <ImageCrossfade
             images={heroPosters.map((p, i) => ({
               url: p.url,
-              alt: p.alt || `${common.gallery[lang]} — ${i + 1}`,
+              alt: p.alt || `${t('common.gallery')} — ${i + 1}`,
             }))}
             priority
           />
         ) : galleryHasCmsPosters ? (
           <ResponsiveImage
             src={heroPosters[0].url}
-            alt={heroPosters[0].alt || common.gallery[lang]}
+            alt={heroPosters[0].alt || t('common.gallery')}
             sizes="(min-width: 768px) 50vw, 100vw"
             priority
             className="pointer-events-none absolute inset-0 h-full w-full object-cover"
@@ -261,7 +279,7 @@ const DirectionA = () => {
         <div className="relative flex w-full items-end justify-between gap-4">
           <div className="min-w-0">
             <div className="text-hero font-light tracking-display leading-solid text-white transition-transform duration-300 group-hover:scale-102">
-              {common.gallery[lang]}
+              {t('common.gallery')}
             </div>
           </div>
           <div className="flex-shrink-0">
@@ -293,7 +311,7 @@ const DirectionA = () => {
               Cyclorama
             </div>
             <div className="mt-1.5 text-caption font-mono uppercase tracking-ui text-muted-foreground">
-              {homeMsg.freeProductionPhotovideo[lang]}
+              {t('home.freeProductionPhotovideo')}
             </div>
           </div>
           <div className="flex flex-shrink-0 items-center justify-center">
@@ -318,7 +336,7 @@ const DirectionA = () => {
               Post-production
             </div>
             <div className="mt-1.5 font-mono text-caption uppercase tracking-ui text-muted-foreground">
-              {homeMsg.retouchPhotoVideo[lang]}
+              {t('home.retouchPhotoVideo')}
             </div>
           </div>
           <IconArrowRight
@@ -337,7 +355,7 @@ const DirectionA = () => {
       <div className="col-span-2 aspect-[5/4] flex overflow-hidden bg-black md:col-span-3 md:col-start-1 md:col-end-4 md:row-start-5 md:aspect-auto md:min-h-0">
         <button
           onClick={() => goto('gallery')}
-          aria-label={common.gallery[lang]}
+          aria-label={t('common.gallery')}
           className="edo-focus-ring group relative flex h-full w-full cursor-pointer items-center justify-center overflow-hidden border-0 bg-edo-dark p-0 text-left transition-all duration-150 hover:brightness-75"
         >
           {heroShowStaticPicture ? (
@@ -368,7 +386,6 @@ const DirectionA = () => {
           On mobile, the Book CTA lives in the header as a primary action
           (md:hidden), so this tile is desktop-only via `hidden md:flex`. */}
       <BookCTATile
-        lang={lang}
         onClick={() => goto('book')}
         className="col-span-2 hidden md:col-start-7 md:col-end-10 md:row-start-5 md:flex"
       />
@@ -412,13 +429,13 @@ const DirectionA = () => {
         <div className="relative flex min-w-0 flex-col gap-1">
           <CellLabel className="text-white/70">Discovery</CellLabel>
           <div className="text-tile-title font-normal tracking-headline leading-tight text-white/60">
-            {homeMsg.tellMeMore[lang]}
+            {t('home.tellMeMore')}
           </div>
         </div>
         <div className="relative flex flex-shrink-0 items-center gap-2">
           <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 font-mono text-label uppercase tracking-ui text-white/80">
             <IconLock width="11" height="11" />
-            {homeMsg.comingSoon[lang]}
+            {t('home.comingSoon')}
           </span>
           <span
             className="sm:hidden inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 p-1.5 text-white/80"

@@ -167,53 +167,6 @@ export const assistant = {
   } as B,
 };
 
-export const home = {
-  srTitle: {
-    fr: 'Studio photo et vidéo professionnel à Paris',
-    en: 'Professional photo and video studio in Paris',
-  } as B,
-  studioHeadlineLead: {
-    fr: 'Le studio qui alimente votre',
-    en: 'The studio that powers your',
-  } as B,
-  studioHeadlineAccent: {
-    fr: 'e-commerce',
-    en: 'e-commerce',
-  } as B,
-  studioSubtitleLead: {
-    fr: 'Photo, vidéo et retouche — ',
-    en: 'Photo, video and retouching — ',
-  } as B,
-  studioSubtitleStrong: {
-    fr: 'du créateur indépendant à la maison de luxe.',
-    en: 'from independent creator to luxury house.',
-  } as B,
-  machineSubs: {
-    horizontal: { fr: 'Packshot à plat', en: 'Flat packshot' } as B,
-    vertical: {
-      fr: 'Packshot ghost / piqué',
-      en: 'Ghost / pinned packshot',
-    } as B,
-    eclipse: {
-      fr: 'Photo et vidéo objets et access',
-      en: 'Object & accessory photo / video',
-    } as B,
-    live: { fr: 'Photo et vidéo Porté', en: 'On-model photo & video' } as B,
-  } as Record<string, B>,
-  freeProductionPhotovideo: {
-    fr: 'Production libre · Photo & Vidéo',
-    en: 'Free production · Photo & Video',
-  } as B,
-  requestQuoteOr: { fr: 'Demander un devis ou', en: 'Request a quote or' } as B,
-  tellMeMore: { fr: "Dites-m'en plus", en: 'Tell me more' } as B,
-  comingSoon: { fr: 'Bientôt disponible', en: 'Coming soon' } as B,
-  retouchPhotoVideo: {
-    fr: 'Retouche · Photo & Vidéo',
-    en: 'Retouching · Photo & Video',
-  } as B,
-  monSatHours: { fr: 'Lun–Sam · 10—18', en: 'Mon–Sat · 10—18' } as B,
-};
-
 export const bookPicker = {
   title: {
     fr: 'Comment souhaitez-vous réserver ?',
