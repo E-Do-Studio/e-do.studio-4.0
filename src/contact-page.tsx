@@ -11,17 +11,12 @@ import type {
   TeamMember as StrapiTeamMember,
   ClosurePeriod,
 } from './lib/strapi';
-import type { Lang, ContactFormData, Bilingual } from './types';
+import type { Lang, ContactFormData } from './types';
 import { usePageContext } from './lib/page-context';
 import { submitContactForm } from './lib/contact';
 import { useT } from './i18n/use-t';
 import { bcp47 } from './lib/format';
 import { ContactForm, ContactSuccess, INITIAL_FORM } from './contact-form';
-
-const UNAVAILABLE: Bilingual = {
-  fr: 'Contenu temporairement indisponible',
-  en: 'Content temporarily unavailable',
-};
 
 const METRO_COLOR_BY_LINE: Record<string, string> = {
   '13': 'bg-metro-13 text-black',
@@ -161,7 +156,7 @@ const FindUsSection = ({ lang, contact, className }: FindUsSectionProps) => {
     >
       <CellLabel className="mb-5 block">{t('contact.findUs')}</CellLabel>
       {showFallback ? (
-        <UnavailableNote lang={lang} />
+        <UnavailableNote />
       ) : (
         <>
           <div className="text-detail leading-copy font-medium text-foreground">
@@ -247,7 +242,7 @@ const HoursSection = ({ lang, hours, className }: HoursSectionProps) => {
     >
       <CellLabel className="mb-5 block">{t('contact.hours')}</CellLabel>
       {showFallback ? (
-        <UnavailableNote lang={lang} />
+        <UnavailableNote />
       ) : (
         <div className="flex flex-col gap-3 text-caption">
           <HoursRow
@@ -299,7 +294,7 @@ const PhoneSection = ({ lang, contact, className }: PhoneSectionProps) => {
     <section className={cn('bg-white p-6', className)}>
       <CellLabel className="mb-5 block">{t('contact.phone')}</CellLabel>
       {showFallback ? (
-        <UnavailableNote lang={lang} />
+        <UnavailableNote />
       ) : c?.phone ? (
         <a
           href={c.phoneHref}
@@ -312,11 +307,14 @@ const PhoneSection = ({ lang, contact, className }: PhoneSectionProps) => {
   );
 };
 
-const UnavailableNote = ({ lang }: { lang: Lang }) => (
-  <span className="block font-mono text-micro uppercase tracking-meta text-muted-foreground opacity-55">
-    {UNAVAILABLE[lang]} · offline
-  </span>
-);
+const UnavailableNote = () => {
+  const t = useT();
+  return (
+    <span className="block font-mono text-micro uppercase tracking-meta text-muted-foreground opacity-55">
+      {t('contact.temporarilyUnavailable')} · offline
+    </span>
+  );
+};
 
 interface ContactFormPanelProps {
   lang: Lang;
@@ -429,7 +427,7 @@ const ContactMap = ({ lang, contact, className }: ContactMapProps) => {
     <section className={cn('relative overflow-hidden bg-edo-warm', className)}>
       {showFallback ? (
         <div className="absolute inset-0 flex items-center justify-center p-6">
-          <UnavailableNote lang={lang} />
+          <UnavailableNote />
         </div>
       ) : (
         <iframe
