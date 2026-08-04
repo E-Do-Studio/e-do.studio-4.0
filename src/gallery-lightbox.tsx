@@ -73,13 +73,8 @@ export const GalleryLightbox = ({
   const [tx, setTx] = useState(0);
   const [ty, setTy] = useState(0);
   const [animate, setAnimate] = useState(false);
-  const [aspect, setAspect] = useState<number | null>(null);
   const surfaceRef = useRef<HTMLDivElement | null>(null);
   const animateTimer = useRef<number | null>(null);
-
-  useEffect(() => {
-    setAspect(null);
-  }, [item?.url]);
 
   const resetTransform = useCallback(() => {
     setScale(1);
@@ -220,8 +215,12 @@ export const GalleryLightbox = ({
           {`${project.brand} — ${plateauLabel}`}
         </DialogTitle>
         <div
-          className="relative flex flex-col edo-hairline border border-hairline overflow-hidden bg-white h-full max-h-[900px] max-w-full shadow-2xl"
-          style={{ aspectRatio: aspect ? `${aspect}` : '4 / 5' }}
+          // Gabarit fixe. Il tirait auparavant son ratio des dimensions
+          // naturelles de chaque média : le panneau repassait à 4/5 à chaque
+          // changement d'image puis sautait au ratio réel une fois chargée,
+          // soit deux sauts par navigation. Le cadre ne bouge plus et les
+          // médias s'y inscrivent en `object-contain`.
+          className="relative flex flex-col edo-hairline border border-hairline overflow-hidden bg-white h-full max-h-[900px] max-w-full aspect-[4/5] shadow-2xl"
         >
         <div className="group relative flex-1 min-h-0 overflow-hidden bg-background">
           <button
@@ -265,12 +264,7 @@ export const GalleryLightbox = ({
                   playsInline
                   controls
                   preload="metadata"
-                  onLoadedMetadata={(e) => {
-                    const v = e.currentTarget;
-                    if (v.videoWidth && v.videoHeight)
-                      setAspect(v.videoWidth / v.videoHeight);
-                  }}
-                  className="pointer-events-auto absolute inset-0 h-full w-full object-cover"
+                  className="pointer-events-auto absolute inset-0 h-full w-full object-contain"
                   aria-label={item.alt || `${project.brand} — ${index + 1}`}
                 >
                   <source src={item.url} type={item.mime} />
@@ -280,12 +274,7 @@ export const GalleryLightbox = ({
                   src={item.url}
                   alt={item.alt || `${project.brand} — ${index + 1}`}
                   draggable={false}
-                  onLoad={(e) => {
-                    const img = e.currentTarget;
-                    if (img.naturalWidth && img.naturalHeight)
-                      setAspect(img.naturalWidth / img.naturalHeight);
-                  }}
-                  className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+                  className="pointer-events-none absolute inset-0 h-full w-full object-contain"
                   style={{
                     transform: `translate(${tx}px, ${ty}px) scale(${scale})`,
                     transformOrigin: 'center',
