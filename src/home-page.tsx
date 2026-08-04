@@ -1,4 +1,3 @@
-import { BentoCell, BentoGrid } from '@/components/ui/bento';
 import { Button } from '@/components/ui/button';
 import { useLoaderData } from '@tanstack/react-router';
 import { ArrowRight, Lock } from 'lucide-react';
@@ -66,7 +65,7 @@ const HOME_FALLBACK_MACHINES: MachineRowItem[] = [
   },
 ];
 
-const DirectionA = () => {
+const HomePage = () => {
   const t = useT();
   const { lang, setLang, openMenu, goto, siteData } = usePageContext();
   const isDesktop = useIsDesktop();
@@ -204,9 +203,9 @@ const DirectionA = () => {
             Seul le trait supérieur, qui sépare cette rangée du bloc de texte,
             appartient à la grille elle-même. */}
         <div className="flex min-h-0 flex-1 overflow-hidden md:max-h-full md:w-full md:flex-none md:aspect-[4/1]">
-          <BentoGrid className="flex-1 grid-cols-2 content-end border-t border-border md:grid-cols-4 md:content-stretch">
+          <div className="grid flex-1 grid-cols-2 content-end gap-px border-t border-border bg-border md:grid-cols-4 md:content-stretch">
             {ecomMachines.map((m, i) => (
-              <BentoCell key={m.slug} className="flex">
+              <div key={m.slug} className="flex bg-background">
                 <Button
                   variant="cell"
                   size="cell"
@@ -232,9 +231,9 @@ const DirectionA = () => {
                     </HoverMarquee>
                   </div>
                 </Button>
-              </BentoCell>
+              </div>
             ))}
-          </BentoGrid>
+          </div>
         </div>
       </div>
 
@@ -489,4 +488,4 @@ const DirectionA = () => {
   );
 };
 
-export { DirectionA };
+export { HomePage };

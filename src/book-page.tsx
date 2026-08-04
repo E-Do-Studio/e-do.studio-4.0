@@ -98,14 +98,14 @@ interface ContactState {
   autreType?: string;
 }
 
-interface BookPageV2Props {
+interface BookPageProps {
   forcedStep?: number;
   forceManual?: boolean;
 }
 
 // CGV consent is deliberately not persisted across a real browser refresh (the
 // user must tick it again), but it MUST survive configurator step navigation:
-// each step is its own route, so BookPageV2 remounts and rehydrates from the
+// each step is its own route, so BookPage remounts and rehydrates from the
 // draft between steps. This module-scoped flag tells the two apart — a genuine
 // refresh re-evaluates the module (flag back to false), while in-session step
 // nav keeps it. Without this, the box ticked on the contact step is dropped by
@@ -125,7 +125,7 @@ const NO_PLATEAU: BookPlateau = {
   fdUnit: 'full',
 };
 
-const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
+const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
   const t = useT();
   const { lang, setLang, openMenu, goto } = usePageContext();
   const navigate = useNavigate();
@@ -135,7 +135,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
   // step in the `?step=N` search param instead of routing per step, so
   // reloading the page keeps the user on the step they were on. Configurator
   // mode uses TanStack routes per step and ignores this query parameter.
-  // Non-strict: BookPageV2 also renders on the configurator routes, which
+  // Non-strict: BookPage also renders on the configurator routes, which
   // don't declare `step`.
   const { step: manualStepQuery = null } = useSearch({ strict: false }) as {
     step?: number;
@@ -4460,4 +4460,4 @@ const Toggle = ({ on, onClick }: AnyProps) => (
   <Switch checked={!!on} onCheckedChange={() => onClick?.()} />
 );
 
-export { BookPageV2 };
+export { BookPage };

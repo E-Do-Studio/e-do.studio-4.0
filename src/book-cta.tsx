@@ -11,7 +11,7 @@ interface BookCTAProps {
 
 // The orange "Réserver" tile. Single definition of the booking CTA, used at
 // two render sites: the mobile social row (SocialClientsBar) and the desktop
-// bento at row 5 (DirectionA). Same DOM, same brand language in both.
+// bento at row 5 (HomePage). Same DOM, same brand language in both.
 const BookCTATile = ({ onClick, className, label }: BookCTAProps) => {
   const t = useT();
   return (

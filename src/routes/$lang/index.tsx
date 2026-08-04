@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { DirectionA } from '../../direction-editorial';
+import { HomePage } from '../../home-page';
 import { settle } from '../../lib/route-data';
 import { fetchAnnouncement, fetchHomeHero } from '../../lib/strapi';
 import type { Lang } from '../../types';
@@ -17,5 +17,5 @@ export const Route = createFileRoute('/$lang/')({
     ]);
     return { announcement, homeHero };
   },
-  component: DirectionA,
+  component: HomePage,
 });

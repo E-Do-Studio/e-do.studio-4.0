@@ -5,7 +5,7 @@ import { usePageContext } from './lib/page-context';
 import { useT } from './i18n/use-t';
 import { SocialClientsBar } from './social-clients-bar';
 
-const DiscoveryV2 = () => {
+const DiscoveryPage = () => {
   const t = useT();
   const { lang, setLang, openMenu, goto } = usePageContext();
   return (
@@ -23,6 +23,6 @@ const DiscoveryV2 = () => {
   );
 };
 
-const DiscoveryVariants = () => <DiscoveryV2 />;
+const DiscoveryVariants = () => <DiscoveryPage />;
 
-export { DiscoveryV2, DiscoveryVariants };
+export { DiscoveryPage, DiscoveryVariants };
