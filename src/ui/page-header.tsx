@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import type { Lang } from '../types';
-import { CellLabel } from './typography';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Wordmark } from './brand';
@@ -168,9 +167,9 @@ const PageHeader = ({
           subtitle ? 'gap-3.5' : 'gap-0',
         )}
       >
-        <CellLabel className="min-w-0 text-primary md:shrink-0">
+        <span className="font-mono text-xs font-normal uppercase tracking-widest min-w-0 text-primary md:shrink-0">
           <HoverMarquee>{title}</HoverMarquee>
-        </CellLabel>
+        </span>
         {subtitle && (
           <HoverMarquee className="font-mono text-xs tracking-wider text-muted-foreground">
             {subtitle}

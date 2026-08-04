@@ -13,7 +13,6 @@ import { HoverMarquee } from './ui/hover-marquee';
 import { ArrowRight, ChevronsUpDown, Pause, Play, X } from 'lucide-react';
 import { PageHeader, buildMainNav } from './ui/page-header';
 import { ResponsiveImage } from './ui/responsive-image';
-import { CellLabel } from './ui/typography';
 import { cn } from '@/lib/utils';
 import { VideoLoop } from './ui/video-loop';
 import { usePageContext } from './lib/page-context';
@@ -427,7 +426,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
  via sr-only so screen readers always have a page heading. */}
       <h1 className="sr-only md:hidden">{p.name}</h1>
       <div className="hidden bg-background py-3.5 px-4 md:col-start-4 md:row-start-2 md:flex md:flex-col md:justify-between md:gap-1">
-        <CellLabel>{p.tagline[lang]}</CellLabel>
+        <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground">{p.tagline[lang]}</span>
         <h1 className="text-2xl font-light m-0 tracking-tighter leading-none">
           {p.name}
         </h1>
@@ -435,7 +434,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
 
       {/* Specifications */}
       <div className="bg-background p-3 px-4 flex flex-col gap-1.5 md:col-start-4 md:row-start-3">
-        <CellLabel>{t('plateau.specs')}</CellLabel>
+        <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground">{t('plateau.specs')}</span>
         <div className="flex flex-col flex-1 min-h-0">
           {p.specs.map((s, i) => (
             <div
@@ -455,7 +454,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
 
       {/* Rates */}
       <div className="bg-background px-4 pt-2.5 pb-3 flex flex-col gap-1 md:col-start-4 md:row-start-4">
-        <CellLabel>{t('plateau.rates')}</CellLabel>
+        <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground">{t('plateau.rates')}</span>
         <div className="flex flex-col flex-1 min-h-0">
           {p.rates.map((r, i) => (
             <div
@@ -479,13 +478,13 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
       {/* Description + Uses */}
       <div className="bg-background p-4 flex justify-between items-start gap-6 md:col-start-2 md:col-span-2 md:row-start-5">
         <div className="flex-1 flex flex-col gap-1.5 min-w-0">
-          <CellLabel>{t('common.description')}</CellLabel>
+          <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground">{t('common.description')}</span>
           <p className="m-0 text-xs text-foreground leading-normal max-w-2xl">
             {p.desc[lang]}
           </p>
         </div>
         <div className="flex-none w-40 flex flex-col gap-1.5">
-          <CellLabel>{t('plateau.uses')}</CellLabel>
+          <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground">{t('plateau.uses')}</span>
           <ul className="list-none m-0 p-0 flex flex-col gap-0.5">
             {p.uses.map((a) => (
               <li
@@ -509,9 +508,9 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
         }}
         className="bg-primary p-4 border-0 cursor-pointer flex flex-col justify-between text-left text-primary-foreground font-[inherit] min-h-20 transition-[color,background-color,opacity] duration-150 ease-out hover:opacity-90 md:col-start-4 md:row-start-5"
       >
-        <CellLabel className="text-primary-foreground/80">
+        <span className="font-mono text-xs font-normal uppercase tracking-widest text-primary-foreground/80">
           06 · {t('common.bookNow')}
-        </CellLabel>
+        </span>
         <div className="flex w-full items-end justify-between text-primary-foreground">
           <span className="text-2xl font-medium tracking-tight">
             {t('common.bookThisStage')}

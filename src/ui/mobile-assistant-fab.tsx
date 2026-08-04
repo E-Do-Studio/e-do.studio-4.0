@@ -1,6 +1,5 @@
 import { lazy, Suspense, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { CellLabel } from './typography';
 import { MessageCircle, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Lang } from '../types';
@@ -46,7 +45,7 @@ export const MobileAssistantFab = ({ lang }: MobileAssistantFabProps) => {
         )}
       >
         <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
-          <CellLabel>{t('assistant.label')}</CellLabel>
+          <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground">{t('assistant.label')}</span>
           <Button
             type="button"
             onClick={() => setOpen(false)}

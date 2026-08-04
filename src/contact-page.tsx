@@ -3,7 +3,6 @@ import type { FormEvent } from 'react';
 import { cn } from '@/lib/utils';
 import { PageHeader, buildMainNav } from './ui/page-header';
 import { SocialLinksRow } from './ui/social-links-row';
-import { CellLabel } from './ui/typography';
 import { useLoaderData } from '@tanstack/react-router';
 import type {
   ContactInfo,
@@ -98,7 +97,7 @@ const ClosuresSection = ({
         className,
       )}
     >
-      <CellLabel className="mb-5 block">{t('contact.closures')}</CellLabel>
+      <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground mb-5 block">{t('contact.closures')}</span>
       <div className="flex flex-col gap-3 text-xs">
         {upcoming.map((c) => (
           <div
@@ -154,7 +153,7 @@ const FindUsSection = ({ lang, contact, className }: FindUsSectionProps) => {
         className,
       )}
     >
-      <CellLabel className="mb-5 block">{t('contact.findUs')}</CellLabel>
+      <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground mb-5 block">{t('contact.findUs')}</span>
       {showFallback ? (
         <UnavailableNote />
       ) : (
@@ -240,7 +239,7 @@ const HoursSection = ({ lang, hours, className }: HoursSectionProps) => {
         className,
       )}
     >
-      <CellLabel className="mb-5 block">{t('contact.hours')}</CellLabel>
+      <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground mb-5 block">{t('contact.hours')}</span>
       {showFallback ? (
         <UnavailableNote />
       ) : (
@@ -292,7 +291,7 @@ const PhoneSection = ({ lang, contact, className }: PhoneSectionProps) => {
   const showFallback = !c;
   return (
     <section className={cn('bg-background p-6', className)}>
-      <CellLabel className="mb-5 block">{t('contact.phone')}</CellLabel>
+      <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground mb-5 block">{t('contact.phone')}</span>
       {showFallback ? (
         <UnavailableNote />
       ) : c?.phone ? (

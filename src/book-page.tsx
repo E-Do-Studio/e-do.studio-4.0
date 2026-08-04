@@ -77,7 +77,6 @@ import {
   useBookingDraftSaver,
 } from './lib/use-booking-draft';
 import { PageHeader, buildMainNav } from './ui/page-header';
-import { CellLabel } from './ui/typography';
 
 type AnyProps = Record<string, any>;
 
@@ -891,9 +890,9 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
 
       {/* Desktop col 4 – dark label matching quote panel below */}
       <div className="dark hidden h-full items-center bg-background px-6 md:col-start-4 md:row-start-1 md:flex">
-        <CellLabel className="text-muted-foreground">
+        <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground">
           {t('booking.yourQuote')}
-        </CellLabel>
+        </span>
       </div>
 
       <nav

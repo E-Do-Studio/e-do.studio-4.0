@@ -8,7 +8,6 @@ import {
 } from '@/components/ui/sheet';
 import { Lock, X } from 'lucide-react';
 import { SocialLinksRow } from './ui/social-links-row';
-import { CellLabel } from './ui/typography';
 import { useT } from './i18n/use-t';
 import { SCREEN_TO_PATH } from './lib/screens';
 import type { Lang } from './types';
@@ -72,9 +71,9 @@ const NavItemLink = ({ item, index, onClose, navigate }: NavItemLinkProps) => {
         className="relative flex min-h-13 cursor-not-allowed flex-col justify-between gap-1 border-b border-border px-4 py-2.5"
       >
         <div className="flex items-center justify-between gap-2">
-          <CellLabel className="leading-none">
+          <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground leading-none">
             {String(index + 1).padStart(2, '0')}
-          </CellLabel>
+          </span>
           <span className="inline-flex items-center gap-1 font-mono text-xs leading-none uppercase tracking-widest text-muted-foreground">
             <Lock width="9" height="9" aria-hidden="true" />
             {t('home.comingSoon')}
@@ -96,7 +95,7 @@ const NavItemLink = ({ item, index, onClose, navigate }: NavItemLinkProps) => {
       }}
       className="outline-none focus-visible:ring-3 focus-visible:ring-ring/50 relative flex min-h-13 cursor-pointer flex-col justify-between gap-1 border-b border-border px-4 py-2.5 no-underline transition-colors hover:bg-muted"
     >
-      <CellLabel>{String(index + 1).padStart(2, '0')}</CellLabel>
+      <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground">{String(index + 1).padStart(2, '0')}</span>
       <span className="mt-auto text-base font-light text-foreground">
         {item.label}
       </span>
@@ -117,7 +116,7 @@ const NavExternalLink = ({ href, label, index }: NavExternalLinkProps) => (
     rel="noopener noreferrer"
     className="outline-none focus-visible:ring-3 focus-visible:ring-ring/50 relative flex min-h-13 cursor-pointer flex-col justify-between gap-1 border-b border-border px-4 py-2.5 no-underline transition-colors hover:bg-muted"
   >
-    <CellLabel>{String(index + 1).padStart(2, '0')}</CellLabel>
+    <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground">{String(index + 1).padStart(2, '0')}</span>
     <span className="mt-auto flex items-baseline gap-1.5 text-base font-light text-foreground">
       {label}
       <span

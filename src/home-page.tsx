@@ -14,7 +14,6 @@ import { ImageCrossfade } from './ui/image-crossfade';
 import { MobileAssistantFab } from './ui/mobile-assistant-fab';
 import { PageHeader } from './ui/page-header';
 import { ResponsiveImage } from './ui/responsive-image';
-import { CellLabel } from './ui/typography';
 import { useIsDesktop } from './ui/use-is-desktop';
 import { VideoLoop } from './ui/video-loop';
 
@@ -311,7 +310,7 @@ const HomePage = () => {
         size="cell"
         className="group col-span-1 h-36 justify-between p-5 md:col-span-3 md:col-start-4 md:col-end-7 md:row-start-5 md:row-end-7 md:h-auto md:min-h-0"
       >
-        <CellLabel>Espace</CellLabel>
+        <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground">Espace</span>
         <div className="flex items-end justify-between gap-3">
           <div className="min-w-0">
             <div className="whitespace-nowrap text-3xl font-light tracking-tighter leading-none text-foreground">
@@ -338,7 +337,7 @@ const HomePage = () => {
         size="cell"
         className="group col-span-1 h-36 justify-between p-5 md:col-start-7 md:col-end-10 md:row-start-5 md:row-end-7 md:mt-[85px] md:h-[calc(100%-85px)]"
       >
-        <CellLabel>Service</CellLabel>
+        <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground">Service</span>
         <div className="flex items-end justify-between gap-2.5">
           <div className="min-w-0">
             <div className="whitespace-nowrap text-3xl font-light tracking-tighter leading-none text-foreground">
@@ -436,7 +435,7 @@ const HomePage = () => {
           ))}
         </svg>
         <div className="relative flex min-w-0 flex-col gap-1">
-          <CellLabel className="text-muted-foreground">Discovery</CellLabel>
+          <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground">Discovery</span>
           <div className="text-xl font-normal tracking-tight leading-tight text-muted-foreground">
             {t('home.tellMeMore')}
           </div>
