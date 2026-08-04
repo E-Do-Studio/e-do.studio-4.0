@@ -8,8 +8,15 @@ import {
 } from 'react';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { usePageContext } from './lib/page-context';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Empty, EmptyTitle } from '@/components/ui/empty';
-import { ArrowRight } from 'lucide-react';
+import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
+import { ArrowRight, X } from 'lucide-react';
 import { PageHeader, buildMainNav } from './ui/page-header';
 import { CellLabel } from './ui/typography';
 import { createBooking } from './lib/bookings';
@@ -1326,16 +1333,21 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
         </div>
 
         {saveError && (
-          <div className="bg-red-50 border-t border-red-200 px-12 py-3 flex items-center justify-between shrink-0">
-            <span className="text-red-700 text-caption">{saveError}</span>
-            <button
-              type="button"
+          <Alert
+            variant="destructive"
+            className="shrink-0 items-center justify-between rounded-none border-x-0 border-b-0 px-12 py-3"
+          >
+            <AlertDescription>{saveError}</AlertDescription>
+            <Button
+              variant="ghost"
+              size="icon-sm"
               onClick={() => setSaveError(null)}
-              className="text-red-500 text-caption font-mono cursor-pointer border-0 bg-transparent hover:text-red-700"
+              aria-label={t('common.close')}
+              className="text-destructive"
             >
-              ✕
-            </button>
-          </div>
+              <X />
+            </Button>
+          </Alert>
         )}
         <BookingHubspotFields
           mode={mode}
@@ -2695,7 +2707,7 @@ const Step0Configurator = ({
             <div className="grid grid-cols-1 gap-hairline bg-edo-pure-black border-b border-hairline">
               <div className="bg-white px-4 sm:px-3 py-4 sm:py-2.5 flex flex-col gap-2 min-w-0">
                 <div className="flex items-center gap-1.5 max-w-xs min-w-0">
-                  <input
+                  <Input
                     value={S.quantity}
                     onChange={(e) =>
                       setSession({
@@ -2704,7 +2716,7 @@ const Step0Configurator = ({
                     }
                     placeholder="—"
                     inputMode="numeric"
-                    className="flex-1 min-w-0 bg-white border border-border outline-none px-3.5 py-2.5 font-mono text-cell tracking-copy-tight text-foreground text-center"
+                    className="h-auto min-w-0 flex-1 rounded-none border-border bg-white px-3.5 py-2.5 text-center font-mono text-cell tracking-copy-tight"
                   />
                 </div>
               </div>
@@ -2790,7 +2802,7 @@ const Step0Configurator = ({
                   {t('booking.numberOfProducts')}
                 </span>
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <input
+                  <Input
                     value={S.quantity}
                     onChange={(e) =>
                       setSession({
@@ -2808,7 +2820,7 @@ const Step0Configurator = ({
                   {t('booking.viewsPerProduct')}
                 </span>
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <input
+                  <Input
                     value={S.viewsCount}
                     onChange={(e) =>
                       setSession({
@@ -3439,13 +3451,15 @@ const Step2Date = ({
 };
 
 const StepperBtn = ({ onClick, children }: AnyProps) => (
-  <button
+  <Button
     type="button"
+    variant="outline"
+    size="icon-sm"
     onClick={onClick}
-    className="edo-focus-ring w-7.5 h-8 flex-none basis-8 border border-border bg-white cursor-pointer text-cell text-foreground font-inherit inline-flex items-center justify-center transition-all duration-150 hover:scale-102 hover:border-foreground"
+    className="h-8 w-7.5 flex-none basis-8 border-border text-cell normal-case tracking-normal transition-all hover:scale-102 hover:border-foreground"
   >
     {children}
-  </button>
+  </Button>
 );
 
 const BentoSlotTile = ({
@@ -3933,19 +3947,22 @@ const ARTICLE_TYPES: AnyProps[] = [
   { k: 'autre', fr: 'Autre', en: 'Other' },
 ];
 
+// Cellule de formulaire du tunnel : le libellé coiffe le champ à l'intérieur
+// de la cellule bento. `data-invalid` porte l'état d'erreur, que `Field` et
+// `FieldError` savent lire — l'anneau rouge et le message sont posés par le
+// composant, plus par des classes `ring-red-400` / `text-red-500` en ligne.
 const BentoField = ({ label, children, span, error }: AnyProps) => (
-  <div
-    className={`bg-white px-4 py-2.5 sm:px-3 sm:py-1.5 flex flex-col gap-hairline min-h-control ${error ? 'ring-1 ring-inset ring-red-400' : ''}`}
+  <Field
+    data-invalid={error ? true : undefined}
+    className="min-h-control gap-hairline bg-white px-4 py-2.5 data-[invalid=true]:ring-1 data-[invalid=true]:ring-destructive data-[invalid=true]:ring-inset sm:px-3 sm:py-1.5"
     {...(span ? { style: { gridColumn: span } } : {})}
   >
-    <span className="edo-cell-label text-muted-foreground text-micro tracking-meta">
+    <FieldLabel className="edo-cell-label text-micro tracking-meta text-muted-foreground">
       {label}
-    </span>
+    </FieldLabel>
     {children}
-    {error && (
-      <span className="text-red-500 text-micro leading-tight">{error}</span>
-    )}
-  </div>
+    {error && <FieldError>{error}</FieldError>}
+  </Field>
 );
 
 const BentoInput = ({
@@ -3956,16 +3973,20 @@ const BentoInput = ({
   name,
   autoComplete,
   inputMode,
+  invalid,
 }: AnyProps) => (
-  <input
+  <Input
     value={value || ''}
-    onChange={(e) => onChange(e.target.value)}
+    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+      onChange(e.target.value)
+    }
     placeholder={placeholder}
     type={type}
     name={name}
     autoComplete={autoComplete}
     inputMode={inputMode}
-    className="bg-transparent border-0 outline-none p-0 font-inherit text-detail tracking-copy-tight w-full text-foreground"
+    aria-invalid={invalid || undefined}
+    className="h-auto w-full rounded-none border-0 bg-transparent p-0 font-sans text-detail tracking-copy-tight focus-visible:ring-0"
   />
 );
 
@@ -4075,7 +4096,7 @@ const Step7Contact = ({
         {!isCyclo && !hideProductFields && (
           <>
             <div
-              className={`bg-white px-3 py-1.5 col-span-1 sm:col-span-2 flex flex-col gap-1 min-h-control ${errors.typesArticles ? 'ring-1 ring-inset ring-red-400' : ''}`}
+              className={`bg-white px-3 py-1.5 col-span-1 sm:col-span-2 flex flex-col gap-1 min-h-control ${errors.typesArticles ? 'ring-1 ring-inset ring-destructive' : ''}`}
             >
               <span className="edo-cell-label text-muted-foreground text-micro tracking-meta">
                 {t('booking.itemTypes')}
@@ -4103,18 +4124,18 @@ const Step7Contact = ({
                 })}
               </div>
               {(contact.typesArticles || []).includes('autre') && (
-                <input
+                <Input
                   name="other_item_type"
                   value={contact.autreType || ''}
                   onChange={(e) =>
                     setContact({ ...contact, autreType: e.target.value })
                   }
                   placeholder={t('booking.specifyOtherItemType')}
-                  className="mt-0.5 bg-transparent border-0 border-b border-b-border outline-none py-1 px-0 font-inherit text-caption tracking-copy-tight w-full text-foreground"
+                  className="mt-0.5 h-auto w-full rounded-none border-0 border-b border-b-border bg-transparent px-0 py-1 font-sans text-caption tracking-copy-tight focus-visible:ring-0"
                 />
               )}
               {errors.typesArticles && (
-                <span className="text-red-500 text-micro leading-tight">
+                <span className="text-destructive text-micro leading-tight">
                   {errors.typesArticles}
                 </span>
               )}
@@ -4151,31 +4172,30 @@ const Step7Contact = ({
           <span className="edo-cell-label text-muted-foreground text-micro tracking-meta">
             {t('booking.otherInformation')}
           </span>
-          <textarea
+          <Textarea
             name="message"
             value={contact.autresInfos || ''}
             onChange={(e) =>
               setContact({ ...contact, autresInfos: e.target.value })
             }
             placeholder={t('booking.constraintsInspirationsReferencesOptional')}
-            className="w-full box-border bg-transparent border-0 outline-none p-0 font-inherit text-caption min-h-7 resize-y text-foreground"
+            className="box-border min-h-7 w-full resize-y rounded-none border-0 bg-transparent p-0 font-sans text-caption focus-visible:ring-0"
           />
         </div>
         <label
-          className={`col-span-1 sm:col-span-2 bg-white px-3 py-1.5 flex flex-col gap-0.5 cursor-pointer min-h-control ${errors.cgvAccepted ? 'ring-1 ring-inset ring-red-400' : ''}`}
+          className={`col-span-1 sm:col-span-2 bg-white px-3 py-1.5 flex flex-col gap-0.5 cursor-pointer min-h-control ${errors.cgvAccepted ? 'ring-1 ring-inset ring-destructive' : ''}`}
         >
           <span className="edo-cell-label text-muted-foreground text-micro tracking-meta">
             CGV *
           </span>
           <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
+            <Checkbox
               name="cgv_accepted"
               checked={!!contact.cgvAccepted}
-              onChange={(e) =>
-                setContact({ ...contact, cgvAccepted: e.target.checked })
+              onCheckedChange={(next: boolean) =>
+                setContact({ ...contact, cgvAccepted: next })
               }
-              className="w-3.5 h-3.5 accent-primary cursor-pointer shrink-0"
+              className="size-3.5 shrink-0"
             />
             <span className="text-caption leading-snug text-foreground">
               {/* Le lien vit dans la traduction : sa position dans la phrase
@@ -4197,7 +4217,7 @@ const Step7Contact = ({
             </span>
           </div>
           {errors.cgvAccepted && (
-            <span className="text-red-500 text-micro leading-tight">
+            <span className="text-destructive text-micro leading-tight">
               {errors.cgvAccepted}
             </span>
           )}
@@ -4408,15 +4428,7 @@ const SidePanel = ({
 };
 
 const Toggle = ({ on, onClick }: AnyProps) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={`w-11.5 h-6.5 ${on ? 'bg-primary' : 'bg-border'} border-0 rounded-full relative cursor-pointer transition-colors duration-150`}
-  >
-    <span
-      className={`absolute top-[3px] left-toggle-thumb ${on ? 'translate-x-5' : 'translate-x-0'} w-5 h-5 bg-white rounded-full transition-transform duration-150 shadow-toggle`}
-    />
-  </button>
+  <Switch checked={!!on} onCheckedChange={() => onClick?.()} />
 );
 
 export { BookPageV2 };
