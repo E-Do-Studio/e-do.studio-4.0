@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useIsDesktop } from './ui/use-is-desktop';
 import { HoverMarquee } from './ui/hover-marquee';
@@ -200,7 +201,7 @@ const DirectionA = () => {
         <div className="flex flex-1 min-h-0 overflow-hidden bg-background md:flex-none md:w-full md:max-h-full md:aspect-[4/1]">
           <div className="grid flex-1 grid-cols-2 content-end bg-background md:grid-cols-4 md:content-stretch">
             {ecomMachines.map((m, i) => (
-              <button
+              <Button
                 key={m.slug}
                 onClick={() => goto('plateau-' + m.slug)}
                 className={cn(
@@ -228,17 +229,19 @@ const DirectionA = () => {
                     {m[lang].sub}
                   </HoverMarquee>
                 </div>
-              </button>
+              </Button>
             ))}
           </div>
         </div>
       </div>
 
       {/* ── Rows 3-4 right: Gallery hero ── */}
-      <button
+      <Button
         onClick={() => goto('gallery')}
         aria-label={t('common.gallery')}
-        className="edo-focus-ring group relative col-span-2 aspect-[6/5] flex flex-col items-stretch justify-end overflow-hidden border-0 dark bg-background p-6 text-foreground transition-all duration-150 hover:brightness-75 md:col-start-7 md:col-end-13 md:row-start-3 md:row-end-5 md:aspect-auto"
+        variant="cell"
+        size="cell"
+        className="dark group relative col-span-2 aspect-[6/5] items-stretch justify-end overflow-hidden bg-background p-6 transition-all hover:brightness-75 hover:bg-background md:col-start-7 md:col-end-13 md:row-start-3 md:row-end-5 md:aspect-auto"
       >
         {galleryUseCrossfade ? (
           <ImageCrossfade
@@ -290,7 +293,7 @@ const DirectionA = () => {
             />
           </div>
         </div>
-      </button>
+      </Button>
 
       {/*
        * Mobile JSX order below mirrors the requested mobile stack:
@@ -300,9 +303,11 @@ const DirectionA = () => {
        */}
 
       {/* ── Rows 5-6 middle (desktop) / mobile row A left: Cyclorama ── */}
-      <button
+      <Button
         onClick={() => goto('cyclorama')}
-        className="edo-focus-ring group col-span-1 h-36 flex cursor-pointer flex-col justify-between border-0 bg-background p-5 text-left text-foreground transition-colors duration-150 hover:bg-muted md:col-span-3 md:col-start-4 md:col-end-7 md:row-start-5 md:row-end-7 md:h-auto md:min-h-0"
+        variant="cell"
+        size="cell"
+        className="group col-span-1 h-36 justify-between p-5 md:col-span-3 md:col-start-4 md:col-end-7 md:row-start-5 md:row-end-7 md:h-auto md:min-h-0"
       >
         <CellLabel>Espace</CellLabel>
         <div className="flex items-end justify-between gap-3">
@@ -322,12 +327,14 @@ const DirectionA = () => {
             />
           </div>
         </div>
-      </button>
+      </Button>
 
       {/* ── Rows 5-6 right (desktop) / mobile row A right: Post-production ── */}
-      <button
+      <Button
         onClick={() => goto('postprod')}
-        className="edo-focus-ring group col-span-1 h-36 flex cursor-pointer flex-col justify-between border-0 bg-background p-5 text-left text-foreground transition-colors duration-150 hover:bg-muted md:col-start-7 md:col-end-10 md:row-start-5 md:row-end-7 md:mt-home-offset md:h-home-offset"
+        variant="cell"
+        size="cell"
+        className="group col-span-1 h-36 justify-between p-5 md:col-start-7 md:col-end-10 md:row-start-5 md:row-end-7 md:mt-home-offset md:h-home-offset"
       >
         <CellLabel>Service</CellLabel>
         <div className="flex items-end justify-between gap-2.5">
@@ -345,7 +352,7 @@ const DirectionA = () => {
             height="16"
           />
         </div>
-      </button>
+      </Button>
 
       {/* ── Row 5 left (desktop) / mobile row B: Video / showreel ──
           Mobile uses a 5:4 aspect ratio so the showreel renders at a similar
@@ -353,7 +360,7 @@ const DirectionA = () => {
           instead of being shrunk to a short banner. md+ reverts to the grid
           row sizing via aspect-auto. */}
       <div className="col-span-2 aspect-[5/4] flex overflow-hidden bg-black md:col-span-3 md:col-start-1 md:col-end-4 md:row-start-5 md:aspect-auto md:min-h-0">
-        <button
+        <Button
           onClick={() => goto('gallery')}
           aria-label={t('common.gallery')}
           className="edo-focus-ring group relative flex h-full w-full cursor-pointer items-center justify-center overflow-hidden border-0 bg-edo-dark p-0 text-left transition-all duration-150 hover:brightness-75"
@@ -379,7 +386,7 @@ const DirectionA = () => {
             />
           )}
           <div className="absolute inset-0 bg-home-media-gradient" />
-        </button>
+        </Button>
       </div>
 
       {/* ── Row 5 right (desktop only): Book CTA.
@@ -391,7 +398,7 @@ const DirectionA = () => {
       />
 
       {/* ── Row 6 left: Discovery CTA (Coming soon) ── */}
-      <button
+      <Button
         type="button"
         disabled
         aria-disabled="true"
@@ -444,7 +451,7 @@ const DirectionA = () => {
             <Lock width="12" height="12" />
           </span>
         </div>
-      </button>
+      </Button>
 
       {/* ── Rows 5-6 far right: Assistant chat (desktop only; mobile uses FAB) ──
           Mounted only above md so phones never download the chat chunk

@@ -141,13 +141,15 @@ const MobileNavStrip = ({
         role="toolbar"
         aria-label={ariaLabel}
       >
-        <button
+        <Button
           type="button"
           onClick={() => setOpen(true)}
           aria-haspopup="dialog"
           aria-expanded={open}
           aria-controls={sheetId}
-          className="edo-focus-ring flex min-h-11 w-full cursor-pointer items-center gap-2 px-4 text-left transition-colors duration-150 ease-edo-out hover:bg-muted"
+          variant="cell"
+          size="cell"
+          className="min-h-11 w-full flex-row items-center gap-2 bg-transparent px-4"
         >
           <span className="font-mono text-label uppercase tracking-label text-foreground">
             {triggerLabel}
@@ -176,7 +178,7 @@ const MobileNavStrip = ({
               )}
             />
           </span>
-        </button>
+        </Button>
       </div>
 
       <Drawer

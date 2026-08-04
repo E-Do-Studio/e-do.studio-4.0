@@ -129,19 +129,20 @@ const AssistantHeader = ({
 
       <div className="-mr-1 flex items-center gap-0.5">
         {historyCount > 0 && (
-          <button
+          <Button
             type="button"
             onClick={onOpenHistory}
-            className="edo-focus-ring flex cursor-pointer items-center gap-1.5 border-0 bg-transparent px-1.5 py-1 font-mono text-micro uppercase tracking-code text-muted-foreground transition-colors hover:text-foreground"
+            variant="ghost"
+            className="h-auto gap-1.5 px-1.5 py-1 text-micro tracking-code text-muted-foreground hover:bg-transparent hover:text-foreground"
           >
             {t('assistant.history')}
             <span className="flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-muted px-1 text-nano text-muted-foreground">
               {historyCount}
             </span>
-          </button>
+          </Button>
         )}
         {mode === 'chat' && (
-          <button
+          <Button
             type="button"
             onClick={onNewSession}
             aria-label={t('assistant.newConversation')}
@@ -149,7 +150,7 @@ const AssistantHeader = ({
             className="edo-focus-ring flex h-7 w-7 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-muted-foreground transition-colors hover:text-foreground"
           >
             <Plus width="15" height="15" />
-          </button>
+          </Button>
         )}
       </div>
     </div>
@@ -195,27 +196,31 @@ const ChatSessionList = ({
     <div className="absolute inset-0 z-40 flex flex-col bg-background">
       <div className="flex shrink-0 items-center justify-between border-b border-hairline px-cell py-3">
         <span className="edo-cell-label">{t('assistant.history')}</span>
-        <button
+        <Button
           type="button"
           onClick={onClose}
           aria-label={t('common.close')}
-          className="edo-focus-ring -mr-1 flex h-7 w-7 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-muted-foreground transition-colors hover:text-foreground"
+          variant="ghost"
+          size="icon-sm"
+          className="-mr-1 text-muted-foreground hover:bg-transparent hover:text-foreground"
         >
           <X width="16" height="16" />
-        </button>
+        </Button>
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto scrollbar-thin">
-        <button
+        <Button
           type="button"
           onClick={onNew}
-          className="edo-focus-ring group flex shrink-0 cursor-pointer items-center gap-2.5 border-b border-hairline bg-transparent px-cell py-3 text-left transition-colors hover:bg-muted"
+          variant="cell"
+          size="cell"
+          className="group shrink-0 flex-row items-center gap-2.5 border-b border-hairline bg-transparent px-cell py-3"
         >
           <Plus width="15" height="15" className="text-primary" />
           <span className="text-detail leading-none text-foreground">
             {t('assistant.newConversation')}
           </span>
-        </button>
+        </Button>
 
         {sessions.length === 0 ? (
           <p className="px-cell py-4 text-detail leading-normal text-muted-foreground">
@@ -232,10 +237,12 @@ const ChatSessionList = ({
                   isActive ? 'bg-muted' : 'hover:bg-muted',
                 )}
               >
-                <button
+                <Button
                   type="button"
                   onClick={() => onSelect(session.id)}
-                  className="edo-focus-ring flex min-w-0 flex-1 cursor-pointer flex-col items-start gap-1 border-0 bg-transparent py-2.5 pl-cell pr-2 text-left"
+                  variant="cell"
+                  size="cell"
+                  className="min-w-0 flex-1 gap-1 bg-transparent py-2.5 pl-cell pr-2"
                 >
                   <span className="w-full truncate text-detail leading-none text-foreground">
                     {session.title || t('assistant.untitledConversation')}
@@ -243,15 +250,17 @@ const ChatSessionList = ({
                   <span className="text-caption leading-none text-muted-foreground">
                     {formatRelative(session.updatedAt, lang)}
                   </span>
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   onClick={() => onDelete(session.id)}
                   aria-label={t('assistant.deleteConversation')}
-                  className="edo-focus-ring mr-1.5 flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-muted-foreground opacity-0 transition-opacity hover:text-foreground focus-visible:opacity-100 group-hover/row:opacity-100"
+                  variant="ghost"
+            size="icon-sm"
+            className="mr-1.5 shrink-0 text-muted-foreground opacity-0 hover:bg-transparent hover:text-foreground focus-visible:opacity-100 group-hover/row:opacity-100"
                 >
                   <Trash2 width="14" height="14" />
-                </button>
+                </Button>
               </div>
             );
           })
@@ -294,12 +303,13 @@ interface QuickReplyButtonProps {
 }
 
 const QuickReplyButton = ({ children, onClick }: QuickReplyButtonProps) => (
-  <button
+  <Button
     onClick={onClick}
-    className="edo-focus-ring cursor-pointer rounded-full border border-border bg-background px-2.5 py-1.5 font-mono text-micro uppercase tracking-ui text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+    variant="outline"
+    className="h-auto rounded-full px-2.5 py-1.5 text-micro tracking-ui text-muted-foreground hover:border-foreground hover:text-foreground"
   >
     {children}
-  </button>
+  </Button>
 );
 
 interface ChatBubbleProps {
@@ -634,12 +644,12 @@ const ContactForm = ({ lang, onSubmit }: ContactFormProps) => {
         />
       </div>
       {err && <div className="mt-1.5 text-micro text-primary">{err}</div>}
-      <button
+      <Button
         type="submit"
-        className="edo-focus-ring mt-2 flex w-full cursor-pointer items-center justify-center border-0 bg-primary px-3 py-2 text-detail text-primary-foreground transition-opacity hover:opacity-90"
+        className="mt-2 h-auto w-full px-3 py-2 text-detail normal-case tracking-normal"
       >
         {t('assistant.contactSubmit')}
-      </button>
+      </Button>
     </form>
   );
 };
@@ -730,16 +740,16 @@ const BookingRecapCard = ({
 
       {error && <div className="mb-2 text-micro text-primary">{error}</div>}
 
-      <button
+      <Button
         type="button"
         disabled={!cgv || busy}
         onClick={onConfirm}
-        className="edo-focus-ring flex w-full cursor-pointer items-center justify-center border-0 bg-primary px-3 py-2 text-detail text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+        className="h-auto w-full px-3 py-2 text-detail normal-case tracking-normal"
       >
         {busy
           ? t('assistant.bookingConfirming')
           : t('assistant.bookingConfirm')}
-      </button>
+      </Button>
     </div>
   );
 };

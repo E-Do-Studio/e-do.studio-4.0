@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Button } from '@/components/ui/button';
 import { useNavigate } from '@tanstack/react-router';
 import { usePageContext } from '../lib/page-context';
 import { SCREEN_TO_PATH } from '../lib/screens';
@@ -85,9 +86,9 @@ const ConfirmedView = ({
   };
 
   const navBtnCls =
-    'edo-focus-ring bg-transparent border-0 cursor-pointer font-mono text-caption tracking-meta uppercase text-foreground inline-flex items-center gap-2 transition-all duration-150 hover:text-primary';
+    'h-auto gap-2 bg-transparent p-0 text-caption tracking-meta hover:bg-transparent hover:text-primary';
   const navBtnOrangeCls =
-    'edo-focus-ring bg-primary border-0 cursor-pointer text-white font-mono text-caption tracking-meta uppercase px-cell-lg h-control inline-flex items-center gap-2 transition-all duration-150 hover:scale-102 hover:opacity-90';
+    'h-control gap-2 px-cell-lg text-caption tracking-meta hover:scale-102';
 
   return (
     <div className="grid w-full edo-hairline md:h-full md:grid-cols-app md:grid-rows-app md:overflow-hidden">
@@ -105,7 +106,7 @@ const ConfirmedView = ({
       <div className="overflow-auto flex flex-col edo-hairline md:col-span-2 md:row-start-2 md:min-h-0">
         <div className="grid edo-hairline grid-cols-1 md:grid-cols-confirmation-hero">
           <div className="bg-background pt-6 md:pt-7 px-5 md:px-12 pb-6 flex flex-col gap-2.5 min-h-44">
-            <div className="inline-flex items-center gap-2.5 py-1.5 px-3 bg-primary text-white font-mono text-micro tracking-label uppercase self-start">
+            <div className="inline-flex items-center gap-2.5 py-1.5 px-3 bg-primary text-primary-foreground font-mono text-micro tracking-label uppercase self-start">
               ● {copy.status}
             </div>
             <h1 className="m-0 text-hero font-light tracking-display leading-solid text-balance">
@@ -268,15 +269,15 @@ const ConfirmedView = ({
 
         <div className="grid grid-cols-2 edo-hairline">
           <div className="bg-background px-5 py-3 flex items-center">
-            <button onClick={() => goto('home')} className={navBtnCls}>
+            <Button onClick={() => goto('home')} className={navBtnCls}>
               ← {t('booking.backHome')}
-            </button>
+            </Button>
           </div>
           <div className="bg-background px-5 py-3 flex items-center justify-end">
-            <button onClick={onNewRequest} className={navBtnOrangeCls}>
+            <Button onClick={onNewRequest} className={navBtnOrangeCls}>
               {t('booking.newRequest')}{' '}
               <ArrowRight width="14" height="14" />
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -329,14 +330,14 @@ const BookConfirmation = () => {
             <p className="m-0 mt-4 max-w-2xl text-detail text-muted-foreground leading-normal text-pretty">
               {t('bookPicker.confirmationMissingBody')}
             </p>
-            <button
+            <Button
               type="button"
               onClick={() => navigate({ to: SCREEN_TO_PATH.book(lang) })}
-              className="edo-focus-ring mt-8 inline-flex h-control cursor-pointer items-center gap-2 border-0 bg-primary px-cell-lg font-mono text-caption tracking-meta uppercase text-white transition-all duration-150 ease-edo-out hover:opacity-90"
+              className="mt-8 h-control gap-2 px-cell-lg text-caption tracking-meta"
             >
               {t('bookPicker.resumeBooking')}{' '}
               <ArrowRight width="14" height="14" />
-            </button>
+            </Button>
           </div>
         </div>
       </div>

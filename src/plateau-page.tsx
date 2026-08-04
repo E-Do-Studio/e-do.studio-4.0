@@ -104,7 +104,7 @@ const Cover = ({
       )}
 
       {item.kind === 'video' && (
-        <button
+        <Button
           type="button"
           onClick={() => setPaused((p) => !p)}
           aria-label={paused ? t('common.playVideo') : t('common.pauseVideo')}
@@ -116,7 +116,7 @@ const Cover = ({
           ) : (
             <Pause size={16} strokeWidth={1.5} />
           )}
-        </button>
+        </Button>
       )}
 
       {hasMultiple && (
@@ -168,7 +168,7 @@ const ThumbStrip = ({
         {items.map((item, i) => {
           const isActive = i === activeIndex;
           return (
-            <button
+            <Button
               key={`${item.url}-${i}`}
               type="button"
               onClick={() => onSelect(i)}
@@ -196,7 +196,7 @@ const ThumbStrip = ({
                   className="absolute inset-0 h-full w-full object-cover"
                 />
               )}
-            </button>
+            </Button>
           );
         })}
       </div>
@@ -266,13 +266,15 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
         role="toolbar"
         aria-label={t('common.stages')}
       >
-        <button
+        <Button
           type="button"
           onClick={() => setNavSheetOpen(true)}
           aria-haspopup="dialog"
           aria-expanded={navSheetOpen}
           aria-controls="plateau-nav-sheet"
-          className="edo-focus-ring flex min-h-11 w-full cursor-pointer items-center gap-2 px-4 text-left transition-colors duration-150 ease-edo-out hover:bg-muted"
+          variant="cell"
+          size="cell"
+          className="min-h-11 w-full flex-row items-center gap-2 bg-transparent px-4"
         >
           <span className="font-mono text-label uppercase tracking-label text-foreground">
             {currentNumber}
@@ -290,7 +292,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
               className="shrink-0 text-foreground"
             />
           </span>
-        </button>
+        </Button>
       </div>
 
       <Drawer open={navSheetOpen} onOpenChange={setNavSheetOpen}>
@@ -312,7 +314,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
             const num = String(i + 1).padStart(2, '0');
             return (
               <li key={m}>
-                <button
+                <Button
                   type="button"
                   onClick={() => navigateToPlateau(m)}
                   aria-current={active ? 'page' : undefined}
@@ -345,7 +347,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
                     {cfg.tagline[lang]}
                   </HoverMarquee>
                   <ArrowRight width="16" height="16" className="shrink-0" />
-                </button>
+                </Button>
               </li>
             );
           })}
@@ -360,12 +362,14 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
           if (!cfg) return null;
           const active = m === slug;
           return (
-            <button
+            <Button
               key={m}
               onClick={() =>
                 goto(m === 'cyclorama' ? 'cyclorama' : 'plateau-' + m)
               }
-              className={`edo-focus-ring flex-none py-3.5 px-4 border-0 cursor-pointer text-left flex flex-col gap-1 transition-colors duration-150
+              variant="cell"
+              size="cell"
+              className={`flex-none gap-1 px-4 py-3.5
                 md:border-b md:border-border
                 ${active ? 'bg-muted border-b-2 border-b-primary md:border-b-border md:border-l-2 md:border-l-primary' : 'bg-background border-b-2 border-b-transparent md:border-b-border md:border-l-2 md:border-l-transparent hover:bg-muted'}`}
             >
@@ -382,7 +386,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
               <span className="font-mono text-micro tracking-ui uppercase text-muted-foreground hidden md:block">
                 {cfg.tagline[lang]}
               </span>
-            </button>
+            </Button>
           );
         })}
       </div>
@@ -496,7 +500,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
       </div>
 
       {/* Book CTA */}
-      <button
+      <Button
         onClick={() => {
           try {
             localStorage.setItem('edo-book-plateau', slug);
@@ -514,7 +518,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
           </span>
           <ArrowRight width="20" height="20" />
         </div>
-      </button>
+      </Button>
     </main>
   );
 };

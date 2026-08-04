@@ -156,15 +156,17 @@ const GalleryFilters = ({
       })}
 
       {hasFilters && (
-        <button
+        <Button
           onClick={() => {
             setCat('all');
             setPlateau('all');
           }}
-          className="edo-focus-ring shrink-0 cursor-pointer border-0 border-b border-border bg-background px-3.5 py-3 text-left font-mono text-label uppercase tracking-label text-primary transition-colors hover:bg-muted"
+          variant="cell"
+          size="cell"
+          className="shrink-0 border-b border-border px-3.5 py-3 text-label tracking-label text-primary"
         >
           ↺ {t('common.reset')}
-        </button>
+        </Button>
       )}
     </aside>
   );
@@ -189,7 +191,7 @@ const FilterCell = ({
   onClick: () => void;
   dimmed?: boolean;
 }) => (
-  <button
+  <Button
     onClick={onClick}
     className={cn(
       'edo-focus-ring flex w-full shrink-0 cursor-pointer items-center justify-between gap-2 border-0 border-b border-l-2 border-b-border px-3.5 py-2 text-left text-detail tracking-copy-tight text-foreground transition-colors',
@@ -202,7 +204,7 @@ const FilterCell = ({
     <span className="overflow-hidden text-ellipsis whitespace-nowrap">
       {label}
     </span>
-  </button>
+  </Button>
 );
 
 interface GalleryContentProps {
@@ -404,14 +406,16 @@ const ProjectImage = ({
 
   if (item) {
     return (
-      <button
+      <Button
         type="button"
         onClick={onOpen}
         aria-label={ariaLabel}
-        className={cn(wrapperClass, 'cursor-pointer border-0 p-0 text-left')}
+        variant="cell"
+        size="cell"
+        className={cn(wrapperClass, 'p-0')}
       >
         {inner}
-      </button>
+      </Button>
     );
   }
   return <div className={wrapperClass}>{inner}</div>;
