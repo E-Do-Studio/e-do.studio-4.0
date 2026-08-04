@@ -2,14 +2,34 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 
-function Empty({ className, ...props }: React.ComponentProps<"div">) {
+// Le site a trois échelles d'état vide, que shadcn ne fournit pas : une cellule
+// étroite, un bloc, et une page entière. Elles remplacent le `size` de l'ancien
+// `EmptyState` maison.
+const emptyVariants = cva(
+  "flex w-full min-w-0 flex-1 flex-col items-center justify-center gap-2.5 bg-background text-center text-balance text-muted-foreground",
+  {
+    variants: {
+      size: {
+        compact: "px-cell py-8",
+        default: "min-h-96 px-6 py-20",
+        page: "min-h-screen px-6 py-20",
+      },
+    },
+    defaultVariants: {
+      size: "default",
+    },
+  }
+)
+
+function Empty({
+  className,
+  size = "default",
+  ...props
+}: React.ComponentProps<"div"> & VariantProps<typeof emptyVariants>) {
   return (
     <div
       data-slot="empty"
-      className={cn(
-        "flex w-full min-w-0 flex-1 flex-col items-center justify-center gap-4 rounded-xl border-dashed p-6 text-center text-balance",
-        className
-      )}
+      className={cn(emptyVariants({ size, className }))}
       {...props}
     />
   )
@@ -60,7 +80,7 @@ function EmptyTitle({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="empty-title"
       className={cn(
-        "font-heading text-sm font-medium tracking-tight",
+        "font-mono text-caption font-normal uppercase tracking-label text-foreground",
         className
       )}
       {...props}
@@ -73,7 +93,7 @@ function EmptyDescription({ className, ...props }: React.ComponentProps<"p">) {
     <div
       data-slot="empty-description"
       className={cn(
-        "text-sm/relaxed text-muted-foreground [&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary",
+        "text-detail leading-copy text-muted-foreground [&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary",
         className
       )}
       {...props}

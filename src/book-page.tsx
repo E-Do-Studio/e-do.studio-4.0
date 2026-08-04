@@ -8,7 +8,7 @@ import {
 } from 'react';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { usePageContext } from './lib/page-context';
-import { EmptyState } from './ui/empty-state';
+import { Empty, EmptyTitle } from '@/components/ui/empty';
 import { IconArrowRight } from './ui/icons';
 import { PageHeader, buildMainNav } from './ui/page-header';
 import { CellLabel } from './ui/typography';
@@ -3027,7 +3027,9 @@ const MultiPlateauStep = ({
   const list: string[] = slotIds && slotIds.length > 0 ? slotIds : [];
   if (list.length === 0) {
     return (
-      <EmptyState size="compact" label={bookingMsg.noStageSelected[lang]} />
+      <Empty size="compact">
+        <EmptyTitle>{bookingMsg.noStageSelected[lang]}</EmptyTitle>
+      </Empty>
     );
   }
   const setOne = (id: string, patch: AnyProps) => {

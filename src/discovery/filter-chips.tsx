@@ -1,5 +1,5 @@
 import type { DiscoveryCategory, Lang } from '../types';
-import { Chip } from '../ui/chip';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils';
 
 interface FilterChipsProps {
@@ -16,23 +16,31 @@ export const FilterChips = ({
   onChange,
   lang,
   compact = false,
-}: FilterChipsProps) => {
-  return (
-    <div className={cn('flex flex-wrap', compact ? 'gap-1' : 'gap-1.5')}>
-      {cats.map((cat) => (
-        <Chip
-          key={cat.k}
-          active={value === cat.k}
-          onClick={() => onChange(cat.k)}
-          className={
-            compact
-              ? 'min-h-11 min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap px-1 py-2.5 text-nano tracking-caption'
-              : 'min-h-11 px-2.5 py-2.5 text-label tracking-caption'
-          }
-        >
-          {cat[lang]}
-        </Chip>
-      ))}
-    </div>
-  );
-};
+}: FilterChipsProps) => (
+  <ToggleGroup
+    variant="outline"
+    // Un filtre est toujours actif : Base UI rend `[]` quand on re-clique
+    // l'élément déjà pressé, on ignore ce cas plutôt que de retomber sur un
+    // état sans catégorie.
+    value={[value]}
+    onValueChange={(next: string[]) => {
+      if (next.length > 0) onChange(next[0]);
+    }}
+    spacing={compact ? 1 : 1.5}
+    className={cn('w-full flex-wrap', compact && 'flex-nowrap')}
+  >
+    {cats.map((cat) => (
+      <ToggleGroupItem
+        key={cat.k}
+        value={cat.k}
+        aria-label={cat[lang]}
+        className={cn(
+          'min-h-11',
+          compact ? 'min-w-0 flex-1 truncate px-1' : 'px-2.5',
+        )}
+      >
+        {cat[lang]}
+      </ToggleGroupItem>
+    ))}
+  </ToggleGroup>
+);

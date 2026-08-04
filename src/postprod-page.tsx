@@ -3,7 +3,13 @@ import { useNavigate, useSearch } from '@tanstack/react-router';
 import { BottomSheet } from './ui/bottom-sheet';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { EmptyState } from './ui/empty-state';
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from '@/components/ui/empty';
 import { HoverMarquee } from './ui/hover-marquee';
 import { IconArrowRight, IconSelector } from './ui/icons';
 import { PageHeader, buildMainNav } from './ui/page-header';
@@ -321,15 +327,17 @@ const PostprodPage = () => {
     return (
       <>
         <h1 className="sr-only">{postprodLabel}</h1>
-        <EmptyState
-          size="page"
-          label="Post-production"
-          description={t('postprod.emptyDescription')}
-          action={{
-            label: t('postprod.backHome'),
-            onClick: () => goto('home'),
-          }}
-        />
+        <Empty size="page">
+          <EmptyHeader>
+            <EmptyTitle>Post-production</EmptyTitle>
+            <EmptyDescription>{t('postprod.emptyDescription')}</EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <Button variant="outline" size="sm" onClick={() => goto('home')}>
+              {t('postprod.backHome')}
+            </Button>
+          </EmptyContent>
+        </Empty>
       </>
     );
   }
