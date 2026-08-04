@@ -1,13 +1,12 @@
 import { useState } from 'react';
-import type {
-  FormEvent,
-  InputHTMLAttributes,
-  TextareaHTMLAttributes,
-} from 'react';
+import type { FormEvent } from 'react';
 import type { ContactFormData, Lang } from './types';
 import { submitContactForm } from './lib/contact';
 import { useT } from './i18n/use-t';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { ArrowRight } from 'lucide-react';
 
@@ -18,55 +17,6 @@ export const INITIAL_FORM: ContactFormData = {
   societe: '',
   message: '',
 };
-
-const inputClassName =
-  'edo-bento-input w-full border-0 bg-white px-5 font-sans text-cell font-light tracking-copy-tight text-foreground outline-none transition-colors focus:bg-muted';
-
-interface ContactInputProps
-  extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
-  value: string;
-  onChange: (value: string) => void;
-}
-
-export const ContactInput = ({
-  value,
-  onChange,
-  className,
-  type = 'text',
-  ...props
-}: ContactInputProps) => (
-  <input
-    type={type}
-    value={value}
-    onChange={(event) => onChange(event.target.value)}
-    className={cn(inputClassName, className)}
-    {...props}
-  />
-);
-
-interface ContactTextareaProps
-  extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'onChange'> {
-  value: string;
-  onChange: (value: string) => void;
-}
-
-export const ContactTextarea = ({
-  value,
-  onChange,
-  className,
-  ...props
-}: ContactTextareaProps) => (
-  <textarea
-    value={value}
-    onChange={(event) => onChange(event.target.value)}
-    className={cn(
-      inputClassName,
-      'col-span-2 h-full min-h-36 resize-none py-4 leading-normal',
-      className,
-    )}
-    {...props}
-  />
-);
 
 interface ContactFormProps {
   lang: Lang;
@@ -100,63 +50,68 @@ export const ContactForm = ({
         </h1>
       </div>
 
-      <ContactInput
+      <Input
+        variant="bento"
         required
         value={form.nom}
-        onChange={(value) => setForm({ ...form, nom: value })}
+        onChange={(e) => setForm({ ...form, nom: e.target.value })}
         placeholder={t('contact.name')}
         className="col-start-1 row-start-2"
       />
-      <ContactInput
+      <Input
+        variant="bento"
         required
         type="tel"
         value={form.telephone}
-        onChange={(value) => setForm({ ...form, telephone: value })}
+        onChange={(e) => setForm({ ...form, telephone: e.target.value })}
         placeholder={t('contact.phonePlaceholder')}
         className="col-start-2 row-start-2"
       />
-      <ContactInput
+      <Input
+        variant="bento"
         required
         type="email"
         value={form.email}
-        onChange={(value) => setForm({ ...form, email: value })}
+        onChange={(e) => setForm({ ...form, email: e.target.value })}
         placeholder="Email*"
         className="col-span-2 row-start-3"
       />
-      <ContactInput
+      <Input
+        variant="bento"
         required
         value={form.societe}
-        onChange={(value) => setForm({ ...form, societe: value })}
+        onChange={(e) => setForm({ ...form, societe: e.target.value })}
         placeholder={t('contact.companyBrand')}
         className="col-span-2 row-start-4"
       />
-      <ContactTextarea
+      <Textarea
+        variant="bento"
         required
         value={form.message}
-        onChange={(value) => setForm({ ...form, message: value })}
+        onChange={(e) => setForm({ ...form, message: e.target.value })}
         placeholder={t('contact.yourMessage')}
-        className="row-start-5"
+        className="col-span-2 row-start-5 min-h-36"
       />
 
       {sendError && (
-        <div className="col-span-2 flex items-center bg-red-50 px-5 py-2 text-sm text-red-600">
-          {sendError}
-        </div>
+        <Alert variant="destructive" className="col-span-2 rounded-none">
+          <AlertDescription>{sendError}</AlertDescription>
+        </Alert>
       )}
 
-      <button
+      <Button
         type="submit"
         disabled={sending}
-        className="edo-focus-ring col-span-2 row-start-6 flex cursor-pointer items-center justify-center gap-3.5 border-0 bg-primary font-mono text-caption uppercase tracking-label text-white transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+        className="col-span-2 row-start-6 h-full gap-3.5"
       >
         {sending ? (
           t('common.sending')
         ) : (
           <>
-            {t('common.send')} <ArrowRight width="16" height="16" />
+            {t('common.send')} <ArrowRight data-icon="inline-end" />
           </>
         )}
-      </button>
+      </Button>
     </form>
   );
 };
