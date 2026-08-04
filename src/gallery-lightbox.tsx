@@ -241,7 +241,7 @@ export const GalleryLightbox = ({
                     referrerPolicy="no-referrer-when-downgrade"
                     allow="accelerometer; gyroscope; fullscreen; xr-spatial-tracking"
                     allowFullScreen
-                    className="pointer-events-auto absolute inset-0 h-full w-full border-0"
+                    className="pointer-events-auto absolute inset-0 h-full w-full "
                   />
                 ) : isVideo ? (
                   <video

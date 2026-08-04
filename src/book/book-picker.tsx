@@ -45,9 +45,7 @@ const PickerTile = ({
       )}
     >
       <div className="flex items-start justify-between">
-        <span
-          className="font-mono text-xs uppercase tracking-widest text-muted-foreground"
-        >
+        <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
           {String(index).padStart(2, '0')}
         </span>
         <ArrowRight
@@ -57,17 +55,13 @@ const PickerTile = ({
         />
       </div>
       <div className="mt-auto flex flex-col gap-2">
-        <span
-          className="font-mono text-xs uppercase tracking-widest text-muted-foreground"
-        >
+        <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
           {t('bookPicker.modeLabel')}
         </span>
         <span className="text-xl font-light tracking-tight leading-tight">
           {label}
         </span>
-        <span
-          className="text-sm leading-snug tracking-tight text-muted-foreground md:min-h-[2lh]"
-        >
+        <span className="text-sm leading-snug tracking-tight text-muted-foreground md:min-h-[2lh]">
           {description}
         </span>
       </div>

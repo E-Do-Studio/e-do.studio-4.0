@@ -1528,7 +1528,7 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
                 return false;
               };
               const backBtnCls =
-                'outline-none focus-visible:ring-3 focus-visible:ring-ring/50 bg-background border-0 cursor-pointer font-mono text-xs tracking-widest uppercase text-foreground px-5 py-3 md:py-0 inline-flex items-center justify-start gap-2 transition-colors duration-150 min-h-11 md:flex-1 md:min-h-0 min-w-0 hover:bg-muted';
+                'outline-none focus-visible:ring-3 focus-visible:ring-ring/50 bg-background  cursor-pointer font-mono text-xs tracking-widest uppercase text-foreground px-5 py-3 md:py-0 inline-flex items-center justify-start gap-2 transition-colors duration-150 min-h-11 md:flex-1 md:min-h-0 min-w-0 hover:bg-muted';
               const navBtnSecondaryCls =
                 'outline-none focus-visible:ring-3 focus-visible:ring-ring/50 bg-background border-t md:border-t-0 md:border-l border-border cursor-pointer font-mono text-xs tracking-widest uppercase text-foreground px-5 py-3 md:py-0 inline-flex items-center justify-center gap-2 transition-colors duration-150 min-h-11 md:min-h-0 flex-1 min-w-0 hover:bg-muted';
               const navBtnPrimaryCls =
@@ -2525,7 +2525,7 @@ const Step0Configurator = ({
                     setOpenQ(null);
                     setTouchedQs(new Set());
                   }}
-                  className={`${isActive ? 'dark bg-background' : 'bg-background'} text-foreground border-0 px-3.5 py-3 text-left cursor-pointer font-[inherit] flex flex-col gap-1 min-w-0`}
+                  className={`${isActive ? 'dark bg-background' : 'bg-background'} text-foreground  px-3.5 py-3 text-left cursor-pointer font-[inherit] flex flex-col gap-1 min-w-0`}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span
@@ -2784,7 +2784,7 @@ const Step0Configurator = ({
                           : [...cur, v.k],
                       });
                     }}
-                    className={`${on ? 'dark bg-background' : 'bg-background'} text-foreground border-0 px-4 sm:px-3 py-4 sm:py-2.5 text-left cursor-pointer font-[inherit] flex flex-col gap-1.5 min-h-22 sm:min-h-18 min-w-0`}
+                    className={`${on ? 'dark bg-background' : 'bg-background'} text-foreground  px-4 sm:px-3 py-4 sm:py-2.5 text-left cursor-pointer font-[inherit] flex flex-col gap-1.5 min-h-22 sm:min-h-18 min-w-0`}
                   >
                     <span
                       className={`font-mono text-xs tracking-widest uppercase text-muted-foreground`}
@@ -3095,7 +3095,7 @@ const Step1Plateau = ({
               onClick={() => {
                 togglePlateau(px.k);
               }}
-              className={`group ${on ? 'dark bg-background' : 'bg-background hover:bg-muted'} text-foreground border-0 px-4.5 py-4 text-left cursor-pointer font-[inherit] flex flex-col gap-1.5 transition-all duration-150 min-w-0`}
+              className={`group ${on ? 'dark bg-background' : 'bg-background hover:bg-muted'} text-foreground  px-4.5 py-4 text-left cursor-pointer font-[inherit] flex flex-col gap-1.5 transition-all duration-150 min-w-0`}
             >
               <div className="flex justify-between items-start">
                 <span
@@ -3470,7 +3470,7 @@ const Step2Date = ({
                       ? t('booking.endsPastClosing', { hour: h + rentalHours })
                       : ''
               }
-              className={`${on ? 'dark bg-background text-foreground' : disabled ? 'bg-muted text-muted-foreground' : 'bg-background text-foreground hover:bg-muted'} border-0 ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'} flex items-center justify-center font-mono text-xs tracking-wide min-w-0 py-3 sm:py-0 sm:aspect-[1.5] transition-colors duration-100${booked ? ' line-through' : ''}`}
+              className={`${on ? 'dark bg-background text-foreground' : disabled ? 'bg-muted text-muted-foreground' : 'bg-background text-foreground hover:bg-muted'}  ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'} flex items-center justify-center font-mono text-xs tracking-wide min-w-0 py-3 sm:py-0 sm:aspect-[1.5] transition-colors duration-100${booked ? ' line-through' : ''}`}
             >
               {String(h).padStart(2, '0')}:00
             </Button>
@@ -4021,7 +4021,7 @@ const BentoInput = ({
     autoComplete={autoComplete}
     inputMode={inputMode}
     aria-invalid={invalid || undefined}
-    className="h-auto w-full rounded-none border-0 bg-transparent p-0 font-sans text-sm tracking-tight focus-visible:ring-0"
+    className="h-auto w-full rounded-none  bg-transparent p-0 font-sans text-sm tracking-tight focus-visible:ring-0"
   />
 );
 
@@ -4171,7 +4171,7 @@ const Step7Contact = ({
                     setContact({ ...contact, autreType: e.target.value })
                   }
                   placeholder={t('booking.specifyOtherItemType')}
-                  className="mt-0.5 h-auto w-full rounded-none border-0 border-b border-b-border bg-transparent px-0 py-1 font-sans text-xs tracking-tight focus-visible:ring-0"
+                  className="mt-0.5 h-auto w-full rounded-none  border-b border-b-border bg-transparent px-0 py-1 font-sans text-xs tracking-tight focus-visible:ring-0"
                 />
               )}
               {errors.typesArticles && (
@@ -4219,7 +4219,7 @@ const Step7Contact = ({
               setContact({ ...contact, autresInfos: e.target.value })
             }
             placeholder={t('booking.constraintsInspirationsReferencesOptional')}
-            className="box-border min-h-7 w-full resize-y rounded-none border-0 bg-transparent p-0 font-sans text-xs focus-visible:ring-0"
+            className="box-border min-h-7 w-full resize-y rounded-none  bg-transparent p-0 font-sans text-xs focus-visible:ring-0"
           />
         </div>
         <label

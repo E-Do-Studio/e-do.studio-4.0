@@ -146,7 +146,7 @@ const AssistantHeader = ({
             onClick={onNewSession}
             aria-label={t('assistant.newConversation')}
             title={t('assistant.newConversation')}
-            className="flex h-7 w-7 border-0 bg-transparent p-0 text-muted-foreground transition-colors hover:text-foreground"
+            className="flex h-7 w-7  bg-transparent p-0 text-muted-foreground transition-colors hover:text-foreground"
           >
             <Plus width="15" height="15" />
           </Button>
@@ -486,7 +486,7 @@ const AssistantInput = ({
         disabled={loading}
         maxLength={MAX_INPUT_CHARS}
         placeholder={t('assistant.placeholder')}
-        className="h-auto flex-1 rounded-none border-0 bg-transparent font-sans text-sm caret-primary disabled:bg-transparent"
+        className="h-auto flex-1 rounded-none  bg-transparent font-sans text-sm caret-primary disabled:bg-transparent"
       />
       <Button
         type="submit"

@@ -60,12 +60,8 @@ const PageHeaderActionButton = ({
   const isPrimary = variant === 'primary';
   const isDark = variant === 'dark';
   const actionClassName = cn(
-    // `border-0` : le filet entre deux actions vient du conteneur, jamais du
-    // bouton. Sans lui, la variante `default` (l'action principale) garde le
-    // `border border-transparent` de la base shadcn, que `bg-clip-padding`
-    // transforme en liseré du fond — un halo blanc autour du pavé orange.
-    // La variante `header` pose déjà `border-0` ; seule `default` manquait.
-    'h-full gap-2 border-0 no-underline',
+    // Le filet entre deux actions vient du conteneur, jamais du bouton.
+    'h-full gap-2 no-underline',
     expand ? 'flex-1' : 'flex-none',
     isPrimary
       ? 'px-4 text-xs tracking-wide md:px-6'
@@ -118,11 +114,11 @@ const DEFAULT_TITLE_CLASS = 'lg:col-start-2';
 const DEFAULT_RIGHT_BLOCK_CLASS = 'lg:col-start-3 lg:col-span-2';
 // Le filet entre deux cellules du header appartient au conteneur.
 //
-// Ne pas remplacer par `divide-x` : Tailwind émet les utilitaires `divide-*`
-// dans `:where(…)`, donc à spécificité nulle, et ils perdent alors contre le
-// `border-0` que pose `variant="header"` — les filets disparaissent en
-// silence, sans rien casser au typecheck ni au build. Le sélecteur ci-dessous
-// compile en `.classe > *:not(:last-child)`, soit 0,2,0, et passe devant.
+// Prudence avec `divide-x` : Tailwind l'émet dans `:where(…)`, donc à
+// spécificité nulle. Il a déjà fait disparaître ces filets en silence — sans
+// rien casser au typecheck ni au build — le jour où une variante posait
+// `border-0`. Le sélecteur ci-dessous compile en `.classe > *:not(:last-child)`,
+// soit 0,2,0 : il ne dépend d'aucune hypothèse sur les variantes.
 const CELL_DIVIDERS =
   '[&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-border';
 

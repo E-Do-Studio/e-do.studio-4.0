@@ -179,7 +179,7 @@ const ThumbStrip = ({
               aria-label={`${item.alt[lang] || plateauName} — ${i + 1} / ${items.length}`}
               aria-current={isActive ? 'true' : undefined}
               className={cn(
-                'group relative h-full overflow-hidden bg-background border-0 p-0 transition-opacity duration-150 ease-out',
+                'group relative h-full overflow-hidden bg-background  p-0 transition-opacity duration-150 ease-out',
                 isActive ? 'opacity-100' : 'opacity-60 hover:opacity-100',
               )}
               style={{ flexBasis: tileBasis }}
@@ -438,7 +438,9 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
  via sr-only so screen readers always have a page heading. */}
       <h1 className="sr-only md:hidden">{p.name}</h1>
       <div className="hidden bg-background py-3.5 px-4 md:col-start-4 md:row-start-2 md:flex md:flex-col md:justify-between md:gap-1">
-        <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">{p.tagline[lang]}</span>
+        <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
+          {p.tagline[lang]}
+        </span>
         <h1 className="text-2xl font-light m-0 tracking-tighter leading-none">
           {p.name}
         </h1>
@@ -446,7 +448,9 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
 
       {/* Specifications */}
       <div className="bg-background p-3 px-4 flex flex-col gap-1.5 md:col-start-4 md:row-start-3">
-        <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">{t('plateau.specs')}</span>
+        <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
+          {t('plateau.specs')}
+        </span>
         <div className="flex flex-col flex-1 min-h-0">
           {p.specs.map((s) => (
             <div
@@ -466,7 +470,9 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
 
       {/* Rates */}
       <div className="bg-background px-4 pt-2.5 pb-3 flex flex-col gap-1 md:col-start-4 md:row-start-4">
-        <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">{t('plateau.rates')}</span>
+        <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
+          {t('plateau.rates')}
+        </span>
         <div className="flex flex-col flex-1 min-h-0">
           {p.rates.map((r) => (
             <div
@@ -490,13 +496,17 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
       {/* Description + Uses */}
       <div className="bg-background p-4 flex justify-between items-start gap-6 md:col-start-2 md:col-span-2 md:row-start-5">
         <div className="flex-1 flex flex-col gap-1.5 min-w-0">
-          <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">{t('common.description')}</span>
+          <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
+            {t('common.description')}
+          </span>
           <p className="m-0 text-xs text-foreground leading-normal max-w-2xl">
             {p.desc[lang]}
           </p>
         </div>
         <div className="flex-none w-40 flex flex-col gap-1.5">
-          <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">{t('plateau.uses')}</span>
+          <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
+            {t('plateau.uses')}
+          </span>
           <ul className="list-none m-0 p-0 flex flex-col gap-0.5">
             {p.uses.map((a) => (
               <li
@@ -519,7 +529,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
           goto('book');
         }}
         size="cell"
-        className="min-h-20 justify-between border-0 md:col-start-4 md:row-start-5"
+        className="min-h-20 justify-between  md:col-start-4 md:row-start-5"
       >
         <span className="font-mono text-xs uppercase tracking-widest text-primary-foreground/80">
           06 · {t('common.bookNow')}

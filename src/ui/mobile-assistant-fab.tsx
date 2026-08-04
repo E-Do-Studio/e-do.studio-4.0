@@ -45,7 +45,9 @@ export const MobileAssistantFab = ({ lang }: MobileAssistantFabProps) => {
         )}
       >
         <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
-          <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">{t('assistant.label')}</span>
+          <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
+            {t('assistant.label')}
+          </span>
           <Button
             type="button"
             onClick={() => setOpen(false)}

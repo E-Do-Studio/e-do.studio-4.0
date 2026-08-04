@@ -310,7 +310,9 @@ const HomePage = () => {
         size="cell"
         className="group col-span-1 h-36 justify-between md:col-span-3 md:col-start-4 md:col-end-7 md:row-start-5 md:row-end-7 md:h-auto md:min-h-0"
       >
-        <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Espace</span>
+        <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
+          Espace
+        </span>
         <div className="flex items-end justify-between gap-3">
           <div className="min-w-0">
             <div className="whitespace-nowrap text-3xl font-light tracking-tighter leading-none text-foreground">
@@ -340,13 +342,11 @@ const HomePage = () => {
  `mt-[85px]`, ce qui interdisait tout filet. */}
       <div className="contents md:col-start-7 md:col-end-10 md:row-start-5 md:row-end-7 md:grid md:grid-rows-[84px_minmax(0,1fr)] md:gap-px md:bg-border">
         {/* Le CTA vit dans l'en-tête sur mobile (action principale), d'où le
- `hidden md:flex` ici. `border-0` : la base de shadcn combine
- `border border-transparent` et `bg-clip-padding`, ce qui laisserait
- voir la gouttière noire sur 1px tout autour. */}
+ `hidden md:flex` ici. */}
         <Button
           onClick={() => goto('book')}
           size="cell"
-          className="group hidden justify-between border-0 md:flex"
+          className="group hidden justify-between  md:flex"
         >
           <span className="font-mono text-xs uppercase tracking-widest text-primary-foreground/75">
             {t('home.requestQuoteOr')}
@@ -399,7 +399,7 @@ const HomePage = () => {
         <Button
           onClick={() => goto('gallery')}
           aria-label={t('common.gallery')}
-          className="group relative flex h-full w-full overflow-hidden border-0 bg-foreground p-0 text-left duration-150 hover:brightness-75"
+          className="group relative flex h-full w-full overflow-hidden  bg-foreground p-0 text-left duration-150 hover:brightness-75"
         >
           {heroShowStaticPicture ? (
             <picture>
@@ -426,10 +426,10 @@ const HomePage = () => {
       </div>
 
       {/* ── Row 6 left: Discovery CTA (Coming soon) ──
- `variant="cell"` porte déjà `border-0 bg-background text-foreground` ; le
- scope `dark` les fait basculer sur la palette sombre. La tuile réécrivait
- ces trois classes à la main par-dessus la variante `default`, c'est-à-dire
- qu'elle annulait l'orange qu'elle venait de demander.
+ `variant="cell"` porte déjà `bg-background text-foreground` ; le scope
+ `dark` les fait basculer sur la palette sombre. La tuile réécrivait ces
+ classes à la main par-dessus la variante `default`, c'est-à-dire qu'elle
+ annulait l'orange qu'elle venait de demander.
  `text-left` n'est pas redondant : la feuille de style du navigateur pose
  `text-align: center` sur tout `<button>`, et la base de shadcn pose
  `whitespace-nowrap` — sans lui le titre se centre et déborde à gauche.
@@ -473,7 +473,9 @@ const HomePage = () => {
           ))}
         </svg>
         <div className="relative flex min-w-0 flex-col gap-1">
-          <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Discovery</span>
+          <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
+            Discovery
+          </span>
           {/* `truncate` : la base de `Button` pose `whitespace-nowrap`, que la
               taille `cell` neutralise — mais cette tuile est une bande
               horizontale et ne l'utilise pas. Sans troncature, le titre ne
@@ -483,7 +485,10 @@ const HomePage = () => {
           </div>
         </div>
         <div className="relative flex flex-shrink-0 items-center gap-2">
-          <Badge variant="secondary" className="hidden font-mono uppercase tracking-widest sm:inline-flex">
+          <Badge
+            variant="secondary"
+            className="hidden font-mono uppercase tracking-widest sm:inline-flex"
+          >
             <Lock data-icon="inline-start" />
             {t('home.comingSoon')}
           </Badge>

@@ -35,9 +35,7 @@ const SocialLinksRow = ({
         <Button
           key={s.k}
           variant="cell"
-          render={
-            <a href={s.href} target="_blank" rel="noopener noreferrer" />
-          }
+          render={<a href={s.href} target="_blank" rel="noopener noreferrer" />}
           className="h-auto justify-between px-3 py-3 no-underline"
         >
           <SocialIcon kind={s.k} size={12} />

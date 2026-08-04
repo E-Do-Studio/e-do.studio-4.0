@@ -378,7 +378,7 @@ const PostprodPage = () => {
         aria-haspopup="dialog"
         aria-expanded={navSheetOpen}
         aria-controls="postprod-nav-sheet"
-        className="col-span-full sticky top-14 z-30 md:hidden flex gap-4 min-h-14 w-full px-4 py-2.5 bg-background border-0 border-b border-border text-left"
+        className="col-span-full sticky top-14 z-30 md:hidden flex gap-4 min-h-14 w-full px-4 py-2.5 bg-background  border-b border-border text-left"
       >
         <span className="font-mono text-xs tracking-widest text-muted-foreground">
           {currentNumber}
@@ -469,7 +469,7 @@ const PostprodPage = () => {
             <Button
               key={c.k}
               onClick={() => setType(c.k)}
-              className={`flex-none border-0 ${active ? 'bg-muted border-l-2 border-l-primary' : 'bg-background border-l-2 border-l-transparent'} ${idx > 0 ? 'border-t border-t-border' : ''} ${isLast ? 'border-b border-b-border' : ''} py-3 px-4 cursor-pointer text-left flex flex-col gap-1 transition-all duration-150 min-h-18`}
+              className={`flex-none  ${active ? 'bg-muted border-l-2 border-l-primary' : 'bg-background border-l-2 border-l-transparent'} ${idx > 0 ? 'border-t border-t-border' : ''} ${isLast ? 'border-b border-b-border' : ''} py-3 px-4 cursor-pointer text-left flex flex-col gap-1 transition-all duration-150 min-h-18`}
             >
               <span
                 className={`font-mono text-xs tracking-widest ${active ? 'text-primary' : 'text-muted-foreground'}`}

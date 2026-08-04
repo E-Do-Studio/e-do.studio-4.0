@@ -52,14 +52,14 @@ const CookieBanner = ({ lang, onLegalClick }: CookieBannerProps) => {
           <Button
             variant="outline"
             onClick={reject}
-            className="h-auto self-stretch border-0 border-t border-l border-border px-6 md:border-t-0 md:px-8"
+            className="h-auto self-stretch  border-t border-l border-border px-6 md:border-t-0 md:px-8"
           >
             {t('cookieBanner.reject')}
           </Button>
           <Button
             variant="default"
             onClick={accept}
-            className="h-auto self-stretch border-0 border-t border-l border-border px-6 md:border-t-0 md:px-8"
+            className="h-auto self-stretch  border-t border-l border-border px-6 md:border-t-0 md:px-8"
           >
             {t('cookieBanner.accept')}
           </Button>

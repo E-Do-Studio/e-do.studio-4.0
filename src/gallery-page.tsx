@@ -201,7 +201,7 @@ const FilterCell = ({
   <Button
     onClick={onClick}
     className={cn(
-      'flex w-full justify-between gap-2 border-0 border-b border-l-2 border-b-border px-3.5 py-2 text-left text-sm tracking-tight text-foreground transition-colors',
+      'flex w-full justify-between gap-2  border-b border-l-2 border-b-border px-3.5 py-2 text-left text-sm tracking-tight text-foreground transition-colors',
       active
         ? 'border-l-primary bg-muted font-medium'
         : 'border-l-transparent bg-background hover:bg-muted',
@@ -313,7 +313,7 @@ const ProjectLabel = ({
 }) => {
   const plateauLabel = displayPlateau(project.plateau);
   const className =
-    'outline-none focus-visible:ring-3 focus-visible:ring-ring/50 relative flex cursor-pointer flex-col items-center justify-between overflow-hidden border-0 bg-background px-2 py-2 md:px-2.5 md:py-3.5 text-left font-sans no-underline text-inherit';
+    'outline-none focus-visible:ring-3 focus-visible:ring-ring/50 relative flex cursor-pointer flex-col items-center justify-between overflow-hidden  bg-background px-2 py-2 md:px-2.5 md:py-3.5 text-left font-sans no-underline text-inherit';
   const content = (
     <>
       <HoverMarquee className="font-mono text-xs uppercase tracking-widest text-muted-foreground max-w-full self-start transition-colors group-hover:text-primary">
@@ -379,7 +379,7 @@ const ProjectImage = ({
         referrerPolicy="no-referrer-when-downgrade"
         allow="accelerometer; gyroscope; fullscreen; xr-spatial-tracking"
         allowFullScreen
-        className="absolute inset-0 h-full w-full border-0 pointer-events-none select-none"
+        className="absolute inset-0 h-full w-full  pointer-events-none select-none"
       />
     );
   } else if (item.kind === 'video') {

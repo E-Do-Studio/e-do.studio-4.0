@@ -113,7 +113,7 @@ export const NotFoundPage = () => {
           e.preventDefault();
           navigate({ to: homeHref });
         }}
-        className="font-mono text-xs uppercase tracking-widest text-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50 inline-flex h-10 cursor-pointer items-center gap-2 border-0 dark bg-background px-5 no-underline transition-colors hover:opacity-90"
+        className="font-mono text-xs uppercase tracking-widest text-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50 inline-flex h-10 cursor-pointer items-center gap-2  dark bg-background px-5 no-underline transition-colors hover:opacity-90"
       >
         {copy.cta}
       </a>

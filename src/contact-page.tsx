@@ -97,7 +97,9 @@ const ClosuresSection = ({
         className,
       )}
     >
-      <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-5 block">{t('contact.closures')}</span>
+      <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-5 block">
+        {t('contact.closures')}
+      </span>
       <div className="flex flex-col gap-3 text-xs">
         {upcoming.map((c) => (
           <div
@@ -153,7 +155,9 @@ const FindUsSection = ({ lang, contact, className }: FindUsSectionProps) => {
         className,
       )}
     >
-      <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-5 block">{t('contact.findUs')}</span>
+      <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-5 block">
+        {t('contact.findUs')}
+      </span>
       {showFallback ? (
         <UnavailableNote />
       ) : (
@@ -239,7 +243,9 @@ const HoursSection = ({ lang, hours, className }: HoursSectionProps) => {
         className,
       )}
     >
-      <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-5 block">{t('contact.hours')}</span>
+      <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-5 block">
+        {t('contact.hours')}
+      </span>
       {showFallback ? (
         <UnavailableNote />
       ) : (
@@ -291,7 +297,9 @@ const PhoneSection = ({ lang, contact, className }: PhoneSectionProps) => {
   const showFallback = !c;
   return (
     <section className={cn('bg-background p-6', className)}>
-      <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-5 block">{t('contact.phone')}</span>
+      <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-5 block">
+        {t('contact.phone')}
+      </span>
       {showFallback ? (
         <UnavailableNote />
       ) : c?.phone ? (
@@ -436,7 +444,7 @@ const ContactMap = ({ lang, contact, className }: ContactMapProps) => {
       ) : (
         <iframe
           src={embedUrl}
-          className="absolute inset-0 h-full w-full border-0"
+          className="absolute inset-0 h-full w-full "
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
           title={t('contact.mapTitle')}

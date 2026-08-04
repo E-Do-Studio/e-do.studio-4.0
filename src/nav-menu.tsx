@@ -95,7 +95,9 @@ const NavItemLink = ({ item, index, onClose, navigate }: NavItemLinkProps) => {
       }}
       className="outline-none focus-visible:ring-3 focus-visible:ring-ring/50 relative flex min-h-13 cursor-pointer flex-col justify-between gap-1 border-b border-border px-4 py-2.5 no-underline transition-colors hover:bg-muted"
     >
-      <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">{String(index + 1).padStart(2, '0')}</span>
+      <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
+        {String(index + 1).padStart(2, '0')}
+      </span>
       <span className="mt-auto text-base font-light text-foreground">
         {item.label}
       </span>
@@ -116,7 +118,9 @@ const NavExternalLink = ({ href, label, index }: NavExternalLinkProps) => (
     rel="noopener noreferrer"
     className="outline-none focus-visible:ring-3 focus-visible:ring-ring/50 relative flex min-h-13 cursor-pointer flex-col justify-between gap-1 border-b border-border px-4 py-2.5 no-underline transition-colors hover:bg-muted"
   >
-    <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">{String(index + 1).padStart(2, '0')}</span>
+    <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
+      {String(index + 1).padStart(2, '0')}
+    </span>
     <span className="mt-auto flex items-baseline gap-1.5 text-base font-light text-foreground">
       {label}
       <span
@@ -156,7 +160,7 @@ const NavFooter = ({ lang, setLang, onClose, navigate }: NavFooterProps) => {
           onClose();
           navigate({ to: bookingHref });
         }}
-        className="h-12 border-0 no-underline"
+        className="h-12  no-underline"
       >
         {t('common.bookNow')}
       </Button>
