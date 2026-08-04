@@ -185,10 +185,12 @@
     "noFeaturedPostHint": "Le premier article du journal arrive bientôt.",
     "noPosts": "Aucun article",
     "readArticle": "Lire l'article",
+    "srTitle": "Discovery — Blog & actualités",
     "studioOpen": "Studio · 7j/7"
   },
   "galleryPage": {
     "categories": "Catégories",
+    "filterAriaLabel": "Filtrer la galerie",
     "noResults": "Aucun résultat",
     "resultsCount_many": "{{count}} résultats",
     "resultsCount_one": "{{count}} résultat",

@@ -7,11 +7,12 @@ import { GalleryLightbox } from './gallery-lightbox';
 import type { GalleryMedia } from './lib/strapi';
 import { ArticleMeta, ArrowIcon } from './discovery/shared';
 import { HoverMarquee } from './ui/hover-marquee';
-import { discoveryPage } from './i18n/messages';
+import { useT } from './i18n/use-t';
 import { usePageContext } from './lib/page-context';
 import { NotFoundPage } from './not-found-page';
 
 export const DiscoveryPostPage = () => {
+  const t = useT();
   const { lang, goto } = usePageContext();
   const navigate = useNavigate();
   const { post, posts } = useLoaderData({ from: '/$lang/discovery/$slug' });
@@ -98,7 +99,7 @@ export const DiscoveryPostPage = () => {
               <ArrowIcon width="14" height="14" />
             </span>
             <span className="hidden font-mono text-caption uppercase tracking-label text-foreground sm:inline">
-              {discoveryPage.backToJournal[lang]}
+              {t('discoveryPage.backToJournal')}
             </span>
           </button>
           <div className="flex min-w-0 flex-1 items-center gap-3.5 bg-white px-4 md:px-6">
@@ -144,7 +145,7 @@ export const DiscoveryPostPage = () => {
             {nextPost && (
               <aside className="mt-auto flex flex-col gap-2.5 border-t border-border pt-6">
                 <span className="font-mono text-label uppercase tracking-label text-primary">
-                  {discoveryPage.nextArticle[lang]}
+                  {t('discoveryPage.nextArticle')}
                 </span>
                 <div className="border border-border">
                   <SplitArticleCard
@@ -168,7 +169,7 @@ export const DiscoveryPostPage = () => {
                 onClick={backToIndex}
                 className="edo-focus-ring h-10 cursor-pointer border-0 bg-foreground px-cell-lg font-mono text-caption uppercase tracking-label text-white transition-[color,background-color,opacity] duration-150 ease-edo-out hover:text-primary"
               >
-                {discoveryPage.close[lang]}
+                {t('discoveryPage.close')}
               </button>
             </footer>
           </article>

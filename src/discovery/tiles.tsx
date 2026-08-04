@@ -3,9 +3,9 @@ import { DiscoveryCoverMedia } from './discovery-cover';
 import { hasCover } from './cover';
 import { ArrowIcon, CellBadge } from './shared';
 import { cn } from '@/lib/utils';
-import { EmptyState } from '../ui/empty-state';
+import { Empty, EmptyTitle } from '@/components/ui/empty';
 import { cellBase, labelBase } from './styles';
-import { common, discoveryPage } from '../i18n/messages';
+import { useT } from '../i18n/use-t';
 import { renderInlineMarkdown } from '../lib/render-markdown';
 
 interface NewsletterCardProps {
@@ -18,38 +18,41 @@ export const NewsletterCard = ({
   lang,
   className,
   badge,
-}: NewsletterCardProps) => (
-  <section
-    className={cn(
-      cellBase,
-      'order-5 flex min-h-36 flex-col justify-between gap-2.5 bg-white px-cell-lg py-cell text-foreground lg:min-h-0',
-      className,
-    )}
-  >
-    {badge != null && <CellBadge n={badge} />}
-    <span className={cn(labelBase, 'text-primary')}>Newsletter</span>
-    <form
-      name="newsletter"
-      aria-label="Newsletter"
-      onSubmit={(event) => event.preventDefault()}
-      className="flex items-center gap-2 border-b border-hairline pb-1.5"
+}: NewsletterCardProps) => {
+  const t = useT();
+  return (
+    <section
+      className={cn(
+        cellBase,
+        'order-5 flex min-h-36 flex-col justify-between gap-2.5 bg-white px-cell-lg py-cell text-foreground lg:min-h-0',
+        className,
+      )}
     >
-      <input
-        name="email"
-        type="email"
-        autoComplete="email"
-        placeholder={discoveryPage.emailPlaceholder[lang]}
-        className="edo-focus-ring min-w-0 flex-1 border-0 bg-transparent py-1 font-sans text-detail text-foreground outline-none placeholder:text-muted-foreground"
-      />
-      <button
-        type="submit"
-        className="edo-focus-ring cursor-pointer border-0 bg-transparent p-0 font-mono text-label uppercase tracking-label text-primary"
+      {badge != null && <CellBadge n={badge} />}
+      <span className={cn(labelBase, 'text-primary')}>Newsletter</span>
+      <form
+        name="newsletter"
+        aria-label="Newsletter"
+        onSubmit={(event) => event.preventDefault()}
+        className="flex items-center gap-2 border-b border-hairline pb-1.5"
       >
-        OK →
-      </button>
-    </form>
-  </section>
-);
+        <input
+          name="email"
+          type="email"
+          autoComplete="email"
+          placeholder={t('discoveryPage.emailPlaceholder')}
+          className="edo-focus-ring min-w-0 flex-1 border-0 bg-transparent py-1 font-sans text-detail text-foreground outline-none placeholder:text-muted-foreground"
+        />
+        <button
+          type="submit"
+          className="edo-focus-ring cursor-pointer border-0 bg-transparent p-0 font-mono text-label uppercase tracking-label text-primary"
+        >
+          OK →
+        </button>
+      </form>
+    </section>
+  );
+};
 
 interface SplitArticleCardProps {
   post: DiscoveryPost;
@@ -66,6 +69,7 @@ export const SplitArticleCard = ({
   className,
   badge,
 }: SplitArticleCardProps) => {
+  const t = useT();
   const cover = hasCover(post);
   return (
     <button
@@ -110,7 +114,7 @@ export const SplitArticleCard = ({
           )}
         </div>
         <span className="inline-flex items-center gap-2 font-mono text-label uppercase tracking-label text-foreground">
-          {discoveryPage.readArticle[lang]}{' '}
+          {t('discoveryPage.readArticle')}{' '}
           <span className="text-detail">→</span>
         </span>
       </div>
@@ -128,26 +132,27 @@ export const SplitArticleEmptyCard = ({
   lang,
   className,
   badge,
-}: SplitArticleEmptyCardProps) => (
-  <section
-    aria-label={discoveryPage.noPosts[lang]}
-    className={cn(
-      cellBase,
-      'order-6 grid min-h-104 grid-cols-1 bg-white sm:grid-cols-2 lg:min-h-0',
-      className,
-    )}
-  >
-    {badge != null && <CellBadge n={badge} />}
-    <div className="relative min-h-56 bg-muted sm:min-h-0" />
-    <div className="flex min-h-0 min-w-0 flex-col items-start justify-center px-7 py-6">
-      <EmptyState
-        size="compact"
-        label={discoveryPage.noPosts[lang]}
-        className="items-start px-0 py-0 text-left"
-      />
-    </div>
-  </section>
-);
+}: SplitArticleEmptyCardProps) => {
+  const t = useT();
+  return (
+    <section
+      aria-label={t('discoveryPage.noPosts')}
+      className={cn(
+        cellBase,
+        'order-6 grid min-h-104 grid-cols-1 bg-white sm:grid-cols-2 lg:min-h-0',
+        className,
+      )}
+    >
+      {badge != null && <CellBadge n={badge} />}
+      <div className="relative min-h-56 bg-muted sm:min-h-0" />
+      <div className="flex min-h-0 min-w-0 flex-col items-start justify-center px-7 py-6">
+        <Empty size="compact" className="items-start px-0 py-0 text-left">
+          <EmptyTitle>{t('discoveryPage.noPosts')}</EmptyTitle>
+        </Empty>
+      </div>
+    </section>
+  );
+};
 
 interface BookCtaTileProps {
   lang: Lang;
@@ -155,27 +160,30 @@ interface BookCtaTileProps {
   className?: string;
 }
 
-export const BookCtaTile = ({ lang, goto, className }: BookCtaTileProps) => (
-  <button
-    type="button"
-    onClick={() => goto('book')}
-    className={cn(
-      'edo-focus-ring group relative flex h-21 shrink-0 cursor-pointer items-center justify-between gap-3.5 overflow-hidden border-0 bg-primary px-cell-lg py-3.5 text-left text-white transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90',
-      className,
-    )}
-  >
-    <span className="flex min-w-0 origin-left flex-col items-start gap-1 transition-transform duration-200 ease-edo-out group-hover:scale-102">
-      <span className="font-mono text-label uppercase tracking-label text-white/75">
-        {discoveryPage.studioOpen[lang]}
+export const BookCtaTile = ({ lang, goto, className }: BookCtaTileProps) => {
+  const t = useT();
+  return (
+    <button
+      type="button"
+      onClick={() => goto('book')}
+      className={cn(
+        'edo-focus-ring group relative flex h-21 shrink-0 cursor-pointer items-center justify-between gap-3.5 overflow-hidden border-0 bg-primary px-cell-lg py-3.5 text-left text-white transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90',
+        className,
+      )}
+    >
+      <span className="flex min-w-0 origin-left flex-col items-start gap-1 transition-transform duration-200 ease-edo-out group-hover:scale-102">
+        <span className="font-mono text-label uppercase tracking-label text-white/75">
+          {t('discoveryPage.studioOpen')}
+        </span>
+        <span className="text-tile-title font-normal leading-tight tracking-headline text-white">
+          {t('common.book')}
+        </span>
       </span>
-      <span className="text-tile-title font-normal leading-tight tracking-headline text-white">
-        {common.book[lang]}
-      </span>
-    </span>
-    <ArrowIcon
-      width="16"
-      height="16"
-      className="shrink-0 text-white transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5 group-hover:scale-110"
-    />
-  </button>
-);
+      <ArrowIcon
+        width="16"
+        height="16"
+        className="shrink-0 text-white transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5 group-hover:scale-110"
+      />
+    </button>
+  );
+};

@@ -185,10 +185,12 @@
     "noFeaturedPostHint": "The first journal entry is coming soon.",
     "noPosts": "No posts",
     "readArticle": "Read article",
+    "srTitle": "Discovery — Blog & news",
     "studioOpen": "Studio · 7d/7"
   },
   "galleryPage": {
     "categories": "Categories",
+    "filterAriaLabel": "Filter the gallery",
     "noResults": "No results",
     "resultsCount_many": "{{count}} results",
     "resultsCount_one": "{{count}} result",

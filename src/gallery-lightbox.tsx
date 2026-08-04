@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import type { GalleryProject } from './lib/strapi';
 import type { Lang } from './types';
-import { common } from './i18n/messages';
+import { useT } from './i18n/use-t';
 import { cn } from '@/lib/utils';
 
 const PLATEAU_LABELS: Record<string, { fr: string; en: string }> = {
@@ -44,6 +44,7 @@ export const GalleryLightbox = ({
   onBook,
   onContact,
 }: GalleryLightboxProps) => {
+  const t = useT();
   const total = project.media.length;
   const [index, setIndex] = useState(() =>
     Math.min(Math.max(initialIndex, 0), Math.max(total - 1, 0)),
@@ -224,7 +225,7 @@ export const GalleryLightbox = ({
           <button
             type="button"
             onClick={onClose}
-            aria-label={common.close[lang]}
+            aria-label={t('common.close')}
             className="edo-focus-ring absolute right-3 top-3 z-30 flex h-8 w-8 cursor-pointer items-center justify-center text-white mix-blend-exclusion transition-opacity duration-200 ease-edo-out md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100"
           >
             <X size={18} strokeWidth={1.5} />
@@ -299,7 +300,7 @@ export const GalleryLightbox = ({
                 type="button"
                 onClick={zoomOut}
                 disabled={scale <= MIN_SCALE}
-                aria-label={common.zoomOut[lang]}
+                aria-label={t('common.zoomOut')}
                 className={zoomBtn}
               >
                 <Minus size={16} strokeWidth={1.5} />
@@ -311,7 +312,7 @@ export const GalleryLightbox = ({
                 type="button"
                 onClick={zoomIn}
                 disabled={scale >= MAX_SCALE}
-                aria-label={common.zoomIn[lang]}
+                aria-label={t('common.zoomIn')}
                 className={zoomBtn}
               >
                 <Plus size={16} strokeWidth={1.5} />
@@ -321,7 +322,7 @@ export const GalleryLightbox = ({
                 type="button"
                 onClick={zoomReset}
                 disabled={!canReset}
-                aria-label={common.resetZoom[lang]}
+                aria-label={t('common.resetZoom')}
                 className={zoomBtn}
               >
                 <RotateCcw size={16} strokeWidth={1.5} />
@@ -338,7 +339,7 @@ export const GalleryLightbox = ({
             type="button"
             onClick={prev}
             disabled={!hasMultiple}
-            aria-label={common.prevImage[lang]}
+            aria-label={t('common.prevImage')}
             className="edo-focus-ring flex h-14 w-14 md:h-16 md:w-16 cursor-pointer items-center justify-center bg-white text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-white"
           >
             <IconArrowLeft size={20} strokeWidth={1.5} />
@@ -348,7 +349,7 @@ export const GalleryLightbox = ({
             onClick={onContact}
             className="edo-focus-ring flex h-14 md:h-16 cursor-pointer items-center justify-center gap-2 bg-white font-mono uppercase text-detail tracking-code text-foreground transition-colors hover:bg-muted"
           >
-            {common.contactUs[lang]}
+            {t('common.contactUs')}
             <IconArrowRight size={14} strokeWidth={1.5} />
           </button>
           <button
@@ -356,14 +357,14 @@ export const GalleryLightbox = ({
             onClick={onBook}
             className="edo-focus-ring flex h-14 md:h-16 cursor-pointer items-center justify-center gap-2 bg-primary font-mono uppercase text-detail tracking-code text-primary-foreground transition-opacity hover:opacity-90"
           >
-            {common.book[lang]}
+            {t('common.book')}
             <IconArrowRight size={14} strokeWidth={1.5} />
           </button>
           <button
             type="button"
             onClick={next}
             disabled={!hasMultiple}
-            aria-label={common.nextImage[lang]}
+            aria-label={t('common.nextImage')}
             className="edo-focus-ring flex h-14 w-14 md:h-16 md:w-16 cursor-pointer items-center justify-center bg-white text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-white"
           >
             <IconArrowRight size={20} strokeWidth={1.5} />

@@ -36,29 +36,6 @@ export const common = {
   resetZoom: { fr: 'Réinitialiser le zoom', en: 'Reset zoom' } as B,
 };
 
-export const galleryPage = {
-  categories: { fr: 'Catégories', en: 'Categories' } as B,
-  noResults: { fr: 'Aucun résultat', en: 'No results' } as B,
-  tryAnotherFilter: {
-    fr: 'Essayez un autre filtre.',
-    en: 'Try another filter.',
-  } as B,
-};
-
-export const mobileNav = {
-  filters: { fr: 'Filtres', en: 'Filters' } as B,
-  applyFilters: { fr: 'Appliquer', en: 'Apply' } as B,
-  reset: { fr: 'Réinitialiser', en: 'Reset' } as B,
-  closeFilters: { fr: 'Fermer', en: 'Close' } as B,
-};
-
-export const resultsCount = (count: number, lang: 'fr' | 'en'): string => {
-  if (lang === 'fr') {
-    return count <= 1 ? `${count} résultat` : `${count} résultats`;
-  }
-  return count <= 1 ? `${count} result` : `${count} results`;
-};
-
 export const bookPicker = {
   title: {
     fr: 'Comment souhaitez-vous réserver ?',
@@ -416,38 +393,4 @@ export const booking = {
     fr: 'et les modalités de paiement.',
     en: 'and payment terms.',
   } as B,
-};
-
-export const discoveryPage = {
-  backToJournal: { fr: 'Retour journal', en: 'Back to journal' } as B,
-  close: { fr: 'Fermer', en: 'Close' } as B,
-  readArticle: { fr: "Lire l'article", en: 'Read article' } as B,
-  readFallback: {
-    fr: "Lire l'article complet sur Discovery.",
-    en: 'Read the full article on Discovery.',
-  } as B,
-  studioOpen: { fr: 'Studio · 7j/7', en: 'Studio · 7d/7' } as B,
-  behindScenes: { fr: 'Coulisses', en: 'Behind the scenes' } as B,
-  morePosts: { fr: "Plus d'articles", en: 'More posts' } as B,
-  noPosts: { fr: 'Aucun article', en: 'No posts' } as B,
-  noFeaturedPost: { fr: 'Article à la une', en: 'Featured article' } as B,
-  noFeaturedPostHint: {
-    fr: 'Le premier article du journal arrive bientôt.',
-    en: 'The first journal entry is coming soon.',
-  } as B,
-  noSecondaryPost: { fr: 'Article suivant', en: 'Next article' } as B,
-  nextArticle: { fr: 'Article suivant', en: 'Next article' } as B,
-  noSecondaryPostHint: {
-    fr: 'Un nouveau format est en préparation.',
-    en: 'A new long-form piece is on its way.',
-  } as B,
-  noArticleBody: {
-    fr: 'Le contenu de cet article sera bientôt disponible.',
-    en: 'This article will be available shortly.',
-  } as B,
-  quote: {
-    fr: "On apprend en faisant. On partage ce qu'on apprend.",
-    en: 'We learn by doing. We share what we learn.',
-  } as B,
-  emailPlaceholder: { fr: 'votre@email.com', en: 'your@email.com' } as B,
 };

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import type { Lang } from '../types';
-import { mobileNav, resultsCount } from '../i18n/messages';
+import { useT } from '../i18n/use-t';
 import { BottomSheet } from './bottom-sheet';
 import { cn } from '@/lib/utils';
 import { HoverMarquee } from './hover-marquee';
@@ -55,6 +55,7 @@ const MobileNavStrip = ({
   onApply,
   className,
 }: MobileNavStripProps) => {
+  const t = useT();
   const autoId = useId();
   const sheetId = `mobile-nav-strip-${autoId}`;
   const [open, setOpen] = useState(false);
@@ -176,7 +177,7 @@ const MobileNavStrip = ({
         onClose={handleClose}
         title={triggerLabel}
         ariaLabel={ariaLabel}
-        closeLabel={mobileNav.closeFilters[lang]}
+        closeLabel={t('mobileNav.closeFilters')}
         footer={
           <div
             className="flex items-stretch justify-between gap-2 px-3 py-3"
@@ -190,7 +191,7 @@ const MobileNavStrip = ({
                 onClick={handleReset}
                 className="edo-focus-ring inline-flex min-h-11 cursor-pointer items-center gap-1 border border-border bg-white px-3 font-mono text-label uppercase tracking-button text-foreground transition-colors duration-150 ease-edo-out hover:bg-muted"
               >
-                <span aria-hidden>↺</span> {mobileNav.reset[lang]}
+                <span aria-hidden>↺</span> {t('mobileNav.reset')}
               </button>
             ) : (
               <span />
@@ -201,9 +202,9 @@ const MobileNavStrip = ({
               className="edo-focus-ring inline-flex min-h-11 flex-1 cursor-pointer items-center justify-center gap-2 bg-foreground px-4 font-mono text-label uppercase tracking-button text-background transition-colors duration-150 ease-edo-out hover:opacity-90"
             >
               <span>
-                {mobileNav.applyFilters[lang]}
+                {t('mobileNav.applyFilters')}
                 {typeof liveCount === 'number'
-                  ? ` · ${resultsCount(liveCount, lang)}`
+                  ? ` · ${t('galleryPage.resultsCount', { count: liveCount })}`
                   : ''}
               </span>
               <IconArrowRight width={14} height={14} aria-hidden />

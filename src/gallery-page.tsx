@@ -10,7 +10,14 @@ import { usePageContext } from './lib/page-context';
 import { SCREEN_TO_PATH } from './lib/screens';
 import type { GalleryCategory, GalleryProject } from './lib/strapi';
 import type { Lang } from './types';
-import { EmptyState } from './ui/empty-state';
+import { Button } from '@/components/ui/button';
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from '@/components/ui/empty';
 import { HoverMarquee } from './ui/hover-marquee';
 import { MobileNavStrip } from './ui/mobile-nav-strip';
 import { PageHeader, buildMainNav } from './ui/page-header';
@@ -19,7 +26,7 @@ import { VideoLoop } from './ui/video-loop';
 import { usePrefersReducedMotion } from './ui/use-media-query';
 import type { StripGroup } from './ui/mobile-nav-strip';
 import { cn } from '@/lib/utils';
-import { common, galleryPage, mobileNav } from './i18n/messages';
+import { useT } from './i18n/use-t';
 import { GalleryLightbox } from './gallery-lightbox';
 
 const PLATEAU_LABELS: Record<string, { fr: string; en: string }> = {
@@ -103,13 +110,14 @@ const GalleryFilters = ({
   catToPlateaux,
   plateauToCats,
 }: GalleryFiltersProps) => {
+  const t = useT();
   const hasFilters = cat !== 'all' || plateau !== 'all';
 
   return (
     <aside className="flex flex-col bg-white">
-      <FilterHeader label={galleryPage.categories[lang]} />
+      <FilterHeader label={t('galleryPage.categories')} />
       <FilterCell
-        label={common.all[lang]}
+        label={t('common.all')}
         active={cat === 'all'}
         onClick={() => setCat('all')}
       />
@@ -131,9 +139,9 @@ const GalleryFilters = ({
         );
       })}
 
-      <FilterHeader label={common.stages[lang]} />
+      <FilterHeader label={t('common.stages')} />
       <FilterCell
-        label={common.all[lang]}
+        label={t('common.all')}
         active={plateau === 'all'}
         onClick={() => setPlateau('all')}
       />
@@ -162,7 +170,7 @@ const GalleryFilters = ({
           }}
           className="edo-focus-ring shrink-0 cursor-pointer border-0 border-b border-border bg-white px-3.5 py-3 text-left font-mono text-label uppercase tracking-label text-primary transition-colors hover:bg-muted"
         >
-          ↺ {common.reset[lang]}
+          ↺ {t('common.reset')}
         </button>
       )}
     </aside>
@@ -218,28 +226,39 @@ const GalleryContent = ({
   loaded,
   resetFilters,
   onOpenLightbox,
-}: GalleryContentProps) => (
-  <div className="min-h-0 overflow-y-auto bg-white edo-hairline md:col-start-2 md:col-span-4">
-    <div className="flex flex-col [&>*:not(:last-child)]:border-b [&>*:not(:last-child)]:border-hairline">
-      {loaded && filtered.length === 0 ? (
-        <EmptyState
-          label={galleryPage.noResults[lang]}
-          description={galleryPage.tryAnotherFilter[lang]}
-          action={{ label: common.reset[lang], onClick: resetFilters }}
-        />
-      ) : (
-        filtered.map((project) => (
-          <ProjectRow
-            key={project.id}
-            project={project}
-            lang={lang}
-            onOpenLightbox={onOpenLightbox}
-          />
-        ))
-      )}
+}: GalleryContentProps) => {
+  const t = useT();
+  return (
+    <div className="min-h-0 overflow-y-auto bg-white edo-hairline md:col-start-2 md:col-span-4">
+      <div className="flex flex-col [&>*:not(:last-child)]:border-b [&>*:not(:last-child)]:border-hairline">
+        {loaded && filtered.length === 0 ? (
+          <Empty>
+            <EmptyHeader>
+              <EmptyTitle>{t('galleryPage.noResults')}</EmptyTitle>
+              <EmptyDescription>
+                {t('galleryPage.tryAnotherFilter')}
+              </EmptyDescription>
+            </EmptyHeader>
+            <EmptyContent>
+              <Button variant="outline" size="sm" onClick={resetFilters}>
+                {t('common.reset')}
+              </Button>
+            </EmptyContent>
+          </Empty>
+        ) : (
+          filtered.map((project) => (
+            <ProjectRow
+              key={project.id}
+              project={project}
+              lang={lang}
+              onOpenLightbox={onOpenLightbox}
+            />
+          ))
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const ProjectRow = ({
   project,
@@ -468,6 +487,7 @@ const ProjectCoverFallback = ({
 type GalleryFilters = { cat?: string; plateau?: string };
 
 const GalleryPageV3 = () => {
+  const t = useT();
   const { lang, setLang, openMenu, goto } = usePageContext();
   // Page servie par deux routes (/galerie en FR, /gallery en EN), d'où l'accès
   // non strict aux search params comme aux données du loader.
@@ -564,7 +584,7 @@ const GalleryPageV3 = () => {
   }, [plateauOptions, lang]);
 
   const mobileGroups: StripGroup[] = useMemo(() => {
-    const allLabel = common.all[lang];
+    const allLabel = t('common.all');
     const catGroupOptions = [
       {
         k: 'all',
@@ -594,14 +614,14 @@ const GalleryPageV3 = () => {
     return [
       {
         key: 'cat',
-        label: galleryPage.categories[lang],
+        label: t('galleryPage.categories'),
         options: catGroupOptions,
         value: cat,
         onSelect: setCat,
       },
       {
         key: 'plateau',
-        label: common.stages[lang],
+        label: t('common.stages'),
         options: plateauGroupOptions,
         value: plateau,
         onSelect: setPlateau,
@@ -627,7 +647,7 @@ const GalleryPageV3 = () => {
     const parts: string[] = [];
     if (cat !== 'all') parts.push(catLabelMap[cat] ?? cat);
     if (plateau !== 'all') parts.push(plateauLabelMap[plateau] ?? plateau);
-    return parts.length > 0 ? parts.join(', ') : common.all[lang];
+    return parts.length > 0 ? parts.join(', ') : t('common.all');
   }, [cat, plateau, catLabelMap, plateauLabelMap, lang]);
 
   const mobileCountFor = (draft: Record<string, string>) => {
@@ -651,11 +671,11 @@ const GalleryPageV3 = () => {
 
   return (
     <main className="edo-page-enter grid w-full edo-hairline md:h-full md:grid-cols-gallery-shell md:grid-rows-page md:overflow-hidden">
-      <h1 className="sr-only">{common.gallery[lang]} — E-Do Studio Paris</h1>
+      <h1 className="sr-only">{t('common.gallery')} — E-Do Studio Paris</h1>
 
       <PageHeader
         lang={lang}
-        title={common.gallery[lang]}
+        title={t('common.gallery')}
         className="col-span-full h-14 md:col-span-full md:row-start-1 md:h-full"
         titleClassName="lg:col-start-2 lg:col-span-2"
         rightBlockClassName="lg:col-start-4 lg:col-span-2"
@@ -667,14 +687,12 @@ const GalleryPageV3 = () => {
 
       <div className="grid grid-cols-1 edo-hairline md:col-span-full md:row-start-2 md:min-h-0 md:overflow-hidden md:grid-cols-gallery-shell">
         <MobileNavStrip
-          triggerLabel={mobileNav.filters[lang].toUpperCase()}
+          triggerLabel={t('mobileNav.filters').toUpperCase()}
           groups={mobileGroups}
           hasActive={hasActiveFilters}
           activeCount={activeFilterCount}
           summary={filterSummary}
-          ariaLabel={
-            lang === 'fr' ? 'Filtrer la galerie' : 'Filter the gallery'
-          }
+          ariaLabel={t('galleryPage.filterAriaLabel')}
           lang={lang}
           countFor={mobileCountFor}
           onApply={applyMobileFilters}

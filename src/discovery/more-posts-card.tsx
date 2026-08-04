@@ -4,9 +4,9 @@ import { DiscoveryCoverMedia } from './discovery-cover';
 import { hasCover } from './cover';
 import { FilterChips } from './filter-chips';
 import { cn } from '@/lib/utils';
-import { EmptyState } from '../ui/empty-state';
+import { Empty, EmptyTitle } from '@/components/ui/empty';
 import { cellBase, labelBase } from './styles';
-import { discoveryPage } from '../i18n/messages';
+import { useT } from '../i18n/use-t';
 
 interface MorePostsCardProps {
   posts: DiscoveryPost[];
@@ -29,6 +29,7 @@ export const MorePostsCard = ({
   className,
   badge,
 }: MorePostsCardProps) => {
+  const t = useT();
   const filteredPosts =
     cat === 'all' ? posts : posts.filter((post) => post.cat === cat);
 
@@ -45,7 +46,7 @@ export const MorePostsCard = ({
       <div className="flex shrink-0 flex-col gap-2.5 border-b border-border px-cell py-3.5">
         <div className="flex items-center justify-between gap-3">
           <span className={cn(labelBase, 'text-primary')}>
-            {discoveryPage.morePosts[lang]}
+            {t('discoveryPage.morePosts')}
           </span>
           <span className="font-mono text-micro tracking-ui text-muted-foreground">
             {filteredPosts.length}/{posts.length}
@@ -95,7 +96,9 @@ export const MorePostsCard = ({
         })}
 
         {filteredPosts.length === 0 && (
-          <EmptyState size="compact" label={discoveryPage.noPosts[lang]} />
+          <Empty size="compact">
+            <EmptyTitle>{t('discoveryPage.noPosts')}</EmptyTitle>
+          </Empty>
         )}
       </div>
     </section>

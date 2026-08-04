@@ -3,9 +3,14 @@ import { DiscoveryCoverMedia } from './discovery-cover';
 import { hasCover } from './cover';
 import { CellBadge } from './shared';
 import { cn } from '@/lib/utils';
-import { EmptyState } from '../ui/empty-state';
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from '@/components/ui/empty';
 import { cellBase, labelBase } from './styles';
-import { discoveryPage } from '../i18n/messages';
+import { useT } from '../i18n/use-t';
 
 interface ArticleCardProps {
   post: DiscoveryPost;
@@ -24,6 +29,7 @@ export const ArticleCard = ({
   className,
   badge,
 }: ArticleCardProps) => {
+  const t = useT();
   const cover = hasCover(post);
   return (
     <button
@@ -75,7 +81,7 @@ export const ArticleCard = ({
         </h3>
         {headline && (
           <span className="mt-1 inline-flex items-center gap-2 font-mono text-label uppercase tracking-label text-foreground">
-            {discoveryPage.readArticle[lang]}{' '}
+            {t('discoveryPage.readArticle')}{' '}
             <span className="text-detail">→</span>
           </span>
         )}
@@ -96,31 +102,37 @@ export const ArticleEmptyCard = ({
   headline = false,
   className,
   badge,
-}: ArticleEmptyCardProps) => (
-  <section
-    aria-label={discoveryPage.noFeaturedPost[lang]}
-    className={cn(
-      cellBase,
-      'order-1 grid min-h-80 grid-rows-article-auto bg-white lg:min-h-0',
-      headline && 'lg:grid-rows-article-headline-lg',
-      className,
-    )}
-  >
-    {badge != null && <CellBadge n={badge} />}
-    <div className="relative min-h-0 border-b border-border bg-muted">
-      <span
-        className={cn(
-          labelBase,
-          'absolute left-cell top-3 text-muted-foreground',
-        )}
-      >
-        {discoveryPage.noFeaturedPost[lang]}
-      </span>
-    </div>
-    <EmptyState
-      size="compact"
-      label={discoveryPage.noPosts[lang]}
-      description={discoveryPage.noFeaturedPostHint[lang]}
-    />
-  </section>
-);
+}: ArticleEmptyCardProps) => {
+  const t = useT();
+  return (
+    <section
+      aria-label={t('discoveryPage.noFeaturedPost')}
+      className={cn(
+        cellBase,
+        'order-1 grid min-h-80 grid-rows-article-auto bg-white lg:min-h-0',
+        headline && 'lg:grid-rows-article-headline-lg',
+        className,
+      )}
+    >
+      {badge != null && <CellBadge n={badge} />}
+      <div className="relative min-h-0 border-b border-border bg-muted">
+        <span
+          className={cn(
+            labelBase,
+            'absolute left-cell top-3 text-muted-foreground',
+          )}
+        >
+          {t('discoveryPage.noFeaturedPost')}
+        </span>
+      </div>
+      <Empty size="compact">
+        <EmptyHeader>
+          <EmptyTitle>{t('discoveryPage.noPosts')}</EmptyTitle>
+          <EmptyDescription>
+            {t('discoveryPage.noFeaturedPostHint')}
+          </EmptyDescription>
+        </EmptyHeader>
+      </Empty>
+    </section>
+  );
+};

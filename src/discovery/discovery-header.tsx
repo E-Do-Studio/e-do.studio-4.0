@@ -1,6 +1,6 @@
 import type { Lang } from '../types';
 import { PageHeader } from '../ui/page-header';
-import { common } from '../i18n/messages';
+import { useT } from '../i18n/use-t';
 
 interface DiscoveryHeaderProps {
   lang: Lang;
@@ -14,41 +14,44 @@ export const DiscoveryHeader = ({
   setLang,
   openMenu,
   goto,
-}: DiscoveryHeaderProps) => (
-  <PageHeader
-    lang={lang}
-    title="Discovery"
-    className="row-start-1"
-    subgrid={false}
-    onMenuClick={openMenu}
-    onLogoClick={() => goto('home')}
-    onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
-    actions={[
-      {
-        id: 'book',
-        label: common.book[lang],
-        onClick: () => goto('book'),
-        variant: 'primary',
-        className: 'md:hidden',
-      },
-      {
-        id: 'gallery',
-        label: common.gallery[lang],
-        onClick: () => goto('gallery'),
-        className: 'hidden md:flex',
-      },
-      {
-        id: 'plateaux',
-        label: common.stages[lang],
-        onClick: () => goto('plateau-live'),
-        className: 'hidden md:flex',
-      },
-      {
-        id: 'contact',
-        label: common.contactUs[lang],
-        onClick: () => goto('contact'),
-        className: 'hidden lg:flex',
-      },
-    ]}
-  />
-);
+}: DiscoveryHeaderProps) => {
+  const t = useT();
+  return (
+    <PageHeader
+      lang={lang}
+      title="Discovery"
+      className="row-start-1"
+      subgrid={false}
+      onMenuClick={openMenu}
+      onLogoClick={() => goto('home')}
+      onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
+      actions={[
+        {
+          id: 'book',
+          label: t('common.book'),
+          onClick: () => goto('book'),
+          variant: 'primary',
+          className: 'md:hidden',
+        },
+        {
+          id: 'gallery',
+          label: t('common.gallery'),
+          onClick: () => goto('gallery'),
+          className: 'hidden md:flex',
+        },
+        {
+          id: 'plateaux',
+          label: t('common.stages'),
+          onClick: () => goto('plateau-live'),
+          className: 'hidden md:flex',
+        },
+        {
+          id: 'contact',
+          label: t('common.contactUs'),
+          onClick: () => goto('contact'),
+          className: 'hidden lg:flex',
+        },
+      ]}
+    />
+  );
+};
