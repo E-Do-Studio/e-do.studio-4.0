@@ -72,8 +72,13 @@ const BASELINE_JSONLD = JSON.stringify({
 });
 
 // Évite un reflow piloté par le swap de police sur le premier rendu.
+//
+// Ordre de cascade : HeadContent émet le <link> du manifeste Vite AVANT ce
+// <style>. À spécificité égale ce bloc gagne donc sur styles.css — d'où le
+// media query : le modèle de scroll mobile appartient à styles.css:194.
 const CRITICAL_CSS =
-  'html,body,#root{margin:0;padding:0;height:100%;background:#fff;font-family:var(--font-sans);color:#141414;overflow:hidden}';
+  'html,body,#root{margin:0;padding:0;font-family:var(--font-sans);color:#141414}' +
+  '@media(min-width:768px){html,body,#root{height:100%;background:#fff;overflow:hidden}}';
 
 // Doit précéder le premier fetch Strapi côté client pour qu'il voie le drapeau
 // preview. Côté Node, getPreviewState() retombe toujours sur « inactif » — le
