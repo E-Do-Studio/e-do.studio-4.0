@@ -4,7 +4,6 @@ import { useLoaderData } from '@tanstack/react-router';
 import { ArrowRight, Lock } from 'lucide-react';
 import { lazy, Suspense } from 'react';
 import { Trans } from 'react-i18next';
-import { BookCTATile } from './book-cta';
 import { useT } from './i18n/use-t';
 import { usePageContext } from './lib/page-context';
 import { SocialClientsBar } from './social-clients-bar';
@@ -331,30 +330,65 @@ const HomePage = () => {
         </div>
       </Button>
 
-      {/* ── Rows 5-6 right (desktop) / mobile row A right: Post-production ── */}
-      <Button
-        onClick={() => goto('postprod')}
-        variant="cell"
-        size="cell"
-        className="group col-span-1 h-36 justify-between p-5 md:col-start-7 md:col-end-10 md:row-start-5 md:row-end-7 md:mt-[85px] md:h-[calc(100%-85px)]"
-      >
-        <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground">Service</span>
-        <div className="flex items-end justify-between gap-2.5">
-          <div className="min-w-0">
-            <div className="whitespace-nowrap text-3xl font-light tracking-tighter leading-none text-foreground">
-              Post-production
+      {/* ── Bande cols 7-10 : CTA Réserver au-dessus de Post-production ──
+ `contents` sous md : les deux tuiles retombent dans la grille mobile à
+ 2 colonnes, où le CTA est masqué et Post-production est une cellule
+ ordinaire — l'ordre d'empilement mobile reste donc celui du DOM.
+ À partir de md, la bande devient une grille de deux rangées et c'est sa
+ gouttière qui trace le filet entre les deux. Auparavant les deux tuiles
+ déclaraient la même aire de grille et le partage était simulé par un
+ `mt-[85px]`, ce qui interdisait tout filet. */}
+      <div className="contents md:col-start-7 md:col-end-10 md:row-start-5 md:row-end-7 md:grid md:grid-rows-[84px_minmax(0,1fr)] md:gap-px md:bg-border">
+        {/* Le CTA vit dans l'en-tête sur mobile (action principale), d'où le
+ `hidden md:flex` ici. `border-0` : la base de shadcn combine
+ `border border-transparent` et `bg-clip-padding`, ce qui laisserait
+ voir la gouttière noire sur 1px tout autour. */}
+        <Button
+          onClick={() => goto('book')}
+          size="cell"
+          className="group hidden justify-between border-0 p-5 md:flex"
+        >
+          <span className="font-mono text-xs uppercase tracking-widest text-primary-foreground/75">
+            {t('home.requestQuoteOr')}
+          </span>
+          <div className="flex items-end justify-between gap-2.5">
+            <div className="min-w-0 text-3xl font-light tracking-tighter leading-none">
+              {t('common.book')}
             </div>
-            <div className="mt-1.5 font-mono text-xs uppercase tracking-wider text-muted-foreground">
-              {t('home.retouchPhotoVideo')}
-            </div>
+            <ArrowRight
+              className="flex-shrink-0 transition-transform duration-200 ease-out group-hover:translate-x-1.5"
+              width="16"
+              height="16"
+            />
           </div>
-          <ArrowRight
-            className="flex-shrink-0 transition-transform duration-200 ease-out group-hover:translate-x-1.5"
-            width="16"
-            height="16"
-          />
-        </div>
-      </Button>
+        </Button>
+
+        <Button
+          onClick={() => goto('postprod')}
+          variant="cell"
+          size="cell"
+          className="group col-span-1 h-36 justify-between p-5 md:h-auto"
+        >
+          <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground">
+            Service
+          </span>
+          <div className="flex items-end justify-between gap-2.5">
+            <div className="min-w-0">
+              <div className="whitespace-nowrap text-3xl font-light tracking-tighter leading-none text-foreground">
+                Post-production
+              </div>
+              <div className="mt-1.5 font-mono text-xs uppercase tracking-wider text-muted-foreground">
+                {t('home.retouchPhotoVideo')}
+              </div>
+            </div>
+            <ArrowRight
+              className="flex-shrink-0 transition-transform duration-200 ease-out group-hover:translate-x-1.5"
+              width="16"
+              height="16"
+            />
+          </div>
+        </Button>
+      </div>
 
       {/* ── Row 5 left (desktop) / mobile row B: Video / showreel ──
  Mobile uses a 5:4 aspect ratio so the showreel renders at a similar
@@ -391,21 +425,24 @@ const HomePage = () => {
         </Button>
       </div>
 
-      {/* ── Row 5 right (desktop only): Book CTA.
- On mobile, the Book CTA lives in the header as a primary action
- (md:hidden), so this tile is desktop-only via `hidden md:flex`. */}
-      <BookCTATile
-        onClick={() => goto('book')}
-        className="col-span-2 hidden md:col-start-7 md:col-end-10 md:row-start-5 md:flex"
-      />
-
-      {/* ── Row 6 left: Discovery CTA (Coming soon) ── */}
+      {/* ── Row 6 left: Discovery CTA (Coming soon) ──
+ `variant="cell"` porte déjà `border-0 bg-background text-foreground` ; le
+ scope `dark` les fait basculer sur la palette sombre. La tuile réécrivait
+ ces trois classes à la main par-dessus la variante `default`, c'est-à-dire
+ qu'elle annulait l'orange qu'elle venait de demander.
+ `text-left` n'est pas redondant : la feuille de style du navigateur pose
+ `text-align: center` sur tout `<button>`, et la base de shadcn pose
+ `whitespace-nowrap` — sans lui le titre se centre et déborde à gauche.
+ Cette tuile est une bande horizontale et non une cellule empilée : sa
+ géométrie reste au site d'appel, contrairement à ses voisines en
+ `size="cell"`. */}
       <Button
         type="button"
         disabled
         aria-disabled="true"
         tabIndex={-1}
-        className="pointer-events-none cursor-not-allowed group relative col-span-2 h-20 flex items-center justify-between gap-3 border-0 dark bg-background px-4 py-3 text-left text-foreground md:col-span-3 md:col-start-1 md:col-end-4 md:row-start-6 md:h-21"
+        variant="cell"
+        className="pointer-events-none cursor-not-allowed group relative col-span-2 h-20 flex items-center justify-between gap-3 px-4 py-3 text-left dark md:col-span-3 md:col-start-1 md:col-end-4 md:row-start-6 md:h-21"
       >
         <svg
           viewBox="0 0 200 84"

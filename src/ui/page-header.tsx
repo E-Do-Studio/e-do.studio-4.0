@@ -60,7 +60,12 @@ const PageHeaderActionButton = ({
   const isPrimary = variant === 'primary';
   const isDark = variant === 'dark';
   const actionClassName = cn(
-    'h-full gap-2 no-underline',
+    // `border-0` : le filet entre deux actions vient du conteneur, jamais du
+    // bouton. Sans lui, la variante `default` (l'action principale) garde le
+    // `border border-transparent` de la base shadcn, que `bg-clip-padding`
+    // transforme en liseré du fond — un halo blanc autour du pavé orange.
+    // La variante `header` pose déjà `border-0` ; seule `default` manquait.
+    'h-full gap-2 border-0 no-underline',
     expand ? 'flex-1' : 'flex-none',
     isPrimary
       ? 'px-4 text-xs tracking-wide md:px-6'
