@@ -132,7 +132,7 @@ const StrapiSectionsRenderer = ({ sections, lang }: SectionRendererProps) => (
                   key={i}
                   className="grid grid-cols-[220px_minmax(0,1fr)] gap-5 py-2.5 border-b border-border last:border-b-0 text-sm items-baseline"
                 >
-                  <span className="font-mono text-xs tracking-wider uppercase text-muted-foreground">
+                  <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
                     {r.k}
                   </span>
                   <span className="text-foreground tracking-tight">{r.v}</span>
@@ -282,7 +282,7 @@ const LegalPage = () => {
       {/* Desktop sidebar — vertical list, hidden on mobile (replaced by trigger + sheet above). */}
       <div className="hidden bg-background overflow-auto md:col-start-1 md:row-start-2 md:flex md:flex-col">
         <div className="px-4 pt-4 pb-2.5 shrink-0">
-          <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground">
+          <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
             {t('legalPage.contents')}
           </span>
         </div>
@@ -315,7 +315,7 @@ const LegalPage = () => {
         })}
 
         <div className="px-4 py-6 border-t border-border mt-3">
-          <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground mb-2.5 block">
+          <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-2.5 block">
             {t('legalPage.gotQuestion')}
           </span>
           <p className="text-xs text-muted-foreground leading-normal mb-3">
@@ -335,7 +335,7 @@ const LegalPage = () => {
       <div className="bg-muted overflow-auto md:col-start-2 md:col-span-3 md:row-start-2">
         <div className="bg-background pt-9 px-5 pb-7 border-b border-border grid grid-cols-[minmax(0,1fr)_auto] gap-6 items-end md:px-10">
           <div>
-            <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-primary">
+            <span className="font-mono text-xs uppercase tracking-widest text-primary">
               {String(sections.findIndex((s) => s.k === sec) + 1).padStart(
                 2,
                 '0',
@@ -353,10 +353,10 @@ const LegalPage = () => {
             )}
           </div>
           <div className="text-right flex flex-col gap-1">
-            <span className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
+            <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
               {t('legalPage.lastUpdated')}
             </span>
-            <span className="font-mono text-sm tracking-wide text-foreground">
+            <span className="font-mono text-sm tracking-widest text-foreground">
               {active?.updated ?? ''}
             </span>
           </div>
@@ -364,7 +364,7 @@ const LegalPage = () => {
 
         <div className="pt-2 px-5 pb-10 max-w-5xl md:px-10">
           {hasStrapiBody && articleCount > 0 && (
-            <div className="pt-4 pb-2 border-b border-border flex justify-between font-mono text-xs tracking-widest uppercase text-muted-foreground">
+            <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground pt-4 pb-2 border-b border-border flex justify-between">
               <span>{articleCount} articles</span>
               <span>Version {active?.updated ?? ''}</span>
             </div>
@@ -383,7 +383,7 @@ const LegalPage = () => {
           {sec === 'cookies' && (
             <div className="mt-9 dark bg-background text-foreground py-7 px-8 grid grid-cols-[minmax(0,1fr)_auto] gap-6 items-center">
               <div>
-                <span className="font-mono text-xs tracking-widest uppercase text-primary">
+                <span className="font-mono text-xs uppercase tracking-widest text-primary">
                   © GRW · E-Do Studio
                 </span>
                 <p className="mt-1.5 text-sm leading-relaxed opacity-75 max-w-xl">
@@ -397,7 +397,7 @@ const LegalPage = () => {
             </div>
           )}
 
-          <div className="mt-8 flex justify-end items-center gap-5 font-mono text-xs tracking-wider uppercase text-muted-foreground">
+          <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground mt-8 flex justify-end items-center gap-5">
             <Button
               onClick={() => window.print()}
               variant="link"

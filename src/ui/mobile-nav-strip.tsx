@@ -155,7 +155,7 @@ const MobileNavStrip = ({
             {triggerLabel}
           </span>
           {summary ? (
-            <HoverMarquee className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
+            <HoverMarquee className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
               · {summary}
             </HoverMarquee>
           ) : null}
@@ -163,7 +163,7 @@ const MobileNavStrip = ({
             {badgeCount > 1 ? (
               <span
                 aria-hidden
-                className="inline-flex h-5 min-w-5 items-center justify-center bg-primary px-1 font-mono text-xs uppercase tracking-widest text-primary-foreground"
+                className="font-mono text-xs uppercase tracking-widest text-primary-foreground inline-flex h-5 min-w-5 items-center justify-center bg-primary px-1"
               >
                 {badgeCount}
               </span>
@@ -205,7 +205,7 @@ const MobileNavStrip = ({
                   key={group.key}
                   className="flex flex-col border-b border-border last:border-b-0"
                 >
-                  <legend className="w-full bg-muted px-4 py-2 font-mono text-xs uppercase tracking-widest text-muted-foreground">
+                  <legend className="font-mono text-xs uppercase tracking-widest text-muted-foreground w-full bg-muted px-4 py-2">
                     {group.label}
                   </legend>
                   {group.options.map((option) => {
@@ -243,7 +243,7 @@ const MobileNavStrip = ({
                             <span className="block size-1.5 bg-foreground" />
                           ) : null}
                         </span>
-                        <span className="flex-1 font-mono text-sm uppercase tracking-wide">
+                        <span className="flex-1 font-mono text-sm uppercase tracking-widest">
                           {option.label}
                         </span>
                         {typeof option.count === 'number' ? (

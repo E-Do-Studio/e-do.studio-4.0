@@ -26,7 +26,7 @@ const CookieBanner = ({ lang, onLegalClick }: CookieBannerProps) => {
     >
       <div className="flex flex-col md:flex-row md:items-stretch">
         <div className="flex flex-1 flex-col gap-1.5 px-5 py-4 md:px-8 md:py-5">
-          <span className="font-mono text-xs tracking-widest uppercase text-primary">
+          <span className="font-mono text-xs uppercase tracking-widest text-primary">
             {t('cookieBanner.title')}
           </span>
           {/* Le lien vit dans la traduction : le séparer de la phrase figeait

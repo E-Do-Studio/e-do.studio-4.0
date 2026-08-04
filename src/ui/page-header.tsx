@@ -184,11 +184,11 @@ const PageHeader = ({
           subtitle ? 'gap-3.5' : 'gap-0',
         )}
       >
-        <span className="font-mono text-xs font-normal uppercase tracking-widest min-w-0 text-primary md:shrink-0">
+        <span className="font-mono text-xs uppercase tracking-widest text-primary min-w-0 md:shrink-0">
           <HoverMarquee>{title}</HoverMarquee>
         </span>
         {subtitle && (
-          <HoverMarquee className="font-mono text-xs tracking-wider text-muted-foreground">
+          <HoverMarquee className="font-mono text-xs tracking-widest text-muted-foreground">
             {subtitle}
           </HoverMarquee>
         )}

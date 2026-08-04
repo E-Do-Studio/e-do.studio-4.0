@@ -42,7 +42,7 @@ export const ContactForm = ({
       className="grid grid-cols-2 grid-rows-[96px_64px_64px_64px_minmax(0,1fr)_44px] gap-px bg-border md:h-full"
     >
       <div className="col-span-2 flex flex-col justify-center bg-background px-5 py-2.5">
-        <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-primary">
+        <span className="font-mono text-xs uppercase tracking-widest text-primary">
           {t('contact.writeToUs')}
         </span>
         <h1 className="m-0 mt-0.5 text-2xl font-light leading-none tracking-tighter text-foreground">
@@ -130,7 +130,7 @@ export const ContactSuccess = ({
   const t = useT();
   return (
     <div className="flex h-full flex-col items-start justify-center gap-4 bg-background px-7 py-8">
-      <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-primary">
+      <span className="font-mono text-xs uppercase tracking-widest text-primary">
         ✓ {t('contact.messageSent')}
       </span>
       <h1 className="m-0 max-w-lg text-3xl font-light leading-tight tracking-tighter text-foreground">

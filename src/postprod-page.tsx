@@ -133,7 +133,7 @@ const SampleVideo = ({
         <source src={src} type={mime} />
       </video>
       {label && (
-        <span className="absolute bottom-1.5 left-2 font-mono text-xs tracking-wider uppercase opacity-50 text-white">
+        <span className="dark font-mono text-xs uppercase tracking-widest absolute bottom-1.5 left-2 opacity-50 text-foreground">
           {label}
         </span>
       )}
@@ -161,7 +161,7 @@ const SampleImage = ({ sample, label, medium }: SampleImageProps) => {
           className="absolute inset-0 w-full h-full object-cover"
         />
         {label && (
-          <span className="absolute bottom-1.5 left-2 font-mono text-xs tracking-wider uppercase opacity-50 text-white">
+          <span className="dark font-mono text-xs uppercase tracking-widest absolute bottom-1.5 left-2 opacity-50 text-foreground">
             {label}
           </span>
         )}
@@ -214,14 +214,14 @@ const SampleImage = ({ sample, label, medium }: SampleImageProps) => {
       </svg>
       <div className="absolute inset-0 pointer-events-none bg-postprod-pattern" />
       {medium === 'video' && (
-        <div className="absolute top-2 right-2 bg-black/55 text-white font-mono text-xs tracking-widest px-1.5 py-0.5 flex items-center gap-1">
-          <span className="inline-block w-0 h-0 border-l-4 border-l-white border-t-3 border-t-transparent border-b-3 border-b-transparent" />
+        <div className="dark absolute top-2 right-2 flex items-center gap-1 bg-background/55 px-1.5 py-0.5 font-mono text-xs tracking-widest text-foreground">
+          <span className="inline-block w-0 h-0 border-l-4 border-l-foreground border-t-3 border-t-transparent border-b-3 border-b-transparent" />
           VIDEO
         </div>
       )}
       {label && (
         <span
-          className="absolute bottom-1.5 left-2 font-mono text-xs tracking-wider uppercase opacity-50"
+          className="font-mono text-xs uppercase tracking-widest absolute bottom-1.5 left-2 opacity-50"
           style={{ color: p.a }}
         >
           {label}
@@ -387,7 +387,7 @@ const PostprodPage = () => {
           <HoverMarquee className="text-base tracking-tight font-medium text-foreground">
             {cat[lang]}
           </HoverMarquee>
-          <HoverMarquee className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+          <HoverMarquee className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
             {cat.tagline[lang]}
           </HoverMarquee>
         </span>
@@ -442,7 +442,7 @@ const PostprodPage = () => {
                       </HoverMarquee>
                       <HoverMarquee
                         className={cn(
-                          'font-mono text-xs uppercase tracking-wider',
+                          'font-mono text-xs uppercase tracking-widest',
                           active
                             ? 'text-background/70'
                             : 'text-muted-foreground',
@@ -490,7 +490,7 @@ const PostprodPage = () => {
           );
         })}
         <div className="mt-auto flex py-3.5 px-4 border-t border-t-border flex-col gap-1.5 shrink-0 bg-muted">
-          <span className="font-mono text-xs tracking-widest uppercase text-primary">
+          <span className="font-mono text-xs uppercase tracking-widest text-primary">
             {t('postprod.note')}
           </span>
           <span className="text-xs text-muted-foreground leading-normal text-pretty">
@@ -514,7 +514,7 @@ const PostprodPage = () => {
               {t('postprod.category')}
             </span>
             {cat.featured && (
-              <span className="font-mono text-xs tracking-widest uppercase bg-primary text-primary-foreground px-2 py-0.5">
+              <span className="font-mono text-xs uppercase tracking-widest text-primary-foreground bg-primary px-2 py-0.5">
                 {t('postprod.standard')}
               </span>
             )}

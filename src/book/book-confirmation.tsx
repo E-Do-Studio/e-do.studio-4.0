@@ -106,7 +106,7 @@ const ConfirmedView = ({
       <div className="overflow-auto flex flex-col gap-px bg-border md:col-span-2 md:row-start-2 md:min-h-0">
         <div className="grid gap-px bg-border grid-cols-1 md:grid-cols-[1.6fr_1fr]">
           <div className="bg-background pt-6 md:pt-7 px-5 md:px-12 pb-6 flex flex-col gap-2.5 min-h-44">
-            <div className="inline-flex items-center gap-2.5 py-1.5 px-3 bg-primary text-primary-foreground font-mono text-xs tracking-widest uppercase self-start">
+            <div className="font-mono text-xs uppercase tracking-widest text-primary-foreground inline-flex items-center gap-2.5 py-1.5 px-3 bg-primary self-start">
               ● {copy.status}
             </div>
             <h1 className="m-0 text-5xl font-light tracking-tighter leading-none text-balance">
@@ -119,15 +119,15 @@ const ConfirmedView = ({
           <div className="bg-background px-5 md:px-6 py-5 md:py-6 flex flex-col justify-between gap-3.5 min-h-44">
             <div className="flex flex-col gap-3.5">
               <div>
-                <div className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-muted-foreground mb-1">
+                <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-1">
                   {t('booking.reference')}
                 </div>
-                <div className="font-mono text-base tracking-wider text-foreground">
+                <div className="font-mono text-base tracking-widest text-foreground">
                   {ref}
                 </div>
               </div>
               <div>
-                <div className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-muted-foreground mb-1">
+                <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-1">
                   {t('booking.issued')}
                 </div>
                 <div className="font-mono text-xs text-foreground">
@@ -145,7 +145,7 @@ const ConfirmedView = ({
               </div>
             </div>
             <div>
-              <div className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-muted-foreground mb-1">
+              <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-1">
                 {t('booking.contactLabel')}
               </div>
               <div className="text-sm font-medium tracking-tight">
@@ -160,7 +160,7 @@ const ConfirmedView = ({
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-border">
           <div className="bg-background px-5 py-3">
-            <div className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-muted-foreground mb-1">
+            <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-1">
               {t('booking.stage')}
             </div>
             <div className="text-base font-medium tracking-tight">
@@ -168,7 +168,7 @@ const ConfirmedView = ({
             </div>
           </div>
           <div className="bg-background px-5 py-3">
-            <div className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-muted-foreground mb-1">
+            <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-1">
               {isMultiPlateau ? t('booking.dates') : t('booking.date')}
             </div>
             {snapshot.sessions && snapshot.sessions.length > 1 ? (
@@ -212,7 +212,7 @@ const ConfirmedView = ({
             )}
           </div>
           <div className="bg-background px-5 py-3">
-            <div className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-muted-foreground mb-1">
+            <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-1">
               {t('booking.company')}
             </div>
             <div className="text-sm font-medium tracking-tight">
@@ -220,17 +220,17 @@ const ConfirmedView = ({
             </div>
           </div>
           <div className="bg-background px-5 py-3">
-            <div className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-muted-foreground mb-1">
+            <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-1">
               SIREN
             </div>
-            <div className="font-mono text-xs tracking-wide">
+            <div className="font-mono text-xs tracking-widest">
               {contact.siren || '—'}
             </div>
           </div>
         </div>
 
         <div className="bg-background px-5 md:px-12 py-4.5 pb-5 flex-1">
-          <div className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-muted-foreground mb-2.5">
+          <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-2.5">
             {t('booking.quoteBreakdown')}
           </div>
           <div className="flex flex-col">
@@ -254,14 +254,14 @@ const ConfirmedView = ({
               </div>
             ))}
             <div className="flex justify-between items-baseline mt-3 pt-2.5 border-t-2 border-t-foreground">
-              <span className="font-mono text-xs tracking-widest uppercase">
+              <span className="font-mono text-xs uppercase tracking-widest">
                 Total HT*
               </span>
               <span className="text-3xl font-light tracking-tighter tabular-nums">
                 {fmtEUR(snapshot.total, lang)} €
               </span>
             </div>
-            <div className="font-mono text-xs text-muted-foreground mt-2.5 tracking-wide leading-relaxed pt-2 border-t border-t-border">
+            <div className="font-mono text-xs text-muted-foreground mt-2.5 tracking-widest leading-relaxed pt-2 border-t border-t-border">
               {t('booking.quoteDisclaimer')}
             </div>
           </div>
@@ -320,7 +320,7 @@ const BookConfirmation = () => {
         />
         <div className="md:row-start-2 md:overflow-y-auto md:min-h-0 bg-background">
           <div className="px-5 py-10 md:px-12 md:py-14">
-            <span className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
+            <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
               {t('bookPicker.confirmationMissingTitle')}
             </span>
             <h1 className="m-0 mt-4 text-5xl font-light tracking-tighter leading-none text-balance text-foreground">

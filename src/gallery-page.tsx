@@ -316,7 +316,7 @@ const ProjectLabel = ({
     'outline-none focus-visible:ring-3 focus-visible:ring-ring/50 relative flex cursor-pointer flex-col items-center justify-between overflow-hidden border-0 bg-background px-2 py-2 md:px-2.5 md:py-3.5 text-left font-sans no-underline text-inherit';
   const content = (
     <>
-      <HoverMarquee className="max-w-full self-start font-mono text-xs uppercase tracking-wider text-muted-foreground transition-colors group-hover:text-primary">
+      <HoverMarquee className="font-mono text-xs uppercase tracking-widest text-muted-foreground max-w-full self-start transition-colors group-hover:text-primary">
         {plateauLabel}
       </HoverMarquee>
       <div className="flex min-h-0 min-w-0 flex-1 items-center justify-center overflow-hidden py-1 md:py-2 [writing-mode:vertical-rl] rotate-180">
@@ -324,7 +324,7 @@ const ProjectLabel = ({
           {project.brand}
         </span>
       </div>
-      <span className="self-start font-mono text-xs tracking-wider text-muted-foreground">
+      <span className="self-start font-mono text-xs tracking-widest text-muted-foreground">
         {project.year}
       </span>
     </>

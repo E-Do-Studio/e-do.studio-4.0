@@ -171,8 +171,12 @@ export const GalleryLightbox = ({
     return () => window.removeEventListener('keydown', onKey);
   }, [hasMultiple, zoomable, next, prev, zoomIn, zoomOut, zoomReset]);
 
+  // Contrôles posés sur l'image : leur toile de fond n'est pas une surface du
+  // thème mais la photo. Le scope `dark` porté par la barre fait résoudre les
+  // tokens vers la palette sombre — même rendu qu'un blanc écrit en dur, mais
+  // tokenisé.
   const zoomBtn =
-    'text-white hover:bg-white/15 disabled:opacity-30 disabled:hover:bg-transparent';
+    'text-foreground hover:bg-foreground/15 disabled:opacity-30 disabled:hover:bg-transparent';
 
   const canReset = scale !== MIN_SCALE || tx !== 0 || ty !== 0;
 
@@ -211,7 +215,7 @@ export const GalleryLightbox = ({
               aria-label={t('common.close')}
               variant="ghost"
               size="icon-sm"
-              className="absolute right-3 top-3 z-30 text-white mix-blend-exclusion transition-opacity duration-200 hover:bg-transparent md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100"
+              className="dark absolute right-3 top-3 z-30 text-foreground mix-blend-exclusion transition-opacity duration-200 hover:bg-transparent md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100"
             >
               <X size={18} strokeWidth={1.5} />
             </Button>
@@ -270,7 +274,7 @@ export const GalleryLightbox = ({
             </div>
 
             {zoomable && (
-              <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 bg-black/35 backdrop-blur-md border border-border px-1.5 py-1">
+              <div className="dark absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 border border-border bg-background/35 px-1.5 py-1 backdrop-blur-md">
                 <Button
                   type="button"
                   onClick={zoomOut}
@@ -280,7 +284,7 @@ export const GalleryLightbox = ({
                 >
                   <Minus size={16} strokeWidth={1.5} />
                 </Button>
-                <span className="min-w-11 text-center font-mono text-xs tracking-wider tabular-nums text-muted-foreground">
+                <span className="min-w-11 text-center font-mono text-xs tracking-widest tabular-nums text-muted-foreground">
                   {Math.round(scale * 100)}%
                 </span>
                 <Button

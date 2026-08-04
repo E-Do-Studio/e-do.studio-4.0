@@ -97,14 +97,14 @@ const ClosuresSection = ({
         className,
       )}
     >
-      <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground mb-5 block">{t('contact.closures')}</span>
+      <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-5 block">{t('contact.closures')}</span>
       <div className="flex flex-col gap-3 text-xs">
         {upcoming.map((c) => (
           <div
             key={`${c.startsAt}-${c.endsAt}`}
             className="flex flex-col gap-0.5"
           >
-            <span className="font-mono tracking-wider">
+            <span className="font-mono tracking-widest">
               {c.startsAt === c.endsAt
                 ? formatClosureDate(c.startsAt, lang)
                 : `${formatClosureDate(c.startsAt, lang)} → ${formatClosureDate(c.endsAt, lang)}`}
@@ -153,13 +153,13 @@ const FindUsSection = ({ lang, contact, className }: FindUsSectionProps) => {
         className,
       )}
     >
-      <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground mb-5 block">{t('contact.findUs')}</span>
+      <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-5 block">{t('contact.findUs')}</span>
       {showFallback ? (
         <UnavailableNote />
       ) : (
         <>
           <div className="text-sm leading-relaxed font-medium text-foreground">
-            <span className="mb-2 block font-mono text-xs font-normal uppercase tracking-wider text-muted-foreground">
+            <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-2 block">
               {eyebrow}
             </span>
             {c?.address.street}
@@ -174,7 +174,7 @@ const FindUsSection = ({ lang, contact, className }: FindUsSectionProps) => {
             ) : null}
           </div>
           {c?.transport && c.transport.length > 0 && (
-            <div className="mt-5 flex flex-col gap-2.5 font-mono text-xs leading-relaxed tracking-wider text-muted-foreground">
+            <div className="mt-5 flex flex-col gap-2.5 font-mono text-xs leading-relaxed tracking-widest text-muted-foreground">
               {c.transport.map((entry, i) => {
                 const { line, name } = parseMetroLabel(entry.label);
                 if (!line)
@@ -239,7 +239,7 @@ const HoursSection = ({ lang, hours, className }: HoursSectionProps) => {
         className,
       )}
     >
-      <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground mb-5 block">{t('contact.hours')}</span>
+      <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-5 block">{t('contact.hours')}</span>
       {showFallback ? (
         <UnavailableNote />
       ) : (
@@ -291,7 +291,7 @@ const PhoneSection = ({ lang, contact, className }: PhoneSectionProps) => {
   const showFallback = !c;
   return (
     <section className={cn('bg-background p-6', className)}>
-      <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground mb-5 block">{t('contact.phone')}</span>
+      <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-5 block">{t('contact.phone')}</span>
       {showFallback ? (
         <UnavailableNote />
       ) : c?.phone ? (
@@ -309,7 +309,7 @@ const PhoneSection = ({ lang, contact, className }: PhoneSectionProps) => {
 const UnavailableNote = () => {
   const t = useT();
   return (
-    <span className="block font-mono text-xs uppercase tracking-widest text-muted-foreground opacity-50">
+    <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground block opacity-50">
       {t('contact.temporarilyUnavailable')} · offline
     </span>
   );
@@ -456,7 +456,7 @@ const TeamPanel = ({
   const t = useT();
   return (
     <section className="dark flex flex-col gap-3.5 bg-background p-6 text-foreground">
-      <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-muted-foreground">
+      <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
         {t('contact.team')}
       </span>
       <div className="flex flex-col gap-2.5">
@@ -479,14 +479,14 @@ const TeamMemberRow = ({ member, lang }: TeamMemberRowProps) => (
       <span className="text-sm tracking-tight text-foreground">
         {member.name[lang]}
       </span>
-      <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+      <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
         {member.role[lang]}
       </span>
     </div>
     {member.email && member.emailHref && (
       <a
         href={member.emailHref}
-        className="self-center font-mono text-xs tracking-wide text-primary no-underline"
+        className="self-center font-mono text-xs tracking-widest text-primary no-underline"
       >
         {member.email}
       </a>

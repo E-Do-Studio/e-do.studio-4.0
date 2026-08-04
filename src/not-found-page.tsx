@@ -74,7 +74,7 @@ const NavLink = ({ href, label, navigate }: NavLinkProps) => (
       e.preventDefault();
       navigate({ to: href });
     }}
-    className="outline-none focus-visible:ring-3 focus-visible:ring-ring/50 inline-flex items-center justify-center border border-border bg-transparent px-4 py-2 font-mono text-xs uppercase tracking-widest text-foreground no-underline transition-colors hover:bg-muted"
+    className="font-mono text-xs uppercase tracking-widest text-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50 inline-flex items-center justify-center border border-border bg-transparent px-4 py-2 no-underline transition-colors hover:bg-muted"
   >
     {label}
   </a>
@@ -113,7 +113,7 @@ export const NotFoundPage = () => {
           e.preventDefault();
           navigate({ to: homeHref });
         }}
-        className="outline-none focus-visible:ring-3 focus-visible:ring-ring/50 inline-flex h-10 cursor-pointer items-center gap-2 border-0 dark bg-background px-5 font-mono text-xs uppercase tracking-wider text-foreground no-underline transition-colors hover:opacity-90"
+        className="font-mono text-xs uppercase tracking-widest text-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50 inline-flex h-10 cursor-pointer items-center gap-2 border-0 dark bg-background px-5 no-underline transition-colors hover:opacity-90"
       >
         {copy.cta}
       </a>

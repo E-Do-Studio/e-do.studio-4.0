@@ -82,7 +82,7 @@ export const ArticleCard = ({
           {post.title[lang]}
         </h3>
         {headline && (
-          <span className="mt-1 inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-foreground">
+          <span className="font-mono text-xs uppercase tracking-widest text-foreground mt-1 inline-flex items-center gap-2">
             {t('discoveryPage.readArticle')} <span className="text-sm">→</span>
           </span>
         )}

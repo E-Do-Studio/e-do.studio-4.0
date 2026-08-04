@@ -71,10 +71,10 @@ const NavItemLink = ({ item, index, onClose, navigate }: NavItemLinkProps) => {
         className="relative flex min-h-13 cursor-not-allowed flex-col justify-between gap-1 border-b border-border px-4 py-2.5"
       >
         <div className="flex items-center justify-between gap-2">
-          <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground leading-none">
+          <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground leading-none">
             {String(index + 1).padStart(2, '0')}
           </span>
-          <span className="inline-flex items-center gap-1 font-mono text-xs leading-none uppercase tracking-widest text-muted-foreground">
+          <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground inline-flex items-center gap-1 leading-none">
             <Lock width="9" height="9" aria-hidden="true" />
             {t('home.comingSoon')}
           </span>
@@ -95,7 +95,7 @@ const NavItemLink = ({ item, index, onClose, navigate }: NavItemLinkProps) => {
       }}
       className="outline-none focus-visible:ring-3 focus-visible:ring-ring/50 relative flex min-h-13 cursor-pointer flex-col justify-between gap-1 border-b border-border px-4 py-2.5 no-underline transition-colors hover:bg-muted"
     >
-      <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground">{String(index + 1).padStart(2, '0')}</span>
+      <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">{String(index + 1).padStart(2, '0')}</span>
       <span className="mt-auto text-base font-light text-foreground">
         {item.label}
       </span>
@@ -116,7 +116,7 @@ const NavExternalLink = ({ href, label, index }: NavExternalLinkProps) => (
     rel="noopener noreferrer"
     className="outline-none focus-visible:ring-3 focus-visible:ring-ring/50 relative flex min-h-13 cursor-pointer flex-col justify-between gap-1 border-b border-border px-4 py-2.5 no-underline transition-colors hover:bg-muted"
   >
-    <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground">{String(index + 1).padStart(2, '0')}</span>
+    <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">{String(index + 1).padStart(2, '0')}</span>
     <span className="mt-auto flex items-baseline gap-1.5 text-base font-light text-foreground">
       {label}
       <span
@@ -156,7 +156,7 @@ const NavFooter = ({ lang, setLang, onClose, navigate }: NavFooterProps) => {
           onClose();
           navigate({ to: bookingHref });
         }}
-        className="outline-none focus-visible:ring-3 focus-visible:ring-ring/50 h-12 flex cursor-pointer items-center justify-center border-0 bg-primary font-mono text-xs uppercase tracking-widest text-primary-foreground no-underline transition-[color,background-color,opacity] duration-150 ease-out hover:opacity-90"
+        className="font-mono text-xs uppercase tracking-widest text-primary-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50 h-12 flex cursor-pointer items-center justify-center border-0 bg-primary no-underline transition-[color,background-color,opacity] duration-150 ease-out hover:opacity-90"
       >
         {t('common.bookNow')}
       </a>

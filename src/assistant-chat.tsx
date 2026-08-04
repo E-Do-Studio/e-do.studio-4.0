@@ -113,7 +113,7 @@ const AssistantHeader = ({
   return (
     <div className="flex shrink-0 items-center justify-between">
       <div className="flex items-center gap-2">
-        <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground">
+        <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
           Assistant
         </span>
         {mode === 'chat' && (
@@ -135,7 +135,7 @@ const AssistantHeader = ({
             className="h-auto gap-1.5 px-1.5 py-1 text-xs tracking-wider text-muted-foreground hover:bg-transparent hover:text-foreground"
           >
             {t('assistant.history')}
-            <span className="flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-muted px-1 text-[10px] text-muted-foreground">
+            <span className="flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-muted px-1 text-xs text-muted-foreground">
               {historyCount}
             </span>
           </Button>
@@ -194,7 +194,7 @@ const ChatSessionList = ({
   return (
     <div className="absolute inset-0 z-40 flex flex-col bg-background">
       <div className="flex shrink-0 items-center justify-between border-b border-border px-4.5 py-3">
-        <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground">
+        <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
           {t('assistant.history')}
         </span>
         <Button
@@ -332,22 +332,22 @@ const assistantMarkdownComponents = {
     <em className="italic">{children}</em>
   ),
   h1: ({ children }: { children?: React.ReactNode }) => (
-    <div className="mb-1 mt-2 font-mono text-[10px] uppercase tracking-wider text-primary first:mt-0">
+    <div className="mb-1 mt-2 font-mono text-xs uppercase tracking-widest text-primary first:mt-0">
       {children}
     </div>
   ),
   h2: ({ children }: { children?: React.ReactNode }) => (
-    <div className="mb-1 mt-2 font-mono text-[10px] uppercase tracking-wider text-primary first:mt-0">
+    <div className="mb-1 mt-2 font-mono text-xs uppercase tracking-widest text-primary first:mt-0">
       {children}
     </div>
   ),
   h3: ({ children }: { children?: React.ReactNode }) => (
-    <div className="mb-1 mt-2 font-mono text-[10px] uppercase tracking-wider text-primary first:mt-0">
+    <div className="mb-1 mt-2 font-mono text-xs uppercase tracking-widest text-primary first:mt-0">
       {children}
     </div>
   ),
   h4: ({ children }: { children?: React.ReactNode }) => (
-    <div className="mb-1 mt-2 font-mono text-[10px] uppercase tracking-wider text-primary first:mt-0">
+    <div className="mb-1 mt-2 font-mono text-xs uppercase tracking-widest text-primary first:mt-0">
       {children}
     </div>
   ),
@@ -410,7 +410,7 @@ const ChatBubble = ({ role, content }: ChatBubbleProps) => {
         )}
       >
         {!isUser && (
-          <div className="mb-0.5 font-mono text-[10px] uppercase tracking-wider text-primary">
+          <div className="mb-0.5 font-mono text-xs uppercase tracking-widest text-primary">
             E-DO
           </div>
         )}
@@ -433,7 +433,7 @@ const ChatBubble = ({ role, content }: ChatBubbleProps) => {
 const TypingBubble = () => (
   <div className="flex justify-start">
     <div className="py-1">
-      <div className="mb-1 font-mono text-[10px] uppercase tracking-wider text-primary">
+      <div className="mb-1 font-mono text-xs uppercase tracking-widest text-primary">
         E-DO
       </div>
       <div className="flex h-3.5 items-center gap-1">
@@ -590,7 +590,7 @@ const ContactForm = ({ lang, onSubmit }: ContactFormProps) => {
       onSubmit={submit}
       className="shrink-0 border border-border bg-background p-3"
     >
-      <div className="mb-2 font-mono text-[10px] uppercase tracking-wider text-primary">
+      <div className="mb-2 font-mono text-xs uppercase tracking-widest text-primary">
         {t('assistant.contactFormTitle')}
       </div>
       <div className="flex flex-col gap-1.5">
@@ -678,7 +678,7 @@ const BookingRecapCard = ({
   const ttc = Math.round(proposal.quote.total * 1.2);
   return (
     <div className="shrink-0 border border-border bg-background p-3">
-      <div className="mb-2 font-mono text-[10px] uppercase tracking-wider text-primary">
+      <div className="mb-2 font-mono text-xs uppercase tracking-widest text-primary">
         {t('assistant.bookingRecapTitle')}
       </div>
 
@@ -900,7 +900,7 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
       )}
     >
       {badge != null && (
-        <span className="pointer-events-none absolute right-1.5 top-1.5 z-30 rounded-sm bg-primary px-2 py-1 font-mono text-xs font-semibold tracking-wide text-primary-foreground shadow-md">
+        <span className="pointer-events-none absolute right-1.5 top-1.5 z-30 rounded-sm bg-primary px-2 py-1 font-mono text-xs font-semibold tracking-widest text-primary-foreground shadow-md">
           #{badge}
         </span>
       )}

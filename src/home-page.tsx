@@ -225,7 +225,7 @@ const HomePage = () => {
                     <HoverMarquee className="text-base font-medium leading-tight tracking-tight text-foreground">
                       {m[lang].t}
                     </HoverMarquee>
-                    <HoverMarquee className="mt-1 font-mono text-xs uppercase tracking-wide text-muted-foreground transition-colors duration-200 group-hover:text-foreground">
+                    <HoverMarquee className="font-mono text-xs uppercase tracking-widest text-muted-foreground mt-1 transition-colors duration-200 group-hover:text-foreground">
                       {m[lang].sub}
                     </HoverMarquee>
                   </div>
@@ -310,13 +310,13 @@ const HomePage = () => {
         size="cell"
         className="group col-span-1 h-36 justify-between p-5 md:col-span-3 md:col-start-4 md:col-end-7 md:row-start-5 md:row-end-7 md:h-auto md:min-h-0"
       >
-        <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground">Espace</span>
+        <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Espace</span>
         <div className="flex items-end justify-between gap-3">
           <div className="min-w-0">
             <div className="whitespace-nowrap text-3xl font-light tracking-tighter leading-none text-foreground">
               Cyclorama
             </div>
-            <div className="mt-1.5 text-xs font-mono uppercase tracking-wider text-muted-foreground">
+            <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground mt-1.5">
               {t('home.freeProductionPhotovideo')}
             </div>
           </div>
@@ -369,7 +369,7 @@ const HomePage = () => {
           size="cell"
           className="group col-span-1 h-36 justify-between p-5 md:h-auto"
         >
-          <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground">
+          <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
             Service
           </span>
           <div className="flex items-end justify-between gap-2.5">
@@ -377,7 +377,7 @@ const HomePage = () => {
               <div className="whitespace-nowrap text-3xl font-light tracking-tighter leading-none text-foreground">
                 Post-production
               </div>
-              <div className="mt-1.5 font-mono text-xs uppercase tracking-wider text-muted-foreground">
+              <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground mt-1.5">
                 {t('home.retouchPhotoVideo')}
               </div>
             </div>
@@ -395,7 +395,7 @@ const HomePage = () => {
  relative size to its desktop tile (~360×284 on a 1440×900 viewport),
  instead of being shrunk to a short banner. md+ reverts to the grid
  row sizing via aspect-auto. */}
-      <div className="col-span-2 aspect-[5/4] flex overflow-hidden bg-black md:col-span-3 md:col-start-1 md:col-end-4 md:row-start-5 md:aspect-auto md:min-h-0">
+      <div className="dark col-span-2 aspect-[5/4] flex overflow-hidden bg-background md:col-span-3 md:col-start-1 md:col-end-4 md:row-start-5 md:aspect-auto md:min-h-0">
         <Button
           onClick={() => goto('gallery')}
           aria-label={t('common.gallery')}
@@ -473,13 +473,13 @@ const HomePage = () => {
           ))}
         </svg>
         <div className="relative flex min-w-0 flex-col gap-1">
-          <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground">Discovery</span>
+          <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Discovery</span>
           <div className="text-xl font-normal tracking-tight leading-tight text-muted-foreground">
             {t('home.tellMeMore')}
           </div>
         </div>
         <div className="relative flex flex-shrink-0 items-center gap-2">
-          <Badge variant="secondary" className="hidden font-mono uppercase tracking-wider sm:inline-flex">
+          <Badge variant="secondary" className="hidden font-mono uppercase tracking-widest sm:inline-flex">
             <Lock data-icon="inline-start" />
             {t('home.comingSoon')}
           </Badge>

@@ -100,15 +100,15 @@ export const DiscoveryPostPage = () => {
             <span className="inline-block rotate-180">
               <ArrowIcon width="14" height="14" />
             </span>
-            <span className="hidden font-mono text-xs uppercase tracking-widest text-foreground sm:inline">
+            <span className="font-mono text-xs uppercase tracking-widest text-foreground hidden sm:inline">
               {t('discoveryPage.backToJournal')}
             </span>
           </Button>
           <div className="flex min-w-0 flex-1 items-center gap-3.5 bg-background px-4 md:px-6">
-            <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-primary">
+            <span className="font-mono text-xs uppercase tracking-widest text-primary">
               {post.tag[lang]}
             </span>
-            <HoverMarquee className="font-mono text-xs tracking-wider text-muted-foreground">
+            <HoverMarquee className="font-mono text-xs tracking-widest text-muted-foreground">
               {post.read} · {post.author} · {post.date[lang]}
             </HoverMarquee>
           </div>
@@ -164,7 +164,7 @@ export const DiscoveryPostPage = () => {
               </aside>
             )}
             <footer className="flex flex-col gap-4 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
-              <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+              <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
                 {post.author} · {post.date[lang]}
               </span>
               <Button

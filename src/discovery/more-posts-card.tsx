@@ -49,7 +49,7 @@ export const MorePostsCard = ({
           <span className={cn(labelBase, 'text-primary')}>
             {t('discoveryPage.morePosts')}
           </span>
-          <span className="font-mono text-xs tracking-wider text-muted-foreground">
+          <span className="font-mono text-xs tracking-widest text-muted-foreground">
             {filteredPosts.length}/{posts.length}
           </span>
         </div>
