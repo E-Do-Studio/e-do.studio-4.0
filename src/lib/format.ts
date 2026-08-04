@@ -56,13 +56,15 @@ export const DAYS: Record<Lang, string[]> = {
 // Montants sans symbole : les sites d'appel concatènent « € » eux-mêmes.
 // Tronque plutôt qu'il n'arrondit — un prix affiché ne doit jamais dépasser le
 // prix facturé. `booking-engine.ts` porte une copie de cette fonction, qu'il ne
-// peut pas importer d'ici : elle doit rester synchronisée à la main.
-export const fmtEUR = (n: unknown): string => {
+// peut pas importer d'ici : elle doit rester synchronisée à la main. Cette
+// copie-ci est la seule sensible à la locale — le moteur ne connaît pas la
+// langue d'affichage.
+export const fmtEUR = (n: unknown, lang: Lang): string => {
   if (n == null || Number.isNaN(Number(n))) return '0';
   const num = Number(n);
   const truncated = Math.trunc(num * 100) / 100;
   const hasDecimals = truncated !== Math.trunc(truncated);
-  return truncated.toLocaleString('fr-FR', {
+  return truncated.toLocaleString(bcp47(lang), {
     minimumFractionDigits: hasDecimals
       ? truncated * 10 !== Math.trunc(truncated * 10)
         ? 2

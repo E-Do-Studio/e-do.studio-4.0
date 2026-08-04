@@ -712,7 +712,7 @@ const BookingRecapCard = ({
           <div key={r.lbl} className="flex justify-between gap-2 text-micro">
             <span className="text-muted-foreground">{r.lbl}</span>
             <span className="text-foreground">
-              {r.onReq ? '—' : `${fmtEUR(r.amt)} €`}
+              {r.onReq ? '—' : `${fmtEUR(r.amt, lang)} €`}
             </span>
           </div>
         ))}
@@ -720,10 +720,10 @@ const BookingRecapCard = ({
 
       <div className="flex justify-between border-t border-hairline pt-2 text-detail font-semibold text-foreground">
         <span>{t('assistant.bookingTotalHT')}</span>
-        <span>{fmtEUR(proposal.quote.total)} €</span>
+        <span>{fmtEUR(proposal.quote.total, lang)} €</span>
       </div>
       <div className="mb-2 text-right font-mono text-micro text-muted-foreground">
-        {fmtEUR(ttc)} € {t('assistant.bookingTotalTTC')}
+        {fmtEUR(ttc, lang)} € {t('assistant.bookingTotalTTC')}
       </div>
 
       <div className="mb-2 border-t border-hairline pt-2 text-micro text-muted-foreground">

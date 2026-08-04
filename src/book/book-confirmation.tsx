@@ -12,7 +12,7 @@ import {
   type ConfirmationSnapshot,
 } from './confirmation-snapshot';
 import type { Lang } from '../types';
-import { MONTHS, fmtEUR } from '../lib/format';
+import { MONTHS, bcp47, fmtEUR } from '../lib/format';
 
 const fmtTime = (h: number) => `${String(h).padStart(2, '0')}:00`;
 
@@ -130,16 +130,16 @@ const ConfirmedView = ({
                   {t('booking.issued')}
                 </div>
                 <div className="font-mono text-caption text-foreground">
-                  {new Date().toLocaleDateString(
-                    lang === 'fr' ? 'fr-FR' : 'en-GB',
-                    {
-                      day: '2-digit',
-                      month: 'short',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    },
-                  )}
+                  {/* `hour12: false` : en-US passerait en 02:30 PM alors que
+                      les créneaux de la même page sont en 24 h (fmtTime). */}
+                  {new Date().toLocaleDateString(bcp47(lang), {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false,
+                  })}
                 </div>
               </div>
             </div>
@@ -247,7 +247,7 @@ const ConfirmedView = ({
                   <span className="font-mono tabular-nums text-foreground">
                     {r.onReq
                       ? t('booking.onRequestLower')
-                      : `${fmtEUR(r.amt)} €`}
+                      : `${fmtEUR(r.amt, lang)} €`}
                   </span>
                 </div>
               </div>
@@ -257,7 +257,7 @@ const ConfirmedView = ({
                 Total HT*
               </span>
               <span className="text-page-title font-light tracking-display tabular-nums">
-                {fmtEUR(snapshot.total)} €
+                {fmtEUR(snapshot.total, lang)} €
               </span>
             </div>
             <div className="font-mono text-label text-muted-foreground mt-2.5 tracking-caption leading-copy pt-2 border-t border-t-border">
