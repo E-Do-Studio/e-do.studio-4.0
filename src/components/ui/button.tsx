@@ -20,7 +20,11 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: "bg-primary text-primary-foreground hover:opacity-90",
-        cell: "border-0 bg-background text-foreground hover:bg-muted aria-pressed:bg-foreground aria-pressed:text-background",
+        // L'état sélectionné n'est pas décrit ici : l'appelant pose `dark` et
+        // les tokens s'inversent d'eux-mêmes, y compris pour les enfants
+        // (`text-muted-foreground` devient le gris clair adéquat). `aria-pressed`
+        // porte la sémantique.
+        cell: "border-0 bg-background text-foreground hover:bg-muted",
         header:
           "border-0 bg-background text-foreground hover:bg-muted aria-pressed:bg-muted",
         outline:

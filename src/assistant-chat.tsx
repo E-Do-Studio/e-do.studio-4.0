@@ -394,7 +394,7 @@ const ChatBubble = ({ role, content }: ChatBubbleProps) => {
         className={cn(
           'max-w-message break-words text-detail leading-normal tracking-copy-tight',
           isUser
-            ? 'bg-foreground px-3 py-2 text-white whitespace-pre-wrap'
+            ? 'dark bg-background px-3 py-2 text-foreground whitespace-pre-wrap'
             : 'bg-transparent py-1 text-foreground',
         )}
       >
@@ -636,7 +636,7 @@ const ContactForm = ({ lang, onSubmit }: ContactFormProps) => {
       {err && <div className="mt-1.5 text-micro text-primary">{err}</div>}
       <button
         type="submit"
-        className="edo-focus-ring mt-2 flex w-full cursor-pointer items-center justify-center border-0 bg-primary px-3 py-2 text-detail text-white transition-opacity hover:opacity-90"
+        className="edo-focus-ring mt-2 flex w-full cursor-pointer items-center justify-center border-0 bg-primary px-3 py-2 text-detail text-primary-foreground transition-opacity hover:opacity-90"
       >
         {t('assistant.contactSubmit')}
       </button>
@@ -734,7 +734,7 @@ const BookingRecapCard = ({
         type="button"
         disabled={!cgv || busy}
         onClick={onConfirm}
-        className="edo-focus-ring flex w-full cursor-pointer items-center justify-center border-0 bg-primary px-3 py-2 text-detail text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+        className="edo-focus-ring flex w-full cursor-pointer items-center justify-center border-0 bg-primary px-3 py-2 text-detail text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
       >
         {busy
           ? t('assistant.bookingConfirming')
@@ -889,7 +889,7 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
       )}
     >
       {badge != null && (
-        <span className="pointer-events-none absolute right-1.5 top-1.5 z-30 rounded-sm bg-primary px-2 py-1 font-mono text-caption font-semibold tracking-caption text-white shadow-md">
+        <span className="pointer-events-none absolute right-1.5 top-1.5 z-30 rounded-sm bg-primary px-2 py-1 font-mono text-caption font-semibold tracking-caption text-primary-foreground shadow-md">
           #{badge}
         </span>
       )}

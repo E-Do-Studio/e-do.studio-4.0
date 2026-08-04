@@ -113,7 +113,7 @@ export const NotFoundPage = () => {
           e.preventDefault();
           navigate({ to: homeHref });
         }}
-        className="edo-focus-ring inline-flex h-10 cursor-pointer items-center gap-2 border-0 bg-foreground px-5 font-mono text-label uppercase tracking-ui text-white no-underline transition-colors hover:opacity-90"
+        className="edo-focus-ring inline-flex h-10 cursor-pointer items-center gap-2 border-0 dark bg-background px-5 font-mono text-label uppercase tracking-ui text-foreground no-underline transition-colors hover:opacity-90"
       >
         {copy.cta}
       </a>

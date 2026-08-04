@@ -182,7 +182,7 @@ export const GalleryLightbox = ({
   }, [hasMultiple, zoomable, next, prev, zoomIn, zoomOut, zoomReset]);
 
   const zoomBtn =
-    'edo-focus-ring flex h-8 w-8 items-center justify-center cursor-pointer text-white transition-[background-color,opacity] duration-150 ease-edo-out hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent active:scale-[0.96]';
+    'edo-focus-ring flex h-8 w-8 items-center justify-center cursor-pointer text-white transition-[background-color,opacity] duration-150 ease-edo-out hover:bg-muted disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent active:scale-[0.96]';
 
   const canReset = scale !== MIN_SCALE || tx !== 0 || ty !== 0;
 
@@ -278,7 +278,7 @@ export const GalleryLightbox = ({
           </div>
 
           {zoomable && (
-            <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 bg-black/35 backdrop-blur-md border border-white/20 px-1.5 py-1">
+            <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 bg-black/35 backdrop-blur-md border border-border px-1.5 py-1">
               <button
                 type="button"
                 onClick={zoomOut}
@@ -288,7 +288,7 @@ export const GalleryLightbox = ({
               >
                 <Minus size={16} strokeWidth={1.5} />
               </button>
-              <span className="min-w-11 text-center font-mono text-label tracking-code tabular-nums text-white/80">
+              <span className="min-w-11 text-center font-mono text-label tracking-code tabular-nums text-muted-foreground">
                 {Math.round(scale * 100)}%
               </span>
               <button
@@ -300,7 +300,7 @@ export const GalleryLightbox = ({
               >
                 <Plus size={16} strokeWidth={1.5} />
               </button>
-              <span className="mx-1 h-4 w-px bg-white/20" aria-hidden="true" />
+              <span className="mx-1 h-4 w-px bg-muted" aria-hidden="true" />
               <button
                 type="button"
                 onClick={zoomReset}

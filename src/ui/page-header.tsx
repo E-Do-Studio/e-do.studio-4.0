@@ -63,9 +63,9 @@ const PageHeaderActionButton = ({
     'edo-focus-ring flex h-full cursor-pointer items-center justify-center gap-2 border-0 font-mono uppercase no-underline transition-[color,background-color,opacity] duration-150 ease-edo-out',
     expand ? 'flex-1' : 'flex-none',
     isPrimary
-      ? 'bg-primary px-4 md:px-6 text-label tracking-caption text-white hover:opacity-90'
+      ? 'bg-primary px-4 md:px-6 text-label tracking-caption text-primary-foreground hover:opacity-90'
       : isDark
-        ? 'bg-foreground px-4 md:px-5 text-label tracking-label text-white hover:text-primary'
+        ? 'dark bg-background px-4 md:px-5 text-label tracking-label text-foreground hover:text-primary'
         : 'bg-background px-4 md:px-5 text-label tracking-ui text-foreground hover:bg-muted',
     className,
   );
@@ -78,7 +78,7 @@ const PageHeaderActionButton = ({
           height={isPrimary ? 14 : 12}
           className={cn(
             'shrink-0',
-            isPrimary || isDark ? 'text-white' : undefined,
+            isPrimary || isDark ? 'text-foreground' : undefined,
           )}
         />
       )}

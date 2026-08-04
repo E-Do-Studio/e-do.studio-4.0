@@ -503,12 +503,12 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
           } catch (e) {}
           goto('book');
         }}
-        className="edo-focus-ring bg-primary p-4 border-0 cursor-pointer flex flex-col justify-between text-left text-white font-inherit min-h-20 transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90 md:col-start-4 md:row-start-5"
+        className="edo-focus-ring bg-primary p-4 border-0 cursor-pointer flex flex-col justify-between text-left text-primary-foreground font-inherit min-h-20 transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90 md:col-start-4 md:row-start-5"
       >
-        <CellLabel className="text-white/80">
+        <CellLabel className="text-primary-foreground/80">
           06 · {t('common.bookNow')}
         </CellLabel>
-        <div className="flex justify-between items-end text-white w-full">
+        <div className="flex w-full items-end justify-between text-primary-foreground">
           <span className="text-tile-large font-medium tracking-headline">
             {t('common.bookThisStage')}
           </span>

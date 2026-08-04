@@ -371,7 +371,7 @@ const LegalPage = () => {
           )}
 
           {sec === 'cookies' && (
-            <div className="mt-9 bg-foreground text-white py-7 px-8 grid grid-cols-fluid-auto gap-6 items-center">
+            <div className="mt-9 dark bg-background text-foreground py-7 px-8 grid grid-cols-fluid-auto gap-6 items-center">
               <div>
                 <span className="font-mono text-label tracking-label uppercase text-primary">
                   © GRW · E-Do Studio

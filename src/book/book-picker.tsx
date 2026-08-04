@@ -34,7 +34,7 @@ const PickerTile = ({
       : variant === 'foreground'
         ? 'bg-edo-black text-edo-white hover:bg-edo-dark'
         : 'bg-background text-foreground hover:bg-edo-gray-50';
-  const subtleTone = onDark ? 'text-white/75' : 'text-muted-foreground';
+  const subtleTone = onDark ? 'text-muted-foreground' : 'text-muted-foreground';
   const labelMutedTone = subtleTone;
   const descTone = subtleTone;
   const idxTone = subtleTone;

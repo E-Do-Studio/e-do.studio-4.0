@@ -886,8 +886,8 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
       />
 
       {/* Desktop col 4 – dark label matching quote panel below */}
-      <div className="hidden md:flex h-full items-center bg-foreground px-6 md:col-start-4 md:row-start-1">
-        <CellLabel className="text-white/55">
+      <div className="dark hidden h-full items-center bg-background px-6 md:col-start-4 md:row-start-1 md:flex">
+        <CellLabel className="text-muted-foreground">
           {t('booking.yourQuote')}
         </CellLabel>
       </div>
@@ -916,10 +916,10 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                     aria-label={`${i + 1}. ${s[lang]}`}
                     className={cn(
                       'edo-focus-ring p-2 -m-2 inline-flex items-center justify-center h-7 w-7 font-mono text-label tracking-meta transition-colors duration-150',
-                      active && 'bg-primary text-white',
+                      active && 'bg-primary text-primary-foreground',
                       !active &&
                         done &&
-                        'bg-foreground text-white cursor-pointer',
+                        'dark bg-background text-foreground cursor-pointer',
                       !active &&
                         !done &&
                         clickable &&
@@ -1025,7 +1025,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
               <button
                 type="button"
                 onClick={() => goToStep(0, 'config')}
-                className="edo-focus-ring flex-1 bg-primary border-l border-hairline px-5 py-3 md:py-0 cursor-pointer font-mono text-label tracking-code uppercase text-white whitespace-nowrap leading-normal font-semibold inline-flex items-center justify-center transition-opacity duration-150 hover:opacity-90"
+                className="edo-focus-ring flex-1 bg-primary border-l border-hairline px-5 py-3 md:py-0 cursor-pointer font-mono text-label tracking-code uppercase text-primary-foreground whitespace-nowrap leading-normal font-semibold inline-flex items-center justify-center transition-opacity duration-150 hover:opacity-90"
               >
                 ← {t('booking.configurator')}
               </button>
@@ -1298,7 +1298,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                             key={xid}
                             onClick={() => setDateIdx(i)}
                             title={slotLabel(xid)}
-                            className={`${active ? 'bg-foreground text-white border-foreground' : has ? 'bg-primary text-white border-primary' : 'bg-background text-foreground border-border'} border px-2.5 py-1 cursor-pointer font-mono text-label tracking-ui min-w-7 text-center`}
+                            className={`${active ? 'dark bg-background text-foreground border-foreground' : has ? 'bg-primary text-primary-foreground border-primary' : 'bg-background text-foreground border-border'} border px-2.5 py-1 cursor-pointer font-mono text-label tracking-ui min-w-7 text-center`}
                           >
                             {String(i + 1).padStart(2, '0')}
                             {has ? ' ✓' : ''}
@@ -1371,12 +1371,12 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
               ...recommendSession(s, configGlobal),
             }));
             return (
-              <div className="bg-foreground text-white shrink-0">
-                <div className="flex flex-col md:flex-row md:items-stretch border-b border-white/10">
+              <div className="dark shrink-0 bg-background text-foreground">
+                <div className="flex flex-col md:flex-row md:items-stretch border-b border-border">
                   <span className="font-mono text-label tracking-meta uppercase tracking-label text-primary px-5 md:pl-6 md:pr-3 py-2 flex-1 min-w-0 md:self-center">
                     {t('booking.recapRecommendation')}
                   </span>
-                  <span className="font-mono text-micro tracking-ui text-white/45 px-5 py-2 border-t border-white/10 md:border-t-0 md:self-center md:w-1/2 md:border-l md:border-white/10">
+                  <span className="font-mono text-micro tracking-ui text-muted-foreground px-5 py-2 border-t border-border md:border-t-0 md:self-center md:w-1/2 md:border-l md:border-border">
                     {t('booking.estimateTweakable')}
                   </span>
                 </div>
@@ -1407,19 +1407,19 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                   return (
                     <div
                       key={i}
-                      className="px-5 md:px-6 py-2 border-b border-white/10 grid grid-cols-auto-fluid gap-3 md:gap-5 items-baseline"
+                      className="px-5 md:px-6 py-2 border-b border-border grid grid-cols-auto-fluid gap-3 md:gap-5 items-baseline"
                     >
-                      <span className="font-mono text-label tracking-meta uppercase tracking-label text-white/50">
+                      <span className="font-mono text-label tracking-meta uppercase tracking-label text-muted-foreground">
                         {String(i + 1).padStart(2, '0')}
                       </span>
                       <div>
                         <div className="text-detail font-normal tracking-headline mb-px">
                           {px[lang]}{' '}
-                          <span className="text-white/50 text-caption">
+                          <span className="text-muted-foreground text-caption">
                             · {dur}
                           </span>
                         </div>
-                        <div className="font-mono text-micro tracking-caption text-white/55">
+                        <div className="font-mono text-micro tracking-caption text-muted-foreground">
                           {productLabel}
                           {r.session.projectType === 'cyclorama'
                             ? ''
@@ -1453,7 +1453,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
               type="button"
               onClick={applyConfig}
               disabled={!canNext()}
-              className={`edo-focus-ring bg-primary border-0 cursor-pointer text-white font-mono text-caption tracking-meta uppercase px-5 py-3 md:py-0 inline-flex items-center justify-center gap-2 flex-1 min-w-0 transition-opacity duration-150 hover:opacity-90${canNext() ? '' : ' opacity-30 cursor-not-allowed'}`}
+              className={`edo-focus-ring bg-primary border-0 cursor-pointer text-primary-foreground font-mono text-caption tracking-meta uppercase px-5 py-3 md:py-0 inline-flex items-center justify-center gap-2 flex-1 min-w-0 transition-opacity duration-150 hover:opacity-90${canNext() ? '' : ' opacity-30 cursor-not-allowed'}`}
             >
               {t('booking.continueToBooking')}{' '}
               <ArrowRight width="14" height="14" />
@@ -1507,9 +1507,9 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
               const navBtnSecondaryCls =
                 'edo-focus-ring bg-background border-t md:border-t-0 md:border-l border-hairline cursor-pointer font-mono text-caption tracking-meta uppercase text-foreground px-5 py-3 md:py-0 inline-flex items-center justify-center gap-2 transition-colors duration-150 min-h-control md:min-h-0 flex-1 min-w-0 hover:bg-muted';
               const navBtnPrimaryCls =
-                'edo-focus-ring bg-primary border-t md:border-t-0 md:border-l border-hairline cursor-pointer text-white font-mono text-caption tracking-meta uppercase px-5 py-3 md:py-0 inline-flex items-center justify-center gap-2 transition-opacity duration-150 min-h-control md:min-h-0 flex-1 min-w-0 hover:opacity-90';
+                'edo-focus-ring bg-primary border-t md:border-t-0 md:border-l border-hairline cursor-pointer text-primary-foreground font-mono text-caption tracking-meta uppercase px-5 py-3 md:py-0 inline-flex items-center justify-center gap-2 transition-opacity duration-150 min-h-control md:min-h-0 flex-1 min-w-0 hover:opacity-90';
               const navBtnOrangeCls =
-                'edo-focus-ring bg-primary border-t md:border-t-0 md:border-l border-hairline cursor-pointer text-white font-mono text-caption tracking-meta uppercase px-5 py-3 md:py-0 inline-flex items-center justify-center gap-2 transition-opacity duration-150 min-h-control md:min-h-0 flex-1 min-w-0 hover:opacity-90';
+                'edo-focus-ring bg-primary border-t md:border-t-0 md:border-l border-hairline cursor-pointer text-primary-foreground font-mono text-caption tracking-meta uppercase px-5 py-3 md:py-0 inline-flex items-center justify-center gap-2 transition-opacity duration-150 min-h-control md:min-h-0 flex-1 min-w-0 hover:opacity-90';
               return (
                 <>
                   <button
@@ -2085,26 +2085,33 @@ const PACKSHOT_VIEWS: AnyProps[] = [
   { k: 'detail', fr: 'Détail', en: 'Detail' },
 ];
 
+// Tuile de configuration. `dark` sur l'état sélectionné inverse les tokens pour
+// toute la tuile : les enfants gardent `text-muted-foreground` et rendent le
+// gris clair adéquat, au lieu des cinq ternaires `on ? text-white/XX : …` que
+// portait la version précédente.
 const CfgChoice = ({ idx, on, onClick, label, desc, sub }: AnyProps) => (
-  <button
-    type="button"
+  <Button
+    variant="cell"
+    size="cell"
+    aria-pressed={!!on}
     onClick={onClick}
-    className={`group edo-focus-ring ${on ? 'bg-foreground text-white' : 'bg-background text-foreground hover:bg-muted'} border-0 outline-none shadow-none p-5 sm:p-3.5 text-left cursor-pointer font-inherit flex flex-col gap-1 transition-all duration-150 min-w-0 min-h-32 sm:min-h-28`}
+    className={cn(
+      'group min-h-32 gap-1 p-5 sm:min-h-28 sm:p-3.5',
+      on && 'dark bg-background',
+    )}
   >
-    <div className="flex justify-between items-start">
+    <div className="flex w-full items-start justify-between">
       {idx != null && (
-        <span
-          className={`font-mono text-label tracking-meta ${on ? 'text-white/60' : 'text-muted-foreground'}`}
-        >
+        <span className="font-mono text-label tracking-meta text-muted-foreground">
           {String(idx).padStart(2, '0')}
         </span>
       )}
       {on ? (
-        <span className="text-primary text-cell leading-none">●</span>
+        <span className="text-cell leading-none text-primary">●</span>
       ) : (
         <span
           data-cfg-arrow
-          className={`text-primary text-detail leading-none transition-all duration-200 origin-right ${on ? '' : 'opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 group-hover:scale-110'}`}
+          className="origin-right text-detail leading-none text-primary opacity-0 -translate-x-1 transition-all duration-200 group-hover:translate-x-0 group-hover:scale-110 group-hover:opacity-100"
         >
           →
         </span>
@@ -2112,25 +2119,24 @@ const CfgChoice = ({ idx, on, onClick, label, desc, sub }: AnyProps) => (
     </div>
     <div
       data-cfg-label
-      className={`text-cell font-normal tracking-headline mt-0.5 leading-cell text-balance transition-transform duration-200 origin-left ${on ? '' : 'group-hover:scale-102'}`}
+      className={cn(
+        'mt-0.5 origin-left text-balance text-cell font-normal leading-cell tracking-headline transition-transform duration-200',
+        !on && 'group-hover:scale-102',
+      )}
     >
       {label}
     </div>
     {sub && (
-      <div
-        className={`font-mono text-micro tracking-ui uppercase ${on ? 'text-white/55' : 'text-muted-foreground'}`}
-      >
+      <div className="font-mono text-micro uppercase tracking-ui text-muted-foreground">
         {sub}
       </div>
     )}
     {desc && (
-      <div
-        className={`text-caption leading-normal mt-auto text-pretty ${on ? 'text-white/65' : 'text-muted-foreground'}`}
-      >
+      <div className="mt-auto text-pretty text-caption leading-normal text-muted-foreground">
         {desc}
       </div>
     )}
-  </button>
+  </Button>
 );
 
 const Step0Configurator = ({
@@ -2449,7 +2455,7 @@ const Step0Configurator = ({
           <button
             type="button"
             onClick={onSkip}
-            className="edo-focus-ring flex-1 bg-primary border-l border-hairline px-5 py-3 md:py-0 cursor-pointer font-mono text-label tracking-code uppercase text-white whitespace-nowrap leading-normal font-semibold inline-flex items-center justify-center transition-opacity duration-150 hover:opacity-90"
+            className="edo-focus-ring flex-1 bg-primary border-l border-hairline px-5 py-3 md:py-0 cursor-pointer font-mono text-label tracking-code uppercase text-primary-foreground whitespace-nowrap leading-normal font-semibold inline-flex items-center justify-center transition-opacity duration-150 hover:opacity-90"
           >
             {t('booking.chooseManually')} →
           </button>
@@ -2495,7 +2501,7 @@ const Step0Configurator = ({
                     setOpenQ(null);
                     setTouchedQs(new Set());
                   }}
-                  className={`${isActive ? 'bg-foreground text-white' : 'bg-background text-foreground'} border-0 px-3.5 py-3 text-left cursor-pointer font-inherit flex flex-col gap-1 min-w-0`}
+                  className={`${isActive ? 'dark bg-background' : 'bg-background'} text-foreground border-0 px-3.5 py-3 text-left cursor-pointer font-inherit flex flex-col gap-1 min-w-0`}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span
@@ -2508,7 +2514,7 @@ const Step0Configurator = ({
                         e.stopPropagation();
                         removeSession(i);
                       }}
-                      className={`text-detail cursor-pointer px-1 leading-none ${isActive ? 'text-white/50' : 'text-muted-foreground'}`}
+                      className={`text-detail cursor-pointer px-1 leading-none ${isActive ? 'text-muted-foreground' : 'text-muted-foreground'}`}
                       title={t('booking.remove')}
                     >
                       ×
@@ -2518,7 +2524,7 @@ const Step0Configurator = ({
                     {label}
                   </div>
                   <div
-                    className={`font-mono text-micro tracking-caption ${isActive ? 'text-white/55' : 'text-muted-foreground'}`}
+                    className={`font-mono text-micro tracking-caption text-muted-foreground`}
                   >
                     {valid
                       ? s.projectType === 'cyclorama'
@@ -2754,10 +2760,10 @@ const Step0Configurator = ({
                           : [...cur, v.k],
                       });
                     }}
-                    className={`${on ? 'bg-foreground text-white' : 'bg-background text-foreground'} border-0 px-4 sm:px-3 py-4 sm:py-2.5 text-left cursor-pointer font-inherit flex flex-col gap-1.5 min-h-22 sm:min-h-18 min-w-0`}
+                    className={`${on ? 'dark bg-background' : 'bg-background'} text-foreground border-0 px-4 sm:px-3 py-4 sm:py-2.5 text-left cursor-pointer font-inherit flex flex-col gap-1.5 min-h-22 sm:min-h-18 min-w-0`}
                   >
                     <span
-                      className={`font-mono text-label tracking-meta uppercase ${on ? 'text-white/60' : 'text-muted-foreground'}`}
+                      className={`font-mono text-label tracking-meta uppercase text-muted-foreground`}
                     >
                       {String(i + 1).padStart(2, '0')}
                     </span>
@@ -3066,11 +3072,11 @@ const Step1Plateau = ({
               onClick={() => {
                 togglePlateau(px.k);
               }}
-              className={`group edo-focus-ring ${on ? 'bg-foreground text-white' : 'bg-background text-foreground hover:bg-muted'} border-0 px-cell py-4 text-left cursor-pointer font-inherit flex flex-col gap-1.5 transition-all duration-150 min-w-0`}
+              className={`group edo-focus-ring ${on ? 'dark bg-background' : 'bg-background hover:bg-muted'} text-foreground border-0 px-cell py-4 text-left cursor-pointer font-inherit flex flex-col gap-1.5 transition-all duration-150 min-w-0`}
             >
               <div className="flex justify-between items-start">
                 <span
-                  className={`font-mono text-label tracking-meta ${on ? 'text-white/60' : 'text-muted-foreground'}`}
+                  className={`font-mono text-label tracking-meta text-muted-foreground`}
                 >
                   {String(i + 1).padStart(2, '0')}
                 </span>
@@ -3092,7 +3098,7 @@ const Step1Plateau = ({
                 {px[lang]}
               </div>
               <div
-                className={`text-detail ${on ? 'text-white/65' : 'text-muted-foreground'} leading-snug`}
+                className={`text-detail text-muted-foreground leading-snug`}
               >
                 {px.desc[lang]}
               </div>
@@ -3106,7 +3112,7 @@ const Step1Plateau = ({
                       className="flex justify-between items-baseline gap-2 whitespace-nowrap"
                     >
                       <span
-                        className={`font-mono text-label tracking-caption ${on ? 'text-white/55' : 'text-muted-foreground'} uppercase overflow-hidden text-ellipsis`}
+                        className={`font-mono text-label tracking-caption text-muted-foreground uppercase overflow-hidden text-ellipsis`}
                       >
                         {pr.lbl}
                       </span>
@@ -3361,7 +3367,7 @@ const Step2Date = ({
               className={[
                 'aspect-cal-cell border-r border-b border-input flex flex-col items-start justify-start text-left font-inherit min-w-0 p-1.5 sm:p-2 relative transition-colors duration-100',
                 sel
-                  ? 'bg-primary text-white cursor-pointer hover:bg-primary/85'
+                  ? 'bg-primary text-primary-foreground cursor-pointer hover:bg-primary/85'
                   : past
                     ? 'bg-edo-gray-50 text-muted-foreground/30 cursor-not-allowed'
                     : av === 'unavailable'
@@ -3377,7 +3383,7 @@ const Step2Date = ({
                 className={[
                   'text-detail sm:text-cell tabular-nums leading-none',
                   sel
-                    ? 'font-semibold text-white'
+                    ? 'font-semibold text-primary-foreground'
                     : partial
                       ? 'font-medium text-foreground'
                       : tdy
@@ -3394,7 +3400,7 @@ const Step2Date = ({
               )}
               {!past && av !== 'unavailable' && !weekendBlocked && (
                 <span
-                  className={`font-mono text-nano sm:text-micro tracking-caption uppercase mt-auto ${sel ? 'text-white/70' : partial ? 'text-muted-foreground' : tdy ? 'text-primary/70' : 'text-muted-foreground'}`}
+                  className={`font-mono text-nano sm:text-micro tracking-caption uppercase mt-auto ${sel ? 'text-muted-foreground' : partial ? 'text-muted-foreground' : tdy ? 'text-primary/70' : 'text-muted-foreground'}`}
                 >
                   {partial ? t('booking.calPartial') : t('booking.freeLower')}
                 </span>
@@ -3439,7 +3445,7 @@ const Step2Date = ({
                       ? t('booking.endsPastClosing', { hour: h + rentalHours })
                       : ''
               }
-              className={`${on ? 'bg-foreground text-white' : disabled ? 'bg-muted text-muted-foreground' : 'bg-background text-foreground hover:bg-edo-gray-100'} border-0 ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'} flex items-center justify-center font-mono text-caption tracking-caption min-w-0 py-3 sm:py-0 sm:aspect-arrival transition-colors duration-100${booked ? ' line-through' : ''}`}
+              className={`${on ? 'dark bg-background text-foreground' : disabled ? 'bg-muted text-muted-foreground' : 'bg-background text-foreground hover:bg-edo-gray-100'} border-0 ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'} flex items-center justify-center font-mono text-caption tracking-caption min-w-0 py-3 sm:py-0 sm:aspect-arrival transition-colors duration-100${booked ? ' line-through' : ''}`}
             >
               {String(h).padStart(2, '0')}:00
             </button>
@@ -3478,11 +3484,11 @@ const BentoSlotTile = ({
     <button
       type="button"
       onClick={onClick}
-      className={`group edo-focus-ring ${on ? 'bg-foreground text-white' : 'bg-background text-foreground hover:bg-muted'} border-0 px-cell py-4 text-left cursor-pointer font-inherit flex flex-col gap-1.5 transition-all duration-150 min-w-0 min-h-44`}
+      className={`group edo-focus-ring ${on ? 'dark bg-background' : 'bg-background hover:bg-muted'} text-foreground border-0 px-cell py-4 text-left cursor-pointer font-inherit flex flex-col gap-1.5 transition-all duration-150 min-w-0 min-h-44`}
     >
       <div className="flex justify-between items-start">
         <span
-          className={`font-mono text-label tracking-meta ${on ? 'text-white/60' : 'text-muted-foreground'}`}
+          className={`font-mono text-label tracking-meta text-muted-foreground`}
         >
           {String(idx).padStart(2, '0')}
         </span>
@@ -3505,14 +3511,14 @@ const BentoSlotTile = ({
       </div>
       {sub && (
         <div
-          className={`font-mono text-label tracking-code uppercase ${on ? 'text-white/55' : 'text-muted-foreground'}`}
+          className={`font-mono text-label tracking-code uppercase text-muted-foreground`}
         >
           {sub}
         </div>
       )}
       {desc && (
         <div
-          className={`text-detail ${on ? 'text-white/65' : 'text-muted-foreground'} leading-snug`}
+          className={`text-detail text-muted-foreground leading-snug`}
         >
           {desc}
         </div>
@@ -3521,7 +3527,7 @@ const BentoSlotTile = ({
         className={`mt-auto pt-3 flex justify-between items-baseline border-t ${on ? 'border-t-white/15' : 'border-t-border'}`}
       >
         <span
-          className={`font-mono text-label tracking-caption ${on ? 'text-white/55' : 'text-muted-foreground'} uppercase`}
+          className={`font-mono text-label tracking-caption text-muted-foreground uppercase`}
         >
           {hint || t('booking.rateExVat')}
         </span>
@@ -3829,7 +3835,7 @@ const Step5Team = ({ lang, p, team, setTeam, configSessions }: AnyProps) => {
                   </span>
                   <span
                     onClick={() => setDays(e.k, n > 0 ? 0 : 1)}
-                    className={`w-5.5 h-5.5 border-1-5 ${n > 0 ? 'border-primary bg-primary' : 'border-input bg-background'} inline-flex items-center justify-center text-white text-detail font-bold`}
+                    className={`w-5.5 h-5.5 border-1-5 ${n > 0 ? 'border-primary bg-primary' : 'border-input bg-background'} inline-flex items-center justify-center text-primary-foreground text-detail font-bold`}
                   >
                     {n > 0 ? '✓' : ''}
                   </span>
@@ -3843,7 +3849,7 @@ const Step5Team = ({ lang, p, team, setTeam, configSessions }: AnyProps) => {
                   </span>
                   <span
                     onClick={() => toggleReq(e.k)}
-                    className={`w-5.5 h-5.5 border-1-5 ${onReq ? 'border-primary bg-primary' : 'border-input bg-background'} inline-flex items-center justify-center text-white text-detail font-bold`}
+                    className={`w-5.5 h-5.5 border-1-5 ${onReq ? 'border-primary bg-primary' : 'border-input bg-background'} inline-flex items-center justify-center text-primary-foreground text-detail font-bold`}
                   >
                     {onReq ? '✓' : ''}
                   </span>
@@ -4109,7 +4115,7 @@ const Step7Contact = ({
                       type="button"
                       key={t.k}
                       onClick={() => toggleType(t.k)}
-                      className={`${on ? 'bg-foreground text-white border-foreground' : 'bg-transparent text-foreground border-border'} border px-2 py-1 font-inherit text-caption cursor-pointer tracking-copy-tight inline-flex items-center justify-start gap-1 whitespace-nowrap min-w-0`}
+                      className={`${on ? 'dark bg-background text-foreground border-foreground' : 'bg-transparent text-foreground border-border'} border px-2 py-1 font-inherit text-caption cursor-pointer tracking-copy-tight inline-flex items-center justify-start gap-1 whitespace-nowrap min-w-0`}
                     >
                       <span
                         className={`w-2 h-2 border ${on ? 'border-white bg-primary' : 'border-muted-foreground bg-transparent'} inline-flex items-center justify-center shrink-0`}
@@ -4280,15 +4286,15 @@ const SidePanel = ({
   });
   const seenIdxByKey: Record<string, number> = {};
   return (
-    <div className="bg-foreground md:col-start-4 md:row-start-2 text-white px-5 py-6 md:p-6 overflow-auto flex flex-col gap-4 md:gap-3.5 min-h-0">
+    <div className="dark flex min-h-0 flex-col gap-4 overflow-auto bg-background px-5 py-6 text-foreground md:col-start-4 md:row-start-2 md:gap-3.5 md:p-6">
       <div>
-        <span className="edo-cell-label text-white/55 md:hidden">
+        <span className="edo-cell-label text-muted-foreground md:hidden">
           {t('booking.yourQuote')}
         </span>
-        <h2 className="m-0 mt-2 md:mt-0 text-tile-large font-light tracking-headline text-white/85">
+        <h2 className="m-0 mt-2 md:mt-0 text-tile-large font-light tracking-headline text-muted-foreground">
           {title}
         </h2>
-        <div className="font-mono text-label text-white/55 mt-1 tracking-caption">
+        <div className="font-mono text-label text-muted-foreground mt-1 tracking-caption">
           {slotLbl}
         </div>
       </div>
@@ -4312,8 +4318,8 @@ const SidePanel = ({
             .filter((x: AnyProps) => x.d);
           if (datedList.length === 0) return null;
           return (
-            <div className="pt-3.5 border-t border-white/10">
-              <span className="edo-cell-label text-white/55 mb-1.5 block">
+            <div className="pt-3.5 border-t border-border">
+              <span className="edo-cell-label text-muted-foreground mb-1.5 block">
                 {t('booking.dates')}
               </span>
               <div className="flex flex-col gap-1.5">
@@ -4322,7 +4328,7 @@ const SidePanel = ({
                     key={id}
                     className="flex justify-between items-baseline gap-2 text-detail"
                   >
-                    <span className="text-white/55 font-mono text-label tracking-caption uppercase">
+                    <span className="text-muted-foreground font-mono text-label tracking-caption uppercase">
                       {label}
                     </span>
                     <span className="tracking-copy-tight">
@@ -4336,8 +4342,8 @@ const SidePanel = ({
         }
         if (!selected) return null;
         return (
-          <div className="pt-3.5 border-t border-white/10">
-            <span className="edo-cell-label text-white/55 mb-1.5 block">
+          <div className="pt-3.5 border-t border-border">
+            <span className="edo-cell-label text-muted-foreground mb-1.5 block">
               {t('booking.date')}
             </span>
             <div className="text-cell tracking-copy-tight">
@@ -4346,13 +4352,13 @@ const SidePanel = ({
           </div>
         );
       })()}
-      <div className="pt-3.5 border-t border-white/10 flex-1 min-h-0 flex flex-col">
-        <span className="edo-cell-label text-white/55 mb-2.5 block">
+      <div className="pt-3.5 border-t border-border flex-1 min-h-0 flex flex-col">
+        <span className="edo-cell-label text-muted-foreground mb-2.5 block">
           {t('booking.breakdown')}
         </span>
         <div className="flex flex-col gap-1.5 overflow-auto pr-1">
           {rows.length === 0 && (
-            <span className="text-caption text-white/40">—</span>
+            <span className="text-caption text-muted-foreground">—</span>
           )}
           {rows.map((r: AnyProps, i: number) => (
             <div key={i} className="flex flex-col gap-0.5">
@@ -4361,20 +4367,20 @@ const SidePanel = ({
                   {(() => {
                     const idx = r.lbl.indexOf(' · ');
                     if (idx === -1)
-                      return <span className="text-white/75">{r.lbl}</span>;
+                      return <span className="text-muted-foreground">{r.lbl}</span>;
                     return (
                       <>
-                        <span className="text-white/40">
+                        <span className="text-muted-foreground">
                           {r.lbl.slice(0, idx)}
                         </span>
-                        <span className="text-white/75">
+                        <span className="text-muted-foreground">
                           {r.lbl.slice(idx)}
                         </span>
                       </>
                     );
                   })()}
                 </span>
-                <span className="font-mono tabular-nums text-white whitespace-nowrap">
+                <span className="font-mono tabular-nums text-foreground whitespace-nowrap">
                   {r.onReq ? t('booking.onRequestLower') : `${fmtEUR(r.amt)} €`}
                 </span>
               </div>
@@ -4390,7 +4396,7 @@ const SidePanel = ({
                     return (
                       <div
                         key={bi}
-                        className="flex justify-between gap-2 font-mono text-micro text-white/40 tracking-caption"
+                        className="flex justify-between gap-2 font-mono text-micro text-muted-foreground tracking-caption"
                       >
                         <span>→ {line}</span>
                         <span className="tabular-nums">
@@ -4405,20 +4411,20 @@ const SidePanel = ({
           ))}
         </div>
       </div>
-      <div className="pt-3.5 border-t border-white/25">
+      <div className="pt-3.5 border-t border-border">
         <div className="flex justify-between items-baseline">
-          <span className="font-mono text-caption tracking-ui uppercase text-white/65">
+          <span className="font-mono text-caption tracking-ui uppercase text-muted-foreground">
             Total HT
           </span>
           <span className="text-page-title font-light tracking-headline tabular-nums">
             {fmtEUR(total)} €
           </span>
         </div>
-        <div className="font-mono text-micro text-white/45 mt-1 tracking-ui">
+        <div className="font-mono text-micro text-muted-foreground mt-1 tracking-ui">
           TVA 20% · {fmtEUR(total * 1.2)} € TTC
         </div>
         {rows.some((r: AnyProps) => r.estimate) && (
-          <div className="font-mono text-micro text-white/45 mt-1.5 tracking-caption leading-normal">
+          <div className="font-mono text-micro text-muted-foreground mt-1.5 tracking-caption leading-normal">
             {t('booking.postProductionPriceIsAn')}
           </div>
         )}

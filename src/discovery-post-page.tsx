@@ -167,7 +167,7 @@ export const DiscoveryPostPage = () => {
               </span>
               <button
                 onClick={backToIndex}
-                className="edo-focus-ring h-10 cursor-pointer border-0 bg-foreground px-cell-lg font-mono text-caption uppercase tracking-label text-white transition-[color,background-color,opacity] duration-150 ease-edo-out hover:text-primary"
+                className="edo-focus-ring h-10 cursor-pointer border-0 dark bg-background px-cell-lg font-mono text-caption uppercase tracking-label text-foreground transition-[color,background-color,opacity] duration-150 ease-edo-out hover:text-primary"
               >
                 {t('discoveryPage.close')}
               </button>

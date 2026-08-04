@@ -322,10 +322,10 @@ const PostprodPage = () => {
 
   const postprodLabel = 'Post-production';
   const dark = !!cat?.featured;
-  const bgCls = dark ? 'bg-foreground' : 'bg-background';
-  const fgCls = dark ? 'text-white' : 'text-foreground';
-  const mutedCls = dark ? 'text-white/62' : 'text-muted-foreground';
-  const lineCls = dark ? 'border-white/18' : 'border-border';
+  const bgCls = dark ? 'dark bg-background' : 'bg-background';
+  const fgCls = 'text-foreground';
+  const mutedCls = 'text-muted-foreground';
+  const lineCls = 'border-border';
 
   if (!cat) {
     // Le h1 reste dans l'arbre même sans catégorie, pour qu'il y en ait
@@ -511,7 +511,7 @@ const PostprodPage = () => {
               {t('postprod.category')}
             </span>
             {cat.featured && (
-              <span className="font-mono text-micro tracking-label uppercase bg-primary text-white px-2 py-0.5">
+              <span className="font-mono text-micro tracking-label uppercase bg-primary text-primary-foreground px-2 py-0.5">
                 {t('postprod.standard')}
               </span>
             )}

@@ -167,22 +167,22 @@ export const BookCtaTile = ({ lang, goto, className }: BookCtaTileProps) => {
       type="button"
       onClick={() => goto('book')}
       className={cn(
-        'edo-focus-ring group relative flex h-21 shrink-0 cursor-pointer items-center justify-between gap-3.5 overflow-hidden border-0 bg-primary px-cell-lg py-3.5 text-left text-white transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90',
+        'edo-focus-ring group relative flex h-21 shrink-0 cursor-pointer items-center justify-between gap-3.5 overflow-hidden border-0 bg-primary px-cell-lg py-3.5 text-left text-primary-foreground transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90',
         className,
       )}
     >
       <span className="flex min-w-0 origin-left flex-col items-start gap-1 transition-transform duration-200 ease-edo-out group-hover:scale-102">
-        <span className="font-mono text-label uppercase tracking-label text-white/75">
+        <span className="font-mono text-label uppercase tracking-label text-primary-foreground/75">
           {t('discoveryPage.studioOpen')}
         </span>
-        <span className="text-tile-title font-normal leading-tight tracking-headline text-white">
+        <span className="text-tile-title font-normal leading-tight tracking-headline text-primary-foreground">
           {t('common.book')}
         </span>
       </span>
       <ArrowIcon
         width="16"
         height="16"
-        className="shrink-0 text-white transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5 group-hover:scale-110"
+        className="shrink-0 text-primary-foreground transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5 group-hover:scale-110"
       />
     </button>
   );

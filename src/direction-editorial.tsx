@@ -238,7 +238,7 @@ const DirectionA = () => {
       <button
         onClick={() => goto('gallery')}
         aria-label={t('common.gallery')}
-        className="edo-focus-ring group relative col-span-2 aspect-[6/5] flex flex-col items-stretch justify-end overflow-hidden border-0 bg-edo-dark p-6 text-white transition-all duration-150 hover:brightness-75 md:col-start-7 md:col-end-13 md:row-start-3 md:row-end-5 md:aspect-auto"
+        className="edo-focus-ring group relative col-span-2 aspect-[6/5] flex flex-col items-stretch justify-end overflow-hidden border-0 dark bg-background p-6 text-foreground transition-all duration-150 hover:brightness-75 md:col-start-7 md:col-end-13 md:row-start-3 md:row-end-5 md:aspect-auto"
       >
         {galleryUseCrossfade ? (
           <ImageCrossfade
@@ -278,7 +278,7 @@ const DirectionA = () => {
         <div className="relative flex-1" />
         <div className="relative flex w-full items-end justify-between gap-4">
           <div className="min-w-0">
-            <div className="text-hero font-light tracking-display leading-solid text-white transition-transform duration-300 group-hover:scale-102">
+            <div className="text-hero font-light tracking-display leading-solid text-foreground transition-transform duration-300 group-hover:scale-102">
               {t('common.gallery')}
             </div>
           </div>
@@ -396,7 +396,7 @@ const DirectionA = () => {
         disabled
         aria-disabled="true"
         tabIndex={-1}
-        className="pointer-events-none cursor-not-allowed group relative col-span-2 h-20 flex items-center justify-between gap-3 border-0 bg-foreground px-4 py-3 text-left text-white md:col-span-3 md:col-start-1 md:col-end-4 md:row-start-6 md:h-21"
+        className="pointer-events-none cursor-not-allowed group relative col-span-2 h-20 flex items-center justify-between gap-3 border-0 dark bg-background px-4 py-3 text-left text-foreground md:col-span-3 md:col-start-1 md:col-end-4 md:row-start-6 md:h-21"
       >
         <svg
           viewBox="0 0 200 84"
@@ -427,18 +427,18 @@ const DirectionA = () => {
           ))}
         </svg>
         <div className="relative flex min-w-0 flex-col gap-1">
-          <CellLabel className="text-white/70">Discovery</CellLabel>
-          <div className="text-tile-title font-normal tracking-headline leading-tight text-white/60">
+          <CellLabel className="text-muted-foreground">Discovery</CellLabel>
+          <div className="text-tile-title font-normal tracking-headline leading-tight text-muted-foreground">
             {t('home.tellMeMore')}
           </div>
         </div>
         <div className="relative flex flex-shrink-0 items-center gap-2">
-          <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 font-mono text-label uppercase tracking-ui text-white/80">
+          <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-border bg-muted px-2.5 py-1 font-mono text-label uppercase tracking-ui text-muted-foreground">
             <Lock width="11" height="11" />
             {t('home.comingSoon')}
           </span>
           <span
-            className="sm:hidden inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 p-1.5 text-white/80"
+            className="sm:hidden inline-flex items-center justify-center rounded-full border border-border bg-muted p-1.5 text-muted-foreground"
             aria-hidden="true"
           >
             <Lock width="12" height="12" />
