@@ -18,7 +18,7 @@ import {
 } from '../lib/page-context';
 import { initPreviewMode, isPreviewActive } from '../lib/preview-mode';
 import { settle } from '../lib/route-data';
-import { SCREEN_TO_PATH } from '../lib/screens';
+import { SCREEN_TO_PATH, translatePathname } from '../lib/screens';
 import { serializeJsonLd } from '../lib/seo-head';
 import { META } from '../lib/seo-meta';
 import {
@@ -169,8 +169,9 @@ function LangLayout() {
   const setLang = useCallback(
     (newLang: Lang) => {
       persistLang(newLang);
-      const rest = pathname.replace(/^\/(fr|en)/, '');
-      navigate({ to: `/${newLang}${rest}` });
+      // translatePathname et non un simple échange de préfixe : /fr/galerie
+      // devenait /en/galerie, une URL servie dans la mauvaise langue.
+      navigate({ to: translatePathname(pathname, newLang) });
     },
     [pathname, navigate],
   );
