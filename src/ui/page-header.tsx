@@ -111,8 +111,12 @@ const PageHeaderActionButton = ({
 
 const DEFAULT_TITLE_CLASS = 'lg:col-start-2';
 const DEFAULT_RIGHT_BLOCK_CLASS = 'lg:col-start-3 lg:col-span-2';
-const RIGHT_BLOCK_BASE_CLASS =
-  'flex min-w-0 [&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-border';
+// `divide-x` génère exactement `:where(& > :not(:last-child))` avec
+// `border-inline-end-width` — le même sélecteur que celui qui était écrit à la
+// main ici, mais enveloppé dans `:where()`, donc de spécificité nulle. C'est ce
+// qui permet de le neutraliser par une classe ordinaire au lieu d'un
+// `!important`.
+const RIGHT_BLOCK_BASE_CLASS = 'flex min-w-0 divide-x divide-border';
 
 const LangButton = ({
   onLangToggle,
@@ -157,7 +161,6 @@ const PageHeader = ({
       className={cn(
         'hidden min-w-0 items-center justify-start bg-background md:flex md:px-6',
         titleAside ? 'md:flex-none' : 'flex-1',
-        subgrid && 'lg:!border-r-0',
         subgrid && (titleClassName ?? DEFAULT_TITLE_CLASS),
       )}
     >
@@ -182,13 +185,12 @@ const PageHeader = ({
   return (
     <header
       className={cn(
-        'sticky top-0 z-40 flex min-w-0 bg-background',
+        'sticky top-0 z-40 flex min-w-0 divide-x divide-border bg-background',
         subgrid && 'lg:grid lg:grid-cols-subgrid',
-        '[&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-border',
         className,
       )}
     >
-      <div className="flex h-full flex-none basis-44 md:basis-60 lg:col-start-1 [&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-border">
+      <div className="flex h-full flex-none basis-44 divide-x divide-border md:basis-60 lg:col-start-1">
         <Button
           variant="header"
           onClick={onMenuClick}
@@ -223,7 +225,7 @@ const PageHeader = ({
         <div
           className={cn(
             RIGHT_BLOCK_BASE_CLASS,
-            'lg:justify-end lg:[&>*:first-child]:border-l lg:[&>*:first-child]:border-border',
+            'lg:justify-end',
             hasMobileAction && 'flex-1 md:flex-initial',
             rightBlockClassName ?? DEFAULT_RIGHT_BLOCK_CLASS,
           )}
