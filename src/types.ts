@@ -65,6 +65,10 @@ export interface ContactFormData {
   telephone: string;
   societe: string;
   message: string;
+  /** Honeypot: rendered hidden, only a bot fills it. */
+  website?: string;
+  /** Epoch ms stamped when the form mounts, to reject instant submissions. */
+  formLoadedAt?: number;
 }
 
 export interface ChatMessage {

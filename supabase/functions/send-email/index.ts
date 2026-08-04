@@ -1,5 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.105.1";
+import { z } from "https://esm.sh/zod@4.4.3";
 import { syncContactForm, syncBooking } from "../_shared/hubspot.ts";
+import { scoreContactSubmission } from "./spam.ts";
 import {
   buildBookingIcs,
   type IcalBookingRow,
@@ -22,11 +24,51 @@ import {
   type StatusChangeReason,
 } from "./renderers.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Authorization, Content-Type",
-};
+// www.e-do.studio serves the site directly — it does not redirect to the apex —
+// so both hosts are legitimate origins.
+const DEFAULT_ALLOWED_ORIGINS = [
+  "https://e-do.studio",
+  "https://www.e-do.studio",
+  "http://localhost:5173",
+];
+
+function parseAllowedOrigins(): string[] {
+  const raw = Deno.env.get("SEND_EMAIL_ALLOWED_ORIGIN");
+  if (!raw) return DEFAULT_ALLOWED_ORIGINS;
+  return raw.split(",").map((s) => s.trim()).filter(Boolean);
+}
+
+// `pnpm dev` binds 0.0.0.0, so testing on a phone reaches the site through a LAN
+// address. Accepting loopback and RFC1918 origins keeps that workflow alive and
+// concedes nothing: a remote attacker would simply forge an allowed Origin
+// anyway — this header is a cheap first filter, not the barrier.
+function isLocalOrigin(origin: string): boolean {
+  let host: string;
+  try {
+    host = new URL(origin).hostname;
+  } catch {
+    return false;
+  }
+  if (host === "localhost" || host === "127.0.0.1" || host === "::1") return true;
+  return /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(host);
+}
+
+function isAllowedOrigin(req: Request): boolean {
+  const origin = req.headers.get("origin");
+  if (!origin) return false;
+  return parseAllowedOrigins().includes(origin) || isLocalOrigin(origin);
+}
+
+function buildCorsHeaders(req: Request): Record<string, string> {
+  const allowed = parseAllowedOrigins();
+  const origin = req.headers.get("origin");
+  return {
+    "Access-Control-Allow-Origin": origin && allowed.includes(origin) ? origin : allowed[0],
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Authorization, Content-Type, apikey, x-client-info",
+    "Vary": "Origin",
+  };
+}
 
 const STUDIO_EMAIL = "contact@e-do.studio";
 
@@ -42,6 +84,10 @@ interface ContactEmailPayload {
   telephone: string;
   societe: string;
   message: string;
+  // Anti-spam control fields, never rendered in the emails.
+  website?: string;
+  elapsedMs?: number;
+  turnstileToken?: string;
 }
 
 interface BookingStatusChangePayload {
@@ -142,7 +188,241 @@ function syncToHubSpot(fn: () => Promise<void>): void {
   fn().catch((err) => console.error("HubSpot sync error:", err));
 }
 
+// ─── Contact form anti-spam ───────────────────────────────────────────────
+
+const MIN_FILL_MS = 2500;
+const CONTACT_SHORT_WINDOW_MS = 10 * 60 * 1000;
+const CONTACT_SHORT_LIMIT = 5;
+const CONTACT_DAILY_WINDOW_MS = 24 * 60 * 60 * 1000;
+const CONTACT_DAILY_LIMIT = 15;
+
+// Hand-rolled rather than z.email() so the schema does not depend on which
+// zod major moved the string formats around.
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+const contactSchema = z.object({
+  nom: z.string().trim().min(1).max(100),
+  email: z.string().trim().max(254).regex(EMAIL_RE),
+  telephone: z.string().trim().min(1).max(30),
+  societe: z.string().trim().min(1).max(120),
+  message: z.string().trim().min(10).max(4000),
+  website: z.string().max(200).optional(),
+  // Milliseconds between form mount and submit, measured entirely on the
+  // client's own clock — an absolute timestamp compared against the server
+  // would misjudge any visitor whose device clock is skewed.
+  elapsedMs: z.number().nonnegative().optional(),
+  turnstileToken: z.string().max(4096).optional(),
+});
+
+type ContactInput = z.infer<typeof contactSchema>;
+
+async function hashIp(ip: string): Promise<string> {
+  const buf = new TextEncoder().encode(ip);
+  const digest = await crypto.subtle.digest("SHA-256", buf);
+  const bytes = new Uint8Array(digest);
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+  return btoa(binary);
+}
+
+function getClientIp(req: Request): string {
+  const xff = req.headers.get("x-forwarded-for");
+  if (xff) {
+    const first = xff.split(",")[0]?.trim();
+    if (first) return first;
+  }
+  return req.headers.get("x-real-ip") ?? "unknown";
+}
+
+interface RateLimitClient {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  from: (table: string) => any;
+}
+
+// Fails open: a Postgres hiccup must never take the contact form down.
+async function checkAndIncrement(
+  supabase: RateLimitClient,
+  ipHash: string,
+  kind: "short" | "daily",
+  windowMs: number,
+  limit: number,
+): Promise<boolean> {
+  const now = Date.now();
+  const windowStart = new Date(Math.floor(now / windowMs) * windowMs).toISOString();
+
+  const { data, error } = await supabase
+    .from("contact_rate_limits")
+    .select("count")
+    .eq("ip_hash", ipHash)
+    .eq("window_kind", kind)
+    .eq("window_start", windowStart)
+    .maybeSingle();
+
+  if (error) {
+    console.error("contact rate-limit select error", error);
+    return true;
+  }
+
+  const current = data?.count ?? 0;
+  if (current >= limit) return false;
+
+  const { error: upsertErr } = await supabase
+    .from("contact_rate_limits")
+    .upsert(
+      {
+        ip_hash: ipHash,
+        window_kind: kind,
+        window_start: windowStart,
+        count: current + 1,
+      },
+      { onConflict: "ip_hash,window_kind,window_start" },
+    );
+
+  if (upsertErr) {
+    console.error("contact rate-limit upsert error", upsertErr);
+  }
+
+  return true;
+}
+
+// Inert until TURNSTILE_SECRET_KEY is set, so the rest of the protection can
+// ship without a Cloudflare account. Do not set that secret before the front
+// actually renders the widget and sends a token: without one, every genuine
+// submission would be rejected here.
+async function verifyTurnstile(token: string | undefined, ip: string): Promise<boolean> {
+  const secret = Deno.env.get("TURNSTILE_SECRET_KEY");
+  if (!secret) return true;
+  if (!token) return false;
+
+  const body = new FormData();
+  body.append("secret", secret);
+  body.append("response", token);
+  body.append("remoteip", ip);
+
+  try {
+    const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      body,
+    });
+    const result = await res.json();
+    return result.success === true;
+  } catch (e) {
+    console.error("turnstile verify error", e);
+    return true;
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function recordContactSubmission(
+  supabase: { from: (table: string) => any },
+  data: ContactInput,
+  ipHash: string,
+  score: number,
+  reasons: string[],
+  delivered: boolean,
+): Promise<void> {
+  const { error } = await supabase.from("contact_submissions").insert({
+    nom: data.nom,
+    email: data.email,
+    telephone: data.telephone,
+    societe: data.societe,
+    message: data.message,
+    ip_hash: ipHash,
+    spam_score: score,
+    spam_reason: reasons,
+    delivered,
+  });
+  if (error) console.error("contact_submissions insert error", error);
+}
+
+async function handleContactRequest(
+  req: Request,
+  cors: Record<string, string>,
+  resendKey: string,
+  fromEmail: string,
+  raw: unknown,
+): Promise<Response> {
+  const json = (body: Record<string, unknown>, status: number) =>
+    new Response(JSON.stringify(body), {
+      status,
+      headers: { ...cors, "Content-Type": "application/json" },
+    });
+
+  // Scoped to the contact type on purpose: `calendar_sync_alert` is fired by a
+  // pg_cron job through pg_net, which sends no Origin header at all
+  // (20260604090000_calendar_sync_lifecycle.sql). A blanket check would have
+  // silently killed that alerting.
+  if (!isAllowedOrigin(req)) {
+    return json({ error: "forbidden_origin" }, 403);
+  }
+
+  const parsed = contactSchema.safeParse(raw);
+  if (!parsed.success) {
+    return json({ error: "invalid_payload" }, 400);
+  }
+  const data = parsed.data;
+
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  );
+  const ip = getClientIp(req);
+  const ipHash = await hashIp(ip);
+
+  // Free local checks first — nothing costly runs before the verdict.
+  const reasons: string[] = [];
+  if (data.website && data.website.trim() !== "") reasons.push("honeypot");
+  if (typeof data.elapsedMs === "number" && data.elapsedMs < MIN_FILL_MS) {
+    reasons.push("submitted_too_fast");
+  }
+
+  const verdict = scoreContactSubmission(data);
+  const spam = reasons.length > 0 || verdict.isSpam;
+  reasons.push(...verdict.reasons);
+
+  if (spam) {
+    await recordContactSubmission(supabase, data, ipHash, verdict.score, reasons, false);
+    // Answer as if delivered: the bot learns nothing about which filter fired.
+    return json({ ok: true }, 200);
+  }
+
+  if (!(await verifyTurnstile(data.turnstileToken, ip))) {
+    await recordContactSubmission(supabase, data, ipHash, verdict.score, [...reasons, "turnstile_failed"], false);
+    return json({ ok: true }, 200);
+  }
+
+  const shortOk = await checkAndIncrement(
+    supabase,
+    ipHash,
+    "short",
+    CONTACT_SHORT_WINDOW_MS,
+    CONTACT_SHORT_LIMIT,
+  );
+  const dailyOk = shortOk &&
+    await checkAndIncrement(supabase, ipHash, "daily", CONTACT_DAILY_WINDOW_MS, CONTACT_DAILY_LIMIT);
+
+  if (!shortOk || !dailyOk) {
+    await recordContactSubmission(supabase, data, ipHash, verdict.score, [...reasons, "rate_limited"], false);
+    // Surfaced to the visitor: a human retrying deserves to know why.
+    return json({ error: "rate_limited" }, 429);
+  }
+
+  await handleContactEmail(resendKey, fromEmail, {
+    type: "contact",
+    nom: data.nom,
+    email: data.email,
+    telephone: data.telephone,
+    societe: data.societe,
+    message: data.message,
+  });
+  await recordContactSubmission(supabase, data, ipHash, verdict.score, reasons, true);
+
+  return json({ ok: true }, 200);
+}
+
 Deno.serve(async (req: Request) => {
+  const corsHeaders = buildCorsHeaders(req);
+
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: corsHeaders });
   }
@@ -170,7 +450,7 @@ Deno.serve(async (req: Request) => {
     if (payload.type === "booking") {
       await handleBookingEmail(resendKey, fromEmail, payload.bookingId);
     } else if (payload.type === "contact") {
-      await handleContactEmail(resendKey, fromEmail, payload);
+      return await handleContactRequest(req, corsHeaders, resendKey, fromEmail, payload);
     } else if (payload.type === "booking_status_change") {
       await handleBookingStatusChangeEmail(resendKey, fromEmail, payload);
     } else if (payload.type === "calendar_sync_alert") {
