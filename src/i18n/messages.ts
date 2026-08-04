@@ -87,6 +87,10 @@ export const contact = {
   newMessage: { fr: 'Nouveau message', en: 'Another message' } as B,
   seeGallery: { fr: 'Voir la galerie', en: 'See gallery' } as B,
   errorSend: { fr: "Erreur lors de l'envoi", en: 'Failed to send message' } as B,
+  errorRateLimited: {
+    fr: 'Trop de messages envoyés. Merci de réessayer dans quelques minutes.',
+    en: 'Too many messages sent. Please try again in a few minutes.',
+  } as B,
   mapTitle: { fr: 'Carte du studio E-Do', en: 'E-Do studio map' } as B,
   directions: { fr: 'Itinéraire →', en: 'Directions →' } as B,
   team: { fr: "L'équipe", en: 'The team' } as B,

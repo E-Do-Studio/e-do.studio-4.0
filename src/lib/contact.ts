@@ -22,14 +22,27 @@ export async function submitContactForm(data: ContactFormData): Promise<void> {
     { pageName: 'Contact' },
   );
 
+  // Built field by field rather than spread, so form-local state stays local
+  // and the anti-spam signals are sent in the shape the edge function expects.
   const res = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ type: 'contact', ...data }),
+    body: JSON.stringify({
+      type: 'contact',
+      nom: data.nom,
+      email: data.email,
+      telephone: data.telephone,
+      societe: data.societe,
+      message: data.message,
+      website: data.website ?? '',
+      elapsedMs: data.formLoadedAt ? Date.now() - data.formLoadedAt : undefined,
+    }),
   });
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({ error: 'Unknown error' }));
+    // The edge function answers with machine codes ('rate_limited',
+    // 'invalid_payload', …); callers localize them via contactErrorMessage.
     throw new Error(body.error ?? `Email send failed (${res.status})`);
   }
 }

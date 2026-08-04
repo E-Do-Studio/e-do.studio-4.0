@@ -11,7 +11,7 @@ import type { Lang, ContactFormData, Bilingual } from './types';
 import { usePageContext } from './lib/page-context';
 import { submitContactForm } from './lib/contact';
 import { common, contact as contactMsg } from './i18n/messages';
-import { ContactForm, ContactSuccess, INITIAL_FORM } from './contact-form';
+import { ContactForm, ContactSuccess, INITIAL_FORM, contactErrorMessage } from './contact-form';
 
 const UNAVAILABLE: Bilingual = {
   fr: 'Contenu temporairement indisponible',
@@ -366,7 +366,7 @@ const ContactPage = () => {
       await submitContactForm(form);
       setSent(true);
     } catch (err) {
-      setSendError(err instanceof Error ? err.message : contactMsg.errorSend[lang]);
+      setSendError(contactErrorMessage(err, lang));
     } finally {
       setSending(false);
     }

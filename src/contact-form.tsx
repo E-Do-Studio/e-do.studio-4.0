@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { FormEvent, InputHTMLAttributes, TextareaHTMLAttributes } from 'react';
 import type { ContactFormData, Lang } from './types';
 import { submitContactForm } from './lib/contact';
@@ -13,6 +13,15 @@ export const INITIAL_FORM: ContactFormData = {
   telephone: '',
   societe: '',
   message: '',
+  website: '',
+  formLoadedAt: 0,
+};
+
+/** Maps the edge function's machine codes to a localized, user-facing string. */
+export const contactErrorMessage = (err: unknown, lang: Lang): string => {
+  const code = err instanceof Error ? err.message : '';
+  if (code === 'rate_limited') return contactMsg.errorRateLimited[lang];
+  return contactMsg.errorSend[lang];
 };
 
 const inputClassName =
@@ -64,11 +73,31 @@ export const ContactForm = ({
   sending,
   sendError,
 }: ContactFormProps) => {
+  // Stamped on mount rather than in INITIAL_FORM: that constant is evaluated at
+  // import time, which under SSR would be the server's render clock.
+  useEffect(() => {
+    if (!form.formLoadedAt) setForm({ ...form, formLoadedAt: Date.now() });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <form
       onSubmit={submit}
       className="grid grid-cols-2 grid-rows-contact-form-compact gap-hairline bg-edo-pure-black md:h-full"
     >
+      {/* Honeypot — positioned off-screen rather than display:none, which many
+          bots know to skip. Never focusable, never announced. */}
+      <div className="absolute left-[-9999px] h-0 w-0 overflow-hidden" aria-hidden="true">
+        <input
+          type="text"
+          name="website"
+          tabIndex={-1}
+          autoComplete="off"
+          value={form.website ?? ''}
+          onChange={(event) => setForm({ ...form, website: event.target.value })}
+        />
+      </div>
+
       <div className="col-span-2 flex flex-col justify-center bg-white px-5 py-2.5">
         <span className="edo-cell-label text-primary">{contactMsg.writeToUs[lang]}</span>
         <h1 className="m-0 mt-0.5 text-tile-large font-light leading-none tracking-display text-foreground">
@@ -192,7 +221,7 @@ export const EmbeddedContactForm = ({
       await submitContactForm(form);
       setSent(true);
     } catch (err) {
-      setSendError(err instanceof Error ? err.message : contactMsg.errorSend[lang]);
+      setSendError(contactErrorMessage(err, lang));
     } finally {
       setSending(false);
     }
