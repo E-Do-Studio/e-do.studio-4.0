@@ -356,7 +356,7 @@ const ProjectImage = ({
   const item = project.media[imageIndex];
 
   const wrapperClass =
-    'outline-none focus-visible:ring-3 focus-visible:ring-ring/50 relative block aspect-[4/5] overflow-hidden bg-background no-underline text-inherit';
+    'relative block aspect-[4/5] overflow-hidden bg-background no-underline text-inherit';
 
   let inner: ReactNode;
   if (!item) {

@@ -42,7 +42,7 @@ export const NewsletterCard = ({
           type="email"
           autoComplete="email"
           placeholder={t('discoveryPage.emailPlaceholder')}
-          className="outline-none focus-visible:ring-3 focus-visible:ring-ring/50 min-w-0 flex-1 border-0 bg-transparent py-1 font-sans text-sm text-foreground outline-none placeholder:text-muted-foreground"
+          className="min-w-0 flex-1 border-0 bg-transparent py-1 font-sans text-sm text-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50 placeholder:text-muted-foreground"
         />
         <Button
           type="submit"

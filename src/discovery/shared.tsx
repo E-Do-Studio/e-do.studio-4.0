@@ -1,7 +1,7 @@
 import type React from 'react';
 import { ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { microBase } from './styles';
+import { labelBase } from './styles';
 
 interface ArrowIconProps extends React.SVGProps<SVGSVGElement> {}
 
@@ -29,7 +29,7 @@ export const ArticleMeta = ({
   read = true,
 }: ArticleMetaProps) => (
   <span
-    className={cn(microBase, muted ? 'text-muted-foreground' : 'text-primary')}
+    className={cn(labelBase, muted ? 'text-muted-foreground' : 'text-primary')}
   >
     {post.tag[lang]}
     {read ? ` · ${post.read}` : ''}
