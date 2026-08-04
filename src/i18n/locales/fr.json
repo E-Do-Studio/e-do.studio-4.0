@@ -382,5 +382,15 @@
     "postprodCatalogName": "Prestations post-production",
     "postprodDescription": "Retouche, colorimétrie, montage et livraison express. Studio E-Do à Paris.",
     "postprodServiceType": "Post-production photo et vidéo"
+  },
+  "validation": {
+    "cgv": "Vous devez accepter les CGV",
+    "email": "Adresse e-mail invalide",
+    "quantite": "Indiquez la quantité d’articles",
+    "required": "Ce champ est requis",
+    "siren": "Le SIREN doit contenir 9 chiffres",
+    "tel": "Numéro de téléphone invalide",
+    "typesArticles": "Sélectionnez au moins un type d’article",
+    "vues": "Indiquez le nombre de vues par article"
   }
 }

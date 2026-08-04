@@ -1,35 +1,22 @@
 import { z } from 'zod';
-
-const msgs = {
-  fr: {
-    required: 'Ce champ est requis',
-    email: 'Adresse e-mail invalide',
-    tel: 'Numéro de téléphone invalide',
-    siren: 'Le SIREN doit contenir 9 chiffres',
-    cgv: 'Vous devez accepter les CGV',
-    typesArticles: 'Sélectionnez au moins un type d’article',
-    quantite: 'Indiquez la quantité d’articles',
-    vues: 'Indiquez le nombre de vues par article',
-  },
-  en: {
-    required: 'This field is required',
-    email: 'Invalid email address',
-    tel: 'Invalid phone number',
-    siren: 'SIREN must be 9 digits',
-    cgv: 'You must accept the terms and conditions',
-    typesArticles: 'Select at least one item type',
-    quantite: 'Enter the number of items',
-    vues: 'Enter the number of views per item',
-  },
-} as const;
-
-export type Lang = 'fr' | 'en';
+import { getT } from '../i18n';
+import type { Lang } from '../types';
 
 export function createContactSchema(
   lang: Lang,
   opts: { requireProductFields: boolean },
 ) {
-  const m = msgs[lang];
+  const t = getT(lang);
+  const m = {
+    required: t('validation.required'),
+    email: t('validation.email'),
+    tel: t('validation.tel'),
+    siren: t('validation.siren'),
+    cgv: t('validation.cgv'),
+    typesArticles: t('validation.typesArticles'),
+    quantite: t('validation.quantite'),
+    vues: t('validation.vues'),
+  };
 
   const base = z.object({
     marque: z.string().optional(),

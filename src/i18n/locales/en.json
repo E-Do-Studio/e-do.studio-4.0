@@ -382,5 +382,15 @@
     "postprodCatalogName": "Post-production services",
     "postprodDescription": "Retouching, color grading, editing and express delivery. E-Do Studio in Paris.",
     "postprodServiceType": "Photo & video post-production"
+  },
+  "validation": {
+    "cgv": "You must accept the terms and conditions",
+    "email": "Invalid email address",
+    "quantite": "Enter the number of items",
+    "required": "This field is required",
+    "siren": "SIREN must be 9 digits",
+    "tel": "Invalid phone number",
+    "typesArticles": "Select at least one item type",
+    "vues": "Enter the number of views per item"
   }
 }
