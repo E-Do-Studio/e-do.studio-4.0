@@ -5,9 +5,7 @@ import { microBase } from './styles';
 
 interface ArrowIconProps extends React.SVGProps<SVGSVGElement> {}
 
-export const ArrowIcon = (props: ArrowIconProps) => (
-  <ArrowRight {...props} />
-);
+export const ArrowIcon = (props: ArrowIconProps) => <ArrowRight {...props} />;
 
 interface CellBadgeProps {
   n?: number;

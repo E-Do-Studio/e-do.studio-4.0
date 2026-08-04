@@ -117,11 +117,11 @@ describe('validateIdentity', () => {
 
   it('laisse passer un SIREN absent mais vérifie la clé de Luhn sinon', () => {
     expect(validateIdentity(identity({ siren: '' }), 'fr').success).toBe(true);
-    expect(validateIdentity(identity({ siren: '552100554' }), 'fr').success).toBe(
-      true,
-    );
-    expect(validateIdentity(identity({ siren: '123456789' }), 'fr').success).toBe(
-      false,
-    );
+    expect(
+      validateIdentity(identity({ siren: '552100554' }), 'fr').success,
+    ).toBe(true);
+    expect(
+      validateIdentity(identity({ siren: '123456789' }), 'fr').success,
+    ).toBe(false);
   });
 });

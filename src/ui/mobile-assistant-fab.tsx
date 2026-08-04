@@ -59,7 +59,9 @@ export const MobileAssistantFab = ({ lang }: MobileAssistantFabProps) => {
           </Button>
         </div>
         <div className="flex min-h-0 flex-1 flex-col">
-          <Suspense fallback={<div aria-hidden className="flex-1 bg-background" />}>
+          <Suspense
+            fallback={<div aria-hidden className="flex-1 bg-background" />}
+          >
             {open && <AssistantChat lang={lang} className="h-full w-full" />}
           </Suspense>
         </div>

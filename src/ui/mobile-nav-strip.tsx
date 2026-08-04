@@ -198,72 +198,72 @@ const MobileNavStrip = ({
             </DrawerClose>
           </DrawerHeader>
           <div className="flex flex-col overflow-y-auto">
-          {groups.map((group) => {
-            const currentValue = draft[group.key] ?? group.value;
-            return (
-              <fieldset
-                key={group.key}
-                className="flex flex-col border-b border-border last:border-b-0"
-              >
-                <legend className="w-full bg-muted px-4 py-2 font-mono text-xs uppercase tracking-widest text-muted-foreground">
-                  {group.label}
-                </legend>
-                {group.options.map((option) => {
-                  const isActive = currentValue === option.k;
-                  const dimmed = option.dimmed ?? false;
-                  return (
-                    <label
-                      key={option.k}
-                      className={cn(
-                        'outline-none focus-visible:ring-3 focus-visible:ring-ring/50 relative flex min-h-11 cursor-pointer select-none items-center gap-3 border-t border-border px-4 py-3 transition-colors duration-150 ease-out',
-                        isActive
-                          ? 'bg-foreground text-background'
-                          : 'bg-background text-foreground hover:bg-muted',
-                        dimmed && !isActive && 'opacity-40',
-                      )}
-                    >
-                      <input
-                        type="radio"
-                        name={`${sheetId}-${group.key}`}
-                        value={option.k}
-                        checked={isActive}
-                        onChange={() => handleSelect(group, option.k)}
-                        className="sr-only"
-                      />
-                      <span
-                        aria-hidden
+            {groups.map((group) => {
+              const currentValue = draft[group.key] ?? group.value;
+              return (
+                <fieldset
+                  key={group.key}
+                  className="flex flex-col border-b border-border last:border-b-0"
+                >
+                  <legend className="w-full bg-muted px-4 py-2 font-mono text-xs uppercase tracking-widest text-muted-foreground">
+                    {group.label}
+                  </legend>
+                  {group.options.map((option) => {
+                    const isActive = currentValue === option.k;
+                    const dimmed = option.dimmed ?? false;
+                    return (
+                      <label
+                        key={option.k}
                         className={cn(
-                          'grid size-4 shrink-0 place-items-center border',
+                          'outline-none focus-visible:ring-3 focus-visible:ring-ring/50 relative flex min-h-11 cursor-pointer select-none items-center gap-3 border-t border-border px-4 py-3 transition-colors duration-150 ease-out',
                           isActive
-                            ? 'border-background bg-background'
-                            : 'border-border bg-background',
+                            ? 'bg-foreground text-background'
+                            : 'bg-background text-foreground hover:bg-muted',
+                          dimmed && !isActive && 'opacity-40',
                         )}
                       >
-                        {isActive ? (
-                          <span className="block size-1.5 bg-foreground" />
-                        ) : null}
-                      </span>
-                      <span className="flex-1 font-mono text-sm uppercase tracking-wide">
-                        {option.label}
-                      </span>
-                      {typeof option.count === 'number' ? (
+                        <input
+                          type="radio"
+                          name={`${sheetId}-${group.key}`}
+                          value={option.k}
+                          checked={isActive}
+                          onChange={() => handleSelect(group, option.k)}
+                          className="sr-only"
+                        />
                         <span
+                          aria-hidden
                           className={cn(
-                            'shrink-0 font-mono text-xs uppercase tracking-widest',
+                            'grid size-4 shrink-0 place-items-center border',
                             isActive
-                              ? 'text-background'
-                              : 'text-muted-foreground',
+                              ? 'border-background bg-background'
+                              : 'border-border bg-background',
                           )}
                         >
-                          {option.count}
+                          {isActive ? (
+                            <span className="block size-1.5 bg-foreground" />
+                          ) : null}
                         </span>
-                      ) : null}
-                    </label>
-                  );
-                })}
-              </fieldset>
-            );
-          })}
+                        <span className="flex-1 font-mono text-sm uppercase tracking-wide">
+                          {option.label}
+                        </span>
+                        {typeof option.count === 'number' ? (
+                          <span
+                            className={cn(
+                              'shrink-0 font-mono text-xs uppercase tracking-widest',
+                              isActive
+                                ? 'text-background'
+                                : 'text-muted-foreground',
+                            )}
+                          >
+                            {option.count}
+                          </span>
+                        ) : null}
+                      </label>
+                    );
+                  })}
+                </fieldset>
+              );
+            })}
           </div>
           <DrawerFooter
             className="flex-row items-stretch justify-between gap-2"
@@ -272,7 +272,11 @@ const MobileNavStrip = ({
             }}
           >
             {draftHasActive ? (
-              <Button variant="outline" onClick={handleReset} className="min-h-11">
+              <Button
+                variant="outline"
+                onClick={handleReset}
+                className="min-h-11"
+              >
                 <span aria-hidden>↺</span> {t('mobileNav.reset')}
               </Button>
             ) : (

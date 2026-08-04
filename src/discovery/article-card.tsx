@@ -83,8 +83,7 @@ export const ArticleCard = ({
         </h3>
         {headline && (
           <span className="mt-1 inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-foreground">
-            {t('discoveryPage.readArticle')}{' '}
-            <span className="text-sm">→</span>
+            {t('discoveryPage.readArticle')} <span className="text-sm">→</span>
           </span>
         )}
       </div>

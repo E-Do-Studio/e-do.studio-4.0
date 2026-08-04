@@ -52,7 +52,9 @@ function safeUrl(url: string): string {
 
 const isFilename = (s: string) => /\.[a-z0-9]{2,4}(?:\?.*)?$/i.test(s.trim());
 const captionTag = (text: string) =>
-  text && !isFilename(text) ? `<figcaption>${escapeText(text)}</figcaption>` : '';
+  text && !isFilename(text)
+    ? `<figcaption>${escapeText(text)}</figcaption>`
+    : '';
 
 const RULES: [RegExp, string | ((...m: string[]) => string)][] = [
   [/^### (.+)$/gm, '<h3>$1</h3>'],

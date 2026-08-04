@@ -100,7 +100,11 @@ const PageHeaderActionButton = ({
   }
 
   return (
-    <Button variant={actionVariant} onClick={onClick} className={actionClassName}>
+    <Button
+      variant={actionVariant}
+      onClick={onClick}
+      className={actionClassName}
+    >
       {content}
     </Button>
   );

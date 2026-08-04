@@ -116,8 +116,7 @@ export const SplitArticleCard = ({
           )}
         </div>
         <span className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-foreground">
-          {t('discoveryPage.readArticle')}{' '}
-          <span className="text-sm">→</span>
+          {t('discoveryPage.readArticle')} <span className="text-sm">→</span>
         </span>
       </div>
     </Button>

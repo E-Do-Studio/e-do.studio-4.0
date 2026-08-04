@@ -128,11 +128,15 @@ describe('échappement', () => {
     const html = renderMarkdown(
       '![x](https://cdn.r2.dev/a.jpg?sig=abc&exp=123)',
     );
-    expect(html).toContain('src="https://cdn.r2.dev/a.jpg?sig=abc&amp;exp=123"');
+    expect(html).toContain(
+      'src="https://cdn.r2.dev/a.jpg?sig=abc&amp;exp=123"',
+    );
   });
 
   it('échappe le contenu textuel d’une légende', () => {
-    const html = renderMarkdown('![<script>alert(1)</script>](https://c.test/a.jpg)');
+    const html = renderMarkdown(
+      '![<script>alert(1)</script>](https://c.test/a.jpg)',
+    );
     expect(html).not.toContain('<script>');
     expect(html).toContain('&lt;script&gt;');
   });
