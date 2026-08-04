@@ -179,8 +179,8 @@ const ThumbStrip = ({
               aria-label={`${item.alt[lang] || plateauName} — ${i + 1} / ${items.length}`}
               aria-current={isActive ? 'true' : undefined}
               className={cn(
-                'group relative h-full overflow-hidden bg-background  p-0 transition-opacity duration-150 ease-out',
-                isActive ? 'opacity-100' : 'opacity-60 hover:opacity-100',
+                'group relative h-full overflow-hidden bg-background p-0 opacity-60 transition-opacity',
+                'hover:opacity-100 aria-[current=true]:opacity-100',
               )}
               style={{ flexBasis: tileBasis }}
             >
@@ -322,32 +322,22 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
                     type="button"
                     onClick={() => navigateToPlateau(m)}
                     aria-current={active ? 'page' : undefined}
+                    // L'état actif inverse la cellule : c'est exactement ce
+                    // que fait le scope `dark`. Les enfants n'ont donc plus
+                    // besoin de connaître l'état — leurs tokens basculent
+                    // d'eux-mêmes.
                     className={cn(
-                      'w-full flex gap-4 min-h-14 px-4 py-3',
-                      'border-b border-border text-left',
-                      'transition-colors duration-150 ease-out',
-                      active
-                        ? 'bg-foreground text-background'
-                        : 'bg-background text-foreground',
+                      'min-h-14 w-full gap-4 border-b border-border bg-background px-4 py-3 text-left text-foreground',
+                      active && 'dark',
                     )}
                   >
-                    <span
-                      className={cn(
-                        'font-mono text-xs tracking-widest',
-                        active ? 'text-background/70' : 'text-muted-foreground',
-                      )}
-                    >
+                    <span className="font-mono text-xs tracking-widest text-muted-foreground">
                       {num}
                     </span>
                     <HoverMarquee className="text-base tracking-tight font-medium">
                       {cfg.name}
                     </HoverMarquee>
-                    <HoverMarquee
-                      className={cn(
-                        'ml-auto font-mono text-xs uppercase tracking-widest',
-                        active ? 'text-background/70' : 'text-muted-foreground',
-                      )}
-                    >
+                    <HoverMarquee className="ml-auto font-mono text-xs uppercase tracking-widest text-muted-foreground">
                       {cfg.tagline[lang]}
                     </HoverMarquee>
                     <ArrowRight />
@@ -377,21 +367,12 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
               // La colonne est `hidden md:flex` : une classe sans préfixe
               // `md:` ne vaudrait qu'en dessous du palier, où l'élément
               // n'existe pas. Seul l'état `md:` a donc un sens ici.
-              className={cn(
-                'flex-none gap-1 border-b border-l-2 border-b-border px-4 py-3.5',
-                active
-                  ? 'border-l-primary bg-muted'
-                  : 'border-l-transparent bg-background hover:bg-muted',
-              )}
+              className="group flex-none gap-1 border-b border-l-2 border-b-border border-l-transparent px-4 py-3.5 hover:bg-muted aria-pressed:border-l-primary aria-pressed:bg-muted"
             >
-              <span
-                className={`font-mono text-xs tracking-widest ${active ? 'text-primary' : 'text-muted-foreground'}`}
-              >
+              <span className="font-mono text-xs tracking-widest text-muted-foreground group-aria-pressed:text-primary">
                 {String(i + 1).padStart(2, '0')}
               </span>
-              <span
-                className={`text-base tracking-tight whitespace-nowrap ${active ? 'font-medium text-foreground' : 'font-normal text-muted-foreground'}`}
-              >
+              <span className="whitespace-nowrap text-base font-normal tracking-tight text-muted-foreground group-aria-pressed:font-medium group-aria-pressed:text-foreground">
                 {cfg.name}
               </span>
               <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground hidden md:block">

@@ -291,19 +291,12 @@ const LegalPage = () => {
               variant="cell"
               size="cell"
               aria-pressed={isActive}
-              className={cn(
-                'flex-none gap-0.5 border-l-2 px-4 py-3',
-                isActive
-                  ? 'border-l-primary bg-muted'
-                  : 'border-l-transparent bg-transparent',
-              )}
+              className="group flex-none gap-0.5 border-l-2 border-l-transparent bg-transparent px-4 py-3 aria-pressed:border-l-primary aria-pressed:bg-muted"
             >
               <span className="font-mono text-xs tracking-widest text-muted-foreground">
                 0{i + 1}
               </span>
-              <span
-                className={`text-sm tracking-tight whitespace-nowrap ${isActive ? 'font-medium text-foreground' : 'font-normal text-muted-foreground'}`}
-              >
+              <span className="whitespace-nowrap text-sm font-normal tracking-tight text-muted-foreground group-aria-pressed:font-medium group-aria-pressed:text-foreground">
                 {s[lang]}
               </span>
             </Button>
@@ -317,12 +310,13 @@ const LegalPage = () => {
           <p className="text-xs text-muted-foreground leading-normal mb-3">
             {t('legalPage.writeDirectly')}
           </p>
-          <a
-            href="mailto:contact@e-do.studio"
-            className="outline-none focus-visible:ring-3 focus-visible:ring-ring/50 inline-flex items-center gap-2 text-xs text-foreground no-underline border-b border-border pb-0.5"
+          <Button
+            variant="ghost"
+            render={<a href="mailto:contact@e-do.studio" />}
+            className="h-auto gap-2 self-start border-b border-border px-0 pb-0.5 no-underline"
           >
-            contact@e-do.studio <ArrowRight className="size-3" />
-          </a>
+            contact@e-do.studio <ArrowRight data-icon="inline-end" />
+          </Button>
         </div>
         <div className="flex-1" />
       </div>
@@ -401,12 +395,13 @@ const LegalPage = () => {
             >
               ↓ {t('legalPage.print')}
             </Button>
-            <a
-              href="mailto:contact@e-do.studio"
-              className="outline-none focus-visible:ring-3 focus-visible:ring-ring/50 text-foreground no-underline"
+            <Button
+              variant="ghost"
+              render={<a href="mailto:contact@e-do.studio" />}
+              className="h-auto p-0 text-foreground no-underline"
             >
               contact@e-do.studio
-            </a>
+            </Button>
           </div>
         </div>
       </div>
