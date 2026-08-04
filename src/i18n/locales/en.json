@@ -140,6 +140,7 @@
     "zoomOut": "Zoom out"
   },
   "contact": {
+    "closures": "Closures",
     "companyBrand": "Company · Brand*",
     "errorSend": "Failed to send message",
     "findUs": "Find us",
@@ -205,6 +206,7 @@
     "allRightsReserved": "RCS Bobigny 891 710 857 · 69 boulevard Victor Hugo · 93400 Saint-Ouen-sur-Seine. All rights reserved.",
     "backToHome": "Back to home",
     "contents": "Contents",
+    "contentUpdating": "Content being updated.",
     "gotQuestion": "Got a question?",
     "lastUpdated": "Last updated",
     "print": "Print",
@@ -231,7 +233,9 @@
     "uses": "Uses"
   },
   "postprod": {
+    "backHome": "Back home",
     "category": "CATEGORY",
+    "emptyDescription": "No categories configured. Add post-production types in Strapi.",
     "from": "From",
     "note": "Note",
     "noteBody": "We also retouch images not shot at our studio.",

@@ -12,7 +12,7 @@ import { useLoaderData } from '@tanstack/react-router';
 import type { PPCat as StrapiPPCat, PPSample } from './lib/strapi';
 import type { Bilingual } from './types';
 import { usePageContext } from './lib/page-context';
-import { common, postprod as postprodMsg } from './i18n/messages';
+import { useT } from './i18n/use-t';
 
 interface PPPrice {
   amount?: string;
@@ -262,6 +262,7 @@ function adaptStrapiCats(strapi: StrapiPPCat[]): PPCat[] {
 }
 
 const PostprodPage = () => {
+  const t = useT();
   const { lang, setLang, openMenu, goto } = usePageContext();
   const { postProdTypes } = useLoaderData({ from: '/$lang/post-production' });
   // `adaptStrapiCats` reconstruit tout le tableau (et six échantillons par
@@ -323,13 +324,9 @@ const PostprodPage = () => {
         <EmptyState
           size="page"
           label="Post-production"
-          description={
-            lang === 'fr'
-              ? 'Aucune catégorie configurée. Renseignez vos types de post-production dans Strapi.'
-              : 'No categories configured. Add post-production types in Strapi.'
-          }
+          description={t('postprod.emptyDescription')}
           action={{
-            label: lang === 'fr' ? 'Retour accueil' : 'Back home',
+            label: t('postprod.backHome'),
             onClick: () => goto('home'),
           }}
         />
@@ -391,7 +388,7 @@ const PostprodPage = () => {
         onClose={() => setNavSheetOpen(false)}
         title="Post-production"
         ariaLabel="Post-production"
-        closeLabel={common.close[lang]}
+        closeLabel={t('common.close')}
       >
         <ul className="list-none m-0 p-0 flex flex-col">
           {cats.map((c, i) => {
@@ -464,18 +461,18 @@ const PostprodPage = () => {
               </span>
               <span className="font-mono text-micro text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis mt-auto">
                 {c.price?.kind === 'quote'
-                  ? common.onRequest[lang]
-                  : `${c.price.from ? postprodMsg.from[lang] + ' ' : ''}${c.price.amount}${c.price.unit?.[lang] ?? ''}`}
+                  ? t('common.onRequest')
+                  : `${c.price.from ? t('postprod.from') + ' ' : ''}${c.price.amount}${c.price.unit?.[lang] ?? ''}`}
               </span>
             </button>
           );
         })}
         <div className="mt-auto flex py-3.5 px-4 border-t border-t-border flex-col gap-1.5 shrink-0 bg-muted">
           <span className="font-mono text-micro tracking-label uppercase text-primary">
-            {postprodMsg.note[lang]}
+            {t('postprod.note')}
           </span>
           <span className="text-caption text-muted-foreground leading-normal text-pretty">
-            {postprodMsg.noteBody[lang]}
+            {t('postprod.noteBody')}
           </span>
         </div>
       </aside>
@@ -493,11 +490,11 @@ const PostprodPage = () => {
           <div className="flex items-center gap-2.5 flex-wrap">
             <span className="font-mono text-label tracking-label text-primary">
               {String(cats.findIndex((x) => x.k === k) + 1).padStart(2, '0')} ·{' '}
-              {postprodMsg.category[lang]}
+              {t('postprod.category')}
             </span>
             {cat.featured && (
               <span className="font-mono text-micro tracking-label uppercase bg-primary text-white px-2 py-0.5">
-                {postprodMsg.standard[lang]}
+                {t('postprod.standard')}
               </span>
             )}
           </div>
@@ -526,7 +523,7 @@ const PostprodPage = () => {
                 <span
                   className={`text-page-title font-light tracking-headline leading-none ${fgCls}`}
                 >
-                  {common.onRequest[lang]}
+                  {t('common.onRequest')}
                 </span>
               ) : (
                 <>
@@ -534,7 +531,7 @@ const PostprodPage = () => {
                     <span
                       className={`font-mono text-label tracking-label uppercase ${mutedCls}`}
                     >
-                      {postprodMsg.from[lang]}
+                      {t('postprod.from')}
                     </span>
                   )}
                   <span
@@ -553,7 +550,7 @@ const PostprodPage = () => {
             onClick={() => goto('contact')}
             className="w-full justify-between py-3.5 px-5 mt-2"
           >
-            {postprodMsg.requestQuote[lang]}
+            {t('postprod.requestQuote')}
             <IconArrowRight width="16" height="16" />
           </Button>
         </div>

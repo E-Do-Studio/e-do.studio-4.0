@@ -8,7 +8,7 @@ import { IconArrowRight, IconSelector } from './ui/icons';
 import { PageHeader, buildMainNav } from './ui/page-header';
 import type { Lang } from './types';
 import { usePageContext } from './lib/page-context';
-import { common, legalPage } from './i18n/messages';
+import { useT } from './i18n/use-t';
 import { useLoaderData } from '@tanstack/react-router';
 import type { LegalSectionContent, LegalDocumentKey } from './lib/strapi';
 import {
@@ -147,6 +147,7 @@ const StrapiSectionsRenderer = ({ sections, lang }: SectionRendererProps) => (
 );
 
 const LegalPage = () => {
+  const t = useT();
   const { lang, setLang, openMenu, goto } = usePageContext();
   const { doc } = useSearch({ from: '/$lang/legal' });
   const sec = doc ?? 'mentions';
@@ -184,7 +185,7 @@ const LegalPage = () => {
       {/* Unified header — compact right-aligned actions on all breakpoints */}
       <PageHeader
         lang={lang}
-        title={common.legal[lang]}
+        title={t('common.legal')}
         className="col-span-full h-14 md:col-span-full md:row-start-1 md:h-full"
         onMenuClick={openMenu}
         onLogoClick={() => goto('home')}
@@ -222,9 +223,9 @@ const LegalPage = () => {
         id="legal-nav-sheet"
         open={navSheetOpen}
         onClose={() => setNavSheetOpen(false)}
-        title={legalPage.contents[lang]}
-        ariaLabel={legalPage.contents[lang]}
-        closeLabel={common.close[lang]}
+        title={t('legalPage.contents')}
+        ariaLabel={t('legalPage.contents')}
+        closeLabel={t('common.close')}
       >
         <ul className="list-none m-0 p-0 flex flex-col">
           {sections.map((s, i) => {
@@ -271,7 +272,7 @@ const LegalPage = () => {
       {/* Desktop sidebar — vertical list, hidden on mobile (replaced by trigger + sheet above). */}
       <div className="hidden bg-white overflow-auto md:col-start-1 md:row-start-2 md:flex md:flex-col">
         <div className="px-4 pt-4 pb-2.5 shrink-0">
-          <span className="edo-cell-label">{legalPage.contents[lang]}</span>
+          <span className="edo-cell-label">{t('legalPage.contents')}</span>
         </div>
         {sections.map((s, i) => {
           const isActive = sec === s.k;
@@ -295,10 +296,10 @@ const LegalPage = () => {
 
         <div className="px-4 py-cell-lg border-t border-border mt-3">
           <span className="edo-cell-label mb-2.5 block">
-            {legalPage.gotQuestion[lang]}
+            {t('legalPage.gotQuestion')}
           </span>
           <p className="text-caption text-muted-foreground leading-normal mb-3">
-            {legalPage.writeDirectly[lang]}
+            {t('legalPage.writeDirectly')}
           </p>
           <a
             href="mailto:contact@e-do.studio"
@@ -319,7 +320,7 @@ const LegalPage = () => {
                 2,
                 '0',
               )}{' '}
-              · {common.legal[lang]}
+              · {t('common.legal')}
             </span>
             <h1 className="mt-2.5 mb-3 text-page-title font-light tracking-display leading-none text-foreground">
               {active ? active[lang] : ''}
@@ -333,7 +334,7 @@ const LegalPage = () => {
           </div>
           <div className="text-right flex flex-col gap-1">
             <span className="font-mono text-label tracking-meta uppercase text-muted-foreground">
-              {legalPage.lastUpdated[lang]}
+              {t('legalPage.lastUpdated')}
             </span>
             <span className="font-mono text-detail tracking-caption text-foreground">
               {active?.updated ?? ''}
@@ -355,9 +356,7 @@ const LegalPage = () => {
 
           {!hasStrapiBody && legalDocs && (
             <p className="py-12 text-center text-detail text-muted-foreground">
-              {lang === 'fr'
-                ? 'Contenu en cours de mise à jour.'
-                : 'Content being updated.'}
+              {t('legalPage.contentUpdating')}
             </p>
           )}
 
@@ -368,11 +367,11 @@ const LegalPage = () => {
                   © GRW · E-Do Studio
                 </span>
                 <p className="mt-1.5 text-detail leading-copy opacity-75 max-w-xl">
-                  {legalPage.allRightsReserved[lang]}
+                  {t('legalPage.allRightsReserved')}
                 </p>
               </div>
               <Button variant="default" size="lg" onClick={() => goto('home')}>
-                {legalPage.backToHome[lang]}{' '}
+                {t('legalPage.backToHome')}{' '}
                 <IconArrowRight width="14" height="14" />
               </Button>
             </div>
@@ -383,7 +382,7 @@ const LegalPage = () => {
               onClick={() => window.print()}
               className="edo-focus-ring bg-transparent border-0 cursor-pointer text-foreground font-inherit tracking-inherit text-transform-inherit"
             >
-              ↓ {legalPage.print[lang]}
+              ↓ {t('legalPage.print')}
             </button>
             <a
               href="mailto:contact@e-do.studio"

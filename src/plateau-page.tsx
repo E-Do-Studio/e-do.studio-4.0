@@ -12,7 +12,7 @@ import { cn } from './ui/cn';
 import { VideoLoop } from './ui/video-loop';
 import { usePageContext } from './lib/page-context';
 import type { PlateauSpec } from './lib/strapi';
-import { common, plateau as plateauMsg } from './i18n/messages';
+import { useT } from './i18n/use-t';
 import type { Lang } from './types';
 import type { MediaItem } from './lib/strapi';
 
@@ -45,6 +45,7 @@ const Cover = ({
   onNext,
   className,
 }: CoverCarouselProps) => {
+  const t = useT();
   const [paused, setPaused] = useState(false);
   useEffect(() => {
     setPaused(false);
@@ -71,7 +72,7 @@ const Cover = ({
       )}
       role={hasMultiple ? 'group' : undefined}
       aria-roledescription={hasMultiple ? 'carousel' : undefined}
-      aria-label={hasMultiple ? common.imageCarousel[lang] : undefined}
+      aria-label={hasMultiple ? t('common.imageCarousel') : undefined}
     >
       {item.kind === 'video' ? (
         <VideoLoop
@@ -100,7 +101,7 @@ const Cover = ({
         <button
           type="button"
           onClick={() => setPaused((p) => !p)}
-          aria-label={(paused ? common.playVideo : common.pauseVideo)[lang]}
+          aria-label={paused ? t('common.playVideo') : t('common.pauseVideo')}
           aria-pressed={paused}
           className={cn(ctrlBtn, 'bottom-3 right-3')}
         >
@@ -203,6 +204,7 @@ interface PlateauPageProps {
 }
 
 const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
+  const t = useT();
   const { lang, setLang, openMenu, goto } = usePageContext();
   const [activeIndex, setActiveIndex] = useState(0);
   const [navSheetOpen, setNavSheetOpen] = useState(false);
@@ -242,7 +244,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
       {/* Unified header — compact right-aligned actions on all breakpoints */}
       <PageHeader
         lang={lang}
-        title={common.stages[lang]}
+        title={t('common.stages')}
         className="col-span-full h-14 md:col-span-full md:row-start-1 md:h-full"
         onMenuClick={openMenu}
         onLogoClick={() => goto('home')}
@@ -256,7 +258,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
       <div
         className="sticky top-14 z-30 flex h-14 items-stretch border-b border-border bg-white md:hidden"
         role="toolbar"
-        aria-label={common.stages[lang]}
+        aria-label={t('common.stages')}
       >
         <button
           type="button"
@@ -289,9 +291,9 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
         id="plateau-nav-sheet"
         open={navSheetOpen}
         onClose={() => setNavSheetOpen(false)}
-        title={common.stages[lang]}
-        ariaLabel={common.stages[lang]}
-        closeLabel={common.close[lang]}
+        title={t('common.stages')}
+        ariaLabel={t('common.stages')}
+        closeLabel={t('common.close')}
       >
         <ul className="list-none m-0 p-0 flex flex-col">
           {order.map((m, i) => {
@@ -419,7 +421,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
 
       {/* Specifications */}
       <div className="bg-white p-3 px-4 flex flex-col gap-1.5 md:col-start-4 md:row-start-3">
-        <CellLabel>{plateauMsg.specs[lang]}</CellLabel>
+        <CellLabel>{t('plateau.specs')}</CellLabel>
         <div className="flex flex-col flex-1 min-h-0">
           {p.specs.map((s, i) => (
             <div
@@ -439,7 +441,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
 
       {/* Rates */}
       <div className="bg-white px-4 pt-2.5 pb-3 flex flex-col gap-1 md:col-start-4 md:row-start-4">
-        <CellLabel>{plateauMsg.rates[lang]}</CellLabel>
+        <CellLabel>{t('plateau.rates')}</CellLabel>
         <div className="flex flex-col flex-1 min-h-0">
           {p.rates.map((r, i) => (
             <div
@@ -463,13 +465,13 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
       {/* Description + Uses */}
       <div className="bg-white p-4 flex justify-between items-start gap-6 md:col-start-2 md:col-span-2 md:row-start-5">
         <div className="flex-1 flex flex-col gap-1.5 min-w-0">
-          <CellLabel>{common.description[lang]}</CellLabel>
+          <CellLabel>{t('common.description')}</CellLabel>
           <p className="m-0 text-caption text-foreground leading-normal max-w-2xl">
             {p.desc[lang]}
           </p>
         </div>
         <div className="flex-none w-40 flex flex-col gap-1.5">
-          <CellLabel>{plateauMsg.uses[lang]}</CellLabel>
+          <CellLabel>{t('plateau.uses')}</CellLabel>
           <ul className="list-none m-0 p-0 flex flex-col gap-0.5">
             {p.uses.map((a) => (
               <li
@@ -494,11 +496,11 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
         className="edo-focus-ring bg-primary p-4 border-0 cursor-pointer flex flex-col justify-between text-left text-white font-inherit min-h-20 transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90 md:col-start-4 md:row-start-5"
       >
         <CellLabel className="text-white/80">
-          06 · {common.bookNow[lang]}
+          06 · {t('common.bookNow')}
         </CellLabel>
         <div className="flex justify-between items-end text-white w-full">
           <span className="text-tile-large font-medium tracking-headline">
-            {common.bookThisStage[lang]}
+            {t('common.bookThisStage')}
           </span>
           <IconArrowRight width="20" height="20" />
         </div>

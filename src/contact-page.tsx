@@ -14,7 +14,8 @@ import type {
 import type { Lang, ContactFormData, Bilingual } from './types';
 import { usePageContext } from './lib/page-context';
 import { submitContactForm } from './lib/contact';
-import { common, contact as contactMsg } from './i18n/messages';
+import { useT } from './i18n/use-t';
+import { bcp47 } from './lib/format';
 import { ContactForm, ContactSuccess, INITIAL_FORM } from './contact-form';
 
 const UNAVAILABLE: Bilingual = {
@@ -77,8 +78,7 @@ function formatClosureDate(iso: string, lang: Lang): string {
   if (!iso) return '';
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
-  const locale = lang === 'fr' ? 'fr-FR' : 'en-US';
-  return d.toLocaleDateString(locale, {
+  return d.toLocaleDateString(bcp47(lang), {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -90,6 +90,7 @@ const ClosuresSection = ({
   closures,
   className,
 }: ClosuresSectionProps) => {
+  const t = useT();
   const today = new Date().toISOString().slice(0, 10);
   const upcoming = closures
     .filter((c) => c.endsAt >= today)
@@ -102,9 +103,7 @@ const ClosuresSection = ({
         className,
       )}
     >
-      <CellLabel className="mb-5 block">
-        {lang === 'fr' ? 'Fermetures' : 'Closures'}
-      </CellLabel>
+      <CellLabel className="mb-5 block">{t('contact.closures')}</CellLabel>
       <div className="flex flex-col gap-3 text-caption">
         {upcoming.map((c) => (
           <div
@@ -140,6 +139,7 @@ interface FindUsSectionProps {
 }
 
 const FindUsSection = ({ lang, contact, className }: FindUsSectionProps) => {
+  const t = useT();
   const c = contact;
   const showFallback = !c;
   const eyebrowFromEntries =
@@ -159,7 +159,7 @@ const FindUsSection = ({ lang, contact, className }: FindUsSectionProps) => {
         className,
       )}
     >
-      <CellLabel className="mb-5 block">{contactMsg.findUs[lang]}</CellLabel>
+      <CellLabel className="mb-5 block">{t('contact.findUs')}</CellLabel>
       {showFallback ? (
         <UnavailableNote lang={lang} />
       ) : (
@@ -181,12 +181,12 @@ const FindUsSection = ({ lang, contact, className }: FindUsSectionProps) => {
           </div>
           {c?.transport && c.transport.length > 0 && (
             <div className="mt-5 flex flex-col gap-2.5 font-mono text-label leading-relaxed tracking-ui text-muted-foreground">
-              {c.transport.map((t, i) => {
-                const { line, name } = parseMetroLabel(t.label);
+              {c.transport.map((entry, i) => {
+                const { line, name } = parseMetroLabel(entry.label);
                 if (!line)
                   return (
                     <div key={i} className="whitespace-nowrap">
-                      {t.label}
+                      {entry.label}
                     </div>
                   );
                 return (
@@ -235,6 +235,7 @@ interface HoursSectionProps {
 }
 
 const HoursSection = ({ lang, hours, className }: HoursSectionProps) => {
+  const t = useT();
   const h = hours;
   const showFallback = !h;
   return (
@@ -244,18 +245,18 @@ const HoursSection = ({ lang, hours, className }: HoursSectionProps) => {
         className,
       )}
     >
-      <CellLabel className="mb-5 block">{contactMsg.hours[lang]}</CellLabel>
+      <CellLabel className="mb-5 block">{t('contact.hours')}</CellLabel>
       {showFallback ? (
         <UnavailableNote lang={lang} />
       ) : (
         <div className="flex flex-col gap-3 text-caption">
           <HoursRow
-            label={contactMsg.monFri[lang]}
+            label={t('contact.monFri')}
             value={h?.weekday[lang] || '—'}
           />
           <HoursRow
-            label={contactMsg.satSun[lang]}
-            value={h?.weekend[lang] || common.onRequest[lang]}
+            label={t('contact.satSun')}
+            value={h?.weekend[lang] || t('common.onRequest')}
             muted
           />
         </div>
@@ -291,11 +292,12 @@ interface PhoneSectionProps {
 }
 
 const PhoneSection = ({ lang, contact, className }: PhoneSectionProps) => {
+  const t = useT();
   const c = contact;
   const showFallback = !c;
   return (
     <section className={cn('bg-white p-6', className)}>
-      <CellLabel className="mb-5 block">{contactMsg.phone[lang]}</CellLabel>
+      <CellLabel className="mb-5 block">{t('contact.phone')}</CellLabel>
       {showFallback ? (
         <UnavailableNote lang={lang} />
       ) : c?.phone ? (
@@ -338,30 +340,32 @@ const ContactFormPanel = ({
   setSent,
   submit,
   goto,
-}: ContactFormPanelProps) => (
-  <main className="overflow-hidden bg-white md:col-start-2 md:col-span-2 md:row-start-2">
-    {!sent ? (
-      <ContactForm
-        lang={lang}
-        form={form}
-        setForm={setForm}
-        submit={submit}
-        sending={sending}
-        sendError={sendError}
-      />
-    ) : (
-      <ContactSuccess
-        lang={lang}
-        onNewMessage={() => {
-          setSent(false);
-          setForm(INITIAL_FORM);
-        }}
-        onContinue={() => goto('gallery')}
-        continueLabel={`${contactMsg.seeGallery[lang]} →`}
-      />
-    )}
-  </main>
-);
+}: ContactFormPanelProps) => {
+  const t = useT();
+  return (
+    <main className="overflow-hidden bg-white md:col-start-2 md:col-span-2 md:row-start-2">
+      {!sent ? (
+        <ContactForm
+          lang={lang}
+          form={form}
+          setForm={setForm}
+          submit={submit}
+          sending={sending}
+          sendError={sendError}
+        />
+      ) : (
+        <ContactSuccess
+          onNewMessage={() => {
+            setSent(false);
+            setForm(INITIAL_FORM);
+          }}
+          onContinue={() => goto('gallery')}
+          continueLabel={`${t('contact.seeGallery')} →`}
+        />
+      )}
+    </main>
+  );
+};
 
 interface ContactRightColumnProps {
   lang: Lang;
@@ -409,6 +413,7 @@ interface ContactMapProps {
 }
 
 const ContactMap = ({ lang, contact, className }: ContactMapProps) => {
+  const t = useT();
   const c = contact;
   const showFallback = !c;
   const embedUrl = forceMapPlanView(
@@ -432,7 +437,7 @@ const ContactMap = ({ lang, contact, className }: ContactMapProps) => {
           className="absolute inset-0 h-full w-full border-0"
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
-          title={contactMsg.mapTitle[lang]}
+          title={t('contact.mapTitle')}
         />
       )}
     </section>
@@ -445,18 +450,19 @@ const TeamPanel = ({
 }: {
   lang: Lang;
   members: StrapiTeamMember[];
-}) => (
-  <section className="flex flex-col gap-3.5 bg-foreground p-6 text-white">
-    <span className="edo-cell-label text-white/70">
-      {contactMsg.team[lang]}
-    </span>
-    <div className="flex flex-col gap-2.5">
-      {members.map((member) => (
-        <TeamMemberRow key={member.id} member={member} lang={lang} />
-      ))}
-    </div>
-  </section>
-);
+}) => {
+  const t = useT();
+  return (
+    <section className="flex flex-col gap-3.5 bg-foreground p-6 text-white">
+      <span className="edo-cell-label text-white/70">{t('contact.team')}</span>
+      <div className="flex flex-col gap-2.5">
+        {members.map((member) => (
+          <TeamMemberRow key={member.id} member={member} lang={lang} />
+        ))}
+      </div>
+    </section>
+  );
+};
 
 interface TeamMemberRowProps {
   member: StrapiTeamMember;
@@ -485,6 +491,7 @@ const TeamMemberRow = ({ member, lang }: TeamMemberRowProps) => (
 );
 
 const ContactPage = () => {
+  const t = useT();
   const { lang, setLang, openMenu, goto, siteData } = usePageContext();
   const contact = siteData.contact;
   const hours = siteData.studioHours;
@@ -504,9 +511,7 @@ const ContactPage = () => {
       await submitContactForm(form);
       setSent(true);
     } catch (err) {
-      setSendError(
-        err instanceof Error ? err.message : contactMsg.errorSend[lang],
-      );
+      setSendError(err instanceof Error ? err.message : t('contact.errorSend'));
     } finally {
       setSending(false);
     }
@@ -514,11 +519,11 @@ const ContactPage = () => {
 
   return (
     <div className="edo-page-enter grid w-full edo-hairline md:h-full md:grid-cols-contact-shell md:grid-rows-page md:overflow-hidden">
-      <h1 className="sr-only">{common.contactUs[lang]} — E-Do Studio Paris</h1>
+      <h1 className="sr-only">{t('common.contactUs')} — E-Do Studio Paris</h1>
       {/* Unified header — compact right-aligned actions on all breakpoints */}
       <PageHeader
         lang={lang}
-        title={common.contactUs[lang]}
+        title={t('common.contactUs')}
         className="col-span-full h-14 md:col-span-full md:row-start-1 md:h-full"
         onMenuClick={openMenu}
         onLogoClick={() => goto('home')}

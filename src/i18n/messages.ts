@@ -36,46 +36,6 @@ export const common = {
   resetZoom: { fr: 'Réinitialiser le zoom', en: 'Reset zoom' } as B,
 };
 
-export const plateau = {
-  specs: { fr: 'Caractéristiques', en: 'Specifications' } as B,
-  rates: { fr: 'Tarifs HT', en: 'Rates excl. VAT' } as B,
-  rateExVat: { fr: 'Tarif HT', en: 'Rate ex. VAT' } as B,
-  uses: { fr: 'Usages', en: 'Uses' } as B,
-};
-
-export const contact = {
-  findUs: { fr: 'Nous trouver', en: 'Find us' } as B,
-  bldg: { fr: 'Bât.', en: 'Bldg.' } as B,
-  hours: { fr: 'Horaires', en: 'Hours' } as B,
-  monFri: { fr: 'Lun — Ven', en: 'Mon — Fri' } as B,
-  satSun: { fr: 'Sam — Dim', en: 'Sat — Sun' } as B,
-  phone: { fr: 'Téléphone', en: 'Phone' } as B,
-  writeToUs: { fr: 'Écrivez-nous', en: 'Write to us' } as B,
-  projectVisit: {
-    fr: 'Un projet, une visite ?',
-    en: 'A project, a visit?',
-  } as B,
-  name: { fr: 'Nom*', en: 'Name*' } as B,
-  phonePlaceholder: { fr: 'Téléphone*', en: 'Phone*' } as B,
-  companyBrand: { fr: 'Société · Marque*', en: 'Company · Brand*' } as B,
-  yourMessage: { fr: 'Votre message*', en: 'Your message*' } as B,
-  messageSent: { fr: 'Message envoyé', en: 'Message sent' } as B,
-  thanksSoon: { fr: 'Merci — à très vite.', en: 'Thanks — talk soon.' } as B,
-  replyTime: {
-    fr: 'Notre équipe vous répond sous 24 h ouvrées. En attendant, vous pouvez parcourir la galerie ou explorer les plateaux.',
-    en: 'Our team replies within 1 business day. In the meantime, browse the gallery or explore the stages.',
-  } as B,
-  newMessage: { fr: 'Nouveau message', en: 'Another message' } as B,
-  seeGallery: { fr: 'Voir la galerie', en: 'See gallery' } as B,
-  errorSend: {
-    fr: "Erreur lors de l'envoi",
-    en: 'Failed to send message',
-  } as B,
-  mapTitle: { fr: 'Carte du studio E-Do', en: 'E-Do studio map' } as B,
-  directions: { fr: 'Itinéraire →', en: 'Directions →' } as B,
-  team: { fr: "L'équipe", en: 'The team' } as B,
-};
-
 export const galleryPage = {
   categories: { fr: 'Catégories', en: 'Categories' } as B,
   noResults: { fr: 'Aucun résultat', en: 'No results' } as B,
@@ -97,45 +57,6 @@ export const resultsCount = (count: number, lang: 'fr' | 'en'): string => {
     return count <= 1 ? `${count} résultat` : `${count} résultats`;
   }
   return count <= 1 ? `${count} result` : `${count} results`;
-};
-
-export const postprod = {
-  category: { fr: 'CATÉGORIE', en: 'CATEGORY' } as B,
-  standard: { fr: 'Standard', en: 'Standard' } as B,
-  from: { fr: 'À partir de', en: 'From' } as B,
-  requestQuote: { fr: 'Demander un devis', en: 'Request a quote' } as B,
-  note: { fr: 'À noter', en: 'Note' } as B,
-  noteBody: {
-    fr: 'Nous retouchons aussi vos images non shootées chez nous.',
-    en: 'We also retouch images not shot at our studio.',
-  } as B,
-};
-
-export const legalPage = {
-  contents: { fr: 'Sommaire', en: 'Contents' } as B,
-  gotQuestion: { fr: 'Une question ?', en: 'Got a question?' } as B,
-  writeDirectly: {
-    fr: 'Écrivez-nous directement.',
-    en: 'Write to us directly.',
-  } as B,
-  lastUpdated: { fr: 'Dernière mise à jour', en: 'Last updated' } as B,
-  essential: { fr: 'Essentiel', en: 'Essential' } as B,
-  measure: { fr: 'Mesure', en: 'Measure' } as B,
-  cookieName: { fr: 'Nom', en: 'Name' } as B,
-  cookieCategory: { fr: 'Catégorie', en: 'Category' } as B,
-  cookiePurpose: { fr: 'Finalité', en: 'Purpose' } as B,
-  cookieDuration: { fr: 'Durée', en: 'Duration' } as B,
-  cookieIssuedBy: { fr: 'Émis par', en: 'Issued by' } as B,
-  cookieConsent: {
-    fr: "Vous pouvez « accepter » ou « refuser » les cookies via le bandeau qui s'affiche lors de votre navigation. À défaut d'action, la poursuite de la navigation vaut acceptation. Vous pouvez à tout moment modifier votre choix en effaçant les cookies depuis les préférences de votre navigateur, ou en nous écrivant à contact@e-do.studio.",
-    en: 'You may "accept" or "refuse" cookies via the banner displayed during your browsing. Continuing to browse without action is considered acceptance. You may modify your choice at any time by clearing cookies in your browser preferences or writing to contact@e-do.studio.',
-  } as B,
-  allRightsReserved: {
-    fr: 'RCS Bobigny 891 710 857 · 69 boulevard Victor Hugo · 93400 Saint-Ouen-sur-Seine. Tous droits réservés.',
-    en: 'RCS Bobigny 891 710 857 · 69 boulevard Victor Hugo · 93400 Saint-Ouen-sur-Seine. All rights reserved.',
-  } as B,
-  backToHome: { fr: 'Retour accueil', en: 'Back to home' } as B,
-  print: { fr: 'Imprimer', en: 'Print' } as B,
 };
 
 export const cookieBanner = {

@@ -6,7 +6,7 @@ import type {
 } from 'react';
 import type { ContactFormData, Lang } from './types';
 import { submitContactForm } from './lib/contact';
-import { common, contact as contactMsg } from './i18n/messages';
+import { useT } from './i18n/use-t';
 import { Button } from './ui/button';
 import { cn } from './ui/cn';
 import { IconArrowRight } from './ui/icons';
@@ -85,6 +85,7 @@ export const ContactForm = ({
   sending,
   sendError,
 }: ContactFormProps) => {
+  const t = useT();
   return (
     <form
       onSubmit={submit}
@@ -92,10 +93,10 @@ export const ContactForm = ({
     >
       <div className="col-span-2 flex flex-col justify-center bg-white px-5 py-2.5">
         <span className="edo-cell-label text-primary">
-          {contactMsg.writeToUs[lang]}
+          {t('contact.writeToUs')}
         </span>
         <h1 className="m-0 mt-0.5 text-tile-large font-light leading-none tracking-display text-foreground">
-          {contactMsg.projectVisit[lang]}
+          {t('contact.projectVisit')}
         </h1>
       </div>
 
@@ -103,7 +104,7 @@ export const ContactForm = ({
         required
         value={form.nom}
         onChange={(value) => setForm({ ...form, nom: value })}
-        placeholder={contactMsg.name[lang]}
+        placeholder={t('contact.name')}
         className="col-start-1 row-start-2"
       />
       <ContactInput
@@ -111,7 +112,7 @@ export const ContactForm = ({
         type="tel"
         value={form.telephone}
         onChange={(value) => setForm({ ...form, telephone: value })}
-        placeholder={contactMsg.phonePlaceholder[lang]}
+        placeholder={t('contact.phonePlaceholder')}
         className="col-start-2 row-start-2"
       />
       <ContactInput
@@ -126,14 +127,14 @@ export const ContactForm = ({
         required
         value={form.societe}
         onChange={(value) => setForm({ ...form, societe: value })}
-        placeholder={contactMsg.companyBrand[lang]}
+        placeholder={t('contact.companyBrand')}
         className="col-span-2 row-start-4"
       />
       <ContactTextarea
         required
         value={form.message}
         onChange={(value) => setForm({ ...form, message: value })}
-        placeholder={contactMsg.yourMessage[lang]}
+        placeholder={t('contact.yourMessage')}
         className="row-start-5"
       />
 
@@ -149,10 +150,10 @@ export const ContactForm = ({
         className="edo-focus-ring col-span-2 row-start-6 flex cursor-pointer items-center justify-center gap-3.5 border-0 bg-primary font-mono text-caption uppercase tracking-label text-white transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {sending ? (
-          common.sending[lang]
+          t('common.sending')
         ) : (
           <>
-            {common.send[lang]} <IconArrowRight width="16" height="16" />
+            {t('common.send')} <IconArrowRight width="16" height="16" />
           </>
         )}
       </button>
@@ -161,40 +162,41 @@ export const ContactForm = ({
 };
 
 interface ContactSuccessProps {
-  lang: Lang;
   onNewMessage: () => void;
   onContinue?: () => void;
   continueLabel?: string;
 }
 
 export const ContactSuccess = ({
-  lang,
   onNewMessage,
   onContinue,
   continueLabel,
-}: ContactSuccessProps) => (
-  <div className="flex h-full flex-col items-start justify-center gap-4 bg-white px-7 py-8">
-    <span className="edo-cell-label text-primary">
-      ✓ {contactMsg.messageSent[lang]}
-    </span>
-    <h1 className="m-0 max-w-lg text-page-title font-light leading-tight tracking-display text-foreground">
-      {contactMsg.thanksSoon[lang]}
-    </h1>
-    <p className="m-0 max-w-md text-detail leading-normal text-muted-foreground">
-      {contactMsg.replyTime[lang]}
-    </p>
-    <div className="mt-3 flex flex-wrap gap-2.5">
-      <Button variant="outline" size="lg" onClick={onNewMessage}>
-        {contactMsg.newMessage[lang]}
-      </Button>
-      {onContinue && (
-        <Button size="lg" onClick={onContinue}>
-          {continueLabel ?? `${common.backToGallery[lang]} →`}
+}: ContactSuccessProps) => {
+  const t = useT();
+  return (
+    <div className="flex h-full flex-col items-start justify-center gap-4 bg-white px-7 py-8">
+      <span className="edo-cell-label text-primary">
+        ✓ {t('contact.messageSent')}
+      </span>
+      <h1 className="m-0 max-w-lg text-page-title font-light leading-tight tracking-display text-foreground">
+        {t('contact.thanksSoon')}
+      </h1>
+      <p className="m-0 max-w-md text-detail leading-normal text-muted-foreground">
+        {t('contact.replyTime')}
+      </p>
+      <div className="mt-3 flex flex-wrap gap-2.5">
+        <Button variant="outline" size="lg" onClick={onNewMessage}>
+          {t('contact.newMessage')}
         </Button>
-      )}
+        {onContinue && (
+          <Button size="lg" onClick={onContinue}>
+            {continueLabel ?? `${t('common.backToGallery')} →`}
+          </Button>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 interface EmbeddedContactFormProps {
   lang: Lang;
@@ -209,6 +211,7 @@ export const EmbeddedContactForm = ({
   continueLabel,
   className,
 }: EmbeddedContactFormProps) => {
+  const t = useT();
   const [form, setForm] = useState<ContactFormData>(INITIAL_FORM);
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
@@ -222,9 +225,7 @@ export const EmbeddedContactForm = ({
       await submitContactForm(form);
       setSent(true);
     } catch (err) {
-      setSendError(
-        err instanceof Error ? err.message : contactMsg.errorSend[lang],
-      );
+      setSendError(err instanceof Error ? err.message : t('contact.errorSend'));
     } finally {
       setSending(false);
     }
@@ -243,7 +244,6 @@ export const EmbeddedContactForm = ({
         />
       ) : (
         <ContactSuccess
-          lang={lang}
           onNewMessage={() => {
             setSent(false);
             setForm(INITIAL_FORM);
