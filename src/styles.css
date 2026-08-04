@@ -108,8 +108,7 @@
 }
 
 .edo-line-clamp-2,
-.edo-line-clamp-3,
-.edo-line-clamp-4 {
+.edo-line-clamp-3 {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   overflow: hidden;
@@ -121,10 +120,6 @@
 
 .edo-line-clamp-3 {
   -webkit-line-clamp: 3;
-}
-
-.edo-line-clamp-4 {
-  -webkit-line-clamp: 4;
 }
 
 /* Article body image grid: 1 column on mobile, 2 side-by-side from sm.
