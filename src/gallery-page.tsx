@@ -19,6 +19,7 @@ import {
   EmptyTitle,
 } from '@/components/ui/empty';
 import { HoverMarquee } from './ui/hover-marquee';
+import { PLATEAU_LABELS, plateauLabel as displayPlateau } from './lib/plateau-labels';
 import { MobileNavStrip } from './ui/mobile-nav-strip';
 import { PageHeader, buildMainNav } from './ui/page-header';
 import { ResponsiveImage } from './ui/responsive-image';
@@ -28,14 +29,6 @@ import type { StripGroup } from './ui/mobile-nav-strip';
 import { cn } from '@/lib/utils';
 import { useT } from './i18n/use-t';
 import { GalleryLightbox } from './gallery-lightbox';
-
-const PLATEAU_LABELS: Record<string, { fr: string; en: string }> = {
-  cyclorama: { fr: 'Cyclorama', en: 'Cyclorama' },
-  horizontal: { fr: 'Horizontal', en: 'Horizontal' },
-  vertical: { fr: 'Vertical', en: 'Vertical' },
-  eclipse: { fr: 'Eclipse', en: 'Eclipse' },
-  live: { fr: 'Live', en: 'Live' },
-};
 
 const PLATEAU_TO_SCREEN: Record<string, string> = {
   cyclorama: 'cyclorama',
@@ -94,7 +87,7 @@ interface GalleryFiltersProps {
   setCat: (c: string) => void;
   setPlateau: (p: string) => void;
   categories: { k: string; fr: string; en: string }[];
-  plateauOptions: { k: string; fr: string; en: string }[];
+  plateauOptions: { k: string; label: string }[];
   catToPlateaux: Record<string, string[]>;
   plateauToCats: Record<string, string[]>;
 }
@@ -151,7 +144,7 @@ const GalleryFilters = ({
         return (
           <FilterCell
             key={option.k}
-            label={option[lang]}
+            label={option.label}
             active={plateau === option.k}
             dimmed={dimmed}
             onClick={() => {
@@ -273,7 +266,7 @@ const ProjectRow = ({
 }) => {
   const to = resolvePlateauPath(project.plateau, lang);
   const plateauLabel =
-    PLATEAU_LABELS[project.plateau]?.[lang] ?? project.plateau;
+    displayPlateau(project.plateau);
   const ariaLabel = `${project.brand} — ${plateauLabel}`;
   return (
     <div
@@ -311,7 +304,7 @@ const ProjectLabel = ({
   ariaLabel: string;
 }) => {
   const plateauLabel =
-    PLATEAU_LABELS[project.plateau]?.[lang] ?? project.plateau;
+    displayPlateau(project.plateau);
   const className =
     'edo-focus-ring relative flex cursor-pointer flex-col items-center justify-between overflow-hidden border-0 bg-background px-2 py-2 md:px-2.5 md:py-3.5 text-left font-sans no-underline text-inherit';
   const content = (
@@ -542,10 +535,7 @@ const GalleryPageV3 = () => {
   const plateauOptions = useMemo(() => {
     const slugs = new Set(projects.map((p) => p.plateau));
     return [...slugs]
-      .map((slug) => ({
-        k: slug,
-        ...(PLATEAU_LABELS[slug] ?? { fr: slug, en: slug }),
-      }))
+      .map((slug) => ({ k: slug, label: displayPlateau(slug) }))
       .sort((a, b) => {
         const order = Object.keys(PLATEAU_LABELS);
         return order.indexOf(a.k) - order.indexOf(b.k);
@@ -579,7 +569,7 @@ const GalleryPageV3 = () => {
 
   const plateauLabelMap = useMemo(() => {
     const map: Record<string, string> = {};
-    for (const p of plateauOptions) map[p.k] = p[lang];
+    for (const p of plateauOptions) map[p.k] = p.label;
     return map;
   }, [plateauOptions, lang]);
 
@@ -606,7 +596,7 @@ const GalleryPageV3 = () => {
       },
       ...plateauOptions.map((option) => ({
         k: option.k,
-        label: option[lang],
+        label: option.label,
         dimmed: cat !== 'all' && !(catToPlateaux[cat] ?? []).includes(option.k),
       })),
     ];

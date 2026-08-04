@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { plateauLabel as displayPlateau } from './lib/plateau-labels';
 import {
   Dialog,
   DialogContent,
@@ -16,14 +17,6 @@ import type { GalleryProject } from './lib/strapi';
 import type { Lang } from './types';
 import { useT } from './i18n/use-t';
 import { cn } from '@/lib/utils';
-
-const PLATEAU_LABELS: Record<string, { fr: string; en: string }> = {
-  cyclorama: { fr: 'Cyclorama', en: 'Cyclorama' },
-  horizontal: { fr: 'Horizontal', en: 'Horizontal' },
-  vertical: { fr: 'Vertical', en: 'Vertical' },
-  eclipse: { fr: 'Eclipse', en: 'Eclipse' },
-  live: { fr: 'Live', en: 'Live' },
-};
 
 const MIN_SCALE = 1;
 const MAX_SCALE = 4;
@@ -60,8 +53,7 @@ export const GalleryLightbox = ({
   const isEmbed = !!item && item.kind === 'embed';
   // Only still images support pan/zoom; videos and iframe embeds are excluded.
   const zoomable = !!item && !isVideo && !isEmbed;
-  const plateauLabel =
-    PLATEAU_LABELS[project.plateau]?.[lang] ?? project.plateau;
+  const plateauLabel = displayPlateau(project.plateau);
 
   const prev = useCallback(
     () => setIndex((i) => (i - 1 + total) % total),
