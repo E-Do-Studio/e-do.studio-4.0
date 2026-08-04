@@ -451,8 +451,10 @@ const TeamPanel = ({
 }) => {
   const t = useT();
   return (
-    <section className="flex flex-col gap-3.5 bg-foreground p-6 text-white">
-      <span className="edo-cell-label text-white/70">{t('contact.team')}</span>
+    <section className="dark flex flex-col gap-3.5 bg-background p-6 text-foreground">
+      <span className="edo-cell-label text-muted-foreground">
+        {t('contact.team')}
+      </span>
       <div className="flex flex-col gap-2.5">
         {members.map((member) => (
           <TeamMemberRow key={member.id} member={member} lang={lang} />
@@ -468,12 +470,12 @@ interface TeamMemberRowProps {
 }
 
 const TeamMemberRow = ({ member, lang }: TeamMemberRowProps) => (
-  <div className="grid grid-cols-fluid-auto gap-2 border-b border-white/10 py-2">
+  <div className="grid grid-cols-fluid-auto gap-2 border-b border-border py-2">
     <div className="flex flex-col gap-0.5">
-      <span className="text-detail tracking-copy-tight text-white">
+      <span className="text-detail tracking-copy-tight text-foreground">
         {member.name[lang]}
       </span>
-      <span className="font-mono text-micro uppercase tracking-ui text-white/55">
+      <span className="font-mono text-micro uppercase tracking-ui text-muted-foreground">
         {member.role[lang]}
       </span>
     </div>

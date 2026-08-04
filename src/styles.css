@@ -283,3 +283,36 @@
 }
 
 
+
+/* ── Surfaces sombres ────────────────────────────────────────────
+   Mécanisme shadcn natif, câblé par `@custom-variant dark` en tête de
+   fichier : un panneau noir se déclare `className="dark bg-background
+   text-foreground"`. À l'intérieur, les tokens sémantiques sont inversés, donc
+   `text-muted-foreground` rend le gris clair adéquat et les variantes `dark:`
+   des composants shadcn s'appliquent d'elles-mêmes.
+
+   Remplace les 11 opacités distinctes de `text-white/XX` (/40 /45 /50 /55 /60
+   /62 /65 /70 /75 /80 /85), qui exprimaient toutes « texte secondaire sur fond
+   sombre » avec une valeur différente à chaque endroit.
+
+   Le site n'a pas de thème sombre global : `html` reste en `color-scheme:
+   light` et `.dark` n'est jamais posé sur la racine. Cette classe ne sert qu'à
+   des panneaux isolés.
+   ──────────────────────────────────────────────────────────────── */
+.dark {
+  --background: var(--edo-black);
+  --foreground: var(--edo-white);
+  --card: var(--edo-black);
+  --card-foreground: var(--edo-white);
+  --popover: var(--edo-black);
+  --popover-foreground: var(--edo-white);
+  --secondary: oklch(1 0 0 / 0.12);
+  --secondary-foreground: var(--edo-white);
+  --muted: oklch(1 0 0 / 0.08);
+  --muted-foreground: oklch(1 0 0 / 0.55);
+  --accent: oklch(1 0 0 / 0.12);
+  --accent-foreground: var(--edo-white);
+  --border: oklch(1 0 0 / 0.2);
+  --input: oklch(1 0 0 / 0.2);
+  --destructive: oklch(0.7 0.19 22);
+}
