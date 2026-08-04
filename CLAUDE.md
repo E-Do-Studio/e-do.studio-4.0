@@ -21,13 +21,20 @@ backend applicatif via Supabase (booking, chat, emails, calendrier).
 ```bash
 pnpm dev          # vite --host 0.0.0.0
 pnpm typecheck    # tsc --noEmit  ← à passer avant tout commit non trivial
+pnpm lint         # biome lint
+pnpm check        # biome check --write (lint + format)
 pnpm build        # vite build
 pnpm preview      # vite preview
 pnpm chat:reindex # régénère l'index de connaissance du chatbot
 ```
 
-Il n'y a **pas de linter ni de suite de tests** configurés. Le typecheck est
-le seul filet de sécurité automatisé — il doit rester vert.
+Filets automatisés : le typecheck, Biome, et une suite Vitest (`npx vitest run`)
+qui couvre le moteur de réservation, la validation et le rendu markdown. Tous
+doivent rester verts.
+
+Le typecheck reste le filet le plus large : `noUnusedLocals` transforme une
+variable devenue orpheline en erreur, ce qui certifie qu'un refactor est
+complet fichier par fichier.
 
 ## Structure
 
@@ -38,7 +45,9 @@ src/
   discovery/              # section éditoriale (bento grid, overlay, cards)
   ui/                     # primitives partagées (button, chip, bottom-sheet, …)
   lib/                    # accès données (strapi, supabase, hooks)
-  i18n/messages.ts        # chaînes UI bilingues
+  i18n/locales/{fr,en}.json  # chaînes UI — source unique
+  i18n/index.ts           # instances i18next figées + getT
+  i18n/use-t.ts           # hook useT() pour les composants
   types.ts                # types métier (Lang, Bilingual<T>, DiscoveryPost…)
 docs/                     # runbooks, audits, todos (Strapi, booking, chatbot)
 supabase/
@@ -56,9 +65,30 @@ strapi/                   # code du CMS (déploiement séparé)
   pour les pages routées et `App.tsx`.
 - **Classes Tailwind** : composer avec le helper `cn` (`src/ui/cn.ts`), pas de
   `clsx` ou `classnames`.
-- **Bilingue** : tout contenu localisé passe par `Bilingual<T> = { fr; en }` ;
-  les chaînes d'UI vivent dans `src/i18n/messages.ts`. Ne jamais hardcoder un
-  libellé FR ou EN dans un composant.
+- **Bilingue** — deux mécanismes distincts, à ne pas confondre :
+
+  | Quoi | Comment | Où |
+  |---|---|---|
+  | Chaîne d'**UI** dans un composant ou un hook | `const t = useT()` puis `t('groupe.cle')` | `src/i18n/locales/{fr,en}.json` |
+  | Chaîne d'**UI** hors React (`head()` de route, JSON-LD, helper) | `getT(lang)('groupe.cle')` | idem |
+  | Phrase contenant un **fragment stylé ou un lien** | `<Trans i18nKey="…" components={{ nom: <span /> }} />` | idem, balisé `<nom>…</nom>` |
+  | Contenu **CMS** (Strapi) | `valeur[lang]` — i18next n'en est pas propriétaire | `Bilingual<T> = { fr; en }` |
+
+  Ne jamais écrire `lang === 'fr' ? 'Oui' : 'Yes'` dans un composant. Les seules
+  occurrences légitimes de ce ternaire sont la bascule
+  `setLang(lang === 'fr' ? 'en' : 'fr')` et le choix d'une étiquette de locale
+  (`bcp47`, `ogLocale` dans `src/lib/format.ts`) — qui ne sont pas des traductions.
+
+  Une clé présente d'un seul côté **casse `pnpm typecheck`** : `src/i18n/index.ts`
+  croise les deux locales par `satisfies`. Une clé inexistante est rejetée à la
+  compilation grâce à `src/i18n/i18next.d.ts`.
+
+  ⚠️ `<Trans>` échoue **silencieusement** en rendant la clé brute — le typecheck
+  ne le voit pas. Toujours vérifier son rendu dans le navigateur.
+
+  `src/lib/booking-engine.ts` est **hors i18next** : il est importé par les Edge
+  Functions Deno et doit rester pur. Ses libellés d'affichage lui sont injectés
+  par l'appelant via `QuoteLabels`.
 - **Routing** : ajouter une page = déclarer une route dans `src/router.tsx`
   + ajouter une entrée dans `SCREEN_TO_PATH` (mapping `screen → /:lang/...`).
 - **State URL** : préférer `nuqs` à `useState` quand l'état doit être

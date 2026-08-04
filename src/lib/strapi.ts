@@ -5,6 +5,7 @@ import type {
   DiscoveryCategory,
   SocialLink,
 } from '../types';
+import { getT } from '../i18n';
 import type { BlockNode } from './render-blocks';
 import { getPreviewState } from './preview-mode';
 
@@ -1276,11 +1277,11 @@ function summarizeRange(
   const matching = rows.filter((r) => days.includes(r.dayOfWeek));
   const open = matching.filter((r) => !r.closed);
   if (open.length === 0) {
-    return lang === 'fr' ? 'Fermé' : 'Closed';
+    return getT(lang)('contact.closed');
   }
   const byAppointment = open.every((r) => r.byAppointment);
   if (byAppointment) {
-    return lang === 'fr' ? 'Sur rendez-vous' : 'By appointment';
+    return getT(lang)('contact.byAppointment');
   }
   // Take the first row's range; if everyone matches, that's the canonical display.
   // If they differ, fall back to a multi-line summary (caller should switch to legacy).
@@ -1293,7 +1294,7 @@ function summarizeRange(
   const opens = trimTime(first.opensAt);
   const closes = trimTime(first.closesAt);
   if (!opens || !closes) {
-    return lang === 'fr' ? 'Sur demande' : 'On request';
+    return getT(lang)('common.onRequest');
   }
   if (!allSame) {
     return open

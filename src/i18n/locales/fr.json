@@ -276,6 +276,8 @@
     "zoomOut": "Dézoomer"
   },
   "contact": {
+    "byAppointment": "Sur rendez-vous",
+    "closed": "Fermé",
     "closures": "Fermetures",
     "companyBrand": "Société · Marque*",
     "errorSend": "Erreur lors de l'envoi",

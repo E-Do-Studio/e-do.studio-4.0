@@ -276,6 +276,8 @@
     "zoomOut": "Zoom out"
   },
   "contact": {
+    "byAppointment": "By appointment",
+    "closed": "Closed",
     "closures": "Closures",
     "companyBrand": "Company · Brand*",
     "errorSend": "Failed to send message",
