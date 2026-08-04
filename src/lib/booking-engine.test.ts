@@ -3,10 +3,12 @@ import {
   BOOK_PLATEAUX,
   CYCLO_EXTRAS,
   computePriceBreakdown,
+  dailyOccupancyHoursFor,
   fmtEUR,
   isSessionValid,
   isValidSiren,
   makeBlankSession,
+  rentalHoursFor,
   type QuoteLabels,
   type SlotState,
 } from './booking-engine';
@@ -223,5 +225,75 @@ describe('isSessionValid', () => {
   it('exige un produit pour un projet e-commerce', () => {
     const s = { ...makeBlankSession(), projectType: 'ecom' };
     expect(isSessionValid(s)).toBe(false);
+  });
+});
+
+// Ces deux fonctions répondent à deux questions distinctes qu'un seul nombre
+// servait auparavant, ce qui avait produit deux défauts en production (cf. la
+// régression multi-jours plus bas). Les figer ici empêche de les refusionner.
+describe('rentalHoursFor — durée totale facturée', () => {
+  const live = BOOK_PLATEAUX.find((p) => p.k === 'live')!;
+  const cyclo = BOOK_PLATEAUX.find((p) => p.k === 'cyclorama')!;
+  const visite = BOOK_PLATEAUX.find((p) => p.k === 'visite')!;
+
+  it('rend les heures telles quelles au tarif horaire', () => {
+    expect(rentalHoursFor(slot({ slotType: 'hour', hours: 3 }), live)).toBe(3);
+  });
+
+  it('borne la demi-journée à [4,7]', () => {
+    expect(rentalHoursFor(slot({ slotType: 'half', hours: 2 }), live)).toBe(4);
+    expect(rentalHoursFor(slot({ slotType: 'half', hours: 9 }), live)).toBe(7);
+  });
+
+  it('compte le total réel sur une journée complète étalée sur plusieurs jours', () => {
+    expect(rentalHoursFor(slot({ slotType: 'full', hours: 8 }), live)).toBe(8);
+    expect(rentalHoursFor(slot({ slotType: 'full', hours: 16 }), live)).toBe(16);
+    expect(rentalHoursFor(slot({ slotType: 'full', hours: 24 }), live)).toBe(24);
+  });
+
+  it('exprime le cyclorama en journées et la visite en une heure', () => {
+    expect(rentalHoursFor(slot({ cycloMode: 'halfH' }), cyclo)).toBe(5);
+    expect(rentalHoursFor(slot({ cycloMode: 'fullH' }), cyclo)).toBe(10);
+    expect(rentalHoursFor(slot(), visite)).toBe(1);
+  });
+});
+
+describe('dailyOccupancyHoursFor — occupation sur une seule journée', () => {
+  const live = BOOK_PLATEAUX.find((p) => p.k === 'live')!;
+  const cyclo = BOOK_PLATEAUX.find((p) => p.k === 'cyclorama')!;
+
+  // useAvailability cherche un créneau libre de N heures consécutives entre 9h
+  // et 19h. Au-delà de 10h sa boucle ne s'exécute jamais et elle déclare la
+  // journée complète : une réservation de 2 jours rendait TOUTES les dates
+  // indisponibles, y compris sur une journée vide.
+  it('plafonne une réservation multi-jours à une journée ouvrable', () => {
+    expect(dailyOccupancyHoursFor(slot({ slotType: 'full', hours: 16 }), live)).toBe(8);
+    expect(dailyOccupancyHoursFor(slot({ slotType: 'full', hours: 24 }), live)).toBe(8);
+  });
+
+  it('ne dépasse jamais la fenêtre exploitable par le calendrier', () => {
+    for (const hours of [8, 9, 16, 24, 40]) {
+      expect(
+        dailyOccupancyHoursFor(slot({ slotType: 'full', hours }), live),
+      ).toBeLessThanOrEqual(10);
+    }
+  });
+
+  it('laisse le cyclorama intact, déjà exprimé en journées', () => {
+    expect(dailyOccupancyHoursFor(slot({ cycloMode: 'fullH' }), cyclo)).toBe(10);
+  });
+
+  it("coïncide avec la durée facturée tant qu'on tient dans une journée", () => {
+    for (const over of [
+      { slotType: 'hour', hours: 1 },
+      { slotType: 'hour', hours: 3 },
+      { slotType: 'half', hours: 4 },
+      { slotType: 'half', hours: 7 },
+      { slotType: 'full', hours: 8 },
+    ] as Partial<SlotState>[]) {
+      expect(dailyOccupancyHoursFor(slot(over), live)).toBe(
+        rentalHoursFor(slot(over), live),
+      );
+    }
   });
 });
