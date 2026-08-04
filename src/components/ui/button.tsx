@@ -5,8 +5,8 @@ import { cn } from "@/lib/utils"
 
 // Adaptation à l'identité e-do : mono capitales à fort interlettrage au lieu du
 // `text-sm font-medium` de shadcn. `rounded-lg` est conservé tel quel — il résout
-// vers `var(--radius)`, à 0 dans colors_and_type.css, donc le bouton sort carré
-// sans override. Idem pour l'anneau de focus : `--ring` est l'orange de marque.
+// vers `var(--radius)`, à 0 dans styles.css, donc le bouton sort carré sans
+// override. Idem pour l'anneau de focus : `--ring` est l'orange de marque.
 //
 // Deux variantes propres au site s'ajoutent aux variantes shadcn :
 //   `cell`   — la cellule bento cliquable, forme dominante du site. Son état
@@ -43,8 +43,17 @@ const buttonVariants = cva(
         xs: "h-6 gap-1 rounded-[min(var(--radius-md),10px)] px-2 text-xs in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3",
         sm: "h-7 gap-1 rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5",
         lg: "h-9 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
-        // Cellule bento : hauteur libre, contenu empilé et aligné à gauche.
-        cell: "h-auto flex-col items-start justify-start gap-1.5 px-4.5 py-4 text-left normal-case tracking-normal",
+        // Cellule bento : hauteur libre, contenu empilé, aligné à gauche.
+        //
+        // `items-stretch` et non `items-start` : sur l'axe transverse d'un
+        // flex, `start` dimensionne les enfants à leur contenu, ce qui annule
+        // l'`overflow-hidden` des libellés — ils n'ont alors plus de largeur à
+        // déborder et passent par-dessus le filet voisin. L'alignement du
+        // texte vient de `text-left`, pas de l'alignement flex.
+        //
+        // `whitespace-normal` annule le `nowrap` de la base, qui vaut pour un
+        // bouton d'une ligne et non pour une cellule à contenu empilé.
+        cell: "h-auto min-w-0 flex-col items-stretch justify-start gap-1.5 overflow-hidden px-4.5 py-4 text-left normal-case tracking-normal whitespace-normal",
         // Action d'en-tête : prend la hauteur de la bande qui la contient.
         header: "h-full gap-2 px-5",
         icon: "size-8",
