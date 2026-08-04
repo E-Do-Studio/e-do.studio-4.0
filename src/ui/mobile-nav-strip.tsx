@@ -1,10 +1,18 @@
 import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import type { Lang } from '../types';
 import { useT } from '../i18n/use-t';
-import { BottomSheet } from './bottom-sheet';
+import { Button } from '@/components/ui/button';
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer';
 import { cn } from '@/lib/utils';
 import { HoverMarquee } from './hover-marquee';
-import { ArrowRight, ChevronDown } from 'lucide-react';
+import { ArrowRight, ChevronDown, X } from 'lucide-react';
 
 type StripOption = {
   k: string;
@@ -171,48 +179,23 @@ const MobileNavStrip = ({
         </button>
       </div>
 
-      <BottomSheet
-        id={sheetId}
+      <Drawer
         open={open}
-        onClose={handleClose}
-        title={triggerLabel}
-        ariaLabel={ariaLabel}
-        closeLabel={t('mobileNav.closeFilters')}
-        footer={
-          <div
-            className="flex items-stretch justify-between gap-2 px-3 py-3"
-            style={{
-              paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 12px)',
-            }}
-          >
-            {draftHasActive ? (
-              <button
-                type="button"
-                onClick={handleReset}
-                className="edo-focus-ring inline-flex min-h-11 cursor-pointer items-center gap-1 border border-border bg-white px-3 font-mono text-label uppercase tracking-button text-foreground transition-colors duration-150 ease-edo-out hover:bg-muted"
-              >
-                <span aria-hidden>↺</span> {t('mobileNav.reset')}
-              </button>
-            ) : (
-              <span />
-            )}
-            <button
-              type="button"
-              onClick={handleApply}
-              className="edo-focus-ring inline-flex min-h-11 flex-1 cursor-pointer items-center justify-center gap-2 bg-foreground px-4 font-mono text-label uppercase tracking-button text-background transition-colors duration-150 ease-edo-out hover:opacity-90"
-            >
-              <span>
-                {t('mobileNav.applyFilters')}
-                {typeof liveCount === 'number'
-                  ? ` · ${t('galleryPage.resultsCount', { count: liveCount })}`
-                  : ''}
-              </span>
-              <ArrowRight width={14} height={14} aria-hidden />
-            </button>
-          </div>
-        }
+        onOpenChange={(next: boolean) => {
+          if (!next) handleClose();
+        }}
       >
-        <div className="flex flex-col">
+        <DrawerContent id={sheetId} aria-label={ariaLabel}>
+          <DrawerHeader>
+            <DrawerTitle>{triggerLabel}</DrawerTitle>
+            <DrawerClose
+              aria-label={t('mobileNav.closeFilters')}
+              render={<Button variant="ghost" size="icon" />}
+            >
+              <X />
+            </DrawerClose>
+          </DrawerHeader>
+          <div className="flex flex-col overflow-y-auto">
           {groups.map((group) => {
             const currentValue = draft[group.key] ?? group.value;
             return (
@@ -279,8 +262,35 @@ const MobileNavStrip = ({
               </fieldset>
             );
           })}
-        </div>
-      </BottomSheet>
+          </div>
+          <DrawerFooter
+            className="flex-row items-stretch justify-between gap-2"
+            style={{
+              paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 12px)',
+            }}
+          >
+            {draftHasActive ? (
+              <Button variant="outline" onClick={handleReset} className="min-h-11">
+                <span aria-hidden>↺</span> {t('mobileNav.reset')}
+              </Button>
+            ) : (
+              <span />
+            )}
+            <Button
+              onClick={handleApply}
+              className="min-h-11 flex-1 bg-foreground text-background hover:opacity-90"
+            >
+              <span>
+                {t('mobileNav.applyFilters')}
+                {typeof liveCount === 'number'
+                  ? ` · ${t('galleryPage.resultsCount', { count: liveCount })}`
+                  : ''}
+              </span>
+              <ArrowRight data-icon="inline-end" aria-hidden />
+            </Button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
     </>
   );
 };

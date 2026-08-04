@@ -1,10 +1,16 @@
 import { useState } from 'react';
 import { useNavigate, useSearch } from '@tanstack/react-router';
-import { BottomSheet } from './ui/bottom-sheet';
 import { Button } from '@/components/ui/button';
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer';
 import { cn } from '@/lib/utils';
 import { HoverMarquee } from './ui/hover-marquee';
-import { ArrowRight, ChevronsUpDown } from 'lucide-react';
+import { ArrowRight, ChevronsUpDown, X } from 'lucide-react';
 import { PageHeader, buildMainNav } from './ui/page-header';
 import type { Lang } from './types';
 import { usePageContext } from './lib/page-context';
@@ -194,7 +200,7 @@ const LegalPage = () => {
       />
 
       {/* Mobile navigation: sticky single-row trigger showing the current legal
-          section. Tap opens a BottomSheet listing all sections; selecting a row
+          section. Tap opens a Drawer listing all sections; selecting a row
           in the sheet updates the section and closes the sheet immediately. */}
       {active && (
         <button
@@ -219,15 +225,18 @@ const LegalPage = () => {
         </button>
       )}
 
-      <BottomSheet
-        id="legal-nav-sheet"
-        open={navSheetOpen}
-        onClose={() => setNavSheetOpen(false)}
-        title={t('legalPage.contents')}
-        ariaLabel={t('legalPage.contents')}
-        closeLabel={t('common.close')}
-      >
-        <ul className="list-none m-0 p-0 flex flex-col">
+      <Drawer open={navSheetOpen} onOpenChange={setNavSheetOpen}>
+        <DrawerContent id="legal-nav-sheet">
+          <DrawerHeader>
+            <DrawerTitle>{t('legalPage.contents')}</DrawerTitle>
+            <DrawerClose
+              aria-label={t('common.close')}
+              render={<Button variant="ghost" size="icon" />}
+            >
+              <X />
+            </DrawerClose>
+          </DrawerHeader>
+          <ul className="m-0 flex list-none flex-col overflow-y-auto p-0">
           {sections.map((s, i) => {
             const isActive = s.k === sec;
             const num = String(i + 1).padStart(2, '0');
@@ -266,8 +275,9 @@ const LegalPage = () => {
               </li>
             );
           })}
-        </ul>
-      </BottomSheet>
+          </ul>
+        </DrawerContent>
+      </Drawer>
 
       {/* Desktop sidebar — vertical list, hidden on mobile (replaced by trigger + sheet above). */}
       <div className="hidden bg-white overflow-auto md:col-start-1 md:row-start-2 md:flex md:flex-col">

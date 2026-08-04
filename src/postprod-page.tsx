@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearch } from '@tanstack/react-router';
-import { BottomSheet } from './ui/bottom-sheet';
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
@@ -11,7 +17,7 @@ import {
   EmptyTitle,
 } from '@/components/ui/empty';
 import { HoverMarquee } from './ui/hover-marquee';
-import { ArrowRight, ChevronsUpDown } from 'lucide-react';
+import { ArrowRight, ChevronsUpDown, X } from 'lucide-react';
 import { PageHeader, buildMainNav } from './ui/page-header';
 import { ResponsiveImage } from './ui/responsive-image';
 import { useLoaderData } from '@tanstack/react-router';
@@ -360,7 +366,7 @@ const PostprodPage = () => {
       />
 
       {/* Mobile navigation: sticky single-row trigger showing the current
-          post-prod type. Tap opens a BottomSheet listing all types; selecting
+          post-prod type. Tap opens a Drawer listing all types; selecting
           a row in the sheet updates the type and closes the sheet immediately.
           Name + tagline stack vertically so long taglines don't truncate the
           name (post-prod taglines are full sentences). */}
@@ -390,15 +396,18 @@ const PostprodPage = () => {
         />
       </button>
 
-      <BottomSheet
-        id="postprod-nav-sheet"
-        open={navSheetOpen}
-        onClose={() => setNavSheetOpen(false)}
-        title="Post-production"
-        ariaLabel="Post-production"
-        closeLabel={t('common.close')}
-      >
-        <ul className="list-none m-0 p-0 flex flex-col">
+      <Drawer open={navSheetOpen} onOpenChange={setNavSheetOpen}>
+        <DrawerContent id="postprod-nav-sheet">
+          <DrawerHeader>
+            <DrawerTitle>Post-production</DrawerTitle>
+            <DrawerClose
+              aria-label={t('common.close')}
+              render={<Button variant="ghost" size="icon" />}
+            >
+              <X />
+            </DrawerClose>
+          </DrawerHeader>
+          <ul className="m-0 flex list-none flex-col overflow-y-auto p-0">
           {cats.map((c, i) => {
             const active = c.k === k;
             const num = String(i + 1).padStart(2, '0');
@@ -443,8 +452,9 @@ const PostprodPage = () => {
               </li>
             );
           })}
-        </ul>
-      </BottomSheet>
+          </ul>
+        </DrawerContent>
+      </Drawer>
 
       {/* Desktop sidebar — vertical list, hidden on mobile (mobile uses the inline nav above) */}
       <aside className="hidden bg-white md:col-start-1 md:row-start-2 md:flex md:flex-col md:overflow-x-hidden md:overflow-y-auto">

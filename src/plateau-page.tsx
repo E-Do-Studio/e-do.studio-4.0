@@ -1,10 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useLoaderData, useParams } from '@tanstack/react-router';
-import { Pause, Play } from 'lucide-react';
-import { BottomSheet } from './ui/bottom-sheet';
+import { Button } from '@/components/ui/button';
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer';
 import { CarouselNav } from './ui/carousel-nav';
 import { HoverMarquee } from './ui/hover-marquee';
-import { ArrowRight, ChevronsUpDown } from 'lucide-react';
+import { ArrowRight, ChevronsUpDown, Pause, Play, X } from 'lucide-react';
 import { PageHeader, buildMainNav } from './ui/page-header';
 import { ResponsiveImage } from './ui/responsive-image';
 import { CellLabel } from './ui/typography';
@@ -223,7 +229,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
 
   // Mobile navigation between plateaux: a sticky row at the top of the page
   // shows the currently selected plateau (number · name · tagline · arrow);
-  // tapping it opens a BottomSheet listing all plateaux. Tapping a row in the
+  // tapping it opens a Drawer listing all plateaux. Tapping a row in the
   // sheet navigates immediately and closes the sheet.
   const navigateToPlateau = (key: string) => {
     if (key === slug) {
@@ -254,7 +260,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
 
       {/* Mobile navigation: same sticky strip gabarit as MobileNavStrip
           (gallery filters) — h-14 wrapper with min-h-11 trigger button. Tap
-          opens a BottomSheet listing all plateaux. */}
+          opens a Drawer listing all plateaux. */}
       <div
         className="sticky top-14 z-30 flex h-14 items-stretch border-b border-border bg-white md:hidden"
         role="toolbar"
@@ -287,15 +293,18 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
         </button>
       </div>
 
-      <BottomSheet
-        id="plateau-nav-sheet"
-        open={navSheetOpen}
-        onClose={() => setNavSheetOpen(false)}
-        title={t('common.stages')}
-        ariaLabel={t('common.stages')}
-        closeLabel={t('common.close')}
-      >
-        <ul className="list-none m-0 p-0 flex flex-col">
+      <Drawer open={navSheetOpen} onOpenChange={setNavSheetOpen}>
+        <DrawerContent id="plateau-nav-sheet">
+          <DrawerHeader>
+            <DrawerTitle>{t('common.stages')}</DrawerTitle>
+            <DrawerClose
+              aria-label={t('common.close')}
+              render={<Button variant="ghost" size="icon" />}
+            >
+              <X />
+            </DrawerClose>
+          </DrawerHeader>
+          <ul className="m-0 flex list-none flex-col overflow-y-auto p-0">
           {order.map((m, i) => {
             const cfg = plateaux[m];
             if (!cfg) return null;
@@ -340,8 +349,9 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
               </li>
             );
           })}
-        </ul>
-      </BottomSheet>
+          </ul>
+        </DrawerContent>
+      </Drawer>
 
       {/* Desktop sidebar: vertical list, hidden on mobile (replaced by inline pill nav). */}
       <div className="hidden bg-white md:col-start-1 md:row-start-2 md:row-span-4 md:flex md:flex-col md:overflow-x-hidden md:overflow-y-auto">
