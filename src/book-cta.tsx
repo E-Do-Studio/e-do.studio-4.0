@@ -1,6 +1,6 @@
 import { useT } from './i18n/use-t';
 import { cn } from '@/lib/utils';
-import { IconArrowRight } from './ui/icons';
+import { ArrowRight } from 'lucide-react';
 
 interface BookCTAProps {
   onClick: () => void;
@@ -30,7 +30,7 @@ const BookCTATile = ({ onClick, className, label }: BookCTAProps) => {
           {label ?? t('common.book')}
         </span>
       </div>
-      <IconArrowRight
+      <ArrowRight
         className="flex-shrink-0 transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5 group-hover:scale-110"
         width="16"
         height="16"

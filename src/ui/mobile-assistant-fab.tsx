@@ -1,6 +1,6 @@
 import { lazy, Suspense, useState } from 'react';
 import { CellLabel } from './typography';
-import { IconChat, IconX } from './icons';
+import { MessageCircle, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Lang } from '../types';
 import { useT } from '../i18n/use-t';
@@ -27,7 +27,7 @@ export const MobileAssistantFab = ({ lang }: MobileAssistantFabProps) => {
         aria-label={t('assistant.label')}
         className="edo-focus-ring fixed bottom-3 right-3 z-overlay flex h-10 w-10 cursor-pointer items-center justify-center border border-foreground/40 bg-foreground/85 text-white shadow-sm backdrop-blur-sm transition-all duration-150 hover:bg-foreground hover:shadow-md md:hidden"
       >
-        <IconChat width="16" height="16" />
+        <MessageCircle width="16" height="16" />
       </button>
 
       <div
@@ -51,7 +51,7 @@ export const MobileAssistantFab = ({ lang }: MobileAssistantFabProps) => {
             aria-label={t('common.close')}
             className="edo-focus-ring flex h-10 w-10 cursor-pointer items-center justify-center border-0 bg-transparent text-foreground transition-colors hover:bg-muted"
           >
-            <IconX width="20" height="20" />
+            <X width="20" height="20" />
           </button>
         </div>
         <div className="flex min-h-0 flex-1 flex-col">

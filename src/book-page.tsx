@@ -9,7 +9,7 @@ import {
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { usePageContext } from './lib/page-context';
 import { Empty, EmptyTitle } from '@/components/ui/empty';
-import { IconArrowRight } from './ui/icons';
+import { ArrowRight } from 'lucide-react';
 import { PageHeader, buildMainNav } from './ui/page-header';
 import { CellLabel } from './ui/typography';
 import { createBooking } from './lib/bookings';
@@ -1493,7 +1493,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
               {lang === 'fr'
                 ? 'Continuer vers la réservation'
                 : 'Continue to booking'}{' '}
-              <IconArrowRight width="14" height="14" />
+              <ArrowRight width="14" height="14" />
             </button>
           </div>
         )}
@@ -1587,7 +1587,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                           : lang === 'fr'
                             ? 'Continuer'
                             : 'Continue'}{' '}
-                        <IconArrowRight width="14" height="14" />
+                        <ArrowRight width="14" height="14" />
                       </button>
                     ) : p.isCyclo ? (
                       step === 5 ? (
@@ -1597,7 +1597,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                           className={navBtnPrimaryCls}
                         >
                           {lang === 'fr' ? 'Continuer' : 'Continue'}{' '}
-                          <IconArrowRight width="14" height="14" />
+                          <ArrowRight width="14" height="14" />
                         </button>
                       ) : isMultiDate && !onLastDateSub ? (
                         <button
@@ -1614,7 +1614,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                           {lang === 'fr'
                             ? 'Valider · plateau suivant'
                             : 'Validate · next stage'}{' '}
-                          <IconArrowRight width="14" height="14" />
+                          <ArrowRight width="14" height="14" />
                         </button>
                       ) : (
                         <button
@@ -1637,7 +1637,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                             : lang === 'fr'
                               ? 'Envoyer la demande'
                               : 'Submit request'}{' '}
-                          <IconArrowRight width="14" height="14" />
+                          <ArrowRight width="14" height="14" />
                         </button>
                       )
                     ) : (
@@ -1665,7 +1665,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                             : lang === 'fr'
                               ? 'Recevoir mon devis'
                               : 'Receive my quote'}{' '}
-                          <IconArrowRight width="14" height="14" />
+                          <ArrowRight width="14" height="14" />
                         </button>
                         {step === 5 ? (
                           <button
@@ -1674,7 +1674,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                             className={navBtnPrimaryCls}
                           >
                             {lang === 'fr' ? 'Choisir une date' : 'Pick a date'}{' '}
-                            <IconArrowRight width="14" height="14" />
+                            <ArrowRight width="14" height="14" />
                           </button>
                         ) : isMultiDate && !onLastDateSub ? (
                           <button
@@ -1691,7 +1691,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                             {lang === 'fr'
                               ? 'Valider · plateau suivant'
                               : 'Validate · next stage'}{' '}
-                            <IconArrowRight width="14" height="14" />
+                            <ArrowRight width="14" height="14" />
                           </button>
                         ) : (
                           <button
@@ -1714,7 +1714,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                               : lang === 'fr'
                                 ? 'Réserver'
                                 : 'Book now'}{' '}
-                            <IconArrowRight width="14" height="14" />
+                            <ArrowRight width="14" height="14" />
                           </button>
                         )}
                       </>

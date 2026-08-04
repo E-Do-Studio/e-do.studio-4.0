@@ -4,7 +4,7 @@ import { Pause, Play } from 'lucide-react';
 import { BottomSheet } from './ui/bottom-sheet';
 import { CarouselNav } from './ui/carousel-nav';
 import { HoverMarquee } from './ui/hover-marquee';
-import { IconArrowRight, IconSelector } from './ui/icons';
+import { ArrowRight, ChevronsUpDown } from 'lucide-react';
 import { PageHeader, buildMainNav } from './ui/page-header';
 import { ResponsiveImage } from './ui/responsive-image';
 import { CellLabel } from './ui/typography';
@@ -278,7 +278,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
             <HoverMarquee className="font-mono text-label uppercase tracking-caption text-muted-foreground">
               {p.tagline[lang]}
             </HoverMarquee>
-            <IconSelector
+            <ChevronsUpDown
               width="16"
               height="16"
               className="shrink-0 text-foreground"
@@ -335,7 +335,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
                   >
                     {cfg.tagline[lang]}
                   </HoverMarquee>
-                  <IconArrowRight width="16" height="16" className="shrink-0" />
+                  <ArrowRight width="16" height="16" className="shrink-0" />
                 </button>
               </li>
             );
@@ -502,7 +502,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
           <span className="text-tile-large font-medium tracking-headline">
             {t('common.bookThisStage')}
           </span>
-          <IconArrowRight width="20" height="20" />
+          <ArrowRight width="20" height="20" />
         </div>
       </button>
     </main>

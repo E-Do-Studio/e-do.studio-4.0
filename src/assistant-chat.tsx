@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { useRouterState } from '@tanstack/react-router';
 import { cn } from '@/lib/utils';
-import { IconArrowRight, IconPlus, IconTrash, IconX } from './ui/icons';
+import { ArrowRight, Plus, Trash2, X } from 'lucide-react';
 import type { Lang, ChatMessage } from './types';
 import { Trans } from 'react-i18next';
 import { getT } from './i18n';
@@ -145,7 +145,7 @@ const AssistantHeader = ({
             title={t('assistant.newConversation')}
             className="edo-focus-ring flex h-7 w-7 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-muted-foreground transition-colors hover:text-foreground"
           >
-            <IconPlus width="15" height="15" />
+            <Plus width="15" height="15" />
           </button>
         )}
       </div>
@@ -198,7 +198,7 @@ const ChatSessionList = ({
           aria-label={t('common.close')}
           className="edo-focus-ring -mr-1 flex h-7 w-7 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-muted-foreground transition-colors hover:text-foreground"
         >
-          <IconX width="16" height="16" />
+          <X width="16" height="16" />
         </button>
       </div>
 
@@ -208,7 +208,7 @@ const ChatSessionList = ({
           onClick={onNew}
           className="edo-focus-ring group flex shrink-0 cursor-pointer items-center gap-2.5 border-b border-hairline bg-transparent px-cell py-3 text-left transition-colors hover:bg-muted"
         >
-          <IconPlus width="15" height="15" className="text-primary" />
+          <Plus width="15" height="15" className="text-primary" />
           <span className="text-detail leading-none text-foreground">
             {t('assistant.newConversation')}
           </span>
@@ -247,7 +247,7 @@ const ChatSessionList = ({
                   aria-label={t('assistant.deleteConversation')}
                   className="edo-focus-ring mr-1.5 flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-muted-foreground opacity-0 transition-opacity hover:text-foreground focus-visible:opacity-100 group-hover/row:opacity-100"
                 >
-                  <IconTrash width="14" height="14" />
+                  <Trash2 width="14" height="14" />
                 </button>
               </div>
             );
@@ -480,7 +480,7 @@ const AssistantInput = ({
         aria-label={t('common.send')}
         className="edo-focus-ring flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-muted-foreground transition-colors hover:text-foreground disabled:cursor-default disabled:opacity-30 disabled:hover:text-muted-foreground"
       >
-        <IconArrowRight width="16" height="16" />
+        <ArrowRight width="16" height="16" />
       </button>
     </form>
   );

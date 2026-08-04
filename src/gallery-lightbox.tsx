@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  ArrowLeft as IconArrowLeft,
-  ArrowRight as IconArrowRight,
+  ArrowLeft as ArrowLeft,
+  ArrowRight as ArrowRight,
   Minus,
   Plus,
   RotateCcw,
@@ -342,7 +342,7 @@ export const GalleryLightbox = ({
             aria-label={t('common.prevImage')}
             className="edo-focus-ring flex h-14 w-14 md:h-16 md:w-16 cursor-pointer items-center justify-center bg-white text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-white"
           >
-            <IconArrowLeft size={20} strokeWidth={1.5} />
+            <ArrowLeft size={20} strokeWidth={1.5} />
           </button>
           <button
             type="button"
@@ -350,7 +350,7 @@ export const GalleryLightbox = ({
             className="edo-focus-ring flex h-14 md:h-16 cursor-pointer items-center justify-center gap-2 bg-white font-mono uppercase text-detail tracking-code text-foreground transition-colors hover:bg-muted"
           >
             {t('common.contactUs')}
-            <IconArrowRight size={14} strokeWidth={1.5} />
+            <ArrowRight size={14} strokeWidth={1.5} />
           </button>
           <button
             type="button"
@@ -358,7 +358,7 @@ export const GalleryLightbox = ({
             className="edo-focus-ring flex h-14 md:h-16 cursor-pointer items-center justify-center gap-2 bg-primary font-mono uppercase text-detail tracking-code text-primary-foreground transition-opacity hover:opacity-90"
           >
             {t('common.book')}
-            <IconArrowRight size={14} strokeWidth={1.5} />
+            <ArrowRight size={14} strokeWidth={1.5} />
           </button>
           <button
             type="button"
@@ -367,7 +367,7 @@ export const GalleryLightbox = ({
             aria-label={t('common.nextImage')}
             className="edo-focus-ring flex h-14 w-14 md:h-16 md:w-16 cursor-pointer items-center justify-center bg-white text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-white"
           >
-            <IconArrowRight size={20} strokeWidth={1.5} />
+            <ArrowRight size={20} strokeWidth={1.5} />
           </button>
         </div>
       </div>

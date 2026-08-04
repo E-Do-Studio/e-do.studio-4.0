@@ -1,7 +1,7 @@
 import { useLoaderData, useNavigate } from '@tanstack/react-router';
 import { usePageContext } from '../lib/page-context';
 import { cn } from '@/lib/utils';
-import { IconArrowRight } from '../ui/icons';
+import { ArrowRight } from 'lucide-react';
 import { PageHeader, buildMainNav } from '../ui/page-header';
 import { useT } from '../i18n/use-t';
 import { configuratorPath, manualPath } from './book-routes';
@@ -56,7 +56,7 @@ const PickerTile = ({
         >
           {String(index).padStart(2, '0')}
         </span>
-        <IconArrowRight
+        <ArrowRight
           className="flex-shrink-0 transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5 group-hover:scale-110"
           width="16"
           height="16"

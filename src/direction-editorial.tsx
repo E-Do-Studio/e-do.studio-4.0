@@ -2,7 +2,7 @@ import { lazy, Suspense } from 'react';
 import { cn } from '@/lib/utils';
 import { useIsDesktop } from './ui/use-is-desktop';
 import { HoverMarquee } from './ui/hover-marquee';
-import { IconArrowRight, IconLock } from './ui/icons';
+import { ArrowRight, Lock } from 'lucide-react';
 import { ImageCrossfade } from './ui/image-crossfade';
 import { MobileAssistantFab } from './ui/mobile-assistant-fab';
 import { PageHeader } from './ui/page-header';
@@ -214,7 +214,7 @@ const DirectionA = () => {
                   <span className="font-mono text-micro text-muted-foreground tracking-meta">
                     {String(i + 1).padStart(2, '0')}
                   </span>
-                  <IconArrowRight
+                  <ArrowRight
                     className="text-muted-foreground transition-all duration-200 ease-edo-out group-hover:translate-x-1 group-hover:text-foreground"
                     width="14"
                     height="14"
@@ -283,7 +283,7 @@ const DirectionA = () => {
             </div>
           </div>
           <div className="flex-shrink-0">
-            <IconArrowRight
+            <ArrowRight
               className="transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5 group-hover:scale-110"
               width="16"
               height="16"
@@ -315,7 +315,7 @@ const DirectionA = () => {
             </div>
           </div>
           <div className="flex flex-shrink-0 items-center justify-center">
-            <IconArrowRight
+            <ArrowRight
               className="transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5"
               width="16"
               height="16"
@@ -339,7 +339,7 @@ const DirectionA = () => {
               {t('home.retouchPhotoVideo')}
             </div>
           </div>
-          <IconArrowRight
+          <ArrowRight
             className="flex-shrink-0 transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5"
             width="16"
             height="16"
@@ -434,14 +434,14 @@ const DirectionA = () => {
         </div>
         <div className="relative flex flex-shrink-0 items-center gap-2">
           <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 font-mono text-label uppercase tracking-ui text-white/80">
-            <IconLock width="11" height="11" />
+            <Lock width="11" height="11" />
             {t('home.comingSoon')}
           </span>
           <span
             className="sm:hidden inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 p-1.5 text-white/80"
             aria-hidden="true"
           >
-            <IconLock width="12" height="12" />
+            <Lock width="12" height="12" />
           </span>
         </div>
       </button>

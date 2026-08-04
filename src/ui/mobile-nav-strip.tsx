@@ -4,7 +4,7 @@ import { useT } from '../i18n/use-t';
 import { BottomSheet } from './bottom-sheet';
 import { cn } from '@/lib/utils';
 import { HoverMarquee } from './hover-marquee';
-import { IconArrowRight, IconChevronDown } from './icons';
+import { ArrowRight, ChevronDown } from 'lucide-react';
 
 type StripOption = {
   k: string;
@@ -158,7 +158,7 @@ const MobileNavStrip = ({
                 {badgeCount}
               </span>
             ) : null}
-            <IconChevronDown
+            <ChevronDown
               width={16}
               height={16}
               aria-hidden
@@ -207,7 +207,7 @@ const MobileNavStrip = ({
                   ? ` · ${t('galleryPage.resultsCount', { count: liveCount })}`
                   : ''}
               </span>
-              <IconArrowRight width={14} height={14} aria-hidden />
+              <ArrowRight width={14} height={14} aria-hidden />
             </button>
           </div>
         }

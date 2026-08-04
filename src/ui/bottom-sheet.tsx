@@ -7,7 +7,7 @@ import {
   type ReactNode,
 } from 'react';
 import { cn } from '@/lib/utils';
-import { IconX } from './icons';
+import { X } from 'lucide-react';
 
 interface BottomSheetProps {
   open: boolean;
@@ -239,7 +239,7 @@ const BottomSheet = ({
               aria-label={closeLabel}
               className="edo-focus-ring -my-1 -mr-2 grid size-9 shrink-0 cursor-pointer place-items-center text-foreground transition-colors duration-150 ease-edo-out hover:bg-muted"
             >
-              <IconX width={18} height={18} />
+              <X width={18} height={18} />
             </button>
           </div>
         </div>

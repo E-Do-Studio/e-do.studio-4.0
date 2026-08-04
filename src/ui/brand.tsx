@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { IconGlobe } from './icons';
+import { Globe } from 'lucide-react';
 import logoFull from '../../brand/logo-full.webp';
 import logoMark from '../../brand/logo-mark.webp';
 import { useT } from '../i18n/use-t';
@@ -47,7 +47,7 @@ const LangSwitch = ({ onToggle }: LangSwitchProps) => {
       onClick={onToggle}
       className="edo-focus-ring flex h-full cursor-pointer flex-col items-center justify-center gap-1 border-0 bg-background transition-colors duration-150 hover:bg-muted"
     >
-      <IconGlobe width="14" height="14" />
+      <Globe width="14" height="14" />
       <div className="flex items-center gap-0.5 font-mono text-micro font-medium text-muted-foreground">
         <span>{t('common.langToggleLabel')}</span>
         <svg

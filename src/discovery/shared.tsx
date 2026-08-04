@@ -1,12 +1,12 @@
 import type React from 'react';
-import { IconArrowRight } from '../ui/icons';
+import { ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { microBase } from './styles';
 
 interface ArrowIconProps extends React.SVGProps<SVGSVGElement> {}
 
 export const ArrowIcon = (props: ArrowIconProps) => (
-  <IconArrowRight {...props} />
+  <ArrowRight {...props} />
 );
 
 interface CellBadgeProps {
@@ -37,4 +37,3 @@ export const ArticleMeta = ({
     {read ? ` · ${post.read}` : ''}
   </span>
 );
-

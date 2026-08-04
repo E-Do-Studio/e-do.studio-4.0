@@ -9,7 +9,7 @@ import { submitContactForm } from './lib/contact';
 import { useT } from './i18n/use-t';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { IconArrowRight } from './ui/icons';
+import { ArrowRight } from 'lucide-react';
 
 export const INITIAL_FORM: ContactFormData = {
   nom: '',
@@ -153,7 +153,7 @@ export const ContactForm = ({
           t('common.sending')
         ) : (
           <>
-            {t('common.send')} <IconArrowRight width="16" height="16" />
+            {t('common.send')} <ArrowRight width="16" height="16" />
           </>
         )}
       </button>

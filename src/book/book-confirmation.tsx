@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { usePageContext } from '../lib/page-context';
 import { SCREEN_TO_PATH } from '../lib/screens';
-import { IconArrowRight } from '../ui/icons';
+import { ArrowRight } from 'lucide-react';
 import { PageHeader, buildMainNav } from '../ui/page-header';
 import { clearDraft } from '../lib/use-booking-draft';
 import { useT } from '../i18n/use-t';
@@ -275,7 +275,7 @@ const ConfirmedView = ({
           <div className="bg-white px-5 py-3 flex items-center justify-end">
             <button onClick={onNewRequest} className={navBtnOrangeCls}>
               {t('booking.newRequest')}{' '}
-              <IconArrowRight width="14" height="14" />
+              <ArrowRight width="14" height="14" />
             </button>
           </div>
         </div>
@@ -335,7 +335,7 @@ const BookConfirmation = () => {
               className="edo-focus-ring mt-8 inline-flex h-control cursor-pointer items-center gap-2 border-0 bg-primary px-cell-lg font-mono text-caption tracking-meta uppercase text-white transition-all duration-150 ease-edo-out hover:opacity-90"
             >
               {t('bookPicker.resumeBooking')}{' '}
-              <IconArrowRight width="14" height="14" />
+              <ArrowRight width="14" height="14" />
             </button>
           </div>
         </div>

@@ -4,7 +4,7 @@ import { BottomSheet } from './ui/bottom-sheet';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { HoverMarquee } from './ui/hover-marquee';
-import { IconArrowRight, IconSelector } from './ui/icons';
+import { ArrowRight, ChevronsUpDown } from 'lucide-react';
 import { PageHeader, buildMainNav } from './ui/page-header';
 import type { Lang } from './types';
 import { usePageContext } from './lib/page-context';
@@ -211,7 +211,7 @@ const LegalPage = () => {
           <HoverMarquee className="text-cell tracking-copy-tight font-medium text-foreground">
             {active[lang]}
           </HoverMarquee>
-          <IconSelector
+          <ChevronsUpDown
             width="16"
             height="16"
             className="ml-auto shrink-0 text-foreground"
@@ -257,7 +257,7 @@ const LegalPage = () => {
                   <HoverMarquee className="text-cell tracking-copy-tight font-medium">
                     {s[lang]}
                   </HoverMarquee>
-                  <IconArrowRight
+                  <ArrowRight
                     width="16"
                     height="16"
                     className="ml-auto shrink-0"
@@ -305,7 +305,7 @@ const LegalPage = () => {
             href="mailto:contact@e-do.studio"
             className="edo-focus-ring inline-flex items-center gap-2 text-caption text-foreground no-underline border-b border-hairline pb-0.5"
           >
-            contact@e-do.studio <IconArrowRight width="10" height="10" />
+            contact@e-do.studio <ArrowRight width="10" height="10" />
           </a>
         </div>
         <div className="flex-1" />
@@ -372,7 +372,7 @@ const LegalPage = () => {
               </div>
               <Button variant="default" size="lg" onClick={() => goto('home')}>
                 {t('legalPage.backToHome')}{' '}
-                <IconArrowRight width="14" height="14" />
+                <ArrowRight width="14" height="14" />
               </Button>
             </div>
           )}

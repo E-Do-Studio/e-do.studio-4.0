@@ -116,6 +116,14 @@
   html {
     @apply font-sans;
   }
+
+  /* Les icônes du site ont un trait de 1.5, lucide en pose 2 par défaut et
+     n'expose aucun réglage global. Comme il s'agit d'un attribut de
+     présentation, une règle CSS le bat — une seule ligne rétablit le trait de
+     marque partout, au lieu d'un `strokeWidth` sur chaque site d'appel. */
+  .lucide {
+    stroke-width: 1.5;
+  }
 }
 
 .edo-line-clamp-2,

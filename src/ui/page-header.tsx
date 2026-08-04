@@ -4,7 +4,7 @@ import { CellLabel } from './typography';
 import { cn } from '@/lib/utils';
 import { Wordmark } from './brand';
 import { HoverMarquee } from './hover-marquee';
-import { IconArrowRight, IconMenu } from './icons';
+import { ArrowRight, Menu } from 'lucide-react';
 import { getT } from '../i18n';
 import { useT } from '../i18n/use-t';
 
@@ -73,7 +73,7 @@ const PageHeaderActionButton = ({
     <>
       <HoverMarquee className="min-w-0">{label}</HoverMarquee>
       {showArrow && (
-        <IconArrowRight
+        <ArrowRight
           width={isPrimary ? 14 : 12}
           height={isPrimary ? 14 : 12}
           className={cn(
@@ -188,7 +188,7 @@ const PageHeader = ({
           aria-label="Open menu"
           className="edo-focus-ring flex h-full basis-header flex-none cursor-pointer items-center justify-center border-0 bg-background text-foreground transition-colors hover:bg-muted md:hidden"
         >
-          <IconMenu width="18" height="18" />
+          <Menu width="18" height="18" />
         </button>
         <button
           onClick={onLogoClick}

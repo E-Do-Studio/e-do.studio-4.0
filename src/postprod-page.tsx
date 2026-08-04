@@ -11,7 +11,7 @@ import {
   EmptyTitle,
 } from '@/components/ui/empty';
 import { HoverMarquee } from './ui/hover-marquee';
-import { IconArrowRight, IconSelector } from './ui/icons';
+import { ArrowRight, ChevronsUpDown } from 'lucide-react';
 import { PageHeader, buildMainNav } from './ui/page-header';
 import { ResponsiveImage } from './ui/responsive-image';
 import { useLoaderData } from '@tanstack/react-router';
@@ -383,7 +383,7 @@ const PostprodPage = () => {
             {cat.tagline[lang]}
           </HoverMarquee>
         </span>
-        <IconSelector
+        <ChevronsUpDown
           width="16"
           height="16"
           className="shrink-0 text-foreground"
@@ -438,7 +438,7 @@ const PostprodPage = () => {
                       {c.tagline[lang]}
                     </HoverMarquee>
                   </span>
-                  <IconArrowRight width="16" height="16" className="shrink-0" />
+                  <ArrowRight width="16" height="16" className="shrink-0" />
                 </button>
               </li>
             );
@@ -559,7 +559,7 @@ const PostprodPage = () => {
             className="w-full justify-between py-3.5 px-5 mt-2"
           >
             {t('postprod.requestQuote')}
-            <IconArrowRight width="16" height="16" />
+            <ArrowRight width="16" height="16" />
           </Button>
         </div>
       </div>

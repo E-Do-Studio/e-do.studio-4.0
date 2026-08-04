@@ -1,6 +1,6 @@
 import { useNavigate } from '@tanstack/react-router';
 import { cn } from '@/lib/utils';
-import { IconLock, IconX } from './ui/icons';
+import { Lock, X } from 'lucide-react';
 import { SocialLinksRow } from './ui/social-links-row';
 import { CellLabel } from './ui/typography';
 import { useT } from './i18n/use-t';
@@ -61,7 +61,7 @@ const NavHeader = ({ onClose }: NavHeaderProps) => {
         aria-label={t('common.close')}
         className="edo-focus-ring flex h-12 w-12 cursor-pointer items-center justify-center border-0 border-l border-hairline bg-white transition-colors hover:bg-muted"
       >
-        <IconX width="20" height="20" aria-hidden="true" />
+        <X width="20" height="20" aria-hidden="true" />
       </button>
     </div>
   );
@@ -88,7 +88,7 @@ const NavItemLink = ({ item, index, onClose, navigate }: NavItemLinkProps) => {
             {String(index + 1).padStart(2, '0')}
           </CellLabel>
           <span className="inline-flex items-center gap-1 font-mono text-micro leading-none uppercase tracking-meta text-muted-foreground">
-            <IconLock width="9" height="9" aria-hidden="true" />
+            <Lock width="9" height="9" aria-hidden="true" />
             {t('home.comingSoon')}
           </span>
         </div>

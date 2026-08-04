@@ -1,6 +1,6 @@
 import { useT } from '../i18n/use-t';
 import { cn } from '@/lib/utils';
-import { IconArrowLeft, IconArrowRight } from './icons';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 interface CarouselNavProps {
   onPrev: () => void;
@@ -27,7 +27,7 @@ const CarouselNav = ({
         aria-label={t('common.prevImage')}
         className={cn(baseBtn, 'left-3 md:hover:-translate-x-[3px]', className)}
       >
-        <IconArrowLeft width={size} height={size} />
+        <ArrowLeft width={size} height={size} />
       </button>
       <button
         type="button"
@@ -35,7 +35,7 @@ const CarouselNav = ({
         aria-label={t('common.nextImage')}
         className={cn(baseBtn, 'right-3 md:hover:translate-x-[3px]', className)}
       >
-        <IconArrowRight width={size} height={size} />
+        <ArrowRight width={size} height={size} />
       </button>
     </>
   );
