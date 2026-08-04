@@ -7,7 +7,7 @@ import {
   buildContactPageSchema,
   buildPageBreadcrumb,
 } from '../../lib/structured-data';
-import { common } from '../../i18n/messages';
+import { getT } from '../../i18n';
 
 export const Route = createFileRoute('/$lang/contact')({
   head: ({ params }) => {
@@ -19,7 +19,7 @@ export const Route = createFileRoute('/$lang/contact')({
       jsonLd: [
         buildContactPageSchema(lang, '/contact'),
         buildPageBreadcrumb(lang, [
-          { name: common.contactUs[lang], pathname: '/contact' },
+          { name: getT(lang)('common.contactUs'), pathname: '/contact' },
         ]),
       ],
     });

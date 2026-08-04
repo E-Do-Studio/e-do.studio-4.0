@@ -1,4 +1,5 @@
 import type { Lang } from '../types';
+import { ogLocale } from './format';
 import { META, PRERENDER_ROUTE_PAIRS, SITE_ORIGIN } from './seo-meta';
 import type { JsonLdNode } from './structured-data';
 
@@ -81,10 +82,10 @@ export function buildSeoHead(input: SeoHeadInput) {
     },
     { property: 'og:title', content: title },
     { property: 'og:description', content: description },
-    { property: 'og:locale', content: lang === 'en' ? 'en_US' : 'fr_FR' },
+    { property: 'og:locale', content: ogLocale(lang) },
     {
       property: 'og:locale:alternate',
-      content: lang === 'en' ? 'fr_FR' : 'en_US',
+      content: ogLocale(lang === 'fr' ? 'en' : 'fr'),
     },
     { name: 'twitter:title', content: title },
     { name: 'twitter:description', content: description },

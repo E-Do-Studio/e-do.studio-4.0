@@ -228,5 +228,14 @@
     "noteBody": "We also retouch images not shot at our studio.",
     "requestQuote": "Request a quote",
     "standard": "Standard"
+  },
+  "seo": {
+    "contactDescription": "Contact E-Do Studio to book a photo or video stage in Paris.",
+    "discoveryBlogName": "Discovery — E-Do Studio Journal",
+    "galleryName": "Gallery — E-Do Studio Paris",
+    "localBusinessDescription": "Professional photo and video studio in Paris. Cyclorama, shooting stages and post-production services for fashion, cosmetics, jewelry and food brands.",
+    "postprodCatalogName": "Post-production services",
+    "postprodDescription": "Retouching, color grading, editing and express delivery. E-Do Studio in Paris.",
+    "postprodServiceType": "Photo & video post-production"
   }
 }

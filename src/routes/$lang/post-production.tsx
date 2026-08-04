@@ -8,7 +8,7 @@ import {
   buildPageBreadcrumb,
   buildPostProdServiceSchema,
 } from '../../lib/structured-data';
-import { common } from '../../i18n/messages';
+import { getT } from '../../i18n';
 
 export const Route = createFileRoute('/$lang/post-production')({
   // `?type=` est une cible de redirection 301 depuis les URLs v3
@@ -50,7 +50,7 @@ export const Route = createFileRoute('/$lang/post-production')({
             pathname: '/post-production',
           }),
         buildPageBreadcrumb(lang, [
-          { name: common.postProd[lang], pathname: '/post-production' },
+          { name: getT(lang)('common.postProd'), pathname: '/post-production' },
         ]),
       ],
     });

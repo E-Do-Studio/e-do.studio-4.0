@@ -7,7 +7,7 @@ import {
   buildGalleryCollectionSchema,
   buildPageBreadcrumb,
 } from '../../lib/structured-data';
-import { common } from '../../i18n/messages';
+import { getT } from '../../i18n';
 
 export const Route = createFileRoute('/$lang/gallery')({
   head: ({ params, loaderData }) => {
@@ -24,7 +24,7 @@ export const Route = createFileRoute('/$lang/gallery')({
           '/gallery',
         ),
         buildPageBreadcrumb(lang, [
-          { name: common.gallery[lang], pathname: '/gallery' },
+          { name: getT(lang)('common.gallery'), pathname: '/gallery' },
         ]),
       ],
     });

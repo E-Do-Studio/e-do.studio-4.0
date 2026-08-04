@@ -13,7 +13,7 @@ import {
   buildPageBreadcrumb,
   buildWebPageSchema,
 } from '../../lib/structured-data';
-import { common } from '../../i18n/messages';
+import { getT } from '../../i18n';
 
 export const Route = createFileRoute('/$lang/legal')({
   head: ({ params }) => {
@@ -26,10 +26,10 @@ export const Route = createFileRoute('/$lang/legal')({
         buildWebPageSchema({
           lang,
           pathname: '/legal',
-          name: common.legal[lang],
+          name: getT(lang)('common.legal'),
         }),
         buildPageBreadcrumb(lang, [
-          { name: common.legal[lang], pathname: '/legal' },
+          { name: getT(lang)('common.legal'), pathname: '/legal' },
         ]),
       ],
     });

@@ -9,7 +9,8 @@ import type {
   GalleryCategory,
 } from './strapi';
 import type { DiscoveryPost } from '../types';
-import { common } from '../i18n/messages';
+import { getT } from '../i18n';
+import { bcp47 } from './format';
 
 const SITE_URL = 'https://e-do.studio';
 const ORGANIZATION_ID = `${SITE_URL}/#organization`;
@@ -100,10 +101,7 @@ export function buildLocalBusinessSchema({
   business,
   socials,
 }: BuildOrganizationArgs): JsonLdNode {
-  const description =
-    lang === 'fr'
-      ? 'Studio photo et vidéo professionnel à Paris. Cyclorama, plateaux de prise de vue et services de post-production pour marques de mode, cosmétique, joaillerie et food.'
-      : 'Professional photo and video studio in Paris. Cyclorama, shooting stages and post-production services for fashion, cosmetics, jewelry and food brands.';
+  const description = getT(lang)('seo.localBusinessDescription');
   const address = contact?.address;
   const sameAs = (socials ?? [])
     .map((s) => s.href)
@@ -161,7 +159,7 @@ export function buildLocalBusinessSchema({
     openingHoursSpecification: buildOpeningHoursSpec(hours),
     contactPoint: contactPoints,
     sameAs,
-    inLanguage: lang === 'fr' ? 'fr-FR' : 'en-US',
+    inLanguage: bcp47(lang),
   });
 }
 
@@ -174,7 +172,7 @@ export function buildWebSiteSchema(lang: Lang): JsonLdNode {
     '@id': WEBSITE_ID,
     url: SITE_URL,
     name: 'E-Do Studio',
-    inLanguage: lang === 'fr' ? 'fr-FR' : 'en-US',
+    inLanguage: bcp47(lang),
     publisher: { '@id': ORGANIZATION_ID },
   });
 }
@@ -211,7 +209,7 @@ export function buildPageBreadcrumb(
   trail: BreadcrumbItem[],
 ): JsonLdNode {
   return buildBreadcrumbSchema(
-    [{ name: common.home[lang], pathname: '' }, ...trail],
+    [{ name: getT(lang)('common.home'), pathname: '' }, ...trail],
     lang,
   );
 }
@@ -320,14 +318,8 @@ export function buildPostProdServiceSchema({
     '@type': 'Service',
     '@id': `${pageUrl(lang, pathname)}#service`,
     name: 'Post-production — E-Do Studio',
-    serviceType:
-      lang === 'fr'
-        ? 'Post-production photo et vidéo'
-        : 'Photo & video post-production',
-    description:
-      lang === 'fr'
-        ? 'Retouche, colorimétrie, montage et livraison express. Studio E-Do à Paris.'
-        : 'Retouching, color grading, editing and express delivery. E-Do Studio in Paris.',
+    serviceType: getT(lang)('seo.postprodServiceType'),
+    description: getT(lang)('seo.postprodDescription'),
     url: pageUrl(lang, pathname),
     provider: { '@id': ORGANIZATION_ID },
     areaServed: { '@type': 'Country', name: 'France' },
@@ -335,10 +327,7 @@ export function buildPostProdServiceSchema({
       items.length > 0
         ? compact({
             '@type': 'OfferCatalog',
-            name:
-              lang === 'fr'
-                ? 'Prestations post-production'
-                : 'Post-production services',
+            name: getT(lang)('seo.postprodCatalogName'),
             itemListElement: items,
           })
         : undefined,
@@ -362,12 +351,9 @@ export function buildBlogSchema(
     '@context': 'https://schema.org',
     '@type': 'Blog',
     '@id': `${pageUrl(lang, pathname)}#blog`,
-    name:
-      lang === 'fr'
-        ? 'Discovery — Journal E-Do Studio'
-        : 'Discovery — E-Do Studio Journal',
+    name: getT(lang)('seo.discoveryBlogName'),
     url: pageUrl(lang, pathname),
-    inLanguage: lang === 'fr' ? 'fr-FR' : 'en-US',
+    inLanguage: bcp47(lang),
     publisher: { '@id': ORGANIZATION_ID },
     mainEntity:
       items.length > 0
@@ -400,7 +386,7 @@ export function buildBlogPostingSchema(
     '@id': `${url}#article`,
     headline: post.title[lang],
     description: post.sub[lang],
-    inLanguage: lang === 'fr' ? 'fr-FR' : 'en-US',
+    inLanguage: bcp47(lang),
     url,
     mainEntityOfPage: { '@type': 'WebPage', '@id': url },
     // La couverture d'un article peut être une vidéo : schema.org attend une
@@ -433,11 +419,8 @@ export function buildContactPageSchema(
     '@id': `${url}#contact`,
     url,
     name: 'Contact — E-Do Studio Paris',
-    inLanguage: lang === 'fr' ? 'fr-FR' : 'en-US',
-    description:
-      lang === 'fr'
-        ? 'Contactez E-Do Studio pour réserver un plateau photo ou vidéo à Paris.'
-        : 'Contact E-Do Studio to book a photo or video stage in Paris.',
+    inLanguage: bcp47(lang),
+    description: getT(lang)('seo.contactDescription'),
     about: { '@id': ORGANIZATION_ID },
     mainEntity:
       contact?.email || contact?.phone
@@ -479,12 +462,9 @@ export function buildGalleryCollectionSchema(
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
     '@id': `${url}#gallery`,
-    name:
-      lang === 'fr'
-        ? 'Galerie — E-Do Studio Paris'
-        : 'Gallery — E-Do Studio Paris',
+    name: getT(lang)('seo.galleryName'),
     url,
-    inLanguage: lang === 'fr' ? 'fr-FR' : 'en-US',
+    inLanguage: bcp47(lang),
     isPartOf: { '@id': WEBSITE_ID },
     about: { '@id': ORGANIZATION_ID },
     mainEntity:
@@ -523,7 +503,7 @@ export function buildWebPageSchema({
     url,
     name,
     description,
-    inLanguage: lang === 'fr' ? 'fr-FR' : 'en-US',
+    inLanguage: bcp47(lang),
     isPartOf: { '@id': WEBSITE_ID },
     about: { '@id': ORGANIZATION_ID },
   });

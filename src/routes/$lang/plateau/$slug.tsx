@@ -8,7 +8,7 @@ import {
   buildPageBreadcrumb,
   buildPlateauServiceSchema,
 } from '../../../lib/structured-data';
-import { common } from '../../../i18n/messages';
+import { getT } from '../../../i18n';
 
 export const Route = createFileRoute('/$lang/plateau/$slug')({
   loader: async () => ({ plateaux: await settle(fetchPlateaux()) }),
@@ -30,7 +30,7 @@ export const Route = createFileRoute('/$lang/plateau/$slug')({
             pathname,
           }),
         buildPageBreadcrumb(lang, [
-          { name: common.stages[lang], pathname: '/cyclorama' },
+          { name: getT(lang)('common.stages'), pathname: '/cyclorama' },
           { name: plateau?.name || params.slug, pathname },
         ]),
       ],
