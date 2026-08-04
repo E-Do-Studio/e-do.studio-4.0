@@ -18,8 +18,8 @@ interface SocialLinksRowProps {
 }
 
 const LAYOUT_CLASSES: Record<'auto' | 'row', string> = {
-  auto: 'grid grid-cols-2 gap-hairline bg-hairline',
-  row: 'grid grid-cols-4 gap-hairline bg-hairline',
+  auto: 'grid grid-cols-2 gap-px bg-border',
+  row: 'grid grid-cols-4 gap-px bg-border',
 };
 
 const SocialLinksRow = ({
@@ -36,10 +36,10 @@ const SocialLinksRow = ({
           href={s.href}
           target="_blank"
           rel="noopener noreferrer"
-          className="edo-focus-ring group flex items-center justify-between border-0 bg-background px-3 py-3 text-foreground no-underline transition-colors duration-150 hover:bg-muted"
+          className="outline-none focus-visible:ring-3 focus-visible:ring-ring/50 group flex items-center justify-between border-0 bg-background px-3 py-3 text-foreground no-underline transition-colors duration-150 hover:bg-muted"
         >
           <SocialIcon kind={s.k} size={12} />
-          <span className="font-mono text-micro tracking-meta">
+          <span className="font-mono text-xs tracking-widest">
             {labelFor(s)}
           </span>
         </a>

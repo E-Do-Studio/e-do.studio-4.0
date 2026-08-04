@@ -64,10 +64,10 @@ const PageHeaderActionButton = ({
     'h-full gap-2 no-underline',
     expand ? 'flex-1' : 'flex-none',
     isPrimary
-      ? 'px-4 text-label tracking-caption md:px-6'
+      ? 'px-4 text-xs tracking-wide md:px-6'
       : isDark
-        ? 'dark bg-background px-4 text-label tracking-label hover:text-primary md:px-5'
-        : 'px-4 text-label tracking-ui md:px-5',
+        ? 'dark bg-background px-4 text-xs tracking-widest hover:text-primary md:px-5'
+        : 'px-4 text-xs tracking-wider md:px-5',
     className,
   );
   const actionVariant = isPrimary ? 'default' : 'header';
@@ -109,7 +109,7 @@ const PageHeaderActionButton = ({
 const DEFAULT_TITLE_CLASS = 'lg:col-start-2';
 const DEFAULT_RIGHT_BLOCK_CLASS = 'lg:col-start-3 lg:col-span-2';
 const RIGHT_BLOCK_BASE_CLASS =
-  'flex min-w-0 [&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-hairline';
+  'flex min-w-0 [&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-border';
 
 const LangButton = ({
   onLangToggle,
@@ -123,9 +123,9 @@ const LangButton = ({
     <Button
       variant="header"
       onClick={onLangToggle}
-      className={cn('h-full basis-header flex-none px-0', className)}
+      className={cn('h-full basis-14 flex-none px-0', className)}
     >
-      <span className="font-mono text-label tracking-meta text-foreground">
+      <span className="font-mono text-xs tracking-widest text-foreground">
         {t('common.langToggleLabel')}
       </span>
     </Button>
@@ -168,7 +168,7 @@ const PageHeader = ({
           <HoverMarquee>{title}</HoverMarquee>
         </CellLabel>
         {subtitle && (
-          <HoverMarquee className="font-mono text-label tracking-ui text-muted-foreground">
+          <HoverMarquee className="font-mono text-xs tracking-wider text-muted-foreground">
             {subtitle}
           </HoverMarquee>
         )}
@@ -181,16 +181,16 @@ const PageHeader = ({
       className={cn(
         'sticky top-0 z-40 flex min-w-0 bg-background',
         subgrid && 'lg:grid lg:grid-cols-subgrid',
-        '[&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-hairline',
+        '[&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-border',
         className,
       )}
     >
-      <div className="flex h-full flex-none basis-44 md:basis-nav lg:col-start-1 [&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-hairline">
+      <div className="flex h-full flex-none basis-44 md:basis-60 lg:col-start-1 [&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-border">
         <Button
           variant="header"
           onClick={onMenuClick}
           aria-label="Open menu"
-          className="h-full basis-header flex-none px-0 md:hidden"
+          className="h-full basis-14 flex-none px-0 md:hidden"
         >
           <Menu />
         </Button>
@@ -220,7 +220,7 @@ const PageHeader = ({
         <div
           className={cn(
             RIGHT_BLOCK_BASE_CLASS,
-            'lg:justify-end lg:[&>*:first-child]:border-l lg:[&>*:first-child]:border-hairline',
+            'lg:justify-end lg:[&>*:first-child]:border-l lg:[&>*:first-child]:border-border',
             hasMobileAction && 'flex-1 md:flex-initial',
             rightBlockClassName ?? DEFAULT_RIGHT_BLOCK_CLASS,
           )}

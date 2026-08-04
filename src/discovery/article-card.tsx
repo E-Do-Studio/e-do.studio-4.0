@@ -42,8 +42,8 @@ export const ArticleCard = ({
         'group order-1 grid min-h-80 p-0 transition-opacity hover:opacity-90 lg:min-h-0',
         cover
           ? headline
-            ? 'grid-rows-article-headline lg:grid-rows-article-headline-lg'
-            : 'grid-rows-article-auto'
+            ? 'grid-rows-[1fr_96px] lg:grid-rows-[1fr_84px]'
+            : 'grid-rows-[1fr_auto]'
           : 'grid-rows-1',
         className,
       )}
@@ -66,25 +66,25 @@ export const ArticleCard = ({
 
       <div
         className={cn(
-          'flex min-w-0 origin-left flex-col overflow-hidden transition-transform duration-200 ease-edo-out group-hover:scale-102',
+          'flex min-w-0 origin-left flex-col overflow-hidden transition-transform duration-200 ease-out group-hover:scale-105',
           !cover && 'justify-center',
-          headline ? 'gap-1 px-cell pb-3 pt-2.5' : 'gap-1 px-cell pb-4 pt-3.5',
+          headline ? 'gap-1 px-4.5 pb-3 pt-2.5' : 'gap-1 px-4.5 pb-4 pt-3.5',
         )}
       >
         <h3
           className={cn(
-            'm-0 edo-line-clamp-2 text-balance text-foreground',
+            'm-0 line-clamp-2 text-balance text-foreground',
             headline
-              ? 'edo-line-clamp-3 text-tile-title font-light leading-snug tracking-headline'
-              : 'text-cell font-normal leading-snug tracking-copy-tight',
+              ? 'line-clamp-3 text-xl font-light leading-snug tracking-tight'
+              : 'text-base font-normal leading-snug tracking-tight',
           )}
         >
           {post.title[lang]}
         </h3>
         {headline && (
-          <span className="mt-1 inline-flex items-center gap-2 font-mono text-label uppercase tracking-label text-foreground">
+          <span className="mt-1 inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-foreground">
             {t('discoveryPage.readArticle')}{' '}
-            <span className="text-detail">→</span>
+            <span className="text-sm">→</span>
           </span>
         )}
       </div>
@@ -111,8 +111,8 @@ export const ArticleEmptyCard = ({
       aria-label={t('discoveryPage.noFeaturedPost')}
       className={cn(
         cellBase,
-        'order-1 grid min-h-80 grid-rows-article-auto bg-background lg:min-h-0',
-        headline && 'lg:grid-rows-article-headline-lg',
+        'order-1 grid min-h-80 grid-rows-[1fr_auto] bg-background lg:min-h-0',
+        headline && 'lg:grid-rows-[1fr_84px]',
         className,
       )}
     >

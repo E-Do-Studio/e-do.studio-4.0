@@ -1,11 +1,11 @@
 import type React from 'react';
 
 interface DiscoveryShellProps {
-  children: React.ReactNode;
+ children: React.ReactNode;
 }
 
 export const DiscoveryShell = ({ children }: DiscoveryShellProps) => (
-  <div className="edo-page-enter relative grid w-full edo-hairline md:h-full md:grid-rows-discovery-shell md:overflow-hidden">
-    {children}
-  </div>
+ <div className="animate-in fade-in duration-300 relative grid w-full gap-px bg-border md:h-full md:grid-rows-[52px_44px_minmax(0,1fr)] md:overflow-hidden">
+ {children}
+ </div>
 );

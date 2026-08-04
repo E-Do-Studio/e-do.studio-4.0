@@ -74,7 +74,7 @@ const NavLink = ({ href, label, navigate }: NavLinkProps) => (
       e.preventDefault();
       navigate({ to: href });
     }}
-    className="edo-focus-ring inline-flex items-center justify-center border border-hairline bg-transparent px-4 py-2 font-mono text-caption uppercase tracking-label text-foreground no-underline transition-colors hover:bg-muted"
+    className="outline-none focus-visible:ring-3 focus-visible:ring-ring/50 inline-flex items-center justify-center border border-border bg-transparent px-4 py-2 font-mono text-xs uppercase tracking-widest text-foreground no-underline transition-colors hover:bg-muted"
   >
     {label}
   </a>
@@ -98,13 +98,13 @@ export const NotFoundPage = () => {
         'flex min-h-screen w-full flex-col items-center justify-center gap-6 bg-background px-6 py-16 text-center text-foreground',
       )}
     >
-      <span className="font-mono text-label uppercase tracking-meta text-muted-foreground">
+      <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
         {copy.code}
       </span>
-      <h1 className="text-page-title font-light tracking-display leading-tight">
+      <h1 className="text-3xl font-light tracking-tighter leading-tight">
         {copy.title}
       </h1>
-      <p className="max-w-md font-mono text-detail text-muted-foreground">
+      <p className="max-w-md font-mono text-sm text-muted-foreground">
         {copy.body}
       </p>
       <a
@@ -113,7 +113,7 @@ export const NotFoundPage = () => {
           e.preventDefault();
           navigate({ to: homeHref });
         }}
-        className="edo-focus-ring inline-flex h-10 cursor-pointer items-center gap-2 border-0 dark bg-background px-5 font-mono text-label uppercase tracking-ui text-foreground no-underline transition-colors hover:opacity-90"
+        className="outline-none focus-visible:ring-3 focus-visible:ring-ring/50 inline-flex h-10 cursor-pointer items-center gap-2 border-0 dark bg-background px-5 font-mono text-xs uppercase tracking-wider text-foreground no-underline transition-colors hover:opacity-90"
       >
         {copy.cta}
       </a>

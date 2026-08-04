@@ -50,7 +50,7 @@ const LangSwitch = ({ onToggle }: LangSwitchProps) => {
       className="h-full flex-col items-center justify-center gap-1 px-0"
     >
       <Globe width="14" height="14" />
-      <div className="flex items-center gap-0.5 font-mono text-micro font-medium text-muted-foreground">
+      <div className="flex items-center gap-0.5 font-mono text-xs font-medium text-muted-foreground">
         <span>{t('common.langToggleLabel')}</span>
         <svg
           width="10"
@@ -131,10 +131,10 @@ const Clock = () => {
         />
         <circle cx="50" cy="50" r="2.5" fill="currentColor" />
       </svg>
-      <span className="mt-0.5 font-mono text-nano text-muted-foreground tabular-nums">
+      <span className="mt-0.5 font-mono text-[10px] text-muted-foreground tabular-nums">
         {String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}
       </span>
-      <span className="mt-px font-mono text-nano uppercase tracking-label text-muted-foreground">
+      <span className="mt-px font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
         Paris
       </span>
     </div>

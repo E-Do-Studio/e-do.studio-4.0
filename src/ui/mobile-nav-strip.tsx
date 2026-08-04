@@ -151,11 +151,11 @@ const MobileNavStrip = ({
           size="cell"
           className="min-h-11 w-full flex-row items-center gap-2 bg-transparent px-4"
         >
-          <span className="font-mono text-label uppercase tracking-label text-foreground">
+          <span className="font-mono text-xs uppercase tracking-widest text-foreground">
             {triggerLabel}
           </span>
           {summary ? (
-            <HoverMarquee className="font-mono text-label uppercase tracking-caption text-muted-foreground">
+            <HoverMarquee className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
               · {summary}
             </HoverMarquee>
           ) : null}
@@ -163,7 +163,7 @@ const MobileNavStrip = ({
             {badgeCount > 1 ? (
               <span
                 aria-hidden
-                className="inline-flex h-5 min-w-5 items-center justify-center bg-primary px-1 font-mono text-micro uppercase tracking-label text-primary-foreground"
+                className="inline-flex h-5 min-w-5 items-center justify-center bg-primary px-1 font-mono text-xs uppercase tracking-widest text-primary-foreground"
               >
                 {badgeCount}
               </span>
@@ -173,7 +173,7 @@ const MobileNavStrip = ({
               height={16}
               aria-hidden
               className={cn(
-                'text-muted-foreground transition-transform duration-150 ease-edo-out',
+                'text-muted-foreground transition-transform duration-150 ease-out',
                 open && 'rotate-180',
               )}
             />
@@ -205,7 +205,7 @@ const MobileNavStrip = ({
                 key={group.key}
                 className="flex flex-col border-b border-border last:border-b-0"
               >
-                <legend className="w-full bg-muted px-4 py-2 font-mono text-micro uppercase tracking-label text-muted-foreground">
+                <legend className="w-full bg-muted px-4 py-2 font-mono text-xs uppercase tracking-widest text-muted-foreground">
                   {group.label}
                 </legend>
                 {group.options.map((option) => {
@@ -215,7 +215,7 @@ const MobileNavStrip = ({
                     <label
                       key={option.k}
                       className={cn(
-                        'edo-focus-ring relative flex min-h-11 cursor-pointer select-none items-center gap-3 border-t border-border px-4 py-3 transition-colors duration-150 ease-edo-out',
+                        'outline-none focus-visible:ring-3 focus-visible:ring-ring/50 relative flex min-h-11 cursor-pointer select-none items-center gap-3 border-t border-border px-4 py-3 transition-colors duration-150 ease-out',
                         isActive
                           ? 'bg-foreground text-background'
                           : 'bg-background text-foreground hover:bg-muted',
@@ -243,13 +243,13 @@ const MobileNavStrip = ({
                           <span className="block size-1.5 bg-foreground" />
                         ) : null}
                       </span>
-                      <span className="flex-1 font-mono text-detail uppercase tracking-caption">
+                      <span className="flex-1 font-mono text-sm uppercase tracking-wide">
                         {option.label}
                       </span>
                       {typeof option.count === 'number' ? (
                         <span
                           className={cn(
-                            'shrink-0 font-mono text-micro uppercase tracking-label',
+                            'shrink-0 font-mono text-xs uppercase tracking-widest',
                             isActive
                               ? 'text-background'
                               : 'text-muted-foreground',

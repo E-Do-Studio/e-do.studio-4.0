@@ -1,17 +1,13 @@
 @import "tailwindcss";
-@import "../colors_and_type.css";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 
-/* ── Self-hosted web fonts ──────────────────────────────────────
-   ABC Favorit is the brand sans-serif face.
-   ABC Favorit Mono is the brand monospace face.
-   Files live in /public/fonts/ as .woff2 (converted from .otf).
-   ────────────────────────────────────────────────────────────── */
+/* ── Brand typefaces ────────────────────────────────────────────
+   ABC Favorit (sans) and ABC Favorit Mono, self-hosted as .woff2.
+   ──────────────────────────────────────────────────────────────── */
 
-/* ABC Favorit — Light 300 */
 @font-face {
   font-family: "ABC Favorit";
   src: url("/fonts/ABCFavorit-Light.woff2") format("woff2");
@@ -20,7 +16,6 @@
   font-display: swap;
 }
 
-/* ABC Favorit — Regular 400 */
 @font-face {
   font-family: "ABC Favorit";
   src: url("/fonts/ABCFavorit-Regular_1.woff2") format("woff2");
@@ -29,7 +24,6 @@
   font-display: swap;
 }
 
-/* ABC Favorit — Regular Italic 400 */
 @font-face {
   font-family: "ABC Favorit";
   src: url("/fonts/ABCFavorit-RegularItalic.woff2") format("woff2");
@@ -38,7 +32,6 @@
   font-display: swap;
 }
 
-/* ABC Favorit — Bold 700 */
 @font-face {
   font-family: "ABC Favorit";
   src: url("/fonts/ABCFavorit-Bold.woff2") format("woff2");
@@ -47,7 +40,6 @@
   font-display: swap;
 }
 
-/* ABC Favorit Mono — Book 400 */
 @font-face {
   font-family: "ABC Favorit Mono";
   src: url("/fonts/ABCFavoritMono-Book.woff2") format("woff2");
@@ -56,7 +48,6 @@
   font-display: swap;
 }
 
-/* ABC Favorit Mono — Book Italic 400 */
 @font-face {
   font-family: "ABC Favorit Mono";
   src: url("/fonts/ABCFavoritMono-BookItalic.woff2") format("woff2");
@@ -65,7 +56,6 @@
   font-display: swap;
 }
 
-/* ABC Favorit Mono — Bold 700 */
 @font-face {
   font-family: "ABC Favorit Mono";
   src: url("/fonts/ABCFavoritMono-Bold.woff2") format("woff2");
@@ -74,7 +64,6 @@
   font-display: swap;
 }
 
-/* ABC Favorit Mono — Bold Italic 700 */
 @font-face {
   font-family: "ABC Favorit Mono";
   src: url("/fonts/ABCFavoritMono-BoldItalic.woff2") format("woff2");
@@ -83,196 +72,83 @@
   font-display: swap;
 }
 
-@layer base {
-  * {
-    box-sizing: border-box;
-    @apply border-border outline-ring/50;
-  }
+/* ── Theme ──────────────────────────────────────────────────────
+   Standard shadcn token set. The brand contributes five colours, a
+   zero radius and two typefaces — nothing else. Sizing, spacing,
+   tracking and leading come from Tailwind's own scales.
+   ──────────────────────────────────────────────────────────────── */
 
-  button,
-  input,
-  textarea,
-  select {
-    font: inherit;
-  }
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.08 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.08 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.08 0 0);
+  --primary: oklch(0.679 0.216 39);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.08 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.35 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.08 0 0);
+  --destructive: oklch(0.58 0.22 27);
+  --destructive-foreground: oklch(1 0 0);
 
-  button {
-    color: inherit;
-  }
+  /* True black, not the brand black: the 1px rules between bento cells
+     must read as hard Swiss separators. */
+  --border: oklch(0 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.679 0.216 39);
 
-  img,
-  picture,
-  video,
-  source,
-  svg {
-    -webkit-user-drag: none;
-    -webkit-touch-callout: none;
-    user-select: none;
-    -webkit-user-select: none;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-  html {
-    @apply font-sans;
-  }
-
-  /* Les icônes du site ont un trait de 1.5, lucide en pose 2 par défaut et
-     n'expose aucun réglage global. Comme il s'agit d'un attribut de
-     présentation, une règle CSS le bat — une seule ligne rétablit le trait de
-     marque partout, au lieu d'un `strokeWidth` sur chaque site d'appel. */
-  .lucide {
-    stroke-width: 1.5;
-  }
+  --radius: 0;
 }
 
-.edo-line-clamp-2,
-.edo-line-clamp-3 {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.edo-line-clamp-2 {
-  -webkit-line-clamp: 2;
-}
-
-.edo-line-clamp-3 {
-  -webkit-line-clamp: 3;
-}
-
-/* Article body image grid: 1 column on mobile, 2 side-by-side from sm.
-   When the count is odd, the last image spans the full width (3 → 2 + 1). */
-.edo-img-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.5rem;
-  margin: 1rem 0;
-}
-
-.edo-img-grid > figure {
-  margin: 0;
-}
-
-@media (min-width: 640px) {
-  .edo-img-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .edo-img-grid > figure:last-child:nth-child(odd) {
-    grid-column: 1 / -1;
-  }
-}
-
-@keyframes edo-typing-dot {
-  0%, 80%, 100% {
-    opacity: 0.2;
-    transform: translateY(0);
-  }
-
-  40% {
-    opacity: 1;
-    transform: translateY(-3px);
-  }
-}
-
-.edo-typing-dot {
-  animation: edo-typing-dot 1.2s ease-in-out infinite;
-}
-
-.edo-typing-dot:nth-child(2) {
-  animation-delay: 150ms;
-}
-
-.edo-typing-dot:nth-child(3) {
-  animation-delay: 300ms;
-}
-
-/* ── Respect prefers-reduced-motion ── */
-@media (prefers-reduced-motion: reduce) {
-  .edo-typing-dot {
-    animation: none;
-  }
-  /* Disable transform-based hover/interaction transitions; keep color/opacity for comprehension */
-  .transition-transform {
-    transition: none;
-  }
-}
-
-/* ── Mobile: allow normal page scroll (root is overflow:hidden on desktop) ──
-   Use 100dvh instead of 100% so the height tracks the dynamic viewport on
-   iOS (the URL bar collapse no longer leaves a phantom white strip at the
-   bottom). Body inherits the page bento gap colour so any area below the
-   last cell — overscroll, short pages — blends in instead of flashing
-   white. */
-@media (max-width: 767px) {
-  html, body, #root {
-    overflow: visible;
-    height: auto;
-    min-height: 100dvh;
-  }
-
-  body {
-    background: var(--edo-pure-black);
-  }
-
-  /* Every routed page wraps its layout in `.edo-page-enter`. On mobile we
-     force the wrapper to fill at least the dynamic viewport so short pages
-     no longer leave a phantom strip below the last cell. Desktop keeps its
-     own `md:h-full` rule untouched. */
-  .edo-page-enter {
-    min-height: 100dvh;
-  }
-}
-
-/* ── Mobile legibility floor (audit: USE_LEGIBLE_FONT_SIZE) ──
-   The editorial micro-scale dips to 9–11px, which fails the 12px minimum on
-   phones (gallery, cyclorama and plateau read at 14–26% passing). On <768px we
-   lift the *readable* steps — micro (used for project titles, brand + meta
-   labels), label and caption — to a 12px floor while desktop keeps the full
-   scale. `text-nano` (8px) stays as-is: it is reserved for decorative numbering
-   / badges. These rules are intentionally unlayered so they win over Tailwind's
-   inlined `@theme` utilities. Most call sites truncate or marquee on overflow,
-   so the 2–3px bump does not break the dense grids. */
-@media (max-width: 767px) {
-  .text-micro { font-size: 0.75rem; line-height: 1.15; }
-  .text-label { font-size: 0.75rem; line-height: 1.15; }
-  .text-caption { font-size: 0.75rem; }
+.dark {
+  --background: oklch(0.08 0 0);
+  --foreground: oklch(1 0 0);
+  --card: oklch(0.08 0 0);
+  --card-foreground: oklch(1 0 0);
+  --popover: oklch(0.08 0 0);
+  --popover-foreground: oklch(1 0 0);
+  --secondary: oklch(1 0 0 / 0.12);
+  --secondary-foreground: oklch(1 0 0);
+  --muted: oklch(1 0 0 / 0.08);
+  --muted-foreground: oklch(1 0 0 / 0.55);
+  --accent: oklch(1 0 0 / 0.12);
+  --accent-foreground: oklch(1 0 0);
+  --destructive: oklch(0.7 0.19 22);
+  --border: oklch(1 0 0 / 0.2);
+  --input: oklch(1 0 0 / 0.2);
 }
 
 @theme inline {
-  --font-heading: var(--font-sans);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --color-foreground: var(--foreground);
   --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --font-sans: "ABC Favorit", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "ABC Favorit Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-heading: var(--font-sans);
+
+  --radius-xs: calc(var(--radius) * 0.4);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -282,37 +158,23 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
 
+  html {
+    @apply font-sans;
+    color-scheme: light;
+  }
 
-/* ── Surfaces sombres ────────────────────────────────────────────
-   Mécanisme shadcn natif, câblé par `@custom-variant dark` en tête de
-   fichier : un panneau noir se déclare `className="dark bg-background
-   text-foreground"`. À l'intérieur, les tokens sémantiques sont inversés, donc
-   `text-muted-foreground` rend le gris clair adéquat et les variantes `dark:`
-   des composants shadcn s'appliquent d'elles-mêmes.
+  body {
+    @apply bg-background text-foreground;
+  }
 
-   Remplace les 11 opacités distinctes de `text-white/XX` (/40 /45 /50 /55 /60
-   /62 /65 /70 /75 /80 /85), qui exprimaient toutes « texte secondaire sur fond
-   sombre » avec une valeur différente à chaque endroit.
-
-   Le site n'a pas de thème sombre global : `html` reste en `color-scheme:
-   light` et `.dark` n'est jamais posé sur la racine. Cette classe ne sert qu'à
-   des panneaux isolés.
-   ──────────────────────────────────────────────────────────────── */
-.dark {
-  --background: var(--edo-black);
-  --foreground: var(--edo-white);
-  --card: var(--edo-black);
-  --card-foreground: var(--edo-white);
-  --popover: var(--edo-black);
-  --popover-foreground: var(--edo-white);
-  --secondary: oklch(1 0 0 / 0.12);
-  --secondary-foreground: var(--edo-white);
-  --muted: oklch(1 0 0 / 0.08);
-  --muted-foreground: oklch(1 0 0 / 0.55);
-  --accent: oklch(1 0 0 / 0.12);
-  --accent-foreground: var(--edo-white);
-  --border: oklch(1 0 0 / 0.2);
-  --input: oklch(1 0 0 / 0.2);
-  --destructive: oklch(0.7 0.19 22);
+  /* Lucide ships a 2px stroke; the brand draws at 1.5. Presentation
+     attributes lose to CSS, so one rule covers every icon. */
+  .lucide {
+    stroke-width: 1.5;
+  }
 }

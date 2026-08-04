@@ -10,7 +10,7 @@ const emptyVariants = cva(
   {
     variants: {
       size: {
-        compact: "px-cell py-8",
+        compact: "px-4.5 py-8",
         default: "min-h-96 px-6 py-20",
         page: "min-h-screen px-6 py-20",
       },
@@ -80,7 +80,7 @@ function EmptyTitle({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="empty-title"
       className={cn(
-        "font-mono text-caption font-normal uppercase tracking-label text-foreground",
+        "font-mono text-xs font-normal uppercase tracking-widest text-foreground",
         className
       )}
       {...props}
@@ -93,7 +93,7 @@ function EmptyDescription({ className, ...props }: React.ComponentProps<"p">) {
     <div
       data-slot="empty-description"
       className={cn(
-        "text-detail leading-copy text-muted-foreground [&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary",
+        "text-sm leading-relaxed text-muted-foreground [&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary",
         className
       )}
       {...props}

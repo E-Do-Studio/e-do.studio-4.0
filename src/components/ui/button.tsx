@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils"
 //   `header` — l'action pleine hauteur des en-têtes de page.
 // Chacune a une taille homonyme : `variant` porte le rôle, `size` la géométrie.
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 cursor-pointer items-center justify-center rounded-lg border border-transparent bg-clip-padding font-mono text-caption font-normal uppercase tracking-label whitespace-nowrap transition-all duration-150 ease-edo-out outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 cursor-pointer items-center justify-center rounded-lg border border-transparent bg-clip-padding font-mono text-xs font-normal uppercase tracking-widest whitespace-nowrap transition-all duration-150 ease-out outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
@@ -44,7 +44,7 @@ const buttonVariants = cva(
         sm: "h-7 gap-1 rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5",
         lg: "h-9 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
         // Cellule bento : hauteur libre, contenu empilé et aligné à gauche.
-        cell: "h-auto flex-col items-start justify-start gap-1.5 px-cell py-4 text-left normal-case tracking-normal",
+        cell: "h-auto flex-col items-start justify-start gap-1.5 px-4.5 py-4 text-left normal-case tracking-normal",
         // Action d'en-tête : prend la hauteur de la bande qui la contient.
         header: "h-full gap-2 px-5",
         icon: "size-8",

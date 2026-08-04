@@ -44,12 +44,12 @@ export const MorePostsCard = ({
     >
       {badge != null && <CellBadge n={badge} />}
 
-      <div className="flex shrink-0 flex-col gap-2.5 border-b border-border px-cell py-3.5">
+      <div className="flex shrink-0 flex-col gap-2.5 border-b border-border px-4.5 py-3.5">
         <div className="flex items-center justify-between gap-3">
           <span className={cn(labelBase, 'text-primary')}>
             {t('discoveryPage.morePosts')}
           </span>
-          <span className="font-mono text-micro tracking-ui text-muted-foreground">
+          <span className="font-mono text-xs tracking-wider text-muted-foreground">
             {filteredPosts.length}/{posts.length}
           </span>
         </div>
@@ -72,8 +72,8 @@ export const MorePostsCard = ({
               size="cell"
               onClick={() => onOpen(post)}
               className={cn(
-                'group grid w-full items-center gap-3 border-b border-border px-cell pb-3.5 pt-3',
-                cover ? 'grid-cols-thumb-row' : 'grid-cols-1',
+                'group grid w-full items-center gap-3 border-b border-border px-4.5 pb-3.5 pt-3',
+                cover ? 'grid-cols-[46px_minmax(0,1fr)]' : 'grid-cols-1',
               )}
             >
               {cover && (
@@ -87,9 +87,9 @@ export const MorePostsCard = ({
                   />
                 </div>
               )}
-              <div className="flex min-w-0 origin-left flex-col gap-1 transition-transform duration-200 ease-edo-out group-hover:scale-102">
+              <div className="flex min-w-0 origin-left flex-col gap-1 transition-transform duration-200 ease-out group-hover:scale-105">
                 <ArticleMeta post={post} lang={lang} muted />
-                <span className="edo-line-clamp-2 text-detail font-normal leading-snug tracking-copy-tight text-foreground">
+                <span className="line-clamp-2 text-sm font-normal leading-snug tracking-tight text-foreground">
                   {post.title[lang]}
                 </span>
               </div>

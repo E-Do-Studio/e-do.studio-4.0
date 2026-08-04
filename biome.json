@@ -12,6 +12,7 @@
       "*.json",
       "!src/routeTree.gen.ts",
       "!src/lib/database.types.ts",
+      "!src/components/ui",
       "!dist",
       "!strapi",
       "!supabase"

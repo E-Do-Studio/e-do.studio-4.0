@@ -22,18 +22,18 @@ const CookieBanner = ({ lang, onLegalClick }: CookieBannerProps) => {
     <div
       role="region"
       aria-label={t('cookieBanner.ariaLabel')}
-      className="fixed inset-x-0 bottom-0 z-modal border-t border-hairline bg-background text-foreground"
+      className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background text-foreground"
     >
       <div className="flex flex-col md:flex-row md:items-stretch">
         <div className="flex flex-1 flex-col gap-1.5 px-5 py-4 md:px-8 md:py-5">
-          <span className="font-mono text-label tracking-meta uppercase text-primary">
+          <span className="font-mono text-xs tracking-widest uppercase text-primary">
             {t('cookieBanner.title')}
           </span>
           {/* Le lien vit dans la traduction : le séparer de la phrase figeait
               sa position en fin de texte, ce qui ne tient pas dans toutes les
               langues. Forme nommée — le bouton porte trop de props pour être
               référencé positionnellement. */}
-          <p className="text-detail leading-copy text-muted-foreground">
+          <p className="text-sm leading-relaxed text-muted-foreground">
             <Trans
               i18nKey="cookieBanner.bodyWithLink"
               components={{
@@ -41,7 +41,7 @@ const CookieBanner = ({ lang, onLegalClick }: CookieBannerProps) => {
                   <Button
                     variant="link"
                     onClick={onLegalClick}
-                    className="inline h-auto p-0 text-detail normal-case tracking-normal text-foreground underline underline-offset-2"
+                    className="inline h-auto p-0 text-sm normal-case tracking-normal text-foreground underline underline-offset-2"
                   />
                 ),
               }}
@@ -52,14 +52,14 @@ const CookieBanner = ({ lang, onLegalClick }: CookieBannerProps) => {
           <Button
             variant="outline"
             onClick={reject}
-            className="h-auto self-stretch border-0 border-t border-l border-hairline px-6 md:border-t-0 md:px-8"
+            className="h-auto self-stretch border-0 border-t border-l border-border px-6 md:border-t-0 md:px-8"
           >
             {t('cookieBanner.reject')}
           </Button>
           <Button
             variant="default"
             onClick={accept}
-            className="h-auto self-stretch border-0 border-t border-l border-hairline px-6 md:border-t-0 md:px-8"
+            className="h-auto self-stretch border-0 border-t border-l border-border px-6 md:border-t-0 md:px-8"
           >
             {t('cookieBanner.accept')}
           </Button>

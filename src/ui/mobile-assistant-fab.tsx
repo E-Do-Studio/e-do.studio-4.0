@@ -27,7 +27,7 @@ export const MobileAssistantFab = ({ lang }: MobileAssistantFabProps) => {
         onClick={() => setOpen(true)}
         aria-label={t('assistant.label')}
         size="icon"
-        className="fixed bottom-3 right-3 z-overlay size-10 border border-foreground/40 bg-foreground/85 text-white shadow-sm backdrop-blur-sm hover:bg-foreground hover:shadow-md md:hidden"
+        className="fixed bottom-3 right-3 z-50 size-10 border border-foreground/40 bg-foreground/85 text-white shadow-sm backdrop-blur-sm hover:bg-foreground hover:shadow-md md:hidden"
       >
         <MessageCircle width="16" height="16" />
       </Button>
@@ -39,13 +39,13 @@ export const MobileAssistantFab = ({ lang }: MobileAssistantFabProps) => {
         aria-hidden={open ? undefined : true}
         {...({ inert: open ? undefined : '' } as Record<string, unknown>)}
         className={cn(
-          'fixed inset-0 z-sheet flex flex-col bg-background transition-opacity duration-200 md:hidden',
+          'fixed inset-0 z-50 flex flex-col bg-background transition-opacity duration-200 md:hidden',
           open
             ? 'pointer-events-auto opacity-100'
             : 'pointer-events-none opacity-0',
         )}
       >
-        <div className="flex shrink-0 items-center justify-between border-b border-hairline px-4 py-3">
+        <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
           <CellLabel>{t('assistant.label')}</CellLabel>
           <Button
             type="button"

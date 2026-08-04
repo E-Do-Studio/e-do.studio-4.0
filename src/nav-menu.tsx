@@ -35,7 +35,7 @@ interface NavItemDef {
 const NavHeader = () => {
   const t = useT();
   return (
-    <div className="grid grid-cols-fluid-auto border-b border-hairline">
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] border-b border-border">
       <div className="flex items-center px-4 py-3.5">
         <SheetTitle>Navigation</SheetTitle>
       </div>
@@ -45,7 +45,7 @@ const NavHeader = () => {
           <Button
             variant="header"
             size="icon"
-            className="size-12 border-l border-hairline"
+            className="size-12 border-l border-border"
           />
         }
       >
@@ -69,18 +69,18 @@ const NavItemLink = ({ item, index, onClose, navigate }: NavItemLinkProps) => {
       <div
         aria-disabled="true"
         aria-label={`${item.label} — ${t('home.comingSoon')}`}
-        className="relative flex min-h-13 cursor-not-allowed flex-col justify-between gap-1 border-b border-hairline px-4 py-2.5"
+        className="relative flex min-h-13 cursor-not-allowed flex-col justify-between gap-1 border-b border-border px-4 py-2.5"
       >
         <div className="flex items-center justify-between gap-2">
           <CellLabel className="leading-none">
             {String(index + 1).padStart(2, '0')}
           </CellLabel>
-          <span className="inline-flex items-center gap-1 font-mono text-micro leading-none uppercase tracking-meta text-muted-foreground">
+          <span className="inline-flex items-center gap-1 font-mono text-xs leading-none uppercase tracking-widest text-muted-foreground">
             <Lock width="9" height="9" aria-hidden="true" />
             {t('home.comingSoon')}
           </span>
         </div>
-        <span className="mt-auto text-cell font-light text-muted-foreground">
+        <span className="mt-auto text-base font-light text-muted-foreground">
           {item.label}
         </span>
       </div>
@@ -94,10 +94,10 @@ const NavItemLink = ({ item, index, onClose, navigate }: NavItemLinkProps) => {
         onClose();
         navigate({ to: item.href });
       }}
-      className="edo-focus-ring relative flex min-h-13 cursor-pointer flex-col justify-between gap-1 border-b border-hairline px-4 py-2.5 no-underline transition-colors hover:bg-muted"
+      className="outline-none focus-visible:ring-3 focus-visible:ring-ring/50 relative flex min-h-13 cursor-pointer flex-col justify-between gap-1 border-b border-border px-4 py-2.5 no-underline transition-colors hover:bg-muted"
     >
       <CellLabel>{String(index + 1).padStart(2, '0')}</CellLabel>
-      <span className="mt-auto text-cell font-light text-foreground">
+      <span className="mt-auto text-base font-light text-foreground">
         {item.label}
       </span>
     </a>
@@ -115,14 +115,14 @@ const NavExternalLink = ({ href, label, index }: NavExternalLinkProps) => (
     href={href}
     target="_blank"
     rel="noopener noreferrer"
-    className="edo-focus-ring relative flex min-h-13 cursor-pointer flex-col justify-between gap-1 border-b border-hairline px-4 py-2.5 no-underline transition-colors hover:bg-muted"
+    className="outline-none focus-visible:ring-3 focus-visible:ring-ring/50 relative flex min-h-13 cursor-pointer flex-col justify-between gap-1 border-b border-border px-4 py-2.5 no-underline transition-colors hover:bg-muted"
   >
     <CellLabel>{String(index + 1).padStart(2, '0')}</CellLabel>
-    <span className="mt-auto flex items-baseline gap-1.5 text-cell font-light text-foreground">
+    <span className="mt-auto flex items-baseline gap-1.5 text-base font-light text-foreground">
       {label}
       <span
         aria-hidden="true"
-        className="font-mono text-micro tracking-meta text-muted-foreground"
+        className="font-mono text-xs tracking-widest text-muted-foreground"
       >
         ↗
       </span>
@@ -142,11 +142,11 @@ const NavFooter = ({ lang, setLang, onClose, navigate }: NavFooterProps) => {
   const bookingHref = SCREEN_TO_PATH.book(lang);
 
   return (
-    <div className="grid grid-cols-auto-fluid border-t border-hairline">
+    <div className="grid grid-cols-[auto_minmax(0,1fr)] border-t border-border">
       <Button
         variant="header"
         onClick={() => setLang(lang === 'fr' ? 'en' : 'fr')}
-        className="size-12 border-r border-hairline px-0"
+        className="size-12 border-r border-border px-0"
       >
         {t('common.langToggleLabel')}
       </Button>
@@ -157,7 +157,7 @@ const NavFooter = ({ lang, setLang, onClose, navigate }: NavFooterProps) => {
           onClose();
           navigate({ to: bookingHref });
         }}
-        className="edo-focus-ring h-12 flex cursor-pointer items-center justify-center border-0 bg-primary font-mono text-caption uppercase tracking-label text-primary-foreground no-underline transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90"
+        className="outline-none focus-visible:ring-3 focus-visible:ring-ring/50 h-12 flex cursor-pointer items-center justify-center border-0 bg-primary font-mono text-xs uppercase tracking-widest text-primary-foreground no-underline transition-[color,background-color,opacity] duration-150 ease-out hover:opacity-90"
       >
         {t('common.bookNow')}
       </a>
@@ -187,7 +187,7 @@ const NavMenu = ({ lang, isOpen, onClose, setLang }: NavMenuProps) => {
         side="left"
         showCloseButton={false}
         aria-label={t('common.menu')}
-        className="w-72 border-r border-hairline sm:max-w-72"
+        className="w-72 border-r border-border sm:max-w-72"
       >
         <NavHeader />
 
@@ -213,7 +213,7 @@ const NavMenu = ({ lang, isOpen, onClose, setLang }: NavMenuProps) => {
             label="Etouch"
             index={NAV_SCREENS.length}
           />
-          <SocialLinksRow className="mt-auto border-t border-hairline" />
+          <SocialLinksRow className="mt-auto border-t border-border" />
         </nav>
 
         <NavFooter

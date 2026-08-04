@@ -3,21 +3,21 @@ import { cn } from '@/lib/utils';
 import { SocialLinksRow } from './ui/social-links-row';
 
 interface SocialClientsBarProps {
-  className?: string;
+ className?: string;
 }
 
 const SocialClientsBar = ({ className }: SocialClientsBarProps) => (
-  <div
-    className={cn(
-      'grid grid-cols-1 edo-hairline md:grid-cols-[minmax(0,1fr)_2fr]',
-      className,
-    )}
-  >
-    <SocialLinksRow layout="row" className="h-12 md:h-11 md:border-b" />
-    <div className="flex h-11 min-w-0 items-center overflow-hidden bg-background">
-      <MarqueeCell size={20} />
-    </div>
-  </div>
+ <div
+ className={cn(
+ 'grid grid-cols-1 gap-px bg-border md:grid-cols-[minmax(0,1fr)_2fr]',
+ className,
+ )}
+ >
+ <SocialLinksRow layout="row" className="h-12 md:h-11 md:border-b" />
+ <div className="flex h-11 min-w-0 items-center overflow-hidden bg-background">
+ <MarqueeCell size={20} />
+ </div>
+ </div>
 );
 
 export { SocialClientsBar };

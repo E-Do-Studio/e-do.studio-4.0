@@ -1,4 +1,4 @@
-FROM node:20-alpine AS build
+FROM node:22-alpine AS build
 WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
 COPY package.json pnpm-lock.yaml ./
@@ -19,7 +19,7 @@ RUN pnpm build
 # Le rendu se fait à la requête : l'image finale embarque un runtime Node, plus
 # un serveur statique. dist/server/server.js garde des imports externes (react,
 # @tanstack/*), d'où les dépendances de production installées ici.
-FROM node:20-alpine AS runtime
+FROM node:22-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 RUN corepack enable && corepack prepare pnpm@10.33.0 --activate

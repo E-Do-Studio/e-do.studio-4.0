@@ -11,7 +11,7 @@ interface CarouselNavProps {
 }
 
 const baseBtn =
-  'edo-focus-ring absolute z-10 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center cursor-pointer text-white mix-blend-difference transition-transform duration-200 ease-edo-out active:scale-95';
+  'outline-none focus-visible:ring-3 focus-visible:ring-ring/50 absolute z-10 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center cursor-pointer text-white mix-blend-difference transition-transform duration-200 ease-out active:scale-95';
 
 const CarouselNav = ({
   onPrev,

@@ -22,16 +22,16 @@ const BookCTATile = ({ onClick, className, label }: BookCTAProps) => {
         className,
       )}
     >
-      <div className="flex min-w-0 flex-col gap-1 transition-transform duration-150 group-hover:scale-102">
-        <span className="hidden font-mono text-label uppercase tracking-label text-primary-foreground/75 md:block">
+      <div className="flex min-w-0 flex-col gap-1 transition-transform duration-150 group-hover:scale-105">
+        <span className="hidden font-mono text-xs uppercase tracking-widest text-primary-foreground/75 md:block">
           {t('home.requestQuoteOr')}
         </span>
-        <span className="text-base font-normal tracking-headline leading-tight text-primary-foreground md:text-tile-title">
+        <span className="text-base font-normal tracking-tight leading-tight text-primary-foreground md:text-xl">
           {label ?? t('common.book')}
         </span>
       </div>
       <ArrowRight
-        className="flex-shrink-0 transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5 group-hover:scale-110"
+        className="flex-shrink-0 transition-transform duration-200 ease-out group-hover:translate-x-1.5 group-hover:scale-110"
         width="16"
         height="16"
       />

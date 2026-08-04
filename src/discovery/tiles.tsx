@@ -25,7 +25,7 @@ export const NewsletterCard = ({
     <section
       className={cn(
         cellBase,
-        'order-5 flex min-h-36 flex-col justify-between gap-2.5 bg-background px-cell-lg py-cell text-foreground lg:min-h-0',
+        'order-5 flex min-h-36 flex-col justify-between gap-2.5 bg-background px-6 py-4.5 text-foreground lg:min-h-0',
         className,
       )}
     >
@@ -35,19 +35,19 @@ export const NewsletterCard = ({
         name="newsletter"
         aria-label="Newsletter"
         onSubmit={(event) => event.preventDefault()}
-        className="flex items-center gap-2 border-b border-hairline pb-1.5"
+        className="flex items-center gap-2 border-b border-border pb-1.5"
       >
         <input
           name="email"
           type="email"
           autoComplete="email"
           placeholder={t('discoveryPage.emailPlaceholder')}
-          className="edo-focus-ring min-w-0 flex-1 border-0 bg-transparent py-1 font-sans text-detail text-foreground outline-none placeholder:text-muted-foreground"
+          className="outline-none focus-visible:ring-3 focus-visible:ring-ring/50 min-w-0 flex-1 border-0 bg-transparent py-1 font-sans text-sm text-foreground outline-none placeholder:text-muted-foreground"
         />
         <Button
           type="submit"
           variant="link"
-          className="h-auto p-0 text-label tracking-label text-primary no-underline"
+          className="h-auto p-0 text-xs tracking-widest text-primary no-underline"
         >
           OK →
         </Button>
@@ -79,7 +79,7 @@ export const SplitArticleCard = ({
       onClick={onOpen}
       className={cn(
         cellBase,
-        'edo-focus-ring group order-6 grid min-h-104 cursor-pointer grid-cols-1 border-0 bg-background p-0 text-left transition-opacity hover:opacity-95 lg:min-h-0',
+        'group order-6 grid min-h-104 cursor-pointer grid-cols-1 border-0 bg-background p-0 text-left transition-opacity hover:opacity-95 lg:min-h-0',
         cover && 'sm:grid-cols-2',
         className,
       )}
@@ -96,28 +96,28 @@ export const SplitArticleCard = ({
           />
         </div>
       )}
-      <div className="flex min-h-0 min-w-0 origin-left flex-col justify-between gap-3.5 overflow-hidden px-7 py-6 transition-transform duration-200 ease-edo-out group-hover:scale-102">
+      <div className="flex min-h-0 min-w-0 origin-left flex-col justify-between gap-3.5 overflow-hidden px-7 py-6 transition-transform duration-200 ease-out group-hover:scale-105">
         <div className="flex min-w-0 flex-col gap-2.5">
           <h3
             className={cn(
-              'm-0 edo-line-clamp-3 text-balance font-light leading-tight tracking-headline text-foreground',
-              cover ? 'text-tile-title' : 'text-page-title',
+              'm-0 line-clamp-3 text-balance font-light leading-tight tracking-tight text-foreground',
+              cover ? 'text-xl' : 'text-3xl',
             )}
           >
             {post.title[lang]}
           </h3>
           {post.sub?.[lang] && (
             <p
-              className="edo-line-clamp-3 m-0 text-detail leading-normal text-muted-foreground [&_a]:text-primary [&_em]:italic [&_strong]:font-semibold [&_strong]:text-foreground"
+              className="line-clamp-3 m-0 text-sm leading-normal text-muted-foreground [&_a]:text-primary [&_em]:italic [&_strong]:font-semibold [&_strong]:text-foreground"
               dangerouslySetInnerHTML={{
                 __html: renderInlineMarkdown(post.sub[lang]),
               }}
             />
           )}
         </div>
-        <span className="inline-flex items-center gap-2 font-mono text-label uppercase tracking-label text-foreground">
+        <span className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-foreground">
           {t('discoveryPage.readArticle')}{' '}
-          <span className="text-detail">→</span>
+          <span className="text-sm">→</span>
         </span>
       </div>
     </Button>
@@ -169,22 +169,22 @@ export const BookCtaTile = ({ lang, goto, className }: BookCtaTileProps) => {
       type="button"
       onClick={() => goto('book')}
       className={cn(
-        'edo-focus-ring group relative flex h-21 shrink-0 cursor-pointer items-center justify-between gap-3.5 overflow-hidden border-0 bg-primary px-cell-lg py-3.5 text-left text-primary-foreground transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90',
+        'group relative flex h-21 shrink-0 cursor-pointer items-center justify-between gap-3.5 overflow-hidden border-0 bg-primary px-6 py-3.5 text-left text-primary-foreground transition-[color,background-color,opacity] duration-150 ease-out hover:opacity-90',
         className,
       )}
     >
-      <span className="flex min-w-0 origin-left flex-col items-start gap-1 transition-transform duration-200 ease-edo-out group-hover:scale-102">
-        <span className="font-mono text-label uppercase tracking-label text-primary-foreground/75">
+      <span className="flex min-w-0 origin-left flex-col items-start gap-1 transition-transform duration-200 ease-out group-hover:scale-105">
+        <span className="font-mono text-xs uppercase tracking-widest text-primary-foreground/75">
           {t('discoveryPage.studioOpen')}
         </span>
-        <span className="text-tile-title font-normal leading-tight tracking-headline text-primary-foreground">
+        <span className="text-xl font-normal leading-tight tracking-tight text-primary-foreground">
           {t('common.book')}
         </span>
       </span>
       <ArrowIcon
         width="16"
         height="16"
-        className="shrink-0 text-primary-foreground transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5 group-hover:scale-110"
+        className="shrink-0 text-primary-foreground transition-transform duration-200 ease-out group-hover:translate-x-1.5 group-hover:scale-110"
       />
     </Button>
   );
