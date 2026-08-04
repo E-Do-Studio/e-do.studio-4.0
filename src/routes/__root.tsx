@@ -8,7 +8,9 @@ import {
   useRouterState,
 } from '@tanstack/react-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { I18nextProvider } from 'react-i18next';
 import { CookieBanner } from '../cookie-banner';
+import { getI18n } from '../i18n';
 import {
   PageContext,
   type PageContextValue,
@@ -209,17 +211,23 @@ function LangLayout() {
           </noscript>
         )}
         <div id="root">
-          <PageContext.Provider value={pageContext}>
-            <Outlet />
-            <NavMenu
-              lang={lang}
-              setLang={setLang}
-              isOpen={menuOpen}
-              onClose={() => setMenuOpen(false)}
-            />
-            <CookieBanner lang={lang} onLegalClick={() => goto('legal')} />
-            <PreviewBanner lang={lang} />
-          </PageContext.Provider>
+          {/* L'instance dérive du même `lang` que <html lang> ci-dessus : le
+              provider ne peut pas diverger du document, ni au SSR ni à
+              l'hydratation. Il ne sert qu'à <Trans> — `useT()` lit la langue
+              directement dans PageContext. */}
+          <I18nextProvider i18n={getI18n(lang)}>
+            <PageContext.Provider value={pageContext}>
+              <Outlet />
+              <NavMenu
+                lang={lang}
+                setLang={setLang}
+                isOpen={menuOpen}
+                onClose={() => setMenuOpen(false)}
+              />
+              <CookieBanner lang={lang} onLegalClick={() => goto('legal')} />
+              <PreviewBanner lang={lang} />
+            </PageContext.Provider>
+          </I18nextProvider>
         </div>
         <Scripts />
       </body>
