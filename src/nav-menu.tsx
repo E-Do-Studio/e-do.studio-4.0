@@ -3,8 +3,22 @@ import { cn } from './ui/cn';
 import { IconLock, IconX } from './ui/icons';
 import { SocialLinksRow } from './ui/social-links-row';
 import { CellLabel } from './ui/typography';
-import { nav, common, home as homeMsg } from './i18n/messages';
+import { useT } from './i18n/use-t';
+import { SCREEN_TO_PATH } from './lib/screens';
 import type { Lang } from './types';
+
+// Libellés dans les locales, chemins résolus par SCREEN_TO_PATH. L'ancien
+// `nav.items` portait des `href` en dur par langue : une troisième copie de la
+// table d'URLs, à côté de screens.ts et book-routes.ts.
+const NAV_SCREENS = [
+  { screen: 'home', label: 'nav.home' },
+  { screen: 'plateau-live', label: 'nav.stages' },
+  { screen: 'gallery', label: 'nav.gallery' },
+  { screen: 'discovery', label: 'nav.discovery', disabled: true },
+  { screen: 'postprod', label: 'nav.postprod' },
+  { screen: 'contact', label: 'nav.contact' },
+  { screen: 'legal', label: 'nav.legal' },
+] as const;
 
 interface NavItemDef {
   label: string;
@@ -32,45 +46,41 @@ const NavOverlay = ({ isOpen, onClose }: NavOverlayProps) => (
 
 interface NavHeaderProps {
   onClose: () => void;
-  lang: Lang;
 }
 
-const NavHeader = ({ onClose, lang }: NavHeaderProps) => (
-  <div className="grid grid-cols-fluid-auto border-b border-hairline">
-    <div className="flex items-center px-4 py-3.5">
-      <CellLabel>Navigation</CellLabel>
+const NavHeader = ({ onClose }: NavHeaderProps) => {
+  const t = useT();
+  return (
+    <div className="grid grid-cols-fluid-auto border-b border-hairline">
+      <div className="flex items-center px-4 py-3.5">
+        <CellLabel>Navigation</CellLabel>
+      </div>
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label={t('common.close')}
+        className="edo-focus-ring flex h-12 w-12 cursor-pointer items-center justify-center border-0 border-l border-hairline bg-white transition-colors hover:bg-muted"
+      >
+        <IconX width="20" height="20" aria-hidden="true" />
+      </button>
     </div>
-    <button
-      type="button"
-      onClick={onClose}
-      aria-label={common.close[lang]}
-      className="edo-focus-ring flex h-12 w-12 cursor-pointer items-center justify-center border-0 border-l border-hairline bg-white transition-colors hover:bg-muted"
-    >
-      <IconX width="20" height="20" aria-hidden="true" />
-    </button>
-  </div>
-);
+  );
+};
 
 interface NavItemLinkProps {
   item: NavItemDef;
   index: number;
-  lang: Lang;
   onClose: () => void;
   navigate: (opts: { to: string }) => void;
 }
 
-const NavItemLink = ({
-  item,
-  index,
-  lang,
-  onClose,
-  navigate,
-}: NavItemLinkProps) => {
+const NavItemLink = ({ item, index, onClose, navigate }: NavItemLinkProps) => {
+  const t = useT();
   if (item.disabled) {
     return (
       <div
         aria-disabled="true"
-        aria-label={`${item.label} — ${homeMsg.comingSoon[lang]}`}
+        aria-label={`${item.label} — ${t('home.comingSoon')}`}
         className="relative flex min-h-13 cursor-not-allowed flex-col justify-between gap-1 border-b border-hairline px-4 py-2.5"
       >
         <div className="flex items-center justify-between gap-2">
@@ -79,7 +89,7 @@ const NavItemLink = ({
           </CellLabel>
           <span className="inline-flex items-center gap-1 font-mono text-micro leading-none uppercase tracking-meta text-muted-foreground">
             <IconLock width="9" height="9" aria-hidden="true" />
-            {homeMsg.comingSoon[lang]}
+            {t('home.comingSoon')}
           </span>
         </div>
         <span className="mt-auto text-cell font-light text-muted-foreground">
@@ -140,7 +150,8 @@ interface NavFooterProps {
 }
 
 const NavFooter = ({ lang, setLang, onClose, navigate }: NavFooterProps) => {
-  const bookingHref = lang === 'fr' ? '/fr/reserver' : '/en/book';
+  const t = useT();
+  const bookingHref = SCREEN_TO_PATH.book(lang);
 
   return (
     <div className="grid grid-cols-auto-fluid border-t border-hairline">
@@ -148,7 +159,7 @@ const NavFooter = ({ lang, setLang, onClose, navigate }: NavFooterProps) => {
         onClick={() => setLang(lang === 'fr' ? 'en' : 'fr')}
         className="edo-focus-ring h-12 w-12 cursor-pointer border-0 border-r border-hairline bg-white font-mono text-caption uppercase tracking-label transition-colors hover:bg-muted"
       >
-        {common.langToggleLabel[lang]}
+        {t('common.langToggleLabel')}
       </button>
       <a
         href={bookingHref}
@@ -159,7 +170,7 @@ const NavFooter = ({ lang, setLang, onClose, navigate }: NavFooterProps) => {
         }}
         className="edo-focus-ring h-12 flex cursor-pointer items-center justify-center border-0 bg-primary font-mono text-caption uppercase tracking-label text-white no-underline transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90"
       >
-        {common.bookNow[lang]}
+        {t('common.bookNow')}
       </a>
     </div>
   );
@@ -174,6 +185,7 @@ interface NavMenuProps {
 
 const NavMenu = ({ lang, isOpen, onClose, setLang }: NavMenuProps) => {
   const navigate = useNavigate();
+  const t = useT();
 
   return (
     <>
@@ -181,7 +193,7 @@ const NavMenu = ({ lang, isOpen, onClose, setLang }: NavMenuProps) => {
       <aside
         role="dialog"
         aria-modal="true"
-        aria-label={common.menu[lang]}
+        aria-label={t('common.menu')}
         aria-hidden={isOpen ? undefined : true}
         {...({ inert: isOpen ? undefined : '' } as Record<string, unknown>)}
         className={cn(
@@ -189,18 +201,21 @@ const NavMenu = ({ lang, isOpen, onClose, setLang }: NavMenuProps) => {
           isOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
-        <NavHeader onClose={onClose} lang={lang} />
+        <NavHeader onClose={onClose} />
 
         <nav
           className="flex flex-1 flex-col overflow-y-auto"
-          aria-label={common.menu[lang]}
+          aria-label={t('common.menu')}
         >
-          {nav.items[lang].map((item, index) => (
+          {NAV_SCREENS.map((entry, index) => (
             <NavItemLink
-              key={item.href}
-              item={item}
+              key={entry.screen}
+              item={{
+                label: t(entry.label),
+                href: SCREEN_TO_PATH[entry.screen](lang),
+                disabled: 'disabled' in entry ? entry.disabled : undefined,
+              }}
               index={index}
-              lang={lang}
               onClose={onClose}
               navigate={navigate}
             />
@@ -208,7 +223,7 @@ const NavMenu = ({ lang, isOpen, onClose, setLang }: NavMenuProps) => {
           <NavExternalLink
             href="https://etouch.e-do.studio"
             label="Etouch"
-            index={nav.items[lang].length}
+            index={NAV_SCREENS.length}
           />
           <SocialLinksRow className="mt-auto border-t border-hairline" />
         </nav>

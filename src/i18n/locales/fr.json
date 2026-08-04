@@ -216,6 +216,15 @@
     "filters": "Filtres",
     "reset": "Réinitialiser"
   },
+  "nav": {
+    "contact": "Contact",
+    "discovery": "Discovery",
+    "gallery": "Galerie",
+    "home": "Accueil",
+    "legal": "Légal",
+    "postprod": "Post-production",
+    "stages": "Plateaux"
+  },
   "plateau": {
     "rates": "Tarifs HT",
     "specs": "Caractéristiques",

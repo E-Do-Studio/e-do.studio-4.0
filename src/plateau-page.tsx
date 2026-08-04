@@ -114,7 +114,7 @@ const Cover = ({
 
       {hasMultiple && (
         <>
-          <CarouselNav lang={lang} onPrev={onPrev} onNext={onNext} />
+          <CarouselNav onPrev={onPrev} onNext={onNext} />
           <span aria-live="polite" className="sr-only">
             {`${index + 1} / ${total}`}
           </span>

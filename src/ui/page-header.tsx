@@ -5,7 +5,8 @@ import { cn } from './cn';
 import { Wordmark } from './brand';
 import { HoverMarquee } from './hover-marquee';
 import { IconArrowRight, IconMenu } from './icons';
-import { common } from '../i18n/messages';
+import { getT } from '../i18n';
+import { useT } from '../i18n/use-t';
 
 interface PageHeaderAction {
   id: string;
@@ -105,27 +106,28 @@ const RIGHT_BLOCK_BASE_CLASS =
   'flex min-w-0 [&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-hairline';
 
 const LangButton = ({
-  lang,
   onLangToggle,
   className,
 }: {
-  lang: Lang;
   onLangToggle: () => void;
   className?: string;
-}) => (
-  <button
-    onClick={onLangToggle}
-    style={{ width: '3.375rem', flex: '0 0 3.375rem' }}
-    className={cn(
-      'edo-focus-ring flex h-full cursor-pointer items-center justify-center border-0 bg-background p-0 transition-colors hover:bg-muted',
-      className,
-    )}
-  >
-    <span className="font-mono text-label tracking-meta text-foreground">
-      {common.langToggleLabel[lang]}
-    </span>
-  </button>
-);
+}) => {
+  const t = useT();
+  return (
+    <button
+      onClick={onLangToggle}
+      style={{ width: '3.375rem', flex: '0 0 3.375rem' }}
+      className={cn(
+        'edo-focus-ring flex h-full cursor-pointer items-center justify-center border-0 bg-background p-0 transition-colors hover:bg-muted',
+        className,
+      )}
+    >
+      <span className="font-mono text-label tracking-meta text-foreground">
+        {t('common.langToggleLabel')}
+      </span>
+    </button>
+  );
+};
 
 const PageHeader = ({
   lang,
@@ -225,7 +227,7 @@ const PageHeader = ({
               className={cn(action.className, '!flex-1 md:!flex-none')}
             />
           ))}
-          <LangButton lang={lang} onLangToggle={onLangToggle} />
+          <LangButton onLangToggle={onLangToggle} />
         </div>
       ) : (
         /* Flex mode — actions + lang are wrapped in a single right block.
@@ -243,7 +245,7 @@ const PageHeader = ({
               className={cn(action.className, '!flex-1 md:!flex-none')}
             />
           ))}
-          <LangButton lang={lang} onLangToggle={onLangToggle} />
+          <LangButton onLangToggle={onLangToggle} />
         </div>
       )}
     </header>
@@ -263,17 +265,18 @@ const buildMainNav = ({
   goto,
   exclude,
 }: BuildMainNavOpts): PageHeaderAction[] => {
+  const t = getT(lang);
   const items: {
     id: MainNavId;
     label: string;
     screen: string;
     primary?: boolean;
   }[] = [
-    { id: 'stages', label: common.stages[lang], screen: 'plateau-live' },
-    { id: 'postprod', label: common.postProd[lang], screen: 'postprod' },
-    { id: 'gallery', label: common.gallery[lang], screen: 'gallery' },
-    { id: 'contact', label: common.contactUs[lang], screen: 'contact' },
-    { id: 'book', label: common.book[lang], screen: 'book', primary: true },
+    { id: 'stages', label: t('common.stages'), screen: 'plateau-live' },
+    { id: 'postprod', label: t('common.postProd'), screen: 'postprod' },
+    { id: 'gallery', label: t('common.gallery'), screen: 'gallery' },
+    { id: 'contact', label: t('common.contactUs'), screen: 'contact' },
+    { id: 'book', label: t('common.book'), screen: 'book', primary: true },
   ];
   return items
     .filter((it) => it.id !== exclude)

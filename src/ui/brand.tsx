@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
-import type { Lang } from '../types';
 import { IconGlobe } from './icons';
 import logoFull from '../../brand/logo-full.webp';
 import logoMark from '../../brand/logo-mark.webp';
-import { common } from '../i18n/messages';
+import { useT } from '../i18n/use-t';
 
 interface WordmarkProps {
   size?: 32 | 40;
@@ -38,34 +37,36 @@ const Wordmark = ({ size = 40, variant = 'full' }: WordmarkProps) => {
 };
 
 interface LangSwitchProps {
-  lang: Lang;
   onToggle: () => void;
 }
 
-const LangSwitch = ({ lang, onToggle }: LangSwitchProps) => (
-  <button
-    onClick={onToggle}
-    className="edo-focus-ring flex h-full cursor-pointer flex-col items-center justify-center gap-1 border-0 bg-background transition-colors duration-150 hover:bg-muted"
-  >
-    <IconGlobe width="14" height="14" />
-    <div className="flex items-center gap-0.5 font-mono text-micro font-medium text-muted-foreground">
-      <span>{common.langToggleLabel[lang]}</span>
-      <svg
-        width="10"
-        height="10"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      >
-        <path d="M5 12h14" />
-        <path d="m12 5 7 7-7 7" />
-      </svg>
-      <span>{common.langToggleLabel[lang]}</span>
-    </div>
-  </button>
-);
+const LangSwitch = ({ onToggle }: LangSwitchProps) => {
+  const t = useT();
+  return (
+    <button
+      onClick={onToggle}
+      className="edo-focus-ring flex h-full cursor-pointer flex-col items-center justify-center gap-1 border-0 bg-background transition-colors duration-150 hover:bg-muted"
+    >
+      <IconGlobe width="14" height="14" />
+      <div className="flex items-center gap-0.5 font-mono text-micro font-medium text-muted-foreground">
+        <span>{t('common.langToggleLabel')}</span>
+        <svg
+          width="10"
+          height="10"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        >
+          <path d="M5 12h14" />
+          <path d="m12 5 7 7-7 7" />
+        </svg>
+        <span>{t('common.langToggleLabel')}</span>
+      </div>
+    </button>
+  );
+};
 
 const Clock = () => {
   const [t, setT] = useState(new Date());

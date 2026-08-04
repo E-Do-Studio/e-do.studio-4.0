@@ -36,29 +36,6 @@ export const common = {
   resetZoom: { fr: 'Réinitialiser le zoom', en: 'Reset zoom' } as B,
 };
 
-export const nav = {
-  items: {
-    fr: [
-      { label: 'Accueil', href: '/fr' },
-      { label: 'Plateaux', href: '/fr/plateau/live' },
-      { label: 'Galerie', href: '/fr/galerie' },
-      { label: 'Discovery', href: '/fr/discovery', disabled: true },
-      { label: 'Post-production', href: '/fr/post-production' },
-      { label: 'Contact', href: '/fr/contact' },
-      { label: 'Légal', href: '/fr/legal' },
-    ],
-    en: [
-      { label: 'Home', href: '/en' },
-      { label: 'Stages', href: '/en/plateau/live' },
-      { label: 'Gallery', href: '/en/gallery' },
-      { label: 'Discovery', href: '/en/discovery', disabled: true },
-      { label: 'Post-production', href: '/en/post-production' },
-      { label: 'Contact', href: '/en/contact' },
-      { label: 'Legal', href: '/en/legal' },
-    ],
-  },
-};
-
 export const plateau = {
   specs: { fr: 'Caractéristiques', en: 'Specifications' } as B,
   rates: { fr: 'Tarifs HT', en: 'Rates excl. VAT' } as B,
