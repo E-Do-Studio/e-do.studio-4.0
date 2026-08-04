@@ -3,7 +3,7 @@ import { usePageContext } from '../lib/page-context';
 import { cn } from '@/lib/utils';
 import { IconArrowRight } from '../ui/icons';
 import { PageHeader, buildMainNav } from '../ui/page-header';
-import { bookPicker, booking } from '../i18n/messages';
+import { useT } from '../i18n/use-t';
 import { configuratorPath, manualPath } from './book-routes';
 import { ContactRail, ContactRightColumn } from '../contact-page';
 import type { TeamMember } from '../lib/strapi';
@@ -26,6 +26,7 @@ const PickerTile = ({
   onClick,
   lang,
 }: TileProps) => {
+  const t = useT();
   const onDark = variant === 'primary' || variant === 'foreground';
   const palette =
     variant === 'primary'
@@ -68,7 +69,7 @@ const PickerTile = ({
             labelMutedTone,
           )}
         >
-          {lang === 'fr' ? 'Mode' : 'Mode'}
+          {t('bookPicker.modeLabel')}
         </span>
         <span className="text-tile-title font-light tracking-headline leading-tight">
           {label}
@@ -87,6 +88,7 @@ const PickerTile = ({
 };
 
 const BookPicker = () => {
+  const t = useT();
   const { lang, setLang, openMenu, goto, siteData } = usePageContext();
   const navigate = useNavigate();
   const contact = siteData.contact;
@@ -108,7 +110,7 @@ const BookPicker = () => {
     <div className="edo-page-enter grid w-full edo-hairline md:h-full md:grid-cols-contact-shell md:grid-rows-page md:overflow-hidden">
       <PageHeader
         lang={lang}
-        title={booking.title[lang]}
+        title={t('booking.title')}
         className="col-span-full h-14 md:col-span-full md:row-start-1 md:h-full"
         onMenuClick={openMenu}
         onLogoClick={() => goto('home')}
@@ -119,34 +121,34 @@ const BookPicker = () => {
       <main className="flex flex-col overflow-auto bg-white md:col-start-2 md:col-span-2 md:row-start-2">
         <div className="bg-white px-6 py-10 md:px-12 md:py-14">
           <h1 className="m-0 text-hero font-light tracking-display leading-solid text-balance text-foreground">
-            {bookPicker.title[lang]}
+            {t('bookPicker.title')}
           </h1>
           <p className="m-0 mt-4 max-w-2xl text-detail text-muted-foreground leading-normal text-pretty">
-            {bookPicker.subtitle[lang]}
+            {t('bookPicker.subtitle')}
           </p>
         </div>
 
         <div className="flex flex-1 flex-col edo-hairline border-t border-hairline md:flex-row md:items-end md:border-t-0">
           <PickerTile
             index={1}
-            label={bookPicker.configuratorLabel[lang]}
-            description={bookPicker.configuratorDesc[lang]}
+            label={t('bookPicker.configuratorLabel')}
+            description={t('bookPicker.configuratorDesc')}
             variant="primary"
             onClick={goConfigurator}
             lang={lang}
           />
           <PickerTile
             index={2}
-            label={bookPicker.manualLabel[lang]}
-            description={bookPicker.manualDesc[lang]}
+            label={t('bookPicker.manualLabel')}
+            description={t('bookPicker.manualDesc')}
             variant="foreground"
             onClick={goManual}
             lang={lang}
           />
           <PickerTile
             index={3}
-            label={bookPicker.contactLabel[lang]}
-            description={bookPicker.contactDesc[lang]}
+            label={t('bookPicker.contactLabel')}
+            description={t('bookPicker.contactDesc')}
             variant="surface"
             onClick={() => goto('contact')}
             lang={lang}

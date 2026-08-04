@@ -36,45 +36,6 @@ export const common = {
   resetZoom: { fr: 'Réinitialiser le zoom', en: 'Reset zoom' } as B,
 };
 
-export const bookPicker = {
-  title: {
-    fr: 'Comment souhaitez-vous réserver ?',
-    en: 'How would you like to book?',
-  } as B,
-  subtitle: {
-    fr: 'Trois façons de démarrer — choisissez la plus simple pour vous.',
-    en: 'Three ways to get started — pick the one that fits.',
-  } as B,
-  configuratorLabel: { fr: 'Configurateur', en: 'Configurator' } as B,
-  configuratorDesc: {
-    fr: 'Configurez votre devis en quelques clics',
-    en: 'Build your quote in a few clicks',
-  } as B,
-  manualLabel: { fr: 'Manuel', en: 'Manual' } as B,
-  manualDesc: {
-    fr: 'Décrivez votre besoin librement',
-    en: 'Describe your need freely',
-  } as B,
-  contactLabel: { fr: 'Nous contacter', en: 'Talk to us' } as B,
-  contactDesc: {
-    fr: "Parlez à un membre de l'équipe",
-    en: 'Talk to a team member',
-  } as B,
-  confirmationTitle: {
-    fr: 'Demande envoyée',
-    en: 'Request sent',
-  } as B,
-  confirmationMissingTitle: {
-    fr: 'Pas de demande récente.',
-    en: 'No recent request.',
-  } as B,
-  confirmationMissingBody: {
-    fr: 'Reprenez votre réservation pour finaliser votre demande.',
-    en: 'Resume your booking to finalise your request.',
-  } as B,
-  resumeBooking: { fr: 'Reprendre ma réservation', en: 'Resume booking' } as B,
-};
-
 export const booking = {
   title: { fr: 'Réservation', en: 'Booking' } as B,
   needHelp: { fr: "Besoin d'aide", en: 'Need help' } as B,

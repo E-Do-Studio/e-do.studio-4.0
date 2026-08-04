@@ -5,7 +5,7 @@ import { SCREEN_TO_PATH } from '../lib/screens';
 import { IconArrowRight } from '../ui/icons';
 import { PageHeader, buildMainNav } from '../ui/page-header';
 import { clearDraft } from '../lib/use-booking-draft';
-import { booking, bookPicker, common } from '../i18n/messages';
+import { useT } from '../i18n/use-t';
 import {
   loadConfirmation,
   clearConfirmation,
@@ -35,6 +35,7 @@ const ConfirmedView = ({
   goto,
   onNewRequest,
 }: ConfirmedViewProps) => {
+  const t = useT();
   const months = MONTHS[lang];
   const isMultiPlateau = (snapshot.slotIds || []).filter(Boolean).length > 1;
   const ref = useMemo(() => {
@@ -48,37 +49,30 @@ const ConfirmedView = ({
     return prefix + Math.random().toString(36).substring(2, 8).toUpperCase();
   }, [snapshot.savedRef, snapshot.mode]);
 
-  const plateauLabel =
-    snapshot.plateauName[lang] || (lang === 'fr' ? 'Plateau' : 'Stage');
+  const plateauLabel = snapshot.plateauName[lang] || t('booking.stageFallback');
   const copy = (() => {
     if (snapshot.mode === 'quote') {
       return {
-        tag: booking.quoteSent[lang],
-        status: booking.quoteLabel[lang],
-        title: booking.quoteOnItsWay[lang],
-        body:
-          lang === 'fr'
-            ? `Nous vous envoyons votre devis détaillé pour le plateau ${plateauLabel} par e-mail sous 24h (jours ouvrés). Aucune date n'est bloquée à ce stade — vous restez libre de réserver ensuite.`
-            : `We're sending your detailed quote for the ${plateauLabel} stage by email within 24h (working days). No date is held yet — you stay free to book later.`,
+        tag: t('booking.quoteSent'),
+        status: t('booking.quoteLabel'),
+        title: t('booking.quoteOnItsWay'),
+        body: t('booking.quoteBody', { stage: plateauLabel }),
       };
     }
     if (snapshot.mode === 'booking') {
       return {
-        tag: booking.bookingConfirmed[lang],
-        status: booking.booked[lang],
-        title: booking.youreBooked[lang],
-        body:
-          lang === 'fr'
-            ? `Nous avons bien enregistré votre réservation pour le plateau ${plateauLabel}. Un membre de l'équipe vous recontacte sous 24h (jours ouvrés) pour confirmer les modalités de paiement.`
-            : `We've locked in your booking for the ${plateauLabel} stage. A team member will contact you within 24h (working days) to confirm payment terms.`,
+        tag: t('booking.bookingConfirmed'),
+        status: t('booking.booked'),
+        title: t('booking.youreBooked'),
+        body: t('booking.bookingBody', { stage: plateauLabel }),
       };
     }
     const contact = snapshot.contact as { prenom?: string; nom?: string };
     return {
-      tag: booking.requestSent[lang],
-      status: booking.confirmed[lang],
-      title: booking.thankYou[lang] + (contact.prenom || contact.nom || ''),
-      body: booking.cycloRequestBody[lang],
+      tag: t('booking.requestSent'),
+      status: t('booking.confirmed'),
+      title: t('booking.thankYou') + (contact.prenom || contact.nom || ''),
+      body: t('booking.cycloRequestBody'),
     };
   })();
 
@@ -99,7 +93,7 @@ const ConfirmedView = ({
     <div className="grid w-full edo-hairline md:h-full md:grid-cols-app md:grid-rows-app md:overflow-hidden">
       <PageHeader
         lang={lang}
-        title={booking.title[lang]}
+        title={t('booking.title')}
         subtitle={copy.tag}
         className="col-span-full h-14 md:col-start-1 md:col-span-2 md:row-start-1 md:h-full"
         subgrid={false}
@@ -125,7 +119,7 @@ const ConfirmedView = ({
             <div className="flex flex-col gap-3.5">
               <div>
                 <div className="edo-cell-label text-muted-foreground mb-1">
-                  {booking.reference[lang]}
+                  {t('booking.reference')}
                 </div>
                 <div className="font-mono text-cell tracking-ui text-foreground">
                   {ref}
@@ -133,7 +127,7 @@ const ConfirmedView = ({
               </div>
               <div>
                 <div className="edo-cell-label text-muted-foreground mb-1">
-                  {booking.issued[lang]}
+                  {t('booking.issued')}
                 </div>
                 <div className="font-mono text-caption text-foreground">
                   {new Date().toLocaleDateString(
@@ -151,7 +145,7 @@ const ConfirmedView = ({
             </div>
             <div>
               <div className="edo-cell-label text-muted-foreground mb-1">
-                {booking.contactLabel[lang]}
+                {t('booking.contactLabel')}
               </div>
               <div className="text-detail font-medium tracking-copy-tight">
                 {[contact.prenom, contact.nom].filter(Boolean).join(' ') || '—'}
@@ -166,7 +160,7 @@ const ConfirmedView = ({
         <div className="grid grid-cols-2 md:grid-cols-4 edo-hairline">
           <div className="bg-white px-5 py-3">
             <div className="edo-cell-label text-muted-foreground mb-1">
-              {booking.stage[lang]}
+              {t('booking.stage')}
             </div>
             <div className="text-cell font-medium tracking-headline">
               {plateauLabel}
@@ -174,7 +168,7 @@ const ConfirmedView = ({
           </div>
           <div className="bg-white px-5 py-3">
             <div className="edo-cell-label text-muted-foreground mb-1">
-              {isMultiPlateau ? booking.dates[lang] : booking.date[lang]}
+              {isMultiPlateau ? t('booking.dates') : t('booking.date')}
             </div>
             {snapshot.sessions && snapshot.sessions.length > 1 ? (
               <ul className="flex flex-col gap-1 list-none p-0 m-0">
@@ -190,7 +184,7 @@ const ConfirmedView = ({
                     {s.date
                       ? `${s.date.d} ${months[s.date.m]} ${s.date.y}`
                       : snapshot.mode === 'quote'
-                        ? booking.notSet[lang]
+                        ? t('booking.notSet')
                         : '—'}
                     {s.arrivalHour != null && (
                       <>
@@ -212,13 +206,13 @@ const ConfirmedView = ({
               </div>
             ) : (
               <div className="text-cell font-medium tracking-headline text-muted-foreground">
-                {snapshot.mode === 'quote' ? booking.notSet[lang] : '—'}
+                {snapshot.mode === 'quote' ? t('booking.notSet') : '—'}
               </div>
             )}
           </div>
           <div className="bg-white px-5 py-3">
             <div className="edo-cell-label text-muted-foreground mb-1">
-              {booking.company[lang]}
+              {t('booking.company')}
             </div>
             <div className="text-detail font-medium tracking-copy-tight">
               {contact.societe || '—'}
@@ -236,7 +230,7 @@ const ConfirmedView = ({
 
         <div className="bg-white px-5 md:px-12 py-cell pb-5 flex-1">
           <div className="edo-cell-label text-muted-foreground mb-2.5">
-            {booking.quoteBreakdown[lang]}
+            {t('booking.quoteBreakdown')}
           </div>
           <div className="flex flex-col">
             {(
@@ -252,9 +246,7 @@ const ConfirmedView = ({
                   </span>
                   <span className="font-mono tabular-nums text-foreground">
                     {r.onReq
-                      ? lang === 'fr'
-                        ? 'sur demande'
-                        : 'on request'
+                      ? t('booking.onRequestLower')
                       : `${fmtEUR(r.amt)} €`}
                   </span>
                 </div>
@@ -269,7 +261,7 @@ const ConfirmedView = ({
               </span>
             </div>
             <div className="font-mono text-label text-muted-foreground mt-2.5 tracking-caption leading-copy pt-2 border-t border-t-border">
-              {booking.quoteDisclaimer[lang]}
+              {t('booking.quoteDisclaimer')}
             </div>
           </div>
         </div>
@@ -277,12 +269,12 @@ const ConfirmedView = ({
         <div className="grid grid-cols-2 edo-hairline">
           <div className="bg-white px-5 py-3 flex items-center">
             <button onClick={() => goto('home')} className={navBtnCls}>
-              ← {booking.backHome[lang]}
+              ← {t('booking.backHome')}
             </button>
           </div>
           <div className="bg-white px-5 py-3 flex items-center justify-end">
             <button onClick={onNewRequest} className={navBtnOrangeCls}>
-              {booking.newRequest[lang]}{' '}
+              {t('booking.newRequest')}{' '}
               <IconArrowRight width="14" height="14" />
             </button>
           </div>
@@ -293,6 +285,7 @@ const ConfirmedView = ({
 };
 
 const BookConfirmation = () => {
+  const t = useT();
   const { lang, setLang, openMenu, goto } = usePageContext();
   const navigate = useNavigate();
   const [snapshot, setSnapshot] = useState<ConfirmationSnapshot | null>(null);
@@ -317,7 +310,7 @@ const BookConfirmation = () => {
       <div className="edo-page-enter grid w-full edo-hairline md:h-full md:grid-rows-app">
         <PageHeader
           lang={lang}
-          title={booking.title[lang]}
+          title={t('booking.title')}
           className="col-span-full h-14 md:row-start-1 md:h-full"
           subgrid={false}
           onMenuClick={openMenu}
@@ -328,20 +321,20 @@ const BookConfirmation = () => {
         <div className="md:row-start-2 md:overflow-y-auto md:min-h-0 bg-white">
           <div className="px-5 py-10 md:px-12 md:py-14">
             <span className="font-mono text-label tracking-meta uppercase text-muted-foreground">
-              {bookPicker.confirmationMissingTitle[lang]}
+              {t('bookPicker.confirmationMissingTitle')}
             </span>
             <h1 className="m-0 mt-4 text-hero font-light tracking-display leading-solid text-balance text-foreground">
-              {common.bookNow[lang]}
+              {t('common.bookNow')}
             </h1>
             <p className="m-0 mt-4 max-w-2xl text-detail text-muted-foreground leading-normal text-pretty">
-              {bookPicker.confirmationMissingBody[lang]}
+              {t('bookPicker.confirmationMissingBody')}
             </p>
             <button
               type="button"
               onClick={() => navigate({ to: SCREEN_TO_PATH.book(lang) })}
               className="edo-focus-ring mt-8 inline-flex h-control cursor-pointer items-center gap-2 border-0 bg-primary px-cell-lg font-mono text-caption tracking-meta uppercase text-white transition-all duration-150 ease-edo-out hover:opacity-90"
             >
-              {bookPicker.resumeBooking[lang]}{' '}
+              {t('bookPicker.resumeBooking')}{' '}
               <IconArrowRight width="14" height="14" />
             </button>
           </div>
