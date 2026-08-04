@@ -1,5 +1,6 @@
 import { usePageContext } from '../lib/page-context';
 import type { SocialLink } from '../types';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { SocialIcon } from './social-icon';
 
@@ -31,18 +32,19 @@ const SocialLinksRow = ({
   return (
     <div className={cn(LAYOUT_CLASSES[layout], className)}>
       {items.map((s) => (
-        <a
+        <Button
           key={s.k}
-          href={s.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="outline-none focus-visible:ring-3 focus-visible:ring-ring/50 group flex items-center justify-between border-0 bg-background px-3 py-3 text-foreground no-underline transition-colors duration-150 hover:bg-muted"
+          variant="cell"
+          render={
+            <a href={s.href} target="_blank" rel="noopener noreferrer" />
+          }
+          className="h-auto justify-between px-3 py-3 no-underline"
         >
           <SocialIcon kind={s.k} size={12} />
           <span className="font-mono text-xs tracking-widest">
             {labelFor(s)}
           </span>
-        </a>
+        </Button>
       ))}
     </div>
   );

@@ -378,7 +378,7 @@ const PostprodPage = () => {
         aria-haspopup="dialog"
         aria-expanded={navSheetOpen}
         aria-controls="postprod-nav-sheet"
-        className="col-span-full sticky top-14 z-30 md:hidden flex items-center gap-4 min-h-14 w-full px-4 py-2.5 bg-background border-b border-border text-left cursor-pointer"
+        className="col-span-full sticky top-14 z-30 md:hidden flex items-center gap-4 min-h-14 w-full px-4 py-2.5 bg-background border-0 border-b border-border text-left cursor-pointer"
       >
         <span className="font-mono text-xs tracking-widest text-muted-foreground">
           {currentNumber}

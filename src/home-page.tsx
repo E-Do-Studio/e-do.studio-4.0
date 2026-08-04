@@ -1,3 +1,4 @@
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useLoaderData } from '@tanstack/react-router';
 import { ArrowRight, Lock } from 'lucide-react';
@@ -441,16 +442,13 @@ const HomePage = () => {
           </div>
         </div>
         <div className="relative flex flex-shrink-0 items-center gap-2">
-          <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-border bg-muted px-2.5 py-1 font-mono text-xs uppercase tracking-wider text-muted-foreground">
-            <Lock width="11" height="11" />
+          <Badge variant="secondary" className="hidden font-mono uppercase tracking-wider sm:inline-flex">
+            <Lock data-icon="inline-start" />
             {t('home.comingSoon')}
-          </span>
-          <span
-            className="sm:hidden inline-flex items-center justify-center rounded-full border border-border bg-muted p-1.5 text-muted-foreground"
-            aria-hidden="true"
-          >
-            <Lock width="12" height="12" />
-          </span>
+          </Badge>
+          <Badge variant="secondary" className="sm:hidden" aria-hidden="true">
+            <Lock />
+          </Badge>
         </div>
       </Button>
 

@@ -102,7 +102,7 @@ export const ContactForm = ({
       <Button
         type="submit"
         disabled={sending}
-        className="col-span-2 row-start-6 h-full gap-3.5"
+        className="col-span-2 row-start-6 h-full gap-3.5 border-0"
       >
         {sending ? (
           t('common.sending')

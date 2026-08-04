@@ -307,7 +307,7 @@ const QuickReplyButton = ({ children, onClick }: QuickReplyButtonProps) => (
   <Button
     onClick={onClick}
     variant="outline"
-    className="h-auto rounded-full px-2.5 py-1.5 text-xs tracking-wider text-muted-foreground hover:border-foreground hover:text-foreground"
+    className="h-auto px-2.5 py-1.5 text-xs tracking-wider text-muted-foreground hover:border-foreground hover:text-foreground"
   >
     {children}
   </Button>

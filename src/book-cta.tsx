@@ -18,7 +18,11 @@ const BookCTATile = ({ onClick, className, label }: BookCTAProps) => {
     <Button
       onClick={onClick}
       className={cn(
-        'group h-12 justify-between gap-3 px-4 py-2 text-left md:h-21 md:px-5 md:py-3',
+        // `border-0` : la base de shadcn pose `border border-transparent` avec
+        // `bg-clip-padding`, si bien qu'une tuile déposée sur une grille
+        // `bg-border` laisse voir le noir du fond sur 1px tout autour. Le filet
+        // appartient à la gouttière de la grille, pas au pourtour de la tuile.
+        'group h-12 justify-between gap-3 border-0 px-4 py-2 text-left md:h-21 md:px-5 md:py-3',
         className,
       )}
     >

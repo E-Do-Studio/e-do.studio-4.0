@@ -66,8 +66,13 @@ const Cover = ({
     imageAspect != null && imageAspect < COVER_ASPECT_THRESHOLD
       ? 'contain'
       : 'cover';
+  // Contrôle posé sur la photo : sa toile de fond n'est pas une surface du
+  // thème mais l'image elle-même. Le scope `dark` fait résoudre les tokens
+  // vers la palette sombre — même voile foncé qu'avant, sans couleur écrite
+  // en dur. Le reste (curseur, centrage, anneau de focus, transition) vient
+  // déjà de la base de `Button`.
   const ctrlBtn =
-    'outline-none focus-visible:ring-3 focus-visible:ring-ring/50 absolute z-10 flex h-9 w-9 items-center justify-center cursor-pointer bg-black/35 backdrop-blur-md border border-white/20 text-white transition-[opacity,transform,background-color] duration-150 ease-out hover:bg-black/50 active:scale-[0.96] opacity-100 md:opacity-0 md:scale-95 md:group-hover:opacity-100 md:group-hover:scale-100 md:group-focus-within:opacity-100 md:group-focus-within:scale-100';
+    'dark absolute z-10 border border-foreground/20 bg-background/35 text-foreground backdrop-blur-md hover:bg-background/50 active:scale-[0.96] opacity-100 md:opacity-0 md:scale-95 md:group-hover:opacity-100 md:group-hover:scale-100 md:group-focus-within:opacity-100 md:group-focus-within:scale-100';
 
   return (
     <div
@@ -108,6 +113,7 @@ const Cover = ({
           onClick={() => setPaused((p) => !p)}
           aria-label={paused ? t('common.playVideo') : t('common.pauseVideo')}
           aria-pressed={paused}
+          size="icon-lg"
           className={cn(ctrlBtn, 'bottom-3 right-3')}
         >
           {paused ? (
