@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
+import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -40,25 +41,45 @@ function DialogOverlay({
   )
 }
 
+// Le site a deux formes de dialogue : la carte centrée de shadcn, et une
+// visionneuse plein écran (lightbox de galerie). La seconde ne peut pas
+// s'obtenir en surchargeant la première — le centrage par `translate` de
+// `default` doit être annulé, pas complété. D'où une variante dédiée qui centre
+// par flexbox sur toute la fenêtre, comme le faisait la lightbox maison.
+const dialogContentVariants = cva(
+  // `ring-1` retiré : la marque sépare par un filet noir, pas par un halo.
+  "fixed z-50 text-popover-foreground duration-100 outline-none data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+  {
+    variants: {
+      variant: {
+        default:
+          "top-1/2 left-1/2 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl bg-popover p-4 sm:max-w-sm data-open:zoom-in-95 data-closed:zoom-out-95",
+        fullscreen:
+          "inset-0 flex max-w-none items-center justify-center bg-transparent p-4 md:p-6 lg:p-8",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
+
 function DialogContent({
   className,
   children,
+  variant = "default",
   showCloseButton = true,
   ...props
-}: DialogPrimitive.Popup.Props & {
-  showCloseButton?: boolean
-}) {
+}: DialogPrimitive.Popup.Props &
+  VariantProps<typeof dialogContentVariants> & {
+    showCloseButton?: boolean
+  }) {
   return (
     <DialogPortal>
       <DialogOverlay />
       <DialogPrimitive.Popup
         data-slot="dialog-content"
-        className={cn(
-          // `ring-1` retiré : la marque sépare par un filet noir, pas par un
-          // halo. La bordure vient de `border border-hairline` côté appelant.
-          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl bg-popover p-4 text-popover-foreground duration-100 outline-none sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
-          className
-        )}
+        className={cn(dialogContentVariants({ variant, className }))}
         {...props}
       >
         {children}

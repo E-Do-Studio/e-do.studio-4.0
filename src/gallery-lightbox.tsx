@@ -207,13 +207,22 @@ export const GalleryLightbox = ({
       }}
     >
       <DialogContent
+        variant="fullscreen"
         showCloseButton={false}
-        className="relative flex h-full max-h-[900px] w-auto max-w-[calc(100%-2rem)] flex-col overflow-hidden border border-hairline bg-white p-0 sm:max-w-[calc(100%-4rem)]"
-        style={{ aspectRatio: aspect ? `${aspect}` : '4 / 5' }}
+        // En plein écran le popup couvre toute la fenêtre : le fond du Dialog
+        // n'est plus cliquable, on ferme donc sur un clic tombant sur le popup
+        // lui-même (hors du panneau).
+        onMouseDown={(e: React.MouseEvent<HTMLDivElement>) => {
+          if (e.target === e.currentTarget) onClose();
+        }}
       >
         <DialogTitle className="sr-only">
           {`${project.brand} — ${plateauLabel}`}
         </DialogTitle>
+        <div
+          className="relative flex flex-col edo-hairline border border-hairline overflow-hidden bg-white h-full max-h-[900px] max-w-full shadow-2xl"
+          style={{ aspectRatio: aspect ? `${aspect}` : '4 / 5' }}
+        >
         <div className="group relative flex-1 min-h-0 overflow-hidden bg-background">
           <button
             type="button"
@@ -362,6 +371,7 @@ export const GalleryLightbox = ({
           >
             <ArrowRight size={20} strokeWidth={1.5} />
           </button>
+        </div>
         </div>
       </DialogContent>
     </Dialog>
