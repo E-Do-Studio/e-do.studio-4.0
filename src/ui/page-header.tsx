@@ -135,7 +135,11 @@ const LangButton = ({
     <Button
       variant="header"
       onClick={onLangToggle}
-      className={cn('h-full basis-14 flex-none px-0', className)}
+      // `w-*` et non `basis-*` : `flex-none` est le raccourci `flex: 0 0 auto`,
+      // qui remet `flex-basis` à `auto`. La base ne tenait que parce que
+      // Tailwind émet `basis-14` après `flex-none` — un ordre sur lequel on ne
+      // veut pas parier. Une largeur, elle, n'est pas touchée par le raccourci.
+      className={cn('h-full w-14 flex-none px-0 md:w-18', className)}
     >
       <span className="font-mono text-xs tracking-widest text-foreground">
         {t('common.langToggleLabel')}
