@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { Lang } from '../types';
 import { CellLabel } from './typography';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Wordmark } from './brand';
 import { HoverMarquee } from './hover-marquee';
@@ -60,15 +61,16 @@ const PageHeaderActionButton = ({
   const isPrimary = variant === 'primary';
   const isDark = variant === 'dark';
   const actionClassName = cn(
-    'edo-focus-ring flex h-full cursor-pointer items-center justify-center gap-2 border-0 font-mono uppercase no-underline transition-[color,background-color,opacity] duration-150 ease-edo-out',
+    'h-full gap-2 no-underline',
     expand ? 'flex-1' : 'flex-none',
     isPrimary
-      ? 'bg-primary px-4 md:px-6 text-label tracking-caption text-primary-foreground hover:opacity-90'
+      ? 'px-4 text-label tracking-caption md:px-6'
       : isDark
-        ? 'dark bg-background px-4 md:px-5 text-label tracking-label text-foreground hover:text-primary'
-        : 'bg-background px-4 md:px-5 text-label tracking-ui text-foreground hover:bg-muted',
+        ? 'dark bg-background px-4 text-label tracking-label hover:text-primary md:px-5'
+        : 'px-4 text-label tracking-ui md:px-5',
     className,
   );
+  const actionVariant = isPrimary ? 'default' : 'header';
   const content = (
     <>
       <HoverMarquee className="min-w-0">{label}</HoverMarquee>
@@ -87,16 +89,20 @@ const PageHeaderActionButton = ({
 
   if (href) {
     return (
-      <a href={href} target={target} rel={rel} className={actionClassName}>
+      <Button
+        variant={actionVariant}
+        render={<a href={href} target={target} rel={rel} />}
+        className={actionClassName}
+      >
         {content}
-      </a>
+      </Button>
     );
   }
 
   return (
-    <button type="button" onClick={onClick} className={actionClassName}>
+    <Button variant={actionVariant} onClick={onClick} className={actionClassName}>
       {content}
-    </button>
+    </Button>
   );
 };
 
@@ -114,18 +120,15 @@ const LangButton = ({
 }) => {
   const t = useT();
   return (
-    <button
+    <Button
+      variant="header"
       onClick={onLangToggle}
-      style={{ width: '3.375rem', flex: '0 0 3.375rem' }}
-      className={cn(
-        'edo-focus-ring flex h-full cursor-pointer items-center justify-center border-0 bg-background p-0 transition-colors hover:bg-muted',
-        className,
-      )}
+      className={cn('h-full basis-header flex-none px-0', className)}
     >
       <span className="font-mono text-label tracking-meta text-foreground">
         {t('common.langToggleLabel')}
       </span>
-    </button>
+    </Button>
   );
 };
 
@@ -183,20 +186,22 @@ const PageHeader = ({
       )}
     >
       <div className="flex h-full flex-none basis-44 md:basis-nav lg:col-start-1 [&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-hairline">
-        <button
+        <Button
+          variant="header"
           onClick={onMenuClick}
           aria-label="Open menu"
-          className="edo-focus-ring flex h-full basis-header flex-none cursor-pointer items-center justify-center border-0 bg-background text-foreground transition-colors hover:bg-muted md:hidden"
+          className="h-full basis-header flex-none px-0 md:hidden"
         >
-          <Menu width="18" height="18" />
-        </button>
-        <button
+          <Menu />
+        </Button>
+        <Button
+          variant="header"
           onClick={onLogoClick}
           aria-label="E-Do Studio home"
-          className="edo-focus-ring flex h-full min-w-0 flex-1 cursor-pointer items-center justify-center border-0 bg-background p-2 transition-colors hover:bg-muted"
+          className="h-full min-w-0 flex-1 p-2"
         >
           <Wordmark size={32} />
-        </button>
+        </Button>
       </div>
 
       {titleCell}
@@ -224,7 +229,7 @@ const PageHeader = ({
             <PageHeaderActionButton
               key={action.id}
               {...action}
-              className={cn(action.className, '!flex-1 md:!flex-none')}
+              className={cn(action.className, 'flex-1 md:flex-none')}
             />
           ))}
           <LangButton onLangToggle={onLangToggle} />
@@ -242,7 +247,7 @@ const PageHeader = ({
             <PageHeaderActionButton
               key={action.id}
               {...action}
-              className={cn(action.className, '!flex-1 md:!flex-none')}
+              className={cn(action.className, 'flex-1 md:flex-none')}
             />
           ))}
           <LangButton onLangToggle={onLangToggle} />
