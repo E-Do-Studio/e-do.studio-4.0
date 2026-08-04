@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
   ArrowLeft as ArrowLeft,
   ArrowRight as ArrowRight,
   Minus,
@@ -168,12 +173,10 @@ export const GalleryLightbox = ({
     resetTransform();
   }, [resetTransform, triggerAnimation]);
 
+  // Échap, le verrou de scroll et le piège à focus sont fournis par Dialog —
+  // seules restent les touches propres au visionneur.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-        return;
-      }
       if (hasMultiple && e.key === 'ArrowLeft') {
         prev();
         return;
@@ -189,19 +192,7 @@ export const GalleryLightbox = ({
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [hasMultiple, zoomable, next, onClose, prev, zoomIn, zoomOut, zoomReset]);
-
-  useEffect(() => {
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = previous;
-    };
-  }, []);
-
-  const onBackdropMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) onClose();
-  };
+  }, [hasMultiple, zoomable, next, prev, zoomIn, zoomOut, zoomReset]);
 
   const zoomBtn =
     'edo-focus-ring flex h-8 w-8 items-center justify-center cursor-pointer text-white transition-[background-color,opacity] duration-150 ease-edo-out hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent active:scale-[0.96]';
@@ -209,18 +200,20 @@ export const GalleryLightbox = ({
   const canReset = scale !== MIN_SCALE || tx !== 0 || ty !== 0;
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label={`${project.brand} — ${plateauLabel}`}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 backdrop-blur-sm p-4 md:p-6 lg:p-8"
-      onMouseDown={onBackdropMouseDown}
+    <Dialog
+      open
+      onOpenChange={(next: boolean) => {
+        if (!next) onClose();
+      }}
     >
-      <div
-        onMouseDown={(e) => e.stopPropagation()}
-        className="relative flex flex-col edo-hairline border border-hairline overflow-hidden bg-white h-full max-h-[900px] max-w-full shadow-2xl"
+      <DialogContent
+        showCloseButton={false}
+        className="relative flex h-full max-h-[900px] w-auto max-w-[calc(100%-2rem)] flex-col overflow-hidden border border-hairline bg-white p-0 sm:max-w-[calc(100%-4rem)]"
         style={{ aspectRatio: aspect ? `${aspect}` : '4 / 5' }}
       >
+        <DialogTitle className="sr-only">
+          {`${project.brand} — ${plateauLabel}`}
+        </DialogTitle>
         <div className="group relative flex-1 min-h-0 overflow-hidden bg-background">
           <button
             type="button"
@@ -370,7 +363,7 @@ export const GalleryLightbox = ({
             <ArrowRight size={20} strokeWidth={1.5} />
           </button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
