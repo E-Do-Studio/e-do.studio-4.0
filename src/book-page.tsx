@@ -56,6 +56,7 @@ import type {
   Recommendation,
   QuoteLabels,
 } from './lib/booking-engine';
+import { Trans } from 'react-i18next';
 import { useT } from './i18n/use-t';
 import { DAYS, MONTHS } from './lib/format';
 import { cn } from '@/lib/utils';
@@ -4175,33 +4176,22 @@ const Step7Contact = ({
               className="w-3.5 h-3.5 accent-primary cursor-pointer shrink-0"
             />
             <span className="text-caption leading-snug text-foreground">
-              {lang === 'fr' ? (
-                <>
-                  J'accepte les{' '}
-                  <a
-                    href={`/${lang}/legal?doc=cgv`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary underline"
-                  >
-                    conditions générales de vente
-                  </a>{' '}
-                  et les modalités de paiement.
-                </>
-              ) : (
-                <>
-                  I accept the{' '}
-                  <a
-                    href={`/${lang}/legal?doc=cgv`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary underline"
-                  >
-                    terms and conditions of sale
-                  </a>{' '}
-                  and payment terms.
-                </>
-              )}
+              {/* Le lien vit dans la traduction : sa position dans la phrase
+                  n'est pas la même d'une langue à l'autre. */}
+              <Trans
+                i18nKey="booking.cgvConsent"
+                components={{
+                  cgv: (
+                    // biome-ignore lint/a11y/useAnchorContent: le contenu vient de la traduction
+                    <a
+                      href={`/${lang}/legal?doc=cgv`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary underline"
+                    />
+                  ),
+                }}
+              />
             </span>
           </div>
           {errors.cgvAccepted && (
@@ -4246,15 +4236,15 @@ const SidePanel = ({
           : slotType === 'half'
             ? (() => {
                 const hh = Math.max(4, Math.min(7, hours || 4));
-                return hh === 4 ? t('booking.D') : `${hh}h`;
+                return hh === 4 ? t('booking.halfDayAbbrev') : `${hh}h`;
               })()
             : (() => {
                 const totalH = hours || 8;
                 const fullDays = Math.floor(totalH / 8);
                 const extraH = totalH - fullDays * 8;
-                const dUnit = t('booking.d');
+                const dUnit = t('booking.dayAbbrev');
                 let s = `${fullDays} ${dUnit}`;
-                if (extraH === 4) s += t('booking.D2');
+                if (extraH === 4) s += t('booking.plusHalfDayAbbrev');
                 else if (extraH > 0) s += ` + ${extraH}h`;
                 return s;
               })();
