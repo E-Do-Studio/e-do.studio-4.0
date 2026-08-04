@@ -1,4 +1,5 @@
 import type { DiscoveryCategory, DiscoveryPost, Lang } from '../types';
+import { Button } from '@/components/ui/button';
 import { ArticleMeta, CellBadge } from './shared';
 import { DiscoveryCoverMedia } from './discovery-cover';
 import { hasCover } from './cover';
@@ -65,12 +66,13 @@ export const MorePostsCard = ({
         {filteredPosts.map((post) => {
           const cover = hasCover(post);
           return (
-            <button
+            <Button
               key={post.id}
-              type="button"
+              variant="cell"
+              size="cell"
               onClick={() => onOpen(post)}
               className={cn(
-                'edo-focus-ring group grid w-full cursor-pointer items-center gap-3 border-0 border-b border-border bg-background px-cell pb-3.5 pt-3 text-left transition-colors hover:bg-muted',
+                'group grid w-full items-center gap-3 border-b border-border px-cell pb-3.5 pt-3',
                 cover ? 'grid-cols-thumb-row' : 'grid-cols-1',
               )}
             >
@@ -91,7 +93,7 @@ export const MorePostsCard = ({
                   {post.title[lang]}
                 </span>
               </div>
-            </button>
+            </Button>
           );
         })}
 

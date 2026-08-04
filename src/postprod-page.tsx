@@ -370,7 +370,7 @@ const PostprodPage = () => {
           a row in the sheet updates the type and closes the sheet immediately.
           Name + tagline stack vertically so long taglines don't truncate the
           name (post-prod taglines are full sentences). */}
-      <button
+      <Button
         type="button"
         onClick={() => setNavSheetOpen(true)}
         aria-haspopup="dialog"
@@ -394,7 +394,7 @@ const PostprodPage = () => {
           height="16"
           className="shrink-0 text-foreground"
         />
-      </button>
+      </Button>
 
       <Drawer open={navSheetOpen} onOpenChange={setNavSheetOpen}>
         <DrawerContent id="postprod-nav-sheet">
@@ -413,7 +413,7 @@ const PostprodPage = () => {
             const num = String(i + 1).padStart(2, '0');
             return (
               <li key={c.k}>
-                <button
+                <Button
                   type="button"
                   onClick={() => navigateToType(c.k)}
                   aria-current={active ? 'page' : undefined}
@@ -448,7 +448,7 @@ const PostprodPage = () => {
                     </HoverMarquee>
                   </span>
                   <ArrowRight width="16" height="16" className="shrink-0" />
-                </button>
+                </Button>
               </li>
             );
           })}
@@ -462,7 +462,7 @@ const PostprodPage = () => {
           const active = k === c.k;
           const isLast = idx === cats.length - 1;
           return (
-            <button
+            <Button
               key={c.k}
               onClick={() => setType(c.k)}
               className={`edo-focus-ring flex-none border-0 ${active ? 'bg-muted border-l-2 border-l-primary' : 'bg-background border-l-2 border-l-transparent'} ${idx > 0 ? 'border-t border-t-border' : ''} ${isLast ? 'border-b border-b-border' : ''} py-3 px-4 cursor-pointer text-left flex flex-col gap-1 transition-all duration-150 min-h-18`}
@@ -482,7 +482,7 @@ const PostprodPage = () => {
                   ? t('common.onRequest')
                   : `${c.price.from ? t('postprod.from') + ' ' : ''}${c.price.amount}${c.price.unit?.[lang] ?? ''}`}
               </span>
-            </button>
+            </Button>
           );
         })}
         <div className="mt-auto flex py-3.5 px-4 border-t border-t-border flex-col gap-1.5 shrink-0 bg-muted">

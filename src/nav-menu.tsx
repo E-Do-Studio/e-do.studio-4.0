@@ -143,12 +143,13 @@ const NavFooter = ({ lang, setLang, onClose, navigate }: NavFooterProps) => {
 
   return (
     <div className="grid grid-cols-auto-fluid border-t border-hairline">
-      <button
+      <Button
+        variant="header"
         onClick={() => setLang(lang === 'fr' ? 'en' : 'fr')}
-        className="edo-focus-ring h-12 w-12 cursor-pointer border-0 border-r border-hairline bg-background font-mono text-caption uppercase tracking-label transition-colors hover:bg-muted"
+        className="size-12 border-r border-hairline px-0"
       >
         {t('common.langToggleLabel')}
-      </button>
+      </Button>
       <a
         href={bookingHref}
         onClick={(e) => {
@@ -156,7 +157,7 @@ const NavFooter = ({ lang, setLang, onClose, navigate }: NavFooterProps) => {
           onClose();
           navigate({ to: bookingHref });
         }}
-        className="edo-focus-ring h-12 flex cursor-pointer items-center justify-center border-0 bg-primary font-mono text-caption uppercase tracking-label text-white no-underline transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90"
+        className="edo-focus-ring h-12 flex cursor-pointer items-center justify-center border-0 bg-primary font-mono text-caption uppercase tracking-label text-primary-foreground no-underline transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90"
       >
         {t('common.bookNow')}
       </a>

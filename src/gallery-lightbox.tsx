@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { plateauLabel as displayPlateau } from './lib/plateau-labels';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -182,7 +183,7 @@ export const GalleryLightbox = ({
   }, [hasMultiple, zoomable, next, prev, zoomIn, zoomOut, zoomReset]);
 
   const zoomBtn =
-    'edo-focus-ring flex h-8 w-8 items-center justify-center cursor-pointer text-white transition-[background-color,opacity] duration-150 ease-edo-out hover:bg-muted disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent active:scale-[0.96]';
+    'text-white hover:bg-white/15 disabled:opacity-30 disabled:hover:bg-transparent';
 
   const canReset = scale !== MIN_SCALE || tx !== 0 || ty !== 0;
 
@@ -215,14 +216,16 @@ export const GalleryLightbox = ({
           className="relative flex flex-col edo-hairline border border-hairline overflow-hidden bg-background h-full max-h-[900px] max-w-full aspect-[4/5] shadow-2xl"
         >
         <div className="group relative flex-1 min-h-0 overflow-hidden bg-background">
-          <button
+          <Button
             type="button"
             onClick={onClose}
             aria-label={t('common.close')}
-            className="edo-focus-ring absolute right-3 top-3 z-30 flex h-8 w-8 cursor-pointer items-center justify-center text-white mix-blend-exclusion transition-opacity duration-200 ease-edo-out md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100"
+            variant="ghost"
+            size="icon-sm"
+            className="absolute right-3 top-3 z-30 text-white mix-blend-exclusion transition-opacity duration-200 hover:bg-transparent md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100"
           >
             <X size={18} strokeWidth={1.5} />
-          </button>
+          </Button>
           <div
             ref={surfaceRef}
             onClick={onSurfaceClick}
@@ -279,7 +282,7 @@ export const GalleryLightbox = ({
 
           {zoomable && (
             <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 bg-black/35 backdrop-blur-md border border-border px-1.5 py-1">
-              <button
+              <Button
                 type="button"
                 onClick={zoomOut}
                 disabled={scale <= MIN_SCALE}
@@ -287,11 +290,11 @@ export const GalleryLightbox = ({
                 className={zoomBtn}
               >
                 <Minus size={16} strokeWidth={1.5} />
-              </button>
+              </Button>
               <span className="min-w-11 text-center font-mono text-label tracking-code tabular-nums text-muted-foreground">
                 {Math.round(scale * 100)}%
               </span>
-              <button
+              <Button
                 type="button"
                 onClick={zoomIn}
                 disabled={scale >= MAX_SCALE}
@@ -299,9 +302,9 @@ export const GalleryLightbox = ({
                 className={zoomBtn}
               >
                 <Plus size={16} strokeWidth={1.5} />
-              </button>
+              </Button>
               <span className="mx-1 h-4 w-px bg-muted" aria-hidden="true" />
-              <button
+              <Button
                 type="button"
                 onClick={zoomReset}
                 disabled={!canReset}
@@ -309,7 +312,7 @@ export const GalleryLightbox = ({
                 className={zoomBtn}
               >
                 <RotateCcw size={16} strokeWidth={1.5} />
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -318,40 +321,43 @@ export const GalleryLightbox = ({
           className="grid shrink-0 edo-hairline bg-background"
           style={{ gridTemplateColumns: 'auto 1fr 1fr auto' }}
         >
-          <button
+          <Button
             type="button"
             onClick={prev}
             disabled={!hasMultiple}
             aria-label={t('common.prevImage')}
-            className="edo-focus-ring flex h-14 w-14 md:h-16 md:w-16 cursor-pointer items-center justify-center bg-background text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-background"
+            variant="cell"
+            className="size-14 items-center justify-center rounded-none disabled:opacity-30 md:size-16"
           >
             <ArrowLeft size={20} strokeWidth={1.5} />
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={onContact}
-            className="edo-focus-ring flex h-14 md:h-16 cursor-pointer items-center justify-center gap-2 bg-background font-mono uppercase text-detail tracking-code text-foreground transition-colors hover:bg-muted"
+            variant="cell"
+            className="h-14 flex-row items-center justify-center gap-2 text-detail uppercase tracking-code md:h-16"
           >
             {t('common.contactUs')}
             <ArrowRight size={14} strokeWidth={1.5} />
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={onBook}
-            className="edo-focus-ring flex h-14 md:h-16 cursor-pointer items-center justify-center gap-2 bg-primary font-mono uppercase text-detail tracking-code text-primary-foreground transition-opacity hover:opacity-90"
+            className="h-14 gap-2 text-detail tracking-code md:h-16"
           >
             {t('common.book')}
             <ArrowRight size={14} strokeWidth={1.5} />
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={next}
             disabled={!hasMultiple}
             aria-label={t('common.nextImage')}
-            className="edo-focus-ring flex h-14 w-14 md:h-16 md:w-16 cursor-pointer items-center justify-center bg-background text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-background"
+            variant="cell"
+            className="size-14 items-center justify-center rounded-none disabled:opacity-30 md:size-16"
           >
             <ArrowRight size={20} strokeWidth={1.5} />
-          </button>
+          </Button>
         </div>
         </div>
       </DialogContent>

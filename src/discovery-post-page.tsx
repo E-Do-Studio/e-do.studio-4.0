@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
+import { Button } from '@/components/ui/button';
 import { useLoaderData, useNavigate } from '@tanstack/react-router';
 import { renderMarkdown } from './lib/render-markdown';
 import { DiscoveryCoverMedia } from './discovery/discovery-cover';
@@ -91,9 +92,10 @@ export const DiscoveryPostPage = () => {
     <>
       <main className="edo-page-enter grid w-full grid-rows-page md:h-full edo-hairline overflow-hidden">
         <div className="row-start-1 flex edo-hairline">
-          <button
+          <Button
             onClick={backToIndex}
-            className="edo-focus-ring flex flex-none cursor-pointer items-center gap-2.5 border-0 bg-background px-4 text-foreground transition-colors hover:bg-muted md:px-cell-lg"
+            variant="header"
+            className="flex-none gap-2.5 px-4 md:px-cell-lg"
           >
             <span className="inline-block rotate-180">
               <ArrowIcon width="14" height="14" />
@@ -101,7 +103,7 @@ export const DiscoveryPostPage = () => {
             <span className="hidden font-mono text-caption uppercase tracking-label text-foreground sm:inline">
               {t('discoveryPage.backToJournal')}
             </span>
-          </button>
+          </Button>
           <div className="flex min-w-0 flex-1 items-center gap-3.5 bg-background px-4 md:px-6">
             <span className="edo-cell-label text-primary">
               {post.tag[lang]}
@@ -165,12 +167,13 @@ export const DiscoveryPostPage = () => {
               <span className="font-mono text-label uppercase tracking-code text-muted-foreground">
                 {post.author} · {post.date[lang]}
               </span>
-              <button
+              <Button
                 onClick={backToIndex}
-                className="edo-focus-ring h-10 cursor-pointer border-0 dark bg-background px-cell-lg font-mono text-caption uppercase tracking-label text-foreground transition-[color,background-color,opacity] duration-150 ease-edo-out hover:text-primary"
+                variant="cell"
+                className="dark h-10 items-center justify-center bg-background px-cell-lg text-caption hover:text-primary"
               >
                 {t('discoveryPage.close')}
-              </button>
+              </Button>
             </footer>
           </article>
         </div>

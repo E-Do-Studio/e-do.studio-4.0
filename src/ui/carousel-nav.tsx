@@ -1,4 +1,5 @@
 import { useT } from '../i18n/use-t';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 
@@ -21,22 +22,26 @@ const CarouselNav = ({
   const t = useT();
   return (
     <>
-      <button
+      <Button
         type="button"
         onClick={onPrev}
         aria-label={t('common.prevImage')}
+        variant="ghost"
+        size="icon"
         className={cn(baseBtn, 'left-3 md:hover:-translate-x-[3px]', className)}
       >
         <ArrowLeft width={size} height={size} />
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
         onClick={onNext}
         aria-label={t('common.nextImage')}
+        variant="ghost"
+        size="icon"
         className={cn(baseBtn, 'right-3 md:hover:translate-x-[3px]', className)}
       >
         <ArrowRight width={size} height={size} />
-      </button>
+      </Button>
     </>
   );
 };

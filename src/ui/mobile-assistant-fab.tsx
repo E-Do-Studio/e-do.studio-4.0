@@ -1,4 +1,5 @@
 import { lazy, Suspense, useState } from 'react';
+import { Button } from '@/components/ui/button';
 import { CellLabel } from './typography';
 import { MessageCircle, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -21,14 +22,15 @@ export const MobileAssistantFab = ({ lang }: MobileAssistantFabProps) => {
 
   return (
     <>
-      <button
+      <Button
         type="button"
         onClick={() => setOpen(true)}
         aria-label={t('assistant.label')}
-        className="edo-focus-ring fixed bottom-3 right-3 z-overlay flex h-10 w-10 cursor-pointer items-center justify-center border border-foreground/40 bg-foreground/85 text-white shadow-sm backdrop-blur-sm transition-all duration-150 hover:bg-foreground hover:shadow-md md:hidden"
+        size="icon"
+        className="fixed bottom-3 right-3 z-overlay size-10 border border-foreground/40 bg-foreground/85 text-white shadow-sm backdrop-blur-sm hover:bg-foreground hover:shadow-md md:hidden"
       >
         <MessageCircle width="16" height="16" />
-      </button>
+      </Button>
 
       <div
         role="dialog"
@@ -45,14 +47,16 @@ export const MobileAssistantFab = ({ lang }: MobileAssistantFabProps) => {
       >
         <div className="flex shrink-0 items-center justify-between border-b border-hairline px-4 py-3">
           <CellLabel>{t('assistant.label')}</CellLabel>
-          <button
+          <Button
             type="button"
             onClick={() => setOpen(false)}
             aria-label={t('common.close')}
-            className="edo-focus-ring flex h-10 w-10 cursor-pointer items-center justify-center border-0 bg-transparent text-foreground transition-colors hover:bg-muted"
+            variant="ghost"
+            size="icon"
+            className="size-10"
           >
             <X width="20" height="20" />
-          </button>
+          </Button>
         </div>
         <div className="flex min-h-0 flex-1 flex-col">
           <Suspense fallback={<div aria-hidden className="flex-1 bg-background" />}>

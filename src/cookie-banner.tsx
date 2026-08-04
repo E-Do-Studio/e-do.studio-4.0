@@ -38,10 +38,10 @@ const CookieBanner = ({ lang, onLegalClick }: CookieBannerProps) => {
               i18nKey="cookieBanner.bodyWithLink"
               components={{
                 legal: (
-                  <button
-                    type="button"
+                  <Button
+                    variant="link"
                     onClick={onLegalClick}
-                    className="edo-focus-ring inline cursor-pointer border-0 bg-transparent p-0 font-inherit text-detail text-foreground underline underline-offset-2"
+                    className="inline h-auto p-0 text-detail normal-case tracking-normal text-foreground underline underline-offset-2"
                   />
                 ),
               }}

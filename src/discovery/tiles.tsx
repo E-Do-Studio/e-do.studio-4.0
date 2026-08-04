@@ -1,4 +1,5 @@
 import type { DiscoveryPost, Lang } from '../types';
+import { Button } from '@/components/ui/button';
 import { DiscoveryCoverMedia } from './discovery-cover';
 import { hasCover } from './cover';
 import { ArrowIcon, CellBadge } from './shared';
@@ -43,12 +44,13 @@ export const NewsletterCard = ({
           placeholder={t('discoveryPage.emailPlaceholder')}
           className="edo-focus-ring min-w-0 flex-1 border-0 bg-transparent py-1 font-sans text-detail text-foreground outline-none placeholder:text-muted-foreground"
         />
-        <button
+        <Button
           type="submit"
-          className="edo-focus-ring cursor-pointer border-0 bg-transparent p-0 font-mono text-label uppercase tracking-label text-primary"
+          variant="link"
+          className="h-auto p-0 text-label tracking-label text-primary no-underline"
         >
           OK →
-        </button>
+        </Button>
       </form>
     </section>
   );
@@ -72,7 +74,7 @@ export const SplitArticleCard = ({
   const t = useT();
   const cover = hasCover(post);
   return (
-    <button
+    <Button
       type="button"
       onClick={onOpen}
       className={cn(
@@ -118,7 +120,7 @@ export const SplitArticleCard = ({
           <span className="text-detail">→</span>
         </span>
       </div>
-    </button>
+    </Button>
   );
 };
 
@@ -163,7 +165,7 @@ interface BookCtaTileProps {
 export const BookCtaTile = ({ lang, goto, className }: BookCtaTileProps) => {
   const t = useT();
   return (
-    <button
+    <Button
       type="button"
       onClick={() => goto('book')}
       className={cn(
@@ -184,6 +186,6 @@ export const BookCtaTile = ({ lang, goto, className }: BookCtaTileProps) => {
         height="16"
         className="shrink-0 text-primary-foreground transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5 group-hover:scale-110"
       />
-    </button>
+    </Button>
   );
 };

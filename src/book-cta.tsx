@@ -1,4 +1,5 @@
 import { useT } from './i18n/use-t';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { ArrowRight } from 'lucide-react';
 
@@ -14,11 +15,10 @@ interface BookCTAProps {
 const BookCTATile = ({ onClick, className, label }: BookCTAProps) => {
   const t = useT();
   return (
-    <button
-      type="button"
+    <Button
       onClick={onClick}
       className={cn(
-        'edo-focus-ring group h-12 flex cursor-pointer items-center justify-between gap-3 border-0 bg-primary px-4 py-2 text-left text-primary-foreground transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90 md:h-21 md:px-5 md:py-3',
+        'group h-12 justify-between gap-3 px-4 py-2 text-left md:h-21 md:px-5 md:py-3',
         className,
       )}
     >
@@ -35,7 +35,7 @@ const BookCTATile = ({ onClick, className, label }: BookCTAProps) => {
         width="16"
         height="16"
       />
-    </button>
+    </Button>
   );
 };
 

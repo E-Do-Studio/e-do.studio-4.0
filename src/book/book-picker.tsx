@@ -1,4 +1,5 @@
 import { useLoaderData, useNavigate } from '@tanstack/react-router';
+import { Button } from '@/components/ui/button';
 import { usePageContext } from '../lib/page-context';
 import { cn } from '@/lib/utils';
 import { ArrowRight } from 'lucide-react';
@@ -39,11 +40,12 @@ const PickerTile = ({
   const descTone = subtleTone;
   const idxTone = subtleTone;
   return (
-    <button
-      type="button"
+    <Button
+      variant="cell"
+      size="cell"
       onClick={onClick}
       className={cn(
-        'edo-focus-ring group flex flex-1 min-h-40 cursor-pointer flex-col gap-3 border-0 px-6 py-7 text-left transition-[color,background-color,opacity] duration-150 ease-edo-out md:aspect-square md:min-h-fit md:min-w-0 md:border-t md:border-edo-pure-black md:px-8 md:py-8',
+        'group min-h-40 flex-1 gap-3 px-6 py-7 md:aspect-square md:min-h-fit md:min-w-0 md:border-t md:border-edo-pure-black md:px-8 md:py-8',
         palette,
       )}
     >
@@ -83,7 +85,7 @@ const PickerTile = ({
           {description}
         </span>
       </div>
-    </button>
+    </Button>
   );
 };
 

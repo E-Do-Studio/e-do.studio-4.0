@@ -1,4 +1,5 @@
 import type { DiscoveryPost, Lang } from '../types';
+import { Button } from '@/components/ui/button';
 import { DiscoveryCoverMedia } from './discovery-cover';
 import { hasCover } from './cover';
 import { CellBadge } from './shared';
@@ -32,12 +33,13 @@ export const ArticleCard = ({
   const t = useT();
   const cover = hasCover(post);
   return (
-    <button
-      type="button"
+    <Button
+      variant="cell"
+      size="cell"
       onClick={onOpen}
       className={cn(
         cellBase,
-        'edo-focus-ring group order-1 grid min-h-80 cursor-pointer border-0 bg-background p-0 text-left transition-opacity hover:opacity-90 lg:min-h-0',
+        'group order-1 grid min-h-80 p-0 transition-opacity hover:opacity-90 lg:min-h-0',
         cover
           ? headline
             ? 'grid-rows-article-headline lg:grid-rows-article-headline-lg'
@@ -86,7 +88,7 @@ export const ArticleCard = ({
           </span>
         )}
       </div>
-    </button>
+    </Button>
   );
 };
 

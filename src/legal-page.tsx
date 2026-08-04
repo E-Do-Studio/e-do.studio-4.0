@@ -203,7 +203,7 @@ const LegalPage = () => {
           section. Tap opens a Drawer listing all sections; selecting a row
           in the sheet updates the section and closes the sheet immediately. */}
       {active && (
-        <button
+        <Button
           type="button"
           onClick={() => setNavSheetOpen(true)}
           aria-haspopup="dialog"
@@ -222,7 +222,7 @@ const LegalPage = () => {
             height="16"
             className="ml-auto shrink-0 text-foreground"
           />
-        </button>
+        </Button>
       )}
 
       <Drawer open={navSheetOpen} onOpenChange={setNavSheetOpen}>
@@ -242,7 +242,7 @@ const LegalPage = () => {
             const num = String(i + 1).padStart(2, '0');
             return (
               <li key={s.k}>
-                <button
+                <Button
                   type="button"
                   onClick={() => navigateToSection(s.k)}
                   aria-current={isActive ? 'page' : undefined}
@@ -271,7 +271,7 @@ const LegalPage = () => {
                     height="16"
                     className="ml-auto shrink-0"
                   />
-                </button>
+                </Button>
               </li>
             );
           })}
@@ -287,10 +287,18 @@ const LegalPage = () => {
         {sections.map((s, i) => {
           const isActive = sec === s.k;
           return (
-            <button
+            <Button
               key={s.k}
               onClick={() => setSec(s.k)}
-              className={`edo-focus-ring flex-none py-3 px-4 border-0 cursor-pointer text-left flex flex-col gap-0.5 font-inherit transition-all duration-150 ${isActive ? 'bg-muted border-l-2 border-l-primary' : 'bg-transparent border-l-2 border-l-transparent hover:bg-muted'}`}
+              variant="cell"
+              size="cell"
+              aria-pressed={isActive}
+              className={cn(
+                'flex-none gap-0.5 border-l-2 px-4 py-3',
+                isActive
+                  ? 'border-l-primary bg-muted'
+                  : 'border-l-transparent bg-transparent',
+              )}
             >
               <span className="font-mono text-micro tracking-label text-muted-foreground">
                 0{i + 1}
@@ -300,7 +308,7 @@ const LegalPage = () => {
               >
                 {s[lang]}
               </span>
-            </button>
+            </Button>
           );
         })}
 
@@ -388,12 +396,13 @@ const LegalPage = () => {
           )}
 
           <div className="mt-8 flex justify-end items-center gap-5 font-mono text-label tracking-code uppercase text-muted-foreground">
-            <button
+            <Button
               onClick={() => window.print()}
-              className="edo-focus-ring bg-transparent border-0 cursor-pointer text-foreground font-inherit tracking-inherit text-transform-inherit"
+              variant="link"
+              className="h-auto p-0 normal-case tracking-inherit text-foreground no-underline"
             >
               ↓ {t('legalPage.print')}
-            </button>
+            </Button>
             <a
               href="mailto:contact@e-do.studio"
               className="edo-focus-ring text-foreground no-underline"
