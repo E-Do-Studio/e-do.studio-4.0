@@ -74,16 +74,12 @@ const PageHeaderActionButton = ({
   const content = (
     <>
       <HoverMarquee className="min-w-0">{label}</HoverMarquee>
-      {showArrow && (
-        <ArrowRight
-          width={isPrimary ? 14 : 12}
-          height={isPrimary ? 14 : 12}
-          className={cn(
-            'shrink-0',
-            isPrimary || isDark ? 'text-foreground' : undefined,
-          )}
-        />
-      )}
+      {/* Aucune couleur ici : la flèche hérite de celle du bouton. Elle se
+          voyait forcer `text-foreground` sur les variantes primaire et sombre,
+          c'est-à-dire du noir sur le pavé orange, à côté d'un libellé blanc.
+          Aucune dimension non plus : la base contraint l'icône par CSS, ce qui
+          l'emporte sur les attributs `width` et `height`. */}
+      {showArrow && <ArrowRight data-icon="inline-end" />}
     </>
   );
 

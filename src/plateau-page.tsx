@@ -350,7 +350,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
                     >
                       {cfg.tagline[lang]}
                     </HoverMarquee>
-                    <ArrowRight width="16" height="16" className="shrink-0" />
+                    <ArrowRight />
                   </Button>
                 </li>
               );
@@ -538,7 +538,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
           <span className="text-2xl font-medium tracking-tight">
             {t('common.bookThisStage')}
           </span>
-          <ArrowRight width="20" height="20" />
+          <ArrowRight data-icon="inline-end" />
         </div>
       </Button>
     </main>

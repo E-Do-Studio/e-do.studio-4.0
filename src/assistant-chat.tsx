@@ -119,8 +119,8 @@ const AssistantHeader = ({
         {mode === 'chat' && (
           <span
             className={cn(
-              'h-1.5 w-1.5 rounded-full',
-              loading ? 'animate-pulse bg-primary' : 'bg-primary',
+              'h-1.5 w-1.5 rounded-full bg-primary',
+              loading && 'animate-pulse',
             )}
           />
         )}

@@ -266,11 +266,7 @@ const LegalPage = () => {
                     <HoverMarquee className="text-base tracking-tight font-medium">
                       {s[lang]}
                     </HoverMarquee>
-                    <ArrowRight
-                      width="16"
-                      height="16"
-                      className="ml-auto shrink-0"
-                    />
+                    <ArrowRight className="ml-auto" />
                   </Button>
                 </li>
               );
@@ -325,7 +321,7 @@ const LegalPage = () => {
             href="mailto:contact@e-do.studio"
             className="outline-none focus-visible:ring-3 focus-visible:ring-ring/50 inline-flex items-center gap-2 text-xs text-foreground no-underline border-b border-border pb-0.5"
           >
-            contact@e-do.studio <ArrowRight width="10" height="10" />
+            contact@e-do.studio <ArrowRight className="size-3" />
           </a>
         </div>
         <div className="flex-1" />
@@ -392,7 +388,7 @@ const LegalPage = () => {
               </div>
               <Button variant="default" size="lg" onClick={() => goto('home')}>
                 {t('legalPage.backToHome')}{' '}
-                <ArrowRight width="14" height="14" />
+                <ArrowRight data-icon="inline-end" />
               </Button>
             </div>
           )}

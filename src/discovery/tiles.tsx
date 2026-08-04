@@ -1,8 +1,9 @@
+import { ArrowRight } from 'lucide-react';
 import type { DiscoveryPost, Lang } from '../types';
 import { Button } from '@/components/ui/button';
 import { DiscoveryCoverMedia } from './discovery-cover';
 import { hasCover } from './cover';
-import { ArrowIcon, CellBadge } from './shared';
+import { CellBadge } from './shared';
 import { cn } from '@/lib/utils';
 import { Empty, EmptyTitle } from '@/components/ui/empty';
 import { cellBase, labelBase } from './styles';
@@ -180,10 +181,9 @@ export const BookCtaTile = ({ lang, goto, className }: BookCtaTileProps) => {
           {t('common.book')}
         </span>
       </span>
-      <ArrowIcon
-        width="16"
-        height="16"
-        className="shrink-0 text-primary-foreground transition-transform duration-200 ease-out group-hover:translate-x-1.5 group-hover:scale-110"
+      <ArrowRight
+        data-icon="inline-end"
+        className="transition-transform duration-200 ease-out group-hover:translate-x-1.5 group-hover:scale-110"
       />
     </Button>
   );

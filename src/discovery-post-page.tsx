@@ -1,3 +1,4 @@
+import { ArrowRight } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useLoaderData, useNavigate } from '@tanstack/react-router';
@@ -6,7 +7,7 @@ import { DiscoveryCoverMedia } from './discovery/discovery-cover';
 import { SplitArticleCard } from './discovery/tiles';
 import { GalleryLightbox } from './gallery-lightbox';
 import type { GalleryMedia } from './lib/strapi';
-import { ArticleMeta, ArrowIcon } from './discovery/shared';
+import { ArticleMeta } from './discovery/shared';
 import { HoverMarquee } from './ui/hover-marquee';
 import { useT } from './i18n/use-t';
 import { usePageContext } from './lib/page-context';
@@ -98,7 +99,7 @@ export const DiscoveryPostPage = () => {
             className="flex-none gap-2.5 px-4 md:px-6"
           >
             <span className="inline-block rotate-180">
-              <ArrowIcon width="14" height="14" />
+              <ArrowRight data-icon="inline-end" />
             </span>
             <span className="font-mono text-xs uppercase tracking-widest text-foreground hidden sm:inline">
               {t('discoveryPage.backToJournal')}

@@ -322,7 +322,7 @@ export const GalleryLightbox = ({
               variant="cell"
               className="size-14 rounded-none disabled:opacity-30 md:size-16"
             >
-              <ArrowLeft size={20} strokeWidth={1.5} />
+              <ArrowLeft data-icon="inline-start" />
             </Button>
             <Button
               type="button"
@@ -331,7 +331,7 @@ export const GalleryLightbox = ({
               className="h-14 flex-row gap-2 text-sm tracking-wider md:h-16"
             >
               {t('common.contactUs')}
-              <ArrowRight size={14} strokeWidth={1.5} />
+              <ArrowRight data-icon="inline-end" />
             </Button>
             <Button
               type="button"
@@ -339,7 +339,7 @@ export const GalleryLightbox = ({
               className="h-14 gap-2 text-sm tracking-wider md:h-16"
             >
               {t('common.book')}
-              <ArrowRight size={14} strokeWidth={1.5} />
+              <ArrowRight data-icon="inline-end" />
             </Button>
             <Button
               type="button"
@@ -349,7 +349,7 @@ export const GalleryLightbox = ({
               variant="cell"
               className="size-14 rounded-none disabled:opacity-30 md:size-16"
             >
-              <ArrowRight size={20} strokeWidth={1.5} />
+              <ArrowRight data-icon="inline-end" />
             </Button>
           </div>
         </div>

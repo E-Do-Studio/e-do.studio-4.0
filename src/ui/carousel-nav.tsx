@@ -34,7 +34,7 @@ const CarouselNav = ({ onPrev, onNext }: CarouselNavProps) => {
       >
         {/* Sans classe `size-*`, la base contraint l'icône à `size-4` par CSS,
             ce qui l'emporte sur les attributs `width` et `height`. */}
-        <ArrowLeft className="size-5" />
+        <ArrowLeft />
       </Button>
       <Button
         onClick={onNext}
@@ -43,7 +43,7 @@ const CarouselNav = ({ onPrev, onNext }: CarouselNavProps) => {
         size="icon-lg"
         className={cn(navBtn, 'right-3 md:hover:translate-x-[3px]')}
       >
-        <ArrowRight className="size-5" />
+        <ArrowRight />
       </Button>
     </>
   );

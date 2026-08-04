@@ -322,7 +322,7 @@ const PostprodPage = () => {
 
   const postprodLabel = 'Post-production';
   const dark = !!cat?.featured;
-  const bgCls = dark ? 'dark bg-background' : 'bg-background';
+  const bgCls = cn('bg-background', dark && 'dark');
   const fgCls = 'text-foreground';
   const mutedCls = 'text-muted-foreground';
   const lineCls = 'border-border';
@@ -451,7 +451,7 @@ const PostprodPage = () => {
                         {c.tagline[lang]}
                       </HoverMarquee>
                     </span>
-                    <ArrowRight width="16" height="16" className="shrink-0" />
+                    <ArrowRight />
                   </Button>
                 </li>
               );
@@ -464,21 +464,29 @@ const PostprodPage = () => {
       <aside className="hidden bg-background md:col-start-1 md:row-start-2 md:flex md:flex-col md:overflow-x-hidden md:overflow-y-auto">
         {cats.map((c, idx) => {
           const active = k === c.k;
-          const isLast = idx === cats.length - 1;
           return (
+            // « un trait entre chaque paire, plus un trait sous le dernier »
+            // revient à `border-b` sur tous : les deux ternaires calculés
+            // depuis l'index disparaissent sans rien changer au rendu.
+            //
+            // L'état actif est porté par `aria-pressed`, et les enfants le
+            // lisent par `group-aria-pressed:` — c'est Tailwind qui décide de
+            // la couleur, plus un ternaire en JavaScript.
             <Button
               key={c.k}
               onClick={() => setType(c.k)}
-              className={`flex-none  ${active ? 'bg-muted border-l-2 border-l-primary' : 'bg-background border-l-2 border-l-transparent'} ${idx > 0 ? 'border-t border-t-border' : ''} ${isLast ? 'border-b border-b-border' : ''} py-3 px-4 cursor-pointer text-left flex flex-col gap-1 transition-all duration-150 min-h-18`}
+              variant="cell"
+              size="cell"
+              aria-pressed={active}
+              // `border-l-transparent` est nécessaire : sans couleur explicite,
+              // la bordure prend celle de `@layer base { * { border-border } }`,
+              // c'est-à-dire du noir.
+              className="group min-h-18 flex-none gap-1 border-b border-l-2 border-b-border border-l-transparent px-4 py-3 aria-pressed:border-l-primary aria-pressed:bg-muted"
             >
-              <span
-                className={`font-mono text-xs tracking-widest ${active ? 'text-primary' : 'text-muted-foreground'}`}
-              >
+              <span className="font-mono text-xs tracking-widest text-muted-foreground group-aria-pressed:text-primary">
                 {String(idx + 1).padStart(2, '0')}
               </span>
-              <span
-                className={`text-sm ${active ? 'font-medium' : 'font-normal'} tracking-tight text-foreground leading-snug whitespace-nowrap overflow-hidden text-ellipsis`}
-              >
+              <span className="truncate text-sm font-normal leading-snug tracking-tight text-foreground group-aria-pressed:font-medium">
                 {c[lang]}
               </span>
               <span className="font-mono text-xs text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis mt-auto">
@@ -572,7 +580,7 @@ const PostprodPage = () => {
             className="w-full justify-between py-3.5 px-5 mt-2"
           >
             {t('postprod.requestQuote')}
-            <ArrowRight width="16" height="16" />
+            <ArrowRight data-icon="inline-end" />
           </Button>
         </div>
       </div>

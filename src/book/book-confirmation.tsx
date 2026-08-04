@@ -275,7 +275,7 @@ const ConfirmedView = ({
           </div>
           <div className="bg-background px-5 py-3 flex items-center justify-end">
             <Button onClick={onNewRequest} className={navBtnOrangeCls}>
-              {t('booking.newRequest')} <ArrowRight width="14" height="14" />
+              {t('booking.newRequest')} <ArrowRight data-icon="inline-end" />
             </Button>
           </div>
         </div>
@@ -335,7 +335,7 @@ const BookConfirmation = () => {
               className="mt-8 h-11 gap-2 px-6"
             >
               {t('bookPicker.resumeBooking')}{' '}
-              <ArrowRight width="14" height="14" />
+              <ArrowRight data-icon="inline-end" />
             </Button>
           </div>
         </div>

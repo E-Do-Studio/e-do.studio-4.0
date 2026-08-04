@@ -49,9 +49,8 @@ const PickerTile = ({
           {String(index).padStart(2, '0')}
         </span>
         <ArrowRight
-          className="flex-shrink-0 transition-transform duration-200 ease-out group-hover:translate-x-1.5 group-hover:scale-110"
-          width="16"
-          height="16"
+          data-icon="inline-end"
+          className="transition-transform duration-200 ease-out group-hover:translate-x-1.5 group-hover:scale-110"
         />
       </div>
       <div className="mt-auto flex flex-col gap-2">

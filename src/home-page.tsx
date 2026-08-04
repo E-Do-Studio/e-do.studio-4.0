@@ -216,9 +216,8 @@ const HomePage = () => {
                       {String(i + 1).padStart(2, '0')}
                     </span>
                     <ArrowRight
-                      className="text-muted-foreground transition-all duration-200 ease-out group-hover:translate-x-1 group-hover:text-foreground"
-                      width="14"
-                      height="14"
+                      data-icon="inline-end"
+                      className="transition-all duration-200 ease-out group-hover:translate-x-1 group-hover:text-foreground"
                     />
                   </div>
                   <div className="w-full min-w-0 transition-transform duration-200 ease-out group-hover:-translate-y-0.5">
@@ -288,9 +287,8 @@ const HomePage = () => {
           </div>
           <div className="flex-shrink-0">
             <ArrowRight
+              data-icon="inline-end"
               className="transition-transform duration-200 ease-out group-hover:translate-x-1.5 group-hover:scale-110"
-              width="16"
-              height="16"
             />
           </div>
         </div>
@@ -324,9 +322,8 @@ const HomePage = () => {
           </div>
           <div className="flex flex-shrink-0 items-center justify-center">
             <ArrowRight
+              data-icon="inline-end"
               className="transition-transform duration-200 ease-out group-hover:translate-x-1.5"
-              width="16"
-              height="16"
             />
           </div>
         </div>
@@ -356,9 +353,8 @@ const HomePage = () => {
               {t('common.book')}
             </div>
             <ArrowRight
-              className="flex-shrink-0 transition-transform duration-200 ease-out group-hover:translate-x-1.5"
-              width="16"
-              height="16"
+              data-icon="inline-end"
+              className="transition-transform duration-200 ease-out group-hover:translate-x-1.5"
             />
           </div>
         </Button>
@@ -382,9 +378,8 @@ const HomePage = () => {
               </div>
             </div>
             <ArrowRight
-              className="flex-shrink-0 transition-transform duration-200 ease-out group-hover:translate-x-1.5"
-              width="16"
-              height="16"
+              data-icon="inline-end"
+              className="transition-transform duration-200 ease-out group-hover:translate-x-1.5"
             />
           </div>
         </Button>

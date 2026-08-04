@@ -1,11 +1,5 @@
-import type React from 'react';
-import { ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { labelBase } from './styles';
-
-interface ArrowIconProps extends React.SVGProps<SVGSVGElement> {}
-
-export const ArrowIcon = (props: ArrowIconProps) => <ArrowRight {...props} />;
 
 interface CellBadgeProps {
   n?: number;
