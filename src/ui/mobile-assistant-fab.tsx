@@ -1,7 +1,7 @@
 import { lazy, Suspense, useState } from 'react';
 import { CellLabel } from './typography';
 import { IconChat, IconX } from './icons';
-import { cn } from './cn';
+import { cn } from '@/lib/utils';
 import type { Lang } from '../types';
 import { useT } from '../i18n/use-t';
 

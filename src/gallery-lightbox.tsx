@@ -10,7 +10,7 @@ import {
 import type { GalleryProject } from './lib/strapi';
 import type { Lang } from './types';
 import { common } from './i18n/messages';
-import { cn } from './ui/cn';
+import { cn } from '@/lib/utils';
 
 const PLATEAU_LABELS: Record<string, { fr: string; en: string }> = {
   cyclorama: { fr: 'Cyclorama', en: 'Cyclorama' },

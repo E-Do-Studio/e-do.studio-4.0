@@ -1,5 +1,5 @@
 import { useNavigate } from '@tanstack/react-router';
-import { cn } from './ui/cn';
+import { cn } from '@/lib/utils';
 import { IconLock, IconX } from './ui/icons';
 import { SocialLinksRow } from './ui/social-links-row';
 import { CellLabel } from './ui/typography';

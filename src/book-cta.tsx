@@ -1,5 +1,5 @@
 import { useT } from './i18n/use-t';
-import { cn } from './ui/cn';
+import { cn } from '@/lib/utils';
 import { IconArrowRight } from './ui/icons';
 
 interface BookCTAProps {

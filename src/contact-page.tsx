@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { cn } from './ui/cn';
+import { cn } from '@/lib/utils';
 import { PageHeader, buildMainNav } from './ui/page-header';
 import { SocialLinksRow } from './ui/social-links-row';
 import { CellLabel } from './ui/typography';

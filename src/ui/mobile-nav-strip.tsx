@@ -2,7 +2,7 @@ import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import type { Lang } from '../types';
 import { mobileNav, resultsCount } from '../i18n/messages';
 import { BottomSheet } from './bottom-sheet';
-import { cn } from './cn';
+import { cn } from '@/lib/utils';
 import { HoverMarquee } from './hover-marquee';
 import { IconArrowRight, IconChevronDown } from './icons';
 

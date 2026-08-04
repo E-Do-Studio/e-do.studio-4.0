@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { BottomSheet } from './ui/bottom-sheet';
 import { Button } from './ui/button';
-import { cn } from './ui/cn';
+import { cn } from '@/lib/utils';
 import { HoverMarquee } from './ui/hover-marquee';
 import { IconArrowRight, IconSelector } from './ui/icons';
 import { PageHeader, buildMainNav } from './ui/page-header';

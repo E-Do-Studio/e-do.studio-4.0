@@ -57,7 +57,7 @@ import type {
   QuoteLabels,
 } from './lib/booking-engine';
 import { common, booking as bookingMsg } from './i18n/messages';
-import { cn } from './ui/cn';
+import { cn } from '@/lib/utils';
 import {
   pathForStep,
   confirmationPath,

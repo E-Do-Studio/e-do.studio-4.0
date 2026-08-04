@@ -2,7 +2,7 @@ import type { DiscoveryPost, Lang } from '../types';
 import { DiscoveryCoverMedia } from './discovery-cover';
 import { hasCover } from './cover';
 import { ArrowIcon, CellBadge } from './shared';
-import { cn } from '../ui/cn';
+import { cn } from '@/lib/utils';
 import { EmptyState } from '../ui/empty-state';
 import { cellBase, labelBase } from './styles';
 import { common, discoveryPage } from '../i18n/messages';

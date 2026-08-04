@@ -1,5 +1,5 @@
 import { buildStrapiSrcset, getStrapiLargeUrl } from '../lib/strapi';
-import { cn } from './cn';
+import { cn } from '@/lib/utils';
 import { fetchPriority } from './fetch-priority';
 
 type Props = {

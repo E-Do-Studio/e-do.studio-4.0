@@ -1,5 +1,5 @@
 import type { HTMLAttributes, ReactNode } from 'react';
-import { cn } from './cn';
+import { cn } from '@/lib/utils';
 
 interface CellLabelProps extends HTMLAttributes<HTMLSpanElement> {
   children: ReactNode;

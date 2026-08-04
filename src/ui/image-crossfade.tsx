@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { buildStrapiSrcset, getStrapiLargeUrl } from '../lib/strapi';
-import { cn } from './cn';
+import { cn } from '@/lib/utils';
+import { usePrefersReducedMotion } from './use-media-query';
 import { fetchPriority } from './fetch-priority';
 
 interface ImageCrossfadeSlide {
@@ -18,19 +19,6 @@ interface ImageCrossfadeProps {
 
 const DEFAULT_SLIDE_MS = 5000;
 const DEFAULT_FADE_MS = 900;
-
-const usePrefersReducedMotion = (): boolean => {
-  const [reduced, setReduced] = useState(false);
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return;
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const update = () => setReduced(mq.matches);
-    update();
-    mq.addEventListener('change', update);
-    return () => mq.removeEventListener('change', update);
-  }, []);
-  return reduced;
-};
 
 const ImageCrossfade = ({
   images,

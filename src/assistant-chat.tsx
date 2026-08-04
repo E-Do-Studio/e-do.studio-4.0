@@ -2,7 +2,7 @@ import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { useRouterState } from '@tanstack/react-router';
-import { cn } from './ui/cn';
+import { cn } from '@/lib/utils';
 import { IconArrowRight, IconPlus, IconTrash, IconX } from './ui/icons';
 import type { Lang, ChatMessage } from './types';
 import { Trans } from 'react-i18next';

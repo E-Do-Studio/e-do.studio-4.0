@@ -1,6 +1,6 @@
 import type { DiscoveryCategory, Lang } from '../types';
 import { Chip } from '../ui/chip';
-import { cn } from '../ui/cn';
+import { cn } from '@/lib/utils';
 
 interface FilterChipsProps {
   cats: DiscoveryCategory[];

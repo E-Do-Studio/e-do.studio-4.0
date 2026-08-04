@@ -1,5 +1,5 @@
 import { MarqueeCell } from './ui/marquee-cell';
-import { cn } from './ui/cn';
+import { cn } from '@/lib/utils';
 import { SocialLinksRow } from './ui/social-links-row';
 
 interface SocialClientsBarProps {

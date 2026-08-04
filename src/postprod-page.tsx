@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { BottomSheet } from './ui/bottom-sheet';
 import { Button } from './ui/button';
-import { cn } from './ui/cn';
+import { cn } from '@/lib/utils';
 import { EmptyState } from './ui/empty-state';
 import { HoverMarquee } from './ui/hover-marquee';
 import { IconArrowRight, IconSelector } from './ui/icons';

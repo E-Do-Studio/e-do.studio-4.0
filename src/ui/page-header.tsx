@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { Lang } from '../types';
 import { CellLabel } from './typography';
-import { cn } from './cn';
+import { cn } from '@/lib/utils';
 import { Wordmark } from './brand';
 import { HoverMarquee } from './hover-marquee';
 import { IconArrowRight, IconMenu } from './icons';

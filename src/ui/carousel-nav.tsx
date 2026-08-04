@@ -1,5 +1,5 @@
 import { useT } from '../i18n/use-t';
-import { cn } from './cn';
+import { cn } from '@/lib/utils';
 import { IconArrowLeft, IconArrowRight } from './icons';
 
 interface CarouselNavProps {

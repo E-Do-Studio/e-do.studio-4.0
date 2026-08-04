@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { cn } from './ui/cn';
+import { cn } from '@/lib/utils';
 import { useIsDesktop } from './ui/use-is-desktop';
 import { HoverMarquee } from './ui/hover-marquee';
 import { IconArrowRight, IconLock } from './ui/icons';

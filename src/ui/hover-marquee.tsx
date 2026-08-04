@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, type ReactNode } from 'react';
-import { cn } from './cn';
+import { cn } from '@/lib/utils';
+import { matchesMedia } from './use-media-query';
 
 interface HoverMarqueeProps {
   children: ReactNode;
@@ -16,13 +17,13 @@ const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)';
 
 const TRIGGER_SELECTOR = 'button, a, [role="button"], [data-marquee-trigger]';
 
-const supportsHover = () =>
-  typeof window !== 'undefined' &&
-  window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+// Lues à chaque survol, pas au rendu : `matches` est une lecture live, donc
+// toujours à jour. `matchesMedia` partage le cache de MediaQueryList du module
+// use-media-query au lieu d'en recréer une à chaque entrée du pointeur.
+const supportsHover = () => matchesMedia('(hover: hover) and (pointer: fine)');
 
 const prefersReducedMotion = () =>
-  typeof window !== 'undefined' &&
-  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  matchesMedia('(prefers-reduced-motion: reduce)');
 
 const HoverMarquee = ({ children, className }: HoverMarqueeProps) => {
   const wrapperRef = useRef<HTMLSpanElement>(null);

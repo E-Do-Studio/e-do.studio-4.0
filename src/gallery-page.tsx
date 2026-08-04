@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import {
   Link,
@@ -16,8 +16,9 @@ import { MobileNavStrip } from './ui/mobile-nav-strip';
 import { PageHeader, buildMainNav } from './ui/page-header';
 import { ResponsiveImage } from './ui/responsive-image';
 import { VideoLoop } from './ui/video-loop';
+import { usePrefersReducedMotion } from './ui/use-media-query';
 import type { StripGroup } from './ui/mobile-nav-strip';
-import { cn } from './ui/cn';
+import { cn } from '@/lib/utils';
 import { common, galleryPage, mobileNav } from './i18n/messages';
 import { GalleryLightbox } from './gallery-lightbox';
 
@@ -277,19 +278,6 @@ const ProjectRow = ({
       ))}
     </div>
   );
-};
-
-const usePrefersReducedMotion = (): boolean => {
-  const [reduced, setReduced] = useState(false);
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return;
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const update = () => setReduced(mq.matches);
-    update();
-    mq.addEventListener('change', update);
-    return () => mq.removeEventListener('change', update);
-  }, []);
-  return reduced;
 };
 
 const ProjectLabel = ({

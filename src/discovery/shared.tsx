@@ -1,7 +1,7 @@
 import type React from 'react';
 import { HeaderAction, HeaderActionText } from '../ui/header-action';
 import { IconArrowRight } from '../ui/icons';
-import { cn } from '../ui/cn';
+import { cn } from '@/lib/utils';
 import { microBase } from './styles';
 
 interface ArrowIconProps extends React.SVGProps<SVGSVGElement> {}

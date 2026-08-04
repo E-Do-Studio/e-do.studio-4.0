@@ -1,5 +1,5 @@
 import type { InputHTMLAttributes, TextareaHTMLAttributes } from 'react';
-import { cn } from './cn';
+import { cn } from '@/lib/utils';
 
 interface InputProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange'> {

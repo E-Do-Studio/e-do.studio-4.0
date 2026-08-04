@@ -1,6 +1,6 @@
 import { usePageContext } from '../lib/page-context';
 import type { SocialLink } from '../types';
-import { cn } from './cn';
+import { cn } from '@/lib/utils';
 import { SocialIcon } from './social-icon';
 
 const ABBREV: Record<string, string> = {

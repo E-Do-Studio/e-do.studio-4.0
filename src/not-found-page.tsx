@@ -2,7 +2,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { usePageContext } from './lib/page-context';
 import { SCREEN_TO_PATH } from './lib/screens';
 import type { Lang } from './types';
-import { cn } from './ui/cn';
+import { cn } from '@/lib/utils';
 
 const COPY = {
   fr: {

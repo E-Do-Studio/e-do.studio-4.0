@@ -18,7 +18,10 @@
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": ["src", "vite.config.ts"]
 }

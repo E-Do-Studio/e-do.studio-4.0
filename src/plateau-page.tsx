@@ -8,7 +8,7 @@ import { IconArrowRight, IconSelector } from './ui/icons';
 import { PageHeader, buildMainNav } from './ui/page-header';
 import { ResponsiveImage } from './ui/responsive-image';
 import { CellLabel } from './ui/typography';
-import { cn } from './ui/cn';
+import { cn } from '@/lib/utils';
 import { VideoLoop } from './ui/video-loop';
 import { usePageContext } from './lib/page-context';
 import type { PlateauSpec } from './lib/strapi';

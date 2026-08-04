@@ -1,6 +1,6 @@
 import { useLoaderData, useNavigate } from '@tanstack/react-router';
 import { usePageContext } from '../lib/page-context';
-import { cn } from '../ui/cn';
+import { cn } from '@/lib/utils';
 import { IconArrowRight } from '../ui/icons';
 import { PageHeader, buildMainNav } from '../ui/page-header';
 import { bookPicker, booking } from '../i18n/messages';
