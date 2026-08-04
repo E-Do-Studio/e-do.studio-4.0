@@ -170,7 +170,7 @@ const GalleryFilters = ({
           }}
           variant="cell"
           size="cell"
-          className="shrink-0 border-b border-border px-3.5 py-3 text-xs tracking-widest text-primary"
+          className="border-b border-border px-3.5 py-3 text-xs tracking-widest text-primary"
         >
           ↺ {t('common.reset')}
         </Button>
@@ -201,10 +201,10 @@ const FilterCell = ({
   <Button
     onClick={onClick}
     className={cn(
-      'flex w-full shrink-0 cursor-pointer items-center justify-between gap-2 border-0 border-b border-l-2 border-b-border px-3.5 py-2 text-left text-sm tracking-tight text-foreground transition-colors',
+      'flex w-full justify-between gap-2 border-0 border-b border-l-2 border-b-border px-3.5 py-2 text-left text-sm tracking-tight text-foreground transition-colors',
       active
         ? 'border-l-primary bg-muted font-medium'
-        : 'border-l-transparent bg-background font-normal hover:bg-muted',
+        : 'border-l-transparent bg-background hover:bg-muted',
       dimmed && 'opacity-30',
     )}
   >

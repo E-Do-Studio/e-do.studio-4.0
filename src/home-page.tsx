@@ -242,7 +242,7 @@ const HomePage = () => {
         aria-label={t('common.gallery')}
         variant="cell"
         size="cell"
-        className="dark group relative col-span-2 aspect-[6/5] items-stretch justify-end overflow-hidden bg-background transition-all hover:brightness-75 hover:bg-background md:col-start-7 md:col-end-13 md:row-start-3 md:row-end-5 md:aspect-auto"
+        className="dark group relative col-span-2 aspect-[6/5] items-stretch justify-end overflow-hidden bg-background hover:brightness-75 hover:bg-background md:col-start-7 md:col-end-13 md:row-start-3 md:row-end-5 md:aspect-auto"
       >
         {galleryUseCrossfade ? (
           <ImageCrossfade
@@ -399,7 +399,7 @@ const HomePage = () => {
         <Button
           onClick={() => goto('gallery')}
           aria-label={t('common.gallery')}
-          className="group relative flex h-full w-full cursor-pointer items-center justify-center overflow-hidden border-0 bg-foreground p-0 text-left transition-all duration-150 hover:brightness-75"
+          className="group relative flex h-full w-full overflow-hidden border-0 bg-foreground p-0 text-left duration-150 hover:brightness-75"
         >
           {heroShowStaticPicture ? (
             <picture>
@@ -442,7 +442,7 @@ const HomePage = () => {
         aria-disabled="true"
         tabIndex={-1}
         variant="cell"
-        className="pointer-events-none cursor-not-allowed group relative col-span-2 h-20 flex items-center justify-between gap-3 px-4 py-3 text-left dark md:col-span-3 md:col-start-1 md:col-end-4 md:row-start-6 md:h-21"
+        className="pointer-events-none cursor-not-allowed group relative col-span-2 h-20 flex justify-between gap-3 px-4 py-3 text-left dark md:col-span-3 md:col-start-1 md:col-end-4 md:row-start-6 md:h-21"
       >
         <svg
           viewBox="0 0 200 84"
@@ -474,7 +474,11 @@ const HomePage = () => {
         </svg>
         <div className="relative flex min-w-0 flex-col gap-1">
           <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Discovery</span>
-          <div className="text-xl font-normal tracking-tight leading-tight text-muted-foreground">
+          {/* `truncate` : la base de `Button` pose `whitespace-nowrap`, que la
+              taille `cell` neutralise — mais cette tuile est une bande
+              horizontale et ne l'utilise pas. Sans troncature, le titre ne
+              peut ni se replier ni se couper, et passe sous le badge. */}
+          <div className="truncate text-xl font-normal tracking-tight leading-tight text-muted-foreground">
             {t('home.tellMeMore')}
           </div>
         </div>

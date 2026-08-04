@@ -47,7 +47,7 @@ export const NewsletterCard = ({
         <Button
           type="submit"
           variant="link"
-          className="h-auto p-0 text-xs tracking-widest text-primary no-underline"
+          className="h-auto p-0 text-primary no-underline"
         >
           OK →
         </Button>
@@ -79,7 +79,7 @@ export const SplitArticleCard = ({
       onClick={onOpen}
       className={cn(
         cellBase,
-        'group order-6 grid min-h-104 cursor-pointer grid-cols-1 border-0 bg-background p-0 text-left transition-opacity hover:opacity-95 lg:min-h-0',
+        'group order-6 grid min-h-104 grid-cols-1 border-0 bg-background p-0 text-left transition-opacity hover:opacity-95 lg:min-h-0',
         cover && 'sm:grid-cols-2',
         className,
       )}
@@ -168,7 +168,7 @@ export const BookCtaTile = ({ lang, goto, className }: BookCtaTileProps) => {
       type="button"
       onClick={() => goto('book')}
       className={cn(
-        'group relative flex h-21 shrink-0 cursor-pointer items-center justify-between gap-3.5 overflow-hidden border-0 bg-primary px-6 py-3.5 text-left text-primary-foreground transition-[color,background-color,opacity] duration-150 ease-out hover:opacity-90',
+        'group relative flex h-21 justify-between gap-3.5 overflow-hidden border-0 px-6 py-3.5 text-left transition-[color,background-color,opacity] duration-150 ease-out hover:opacity-90',
         className,
       )}
     >

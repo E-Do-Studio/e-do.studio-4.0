@@ -332,7 +332,7 @@ const BookConfirmation = () => {
             <Button
               type="button"
               onClick={() => navigate({ to: SCREEN_TO_PATH.book(lang) })}
-              className="mt-8 h-11 gap-2 px-6 text-xs tracking-widest"
+              className="mt-8 h-11 gap-2 px-6"
             >
               {t('bookPicker.resumeBooking')}{' '}
               <ArrowRight width="14" height="14" />

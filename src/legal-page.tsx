@@ -207,7 +207,7 @@ const LegalPage = () => {
           aria-haspopup="dialog"
           aria-expanded={navSheetOpen}
           aria-controls="legal-nav-sheet"
-          className="sticky top-14 z-30 md:hidden flex items-center gap-4 min-h-14 w-full px-4 py-3 bg-background border-b border-border text-left cursor-pointer"
+          className="sticky top-14 z-30 md:hidden flex gap-4 min-h-14 w-full px-4 py-3 bg-background border-b border-border text-left"
         >
           <span className="font-mono text-xs tracking-widest text-muted-foreground">
             {currentNumber}
@@ -245,9 +245,9 @@ const LegalPage = () => {
                     onClick={() => navigateToSection(s.k)}
                     aria-current={isActive ? 'page' : undefined}
                     className={cn(
-                      'w-full flex items-center gap-4 min-h-14 px-4 py-3',
+                      'w-full flex gap-4 min-h-14 px-4 py-3',
                       'border-b border-border text-left',
-                      'cursor-pointer transition-colors duration-150 ease-out',
+                      'transition-colors duration-150 ease-out',
                       isActive
                         ? 'bg-foreground text-background'
                         : 'bg-background text-foreground',

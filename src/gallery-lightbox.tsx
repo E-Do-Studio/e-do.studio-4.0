@@ -320,7 +320,7 @@ export const GalleryLightbox = ({
               disabled={!hasMultiple}
               aria-label={t('common.prevImage')}
               variant="cell"
-              className="size-14 items-center justify-center rounded-none disabled:opacity-30 md:size-16"
+              className="size-14 rounded-none disabled:opacity-30 md:size-16"
             >
               <ArrowLeft size={20} strokeWidth={1.5} />
             </Button>
@@ -328,7 +328,7 @@ export const GalleryLightbox = ({
               type="button"
               onClick={onContact}
               variant="cell"
-              className="h-14 flex-row items-center justify-center gap-2 text-sm uppercase tracking-wider md:h-16"
+              className="h-14 flex-row gap-2 text-sm tracking-wider md:h-16"
             >
               {t('common.contactUs')}
               <ArrowRight size={14} strokeWidth={1.5} />
@@ -347,7 +347,7 @@ export const GalleryLightbox = ({
               disabled={!hasMultiple}
               aria-label={t('common.nextImage')}
               variant="cell"
-              className="size-14 items-center justify-center rounded-none disabled:opacity-30 md:size-16"
+              className="size-14 rounded-none disabled:opacity-30 md:size-16"
             >
               <ArrowRight size={20} strokeWidth={1.5} />
             </Button>

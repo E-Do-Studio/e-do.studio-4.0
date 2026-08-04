@@ -378,7 +378,7 @@ const PostprodPage = () => {
         aria-haspopup="dialog"
         aria-expanded={navSheetOpen}
         aria-controls="postprod-nav-sheet"
-        className="col-span-full sticky top-14 z-30 md:hidden flex items-center gap-4 min-h-14 w-full px-4 py-2.5 bg-background border-0 border-b border-border text-left cursor-pointer"
+        className="col-span-full sticky top-14 z-30 md:hidden flex gap-4 min-h-14 w-full px-4 py-2.5 bg-background border-0 border-b border-border text-left"
       >
         <span className="font-mono text-xs tracking-widest text-muted-foreground">
           {currentNumber}
@@ -420,9 +420,9 @@ const PostprodPage = () => {
                     onClick={() => navigateToType(c.k)}
                     aria-current={active ? 'page' : undefined}
                     className={cn(
-                      'w-full flex items-center gap-4 min-h-14 px-4 py-3',
+                      'w-full flex gap-4 min-h-14 px-4 py-3',
                       'border-b border-border text-left',
-                      'cursor-pointer transition-colors duration-150 ease-out',
+                      'transition-colors duration-150 ease-out',
                       active
                         ? 'bg-foreground text-background'
                         : 'bg-background text-foreground',

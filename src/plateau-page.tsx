@@ -179,7 +179,7 @@ const ThumbStrip = ({
               aria-label={`${item.alt[lang] || plateauName} — ${i + 1} / ${items.length}`}
               aria-current={isActive ? 'true' : undefined}
               className={cn(
-                'group relative h-full shrink-0 overflow-hidden bg-background border-0 p-0 cursor-pointer transition-opacity duration-150 ease-out',
+                'group relative h-full overflow-hidden bg-background border-0 p-0 transition-opacity duration-150 ease-out',
                 isActive ? 'opacity-100' : 'opacity-60 hover:opacity-100',
               )}
               style={{ flexBasis: tileBasis }}
@@ -323,9 +323,9 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
                     onClick={() => navigateToPlateau(m)}
                     aria-current={active ? 'page' : undefined}
                     className={cn(
-                      'w-full flex items-center gap-4 min-h-14 px-4 py-3',
+                      'w-full flex gap-4 min-h-14 px-4 py-3',
                       'border-b border-border text-left',
-                      'cursor-pointer transition-colors duration-150 ease-out',
+                      'transition-colors duration-150 ease-out',
                       active
                         ? 'bg-foreground text-background'
                         : 'bg-background text-foreground',
@@ -518,7 +518,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
           } catch (e) {}
           goto('book');
         }}
-        className="bg-primary p-4 border-0 cursor-pointer flex flex-col justify-between text-left text-primary-foreground font-[inherit] min-h-20 transition-[color,background-color,opacity] duration-150 ease-out hover:opacity-90 md:col-start-4 md:row-start-5"
+        className="p-4 border-0 flex flex-col justify-between text-left font-[inherit] min-h-20 transition-[color,background-color,opacity] duration-150 ease-out hover:opacity-90 md:col-start-4 md:row-start-5"
       >
         <span className="font-mono text-xs uppercase tracking-widest text-primary-foreground/80">
           06 · {t('common.bookNow')}

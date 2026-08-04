@@ -170,7 +170,7 @@ export const DiscoveryPostPage = () => {
               <Button
                 onClick={backToIndex}
                 variant="cell"
-                className="dark h-10 items-center justify-center bg-background px-6 text-xs hover:text-primary"
+                className="dark h-10 bg-background px-6 hover:text-primary"
               >
                 {t('discoveryPage.close')}
               </Button>

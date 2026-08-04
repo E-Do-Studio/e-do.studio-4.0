@@ -132,7 +132,7 @@ const AssistantHeader = ({
             type="button"
             onClick={onOpenHistory}
             variant="ghost"
-            className="h-auto gap-1.5 px-1.5 py-1 text-xs tracking-wider text-muted-foreground hover:bg-transparent hover:text-foreground"
+            className="h-auto gap-1.5 px-1.5 py-1 tracking-wider text-muted-foreground hover:bg-transparent hover:text-foreground"
           >
             {t('assistant.history')}
             <span className="flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-muted px-1 text-xs text-muted-foreground">
@@ -146,7 +146,7 @@ const AssistantHeader = ({
             onClick={onNewSession}
             aria-label={t('assistant.newConversation')}
             title={t('assistant.newConversation')}
-            className="flex h-7 w-7 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-muted-foreground transition-colors hover:text-foreground"
+            className="flex h-7 w-7 border-0 bg-transparent p-0 text-muted-foreground transition-colors hover:text-foreground"
           >
             <Plus width="15" height="15" />
           </Button>
@@ -215,7 +215,7 @@ const ChatSessionList = ({
           onClick={onNew}
           variant="cell"
           size="cell"
-          className="group shrink-0 flex-row items-center gap-2.5 border-b border-border bg-transparent px-4.5 py-3"
+          className="group flex-row items-center gap-2.5 border-b border-border bg-transparent px-4.5 py-3"
         >
           <Plus width="15" height="15" className="text-primary" />
           <span className="text-sm leading-none text-foreground">
@@ -258,7 +258,7 @@ const ChatSessionList = ({
                   aria-label={t('assistant.deleteConversation')}
                   variant="ghost"
                   size="icon-sm"
-                  className="mr-1.5 shrink-0 text-muted-foreground opacity-0 hover:bg-transparent hover:text-foreground focus-visible:opacity-100 group-hover/row:opacity-100"
+                  className="mr-1.5 text-muted-foreground opacity-0 hover:bg-transparent hover:text-foreground focus-visible:opacity-100 group-hover/row:opacity-100"
                 >
                   <Trash2 width="14" height="14" />
                 </Button>
@@ -307,7 +307,7 @@ const QuickReplyButton = ({ children, onClick }: QuickReplyButtonProps) => (
   <Button
     onClick={onClick}
     variant="outline"
-    className="h-auto px-2.5 py-1.5 text-xs tracking-wider text-muted-foreground hover:border-foreground hover:text-foreground"
+    className="h-auto px-2.5 py-1.5 tracking-wider text-muted-foreground hover:border-foreground hover:text-foreground"
   >
     {children}
   </Button>
@@ -494,7 +494,7 @@ const AssistantInput = ({
         size="icon-sm"
         disabled={loading || !input.trim()}
         aria-label={t('common.send')}
-        className="shrink-0 text-muted-foreground hover:text-foreground"
+        className="text-muted-foreground hover:text-foreground"
       >
         <ArrowRight />
       </Button>
