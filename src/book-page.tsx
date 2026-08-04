@@ -64,6 +64,7 @@ import type {
   QuoteLabels,
 } from './lib/booking-engine';
 import { Trans } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { useT } from './i18n/use-t';
 import { DAYS, MONTHS } from './lib/format';
 import { cn } from '@/lib/utils';
@@ -517,19 +518,19 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
   const STEPS =
     mode === 'config'
       ? [
-          { n: 0, fr: 'Configurateur', en: 'Configurator' },
-          { n: 2, fr: 'Créneau', en: 'Slot' },
-          { n: 3, fr: 'Équipe', en: 'Team' },
-          { n: 5, fr: 'Coordonnées', en: 'Contact' },
-          { n: 6, fr: 'Date', en: 'Date' },
+          { n: 0, label: t('bookPicker.configuratorLabel') },
+          { n: 2, label: t('booking.stepSlot') },
+          { n: 3, label: t('booking.stepTeam') },
+          { n: 5, label: t('booking.stepContact') },
+          { n: 6, label: t('booking.date') },
         ]
       : [
-          { n: 1, fr: 'Plateau', en: 'Stage' },
-          { n: 2, fr: 'Créneau', en: 'Slot' },
-          { n: 3, fr: 'Équipe', en: 'Team' },
-          { n: 4, fr: 'Post-prod', en: 'Post-prod' },
-          { n: 5, fr: 'Coordonnées', en: 'Contact' },
-          { n: 6, fr: 'Date', en: 'Date' },
+          { n: 1, label: t('booking.stage') },
+          { n: 2, label: t('booking.stepSlot') },
+          { n: 3, label: t('booking.stepTeam') },
+          { n: 4, label: t('common.postProd') },
+          { n: 5, label: t('booking.stepContact') },
+          { n: 6, label: t('booking.date') },
         ];
   const seedFromConfig = () => {
     const validRecs: {
@@ -643,7 +644,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
       const px = BOOK_PLATEAUX.find((x) => x.k === r.plateau);
       const s = r.session;
       const productLbl =
-        PRODUCTS.find((x) => x.k === s.product)?.[lang] || s.product;
+        catLabel(t, PRODUCTS.find((x) => x.k === s.product)) || s.product;
       const subLbl = s.submethod ? ` · ${s.submethod}` : '';
       const mediaLbl = (s.media || []).length
         ? ` (${(s.media || []).join('+')})`
@@ -906,14 +907,14 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
             return (
               <Fragment key={s.n}>
                 <li className="flex-none">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => {
                       if (clickable) goToStep(s.n);
                     }}
                     aria-current={active ? 'step' : undefined}
                     aria-disabled={!clickable}
-                    aria-label={`${i + 1}. ${s[lang]}`}
+                    aria-label={`${i + 1}. ${s.label}`}
                     className={cn(
                       'edo-focus-ring p-2 -m-2 inline-flex items-center justify-center h-7 w-7 font-mono text-label tracking-meta transition-colors duration-150',
                       active && 'bg-primary text-primary-foreground',
@@ -931,7 +932,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                     )}
                   >
                     {done ? '✓' : String(i + 1).padStart(2, '0')}
-                  </button>
+                  </Button>
                 </li>
                 {i < STEPS.length - 1 && (
                   <li
@@ -965,7 +966,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
           const clickable =
             done || active || (i === curIdx + 1 && canNext()) || s.n === 0;
           return (
-            <button
+            <Button
               type="button"
               key={s.n}
               onClick={() => {
@@ -981,9 +982,9 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
               <span
                 className={`text-detail ${active ? 'font-medium' : 'font-normal'} tracking-copy-tight text-foreground`}
               >
-                {s[lang]}
+                {s.label}
               </span>
-            </button>
+            </Button>
           );
         })}
       </div>
@@ -1002,7 +1003,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
               <span className="text-foreground">{t('booking.letUsGuide')}</span>
             </span>
             <div className="flex items-stretch border-t border-hairline md:border-t-0 md:flex-none md:w-1/2">
-              <button
+              <Button
                 type="button"
                 onClick={() => {
                   setPlateau(null);
@@ -1021,14 +1022,14 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                 className="edo-focus-ring flex-1 bg-transparent border-l border-hairline px-5 py-3 md:py-0 cursor-pointer font-mono text-micro tracking-code uppercase text-foreground whitespace-nowrap leading-normal inline-flex items-center justify-center transition-colors duration-150 hover:bg-background"
               >
                 ↻ {t('common.reset')}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => goToStep(0, 'config')}
-                className="edo-focus-ring flex-1 bg-primary border-l border-hairline px-5 py-3 md:py-0 cursor-pointer font-mono text-label tracking-code uppercase text-primary-foreground whitespace-nowrap leading-normal font-semibold inline-flex items-center justify-center transition-opacity duration-150 hover:opacity-90"
+                className="h-auto flex-1 border-l border-hairline px-5 py-3 text-label font-semibold tracking-code md:py-0"
               >
                 ← {t('booking.configurator')}
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -1293,16 +1294,23 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                         const has = slots[xid] && slots[xid].date;
                         const active = i === safeIdx;
                         return (
-                          <button
+                          <Button
                             type="button"
                             key={xid}
                             onClick={() => setDateIdx(i)}
                             title={slotLabel(xid)}
-                            className={`${active ? 'dark bg-background text-foreground border-foreground' : has ? 'bg-primary text-primary-foreground border-primary' : 'bg-background text-foreground border-border'} border px-2.5 py-1 cursor-pointer font-mono text-label tracking-ui min-w-7 text-center`}
+                            variant="outline"
+                            aria-pressed={active}
+                            className={cn(
+                              'h-auto min-w-7 px-2.5 py-1 text-label tracking-ui',
+                              active
+                                ? 'dark border-foreground bg-background'
+                                : has && 'border-primary bg-primary text-primary-foreground',
+                            )}
                           >
                             {String(i + 1).padStart(2, '0')}
                             {has ? ' ✓' : ''}
-                          </button>
+                          </Button>
                         );
                       })}
                     </div>
@@ -1449,15 +1457,15 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
           })()}
         {step === 0 && (
           <div className="flex items-stretch min-h-control shrink-0">
-            <button
+            <Button
               type="button"
               onClick={applyConfig}
               disabled={!canNext()}
-              className={`edo-focus-ring bg-primary border-0 cursor-pointer text-primary-foreground font-mono text-caption tracking-meta uppercase px-5 py-3 md:py-0 inline-flex items-center justify-center gap-2 flex-1 min-w-0 transition-opacity duration-150 hover:opacity-90${canNext() ? '' : ' opacity-30 cursor-not-allowed'}`}
+              className="h-auto min-w-0 flex-1 gap-2 px-5 py-3 text-caption tracking-meta md:py-0"
             >
               {t('booking.continueToBooking')}{' '}
               <ArrowRight width="14" height="14" />
-            </button>
+            </Button>
           </div>
         )}
         {step > 0 && (
@@ -1512,7 +1520,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                 'edo-focus-ring bg-primary border-t md:border-t-0 md:border-l border-hairline cursor-pointer text-primary-foreground font-mono text-caption tracking-meta uppercase px-5 py-3 md:py-0 inline-flex items-center justify-center gap-2 transition-opacity duration-150 min-h-control md:min-h-0 flex-1 min-w-0 hover:opacity-90';
               return (
                 <>
-                  <button
+                  <Button
                     type="button"
                     onClick={handleBack}
                     disabled={isFirst && onFirstDateSub}
@@ -1524,10 +1532,10 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                     }
                   >
                     ← {t('booking.back')}
-                  </button>
+                  </Button>
                   <div className="flex items-stretch md:flex-none md:w-1/2">
                     {step < 5 ? (
-                      <button
+                      <Button
                         type="button"
                         onClick={() => {
                           if (!canNext()) return;
@@ -1547,19 +1555,19 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                           ? t('booking.continueToBooking')
                           : t('booking.continue')}{' '}
                         <ArrowRight width="14" height="14" />
-                      </button>
+                      </Button>
                     ) : p.isCyclo ? (
                       step === 5 ? (
-                        <button
+                        <Button
                           type="button"
                           onClick={() => handleContactNext(nextN)}
                           className={navBtnPrimaryCls}
                         >
                           {t('booking.continue')}{' '}
                           <ArrowRight width="14" height="14" />
-                        </button>
+                        </Button>
                       ) : isMultiDate && !onLastDateSub ? (
-                        <button
+                        <Button
                           type="button"
                           onClick={() => currentDateValid && handleSubNext()}
                           disabled={!currentDateValid}
@@ -1572,9 +1580,9 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                         >
                           {t('booking.validateNextStage')}{' '}
                           <ArrowRight width="14" height="14" />
-                        </button>
+                        </Button>
                       ) : (
-                        <button
+                        <Button
                           type="button"
                           onClick={() =>
                             canNext() && !saving && handleSubmit('request')
@@ -1591,11 +1599,11 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                             ? t('booking.sending')
                             : t('booking.submitRequest')}{' '}
                           <ArrowRight width="14" height="14" />
-                        </button>
+                        </Button>
                       )
                     ) : (
                       <>
-                        <button
+                        <Button
                           type="button"
                           onClick={() => !saving && handleSubmit('quote')}
                           disabled={saving}
@@ -1611,18 +1619,18 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                             ? t('booking.sending')
                             : t('booking.receiveMyQuote')}{' '}
                           <ArrowRight width="14" height="14" />
-                        </button>
+                        </Button>
                         {step === 5 ? (
-                          <button
+                          <Button
                             type="button"
                             onClick={() => handleContactNext(nextN)}
                             className={navBtnPrimaryCls}
                           >
                             {t('booking.pickADate')}{' '}
                             <ArrowRight width="14" height="14" />
-                          </button>
+                          </Button>
                         ) : isMultiDate && !onLastDateSub ? (
-                          <button
+                          <Button
                             type="button"
                             onClick={() => currentDateValid && handleSubNext()}
                             disabled={!currentDateValid}
@@ -1635,9 +1643,9 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                           >
                             {t('booking.validateNextStage')}{' '}
                             <ArrowRight width="14" height="14" />
-                          </button>
+                          </Button>
                         ) : (
-                          <button
+                          <Button
                             type="button"
                             onClick={() =>
                               canNext() && !saving && handleSubmit('booking')
@@ -1654,7 +1662,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                               ? t('booking.booking')
                               : t('common.bookNow')}{' '}
                             <ArrowRight width="14" height="14" />
-                          </button>
+                          </Button>
                         )}
                       </>
                     )}
@@ -1946,143 +1954,114 @@ const StepIntro = ({ n, lang, t, s, compact }: AnyProps) => (
   </div>
 );
 
+// Les catalogues ci-dessous sont des constantes de module : elles ne peuvent pas
+// appeler useT(). Elles portent donc des clés i18next, résolues ici au rendu.
+const catLabel = (t: TFunction, entry?: AnyProps): string =>
+  entry?.label ? t(entry.label) : '';
+const catDesc = (t: TFunction, entry?: AnyProps): string =>
+  entry?.descKey ? t(entry.descKey) : '';
+
 const PROJECT_TYPES: AnyProps[] = [
   {
     k: 'ecom',
-    fr: 'E-commerce',
-    en: 'E-commerce',
-    desc: {
-      fr: 'Packshots, on-model, fiches produit.',
-      en: 'Packshots, on-model, product pages.',
-    },
+    label: 'booking.eCommerce',
+    descKey: 'booking.packshotsOnModelProductPagesDesc',
   },
   {
     k: 'cyclorama',
-    fr: 'Cyclorama / Prod. libre',
-    en: 'Cyclorama / Free production',
-    desc: {
-      fr: 'Studio cyclo, besoin sur-mesure.',
-      en: 'Cyclo studio, custom needs.',
-    },
+    label: 'booking.cycloramaFreeProduction2',
+    descKey: 'booking.cycloStudioCustomNeedsDesc',
   },
 ];
 
 const PRODUCTS: AnyProps[] = [
   {
     k: 'pap',
-    fr: 'Prêt-à-porter',
-    en: 'Ready-to-wear',
-    desc: { fr: 'Vêtements, textile porté.', en: 'Clothing, worn textile.' },
+    label: 'booking.readyToWear',
+    descKey: 'booking.clothingWornTextileDesc',
   },
   {
     k: 'accessoires',
-    fr: 'Accessoires',
-    en: 'Accessories',
-    desc: {
-      fr: 'Chaussures, maroquinerie, textile.',
-      en: 'Shoes, leather goods, textile.',
-    },
+    label: 'booking.accessories',
+    descKey: 'booking.shoesLeatherGoodsTextileDesc',
   },
   {
     k: 'eyewear',
-    fr: 'Lunetterie',
-    en: 'Eyewear',
-    desc: { fr: 'Lunettes, solaires.', en: 'Glasses, sunglasses.' },
+    label: 'booking.eyewear',
+    descKey: 'booking.glassesSunglassesDesc',
   },
   {
     k: 'food',
-    fr: 'Food & Spiritueux',
-    en: 'Food & Spirits',
-    desc: { fr: 'Boissons, gastronomie.', en: 'Drinks, gourmet.' },
+    label: 'booking.foodSpirits',
+    descKey: 'booking.drinksGourmetDesc',
   },
   {
     k: 'cosmetique',
-    fr: 'Cosmétique',
-    en: 'Cosmetics',
-    desc: {
-      fr: 'Soin, parfumerie, make-up.',
-      en: 'Skincare, fragrance, makeup.',
-    },
+    label: 'booking.cosmetics',
+    descKey: 'booking.skincareFragranceMakeupDesc',
   },
   {
     k: 'bijoux',
-    fr: 'Bijoux',
-    en: 'Jewelry',
-    desc: { fr: 'Bijoux, montres.', en: 'Jewelry, watches.' },
+    label: 'booking.jewelry',
+    descKey: 'booking.jewelryWatchesDesc',
   },
 ];
 
 const PAP_METHODS: AnyProps[] = [
   {
     k: 'packshot',
-    fr: 'Packshot',
-    en: 'Packshot',
-    desc: { fr: 'Shoot produit non porté.', en: 'Unworn product shoot.' },
+    label: 'booking.packshot',
+    descKey: 'booking.unwornProductShootDesc',
   },
   {
     k: 'onmodel',
-    fr: 'Mannequin (on-model)',
-    en: 'On-model',
-    desc: { fr: 'Shoot porté sur mannequin.', en: 'On-model shoot.' },
+    label: 'booking.onModel',
+    descKey: 'booking.onModelShootDesc',
   },
 ];
 
 const PAP_PACKSHOT_SUBS: AnyProps[] = [
   {
     k: 'pique',
-    fr: 'Piqué',
-    en: 'Pinned',
-    desc: {
-      fr: 'Épinglé sur panneau vertical.',
-      en: 'Pinned on vertical board.',
-    },
+    label: 'booking.pinned',
+    descKey: 'booking.pinnedOnVerticalBoardDesc',
   },
   {
     k: 'ghost',
-    fr: 'Ghost',
-    en: 'Ghost',
-    desc: {
-      fr: 'Mannequin invisible, effet porté.',
-      en: 'Invisible mannequin, worn look.',
-    },
+    label: 'booking.ghost',
+    descKey: 'booking.invisibleMannequinWornLookDesc',
   },
   {
     k: 'flat',
-    fr: 'Flat',
-    en: 'Flat',
-    desc: { fr: 'Posé à plat, vue zénithale.', en: 'Laid flat, top view.' },
+    label: 'booking.flat',
+    descKey: 'booking.laidFlatTopViewDesc',
   },
 ];
 
 const ACCESS_SUBS: AnyProps[] = [
-  { k: 'chaussure', fr: 'Chaussures', en: 'Shoes', desc: { fr: '', en: '' } },
+  { k: 'chaussure', label: 'booking.shoes', },
   {
     k: 'maroquinerie',
-    fr: 'Maroquinerie',
-    en: 'Leather goods',
-    desc: {
-      fr: 'Sacs, ceintures, petite maroquinerie.',
-      en: 'Bags, belts, small leather goods.',
-    },
+    label: 'booking.leatherGoods',
+    descKey: 'booking.bagsBeltsSmallLeatherGoodsDesc',
   },
   {
     k: 'textile',
-    fr: 'Accessoires textile',
-    en: 'Textile accessories',
-    desc: { fr: 'Foulards, chapeaux, gants.', en: 'Scarves, hats, gloves.' },
+    label: 'booking.textileAccessories',
+    descKey: 'booking.scarvesHatsGlovesDesc',
   },
 ];
 
 const MEDIA_OPTIONS: AnyProps[] = [
-  { k: 'photo', fr: 'Photo', en: 'Photo', desc: { fr: '', en: '' } },
-  { k: 'video', fr: 'Vidéo', en: 'Video', desc: { fr: '', en: '' } },
+  { k: 'photo', label: 'booking.photo', },
+  { k: 'video', label: 'booking.video', },
 ];
 
 const PACKSHOT_VIEWS: AnyProps[] = [
-  { k: 'face', fr: 'Face', en: 'Front' },
-  { k: 'dos', fr: 'Dos', en: 'Back' },
-  { k: '3/4', fr: '3/4', en: '3/4' },
-  { k: 'detail', fr: 'Détail', en: 'Detail' },
+  { k: 'face', label: 'booking.front' },
+  { k: 'dos', label: 'booking.back2' },
+  { k: '3/4', label: 'booking.34' },
+  { k: 'detail', label: 'booking.detail' },
 ];
 
 // Tuile de configuration. `dark` sur l'état sélectionné inverse les tokens pour
@@ -2240,7 +2219,7 @@ const Step0Configurator = ({
     visible: true,
     answered: !!S.projectType,
     summary: S.projectType
-      ? PROJECT_TYPES.find((x) => x.k === S.projectType)?.[lang] || ''
+      ? catLabel(t, PROJECT_TYPES.find((x) => x.k === S.projectType)) || ''
       : '',
   });
   if (S.projectType === 'ecom') {
@@ -2251,7 +2230,7 @@ const Step0Configurator = ({
       visible: true,
       answered: !!S.product,
       summary: S.product
-        ? PRODUCTS.find((x) => x.k === S.product)?.[lang] || ''
+        ? catLabel(t, PRODUCTS.find((x) => x.k === S.product)) || ''
         : '',
     });
   }
@@ -2263,7 +2242,7 @@ const Step0Configurator = ({
       visible: true,
       answered: !!S.method,
       summary: S.method
-        ? PAP_METHODS.find((x) => x.k === S.method)?.[lang] || ''
+        ? catLabel(t, PAP_METHODS.find((x) => x.k === S.method)) || ''
         : '',
     });
   }
@@ -2275,7 +2254,7 @@ const Step0Configurator = ({
       visible: true,
       answered: !!S.submethod,
       summary: S.submethod
-        ? PAP_PACKSHOT_SUBS.find((x) => x.k === S.submethod)?.[lang] || ''
+        ? catLabel(t, PAP_PACKSHOT_SUBS.find((x) => x.k === S.submethod)) || ''
         : '',
     });
   }
@@ -2287,7 +2266,7 @@ const Step0Configurator = ({
       visible: true,
       answered: !!S.submethod,
       summary: S.submethod
-        ? ACCESS_SUBS.find((x) => x.k === S.submethod)?.[lang] || ''
+        ? catLabel(t, ACCESS_SUBS.find((x) => x.k === S.submethod)) || ''
         : '',
     });
   }
@@ -2306,7 +2285,7 @@ const Step0Configurator = ({
       multi: true,
       answered: (S.media || []).length > 0,
       summary: (S.media || [])
-        .map((m) => MEDIA_OPTIONS.find((x) => x.k === m)?.[lang])
+        .map((m) => catLabel(t, MEDIA_OPTIONS.find((x) => x.k === m)))
         .filter(Boolean)
         .join(' + '),
     });
@@ -2330,7 +2309,7 @@ const Step0Configurator = ({
       multi: true,
       answered: (S.views || []).some((v) => v !== 'detail'),
       summary: (S.views || [])
-        .map((v) => PACKSHOT_VIEWS.find((x) => x.k === v)?.[lang])
+        .map((v) => catLabel(t, PACKSHOT_VIEWS.find((x) => x.k === v)))
         .filter(Boolean)
         .join(' + '),
     });
@@ -2397,11 +2376,13 @@ const Step0Configurator = ({
     const open = isOpen(qKey);
     if (!open && q.answered) {
       return (
-        <button
+        <Button
           type="button"
           key={qKey + ':collapsed'}
           onClick={() => setOpenQ(qKey)}
-          className="edo-focus-ring w-full bg-background border-0 border-b border-b-foreground px-5 md:px-6 min-h-control py-3 md:py-0 box-border cursor-pointer font-inherit text-left flex items-center gap-3 md:gap-3.5 transition-colors duration-150 hover:bg-muted"
+          variant="cell"
+          size="cell"
+          className="min-h-control w-full flex-row items-center gap-3 border-b border-b-foreground px-5 py-3 md:gap-3.5 md:px-6 md:py-0"
         >
           <span className="edo-cell-label text-primary shrink-0 w-7">
             {q.num}
@@ -2415,7 +2396,7 @@ const Step0Configurator = ({
           <span className="edo-cell-label text-muted-foreground shrink-0">
             {t('booking.edit')}
           </span>
-        </button>
+        </Button>
       );
     }
     if (!open) return null;
@@ -2439,7 +2420,7 @@ const Step0Configurator = ({
           </span>
         </span>
         <div className="flex items-stretch border-t border-hairline md:border-t-0 md:flex-none md:w-1/2">
-          <button
+          <Button
             type="button"
             onClick={() => {
               setSessions([makeBlankSession()]);
@@ -2451,14 +2432,14 @@ const Step0Configurator = ({
             className="edo-focus-ring flex-1 bg-transparent border-l border-hairline px-5 py-3 md:py-0 cursor-pointer font-mono text-micro tracking-code uppercase text-foreground whitespace-nowrap leading-normal inline-flex items-center justify-center transition-colors duration-150 hover:bg-background"
           >
             ↻ {t('mobileNav.reset')}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={onSkip}
-            className="edo-focus-ring flex-1 bg-primary border-l border-hairline px-5 py-3 md:py-0 cursor-pointer font-mono text-label tracking-code uppercase text-primary-foreground whitespace-nowrap leading-normal font-semibold inline-flex items-center justify-center transition-opacity duration-150 hover:opacity-90"
+            className="h-auto flex-1 border-l border-hairline px-5 py-3 text-label font-semibold tracking-code md:py-0"
           >
             {t('booking.chooseManually')} →
-          </button>
+          </Button>
         </div>
       </div>
       {sessions.length > 1 && (
@@ -2467,13 +2448,14 @@ const Step0Configurator = ({
             <span className="edo-cell-label text-primary">
               {t('booking.productSessions')} — {sessions.length}
             </span>
-            <button
+            <Button
               type="button"
               onClick={addSession}
-              className="edo-focus-ring bg-background border border-border px-3.5 py-2 cursor-pointer font-mono text-label tracking-meta uppercase text-foreground flex items-center gap-2 h-8"
+              variant="outline"
+              className="h-8 gap-2 px-3.5 py-2 text-label tracking-meta"
             >
               + {t('booking.addASession')}
-            </button>
+            </Button>
           </div>
           <div
             className="grid bg-background border-t border-b border-hairline"
@@ -2493,7 +2475,7 @@ const Step0Configurator = ({
                     ? p[lang]
                     : t('booking.toDefine');
               return (
-                <button
+                <Button
                   type="button"
                   key={i}
                   onClick={() => {
@@ -2532,7 +2514,7 @@ const Step0Configurator = ({
                         : `${s.quantity} ${t('booking.products')}`
                       : t('booking.incomplete')}
                   </div>
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -2553,8 +2535,8 @@ const Step0Configurator = ({
                 idx={i + 1}
                 on={S.projectType === pt.k}
                 onClick={() => resetFrom('projectType', pt.k)}
-                label={pt[lang]}
-                desc={pt.desc[lang]}
+                label={catLabel(t, pt)}
+                desc={catDesc(t, pt)}
               />
             ))}
           </div>
@@ -2576,8 +2558,8 @@ const Step0Configurator = ({
                   idx={i + 1}
                   on={S.product === p.k}
                   onClick={() => resetFrom('product', p.k)}
-                  label={p[lang]}
-                  desc={p.desc[lang]}
+                  label={catLabel(t, p)}
+                  desc={catDesc(t, p)}
                 />
               ))}
             </div>
@@ -2599,8 +2581,8 @@ const Step0Configurator = ({
                   idx={i + 1}
                   on={S.method === m.k}
                   onClick={() => resetFrom('method', m.k)}
-                  label={m[lang]}
-                  desc={m.desc[lang]}
+                  label={catLabel(t, m)}
+                  desc={catDesc(t, m)}
                 />
               ))}
             </div>
@@ -2623,8 +2605,8 @@ const Step0Configurator = ({
                   idx={i + 1}
                   on={S.submethod === sub.k}
                   onClick={() => resetFrom('submethod', sub.k)}
-                  label={sub[lang]}
-                  desc={sub.desc[lang]}
+                  label={catLabel(t, sub)}
+                  desc={catDesc(t, sub)}
                 />
               ))}
             </div>
@@ -2646,8 +2628,8 @@ const Step0Configurator = ({
                   idx={i + 1}
                   on={S.submethod === sub.k}
                   onClick={() => resetFrom('submethod', sub.k)}
-                  label={sub[lang]}
-                  desc={sub.desc[lang]}
+                  label={catLabel(t, sub)}
+                  desc={catDesc(t, sub)}
                 />
               ))}
             </div>
@@ -2691,8 +2673,8 @@ const Step0Configurator = ({
                         : [...cur, m.k];
                       setSession({ media: next });
                     }}
-                    label={m[lang]}
-                    desc={m.desc[lang]}
+                    label={catLabel(t, m)}
+                    desc={catDesc(t, m)}
                   />
                 );
               })}
@@ -2749,7 +2731,7 @@ const Step0Configurator = ({
               ).map((v, i) => {
                 const on = (S.views || []).includes(v.k);
                 return (
-                  <button
+                  <Button
                     type="button"
                     key={v.k}
                     onClick={() => {
@@ -2775,7 +2757,7 @@ const Step0Configurator = ({
                         ●
                       </span>
                     )}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -2918,13 +2900,14 @@ const Step0Configurator = ({
       )}
       {sessionValid(active) && activeIdx === sessions.length - 1 && (
         <div className="px-6 py-1.5 flex justify-center items-center bg-background">
-          <button
+          <Button
             type="button"
             onClick={addSession}
-            className="edo-focus-ring bg-background border border-border px-4 py-1.5 cursor-pointer font-mono text-label tracking-meta uppercase text-foreground flex items-center gap-2 h-7"
+            variant="outline"
+            className="h-7 gap-2 px-4 py-1.5 text-label tracking-meta"
           >
             + {t('booking.addAnotherProductSession')}
-          </button>
+          </Button>
         </div>
       )}
       <div className="h-4 bg-background" />
@@ -3066,7 +3049,7 @@ const Step1Plateau = ({
                   },
                 ];
           return (
-            <button
+            <Button
               type="button"
               key={px.k}
               onClick={() => {
@@ -3123,7 +3106,7 @@ const Step1Plateau = ({
                   ))}
                 </div>
               )}
-            </button>
+            </Button>
           );
         })}
       </div>
@@ -3295,22 +3278,24 @@ const Step2Date = ({
             </span>
           </div>
         </div>
-        <button
+        <Button
           type="button"
           onClick={prevMonth}
           aria-label={t('booking.calPrevMonth')}
-          className="edo-focus-ring flex basis-header flex-none cursor-pointer items-center justify-center border-0 bg-background font-mono text-detail text-foreground transition-colors hover:bg-muted"
+          variant="cell"
+          className="basis-header flex-none flex-row items-center justify-center text-detail"
         >
           {'←'}
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={nextMonth}
           aria-label={t('booking.calNextMonth')}
-          className="edo-focus-ring flex basis-header flex-none cursor-pointer items-center justify-center border-0 bg-background font-mono text-detail text-foreground transition-colors hover:bg-muted"
+          variant="cell"
+          className="basis-header flex-none flex-row items-center justify-center text-detail"
         >
           {'→'}
-        </button>
+        </Button>
       </div>
 
       <div className="grid grid-cols-7 border-b border-hairline w-full">
@@ -3352,7 +3337,7 @@ const Step2Date = ({
             !!bookedHoursMap[d] &&
             bookedHoursMap[d].size > 0;
           return (
-            <button
+            <Button
               type="button"
               key={i}
               disabled={!clickable}
@@ -3410,7 +3395,7 @@ const Step2Date = ({
                   {t('booking.fullDayLower')}
                 </span>
               )}
-            </button>
+            </Button>
           );
         })}
       </div>
@@ -3431,7 +3416,7 @@ const Step2Date = ({
           const booked = isHourBlocked(selectedDayBooked, h, rentalHours);
           const disabled = endsTooLate || pastHour || booked;
           return (
-            <button
+            <Button
               type="button"
               key={h}
               disabled={disabled}
@@ -3448,7 +3433,7 @@ const Step2Date = ({
               className={`${on ? 'dark bg-background text-foreground' : disabled ? 'bg-muted text-muted-foreground' : 'bg-background text-foreground hover:bg-edo-gray-100'} border-0 ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'} flex items-center justify-center font-mono text-caption tracking-caption min-w-0 py-3 sm:py-0 sm:aspect-arrival transition-colors duration-100${booked ? ' line-through' : ''}`}
             >
               {String(h).padStart(2, '0')}:00
-            </button>
+            </Button>
           );
         })}
       </div>
@@ -3481,10 +3466,13 @@ const BentoSlotTile = ({
 }: AnyProps) => {
   const t = useT();
   return (
-    <button
+    <Button
       type="button"
       onClick={onClick}
-      className={`group edo-focus-ring ${on ? 'dark bg-background' : 'bg-background hover:bg-muted'} text-foreground border-0 px-cell py-4 text-left cursor-pointer font-inherit flex flex-col gap-1.5 transition-all duration-150 min-w-0 min-h-44`}
+      variant="cell"
+      size="cell"
+      aria-pressed={!!on}
+      className={cn('group min-h-44 min-w-0 gap-1.5', on && 'dark bg-background')}
     >
       <div className="flex justify-between items-start">
         <span
@@ -3533,7 +3521,7 @@ const BentoSlotTile = ({
         </span>
         <span className="text-cell font-medium tabular-nums">{price}</span>
       </div>
-    </button>
+    </Button>
   );
 };
 
@@ -3942,15 +3930,15 @@ const Step6Postprod = ({
 };
 
 const ARTICLE_TYPES: AnyProps[] = [
-  { k: 'pap', fr: 'Prêt-à-porter', en: 'Ready-to-wear' },
-  { k: 'maroquinerie', fr: 'Maroquinerie', en: 'Leather goods' },
-  { k: 'chaussures', fr: 'Chaussures', en: 'Shoes' },
-  { k: 'accessoires', fr: 'Accessoires', en: 'Accessories' },
-  { k: 'eyewear', fr: 'Eyewear', en: 'Eyewear' },
-  { k: 'bijoux', fr: 'Bijoux', en: 'Jewelry' },
-  { k: 'cosmetique', fr: 'Cosmétique', en: 'Cosmetics' },
-  { k: 'food', fr: 'Food & spiritueux', en: 'Food & spirits' },
-  { k: 'autre', fr: 'Autre', en: 'Other' },
+  { k: 'pap', label: 'booking.readyToWear' },
+  { k: 'maroquinerie', label: 'booking.leatherGoods' },
+  { k: 'chaussures', label: 'booking.shoes' },
+  { k: 'accessoires', label: 'booking.accessories' },
+  { k: 'eyewear', label: 'booking.eyewear2' },
+  { k: 'bijoux', label: 'booking.jewelry' },
+  { k: 'cosmetique', label: 'booking.cosmetics' },
+  { k: 'food', label: 'booking.foodSpirits2' },
+  { k: 'autre', label: 'booking.other' },
 ];
 
 // Cellule de formulaire du tunnel : le libellé coiffe le champ à l'intérieur
@@ -4111,11 +4099,16 @@ const Step7Contact = ({
                 {ARTICLE_TYPES.map((t) => {
                   const on = (contact.typesArticles || []).includes(t.k);
                   return (
-                    <button
+                    <Button
                       type="button"
                       key={t.k}
                       onClick={() => toggleType(t.k)}
-                      className={`${on ? 'dark bg-background text-foreground border-foreground' : 'bg-transparent text-foreground border-border'} border px-2 py-1 font-inherit text-caption cursor-pointer tracking-copy-tight inline-flex items-center justify-start gap-1 whitespace-nowrap min-w-0`}
+                      variant="outline"
+                      aria-pressed={on}
+                      className={cn(
+                        'h-auto min-w-0 justify-start gap-1 px-2 py-1 text-caption normal-case tracking-copy-tight',
+                        on && 'dark border-foreground bg-background',
+                      )}
                     >
                       <span
                         className={`w-2 h-2 border ${on ? 'border-white bg-primary' : 'border-muted-foreground bg-transparent'} inline-flex items-center justify-center shrink-0`}
@@ -4125,7 +4118,7 @@ const Step7Contact = ({
                       <span className="overflow-hidden text-ellipsis">
                         {t[lang]}
                       </span>
-                    </button>
+                    </Button>
                   );
                 })}
               </div>
