@@ -29,7 +29,9 @@ export interface ConfirmationSnapshot {
   isCyclo: boolean;
 }
 
-export function saveConfirmation(snapshot: Omit<ConfirmationSnapshot, 'v' | 'ts'>): void {
+export function saveConfirmation(
+  snapshot: Omit<ConfirmationSnapshot, 'v' | 'ts'>,
+): void {
   try {
     const payload: ConfirmationSnapshot = { v: 3, ts: Date.now(), ...snapshot };
     sessionStorage.setItem(KEY, JSON.stringify(payload));
@@ -41,7 +43,10 @@ export function loadConfirmation(): ConfirmationSnapshot | null {
     const raw = sessionStorage.getItem(KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as ConfirmationSnapshot;
-    if (parsed.v !== 3) { sessionStorage.removeItem(KEY); return null; }
+    if (parsed.v !== 3) {
+      sessionStorage.removeItem(KEY);
+      return null;
+    }
     return parsed;
   } catch {
     return null;
@@ -49,5 +54,7 @@ export function loadConfirmation(): ConfirmationSnapshot | null {
 }
 
 export function clearConfirmation(): void {
-  try { sessionStorage.removeItem(KEY); } catch {}
+  try {
+    sessionStorage.removeItem(KEY);
+  } catch {}
 }

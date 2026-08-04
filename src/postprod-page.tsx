@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { BottomSheet } from './ui/bottom-sheet';
 import { Button } from './ui/button';
@@ -8,9 +8,8 @@ import { HoverMarquee } from './ui/hover-marquee';
 import { IconArrowRight, IconSelector } from './ui/icons';
 import { PageHeader, buildMainNav } from './ui/page-header';
 import { ResponsiveImage } from './ui/responsive-image';
-import { buildPostProdServiceSchema, buildBreadcrumbSchema } from './lib/structured-data';
 import { useLoaderData } from '@tanstack/react-router';
-import type { PPCat as StrapiPPCat, PPSample, SeoMeta } from './lib/strapi';
+import type { PPCat as StrapiPPCat, PPSample } from './lib/strapi';
 import type { Bilingual } from './types';
 import { usePageContext } from './lib/page-context';
 import { common, postprod as postprodMsg } from './i18n/messages';
@@ -42,7 +41,6 @@ interface PPCat {
   featured?: boolean;
 }
 
-
 interface PaletteColors {
   bg: string;
   a: string;
@@ -50,24 +48,36 @@ interface PaletteColors {
 }
 
 const PALETTES: Record<string, PaletteColors> = {
-  'mono-a':{bg:'#f0f0f0',a:'#141414',b:'#bfbfbf'},'mono-b':{bg:'#e8e8e8',a:'#2a2a2a',b:'#a8a8a8'},
-  'mono-c':{bg:'#dcdcdc',a:'#1a1a1a',b:'#8e8e8e'},'mono-d':{bg:'#f5f5f5',a:'#141414',b:'#c8c8c8'},
-  'mono-e':{bg:'#c8c8c8',a:'#1a1a1a',b:'#7a7a7a'},
-  'warm-a':{bg:'#e8dfcf',a:'#2a241c',b:'#b8ad94'},'warm-b':{bg:'#d9ccb0',a:'#3a2f20',b:'#a89674'},
-  'warm-c':{bg:'#f0e7d4',a:'#2a241c',b:'#c4b694'},'warm-d':{bg:'#ddcfad',a:'#1f1a12',b:'#9e8a63'},
-  'warm-e':{bg:'#cab995',a:'#1a1610',b:'#8e7a52'},
-  'dark-a':{bg:'#1a1a1a',a:'#f0f0f0',b:'#3a3a3a'},'dark-b':{bg:'#0f0f0f',a:'#e8e8e8',b:'#2a2a2a'},
-  'dark-c':{bg:'#141414',a:'#d8d8d8',b:'#333333'},'dark-d':{bg:'#1f1f1f',a:'#f0f0f0',b:'#404040'},
-  'dark-e':{bg:'#0a0a0a',a:'#d0d0d0',b:'#262626'},
-  'mono-v-a':{bg:'#d8d8d8',a:'#141414',b:'#8a8a8a'},'mono-v-b':{bg:'#ededed',a:'#2a2a2a',b:'#9e9e9e'},
-  'mono-v-c':{bg:'#c4c4c4',a:'#141414',b:'#7a7a7a'},'mono-v-d':{bg:'#e0e0e0',a:'#1a1a1a',b:'#9a9a9a'},
-  'mono-v-e':{bg:'#b8b8b8',a:'#141414',b:'#707070'},
-  'warm-v-a':{bg:'#e0d2b4',a:'#2a241c',b:'#a8976e'},'warm-v-b':{bg:'#cfbe9a',a:'#1f1a12',b:'#8e7a52'},
-  'warm-v-c':{bg:'#f2e7d0',a:'#2a241c',b:'#b8a47e'},'warm-v-d':{bg:'#d4c5a2',a:'#1f1a12',b:'#9e8a63'},
-  'warm-v-e':{bg:'#c4b089',a:'#1a1610',b:'#7e6a42'},
-  'dark-v-a':{bg:'#111111',a:'#e8e8e8',b:'#2e2e2e'},'dark-v-b':{bg:'#1c1c1c',a:'#f0f0f0',b:'#3e3e3e'},
-  'dark-v-c':{bg:'#0a0a0a',a:'#d0d0d0',b:'#262626'},'dark-v-d':{bg:'#181818',a:'#e0e0e0',b:'#363636'},
-  'dark-v-e':{bg:'#050505',a:'#c8c8c8',b:'#1e1e1e'},
+  'mono-a': { bg: '#f0f0f0', a: '#141414', b: '#bfbfbf' },
+  'mono-b': { bg: '#e8e8e8', a: '#2a2a2a', b: '#a8a8a8' },
+  'mono-c': { bg: '#dcdcdc', a: '#1a1a1a', b: '#8e8e8e' },
+  'mono-d': { bg: '#f5f5f5', a: '#141414', b: '#c8c8c8' },
+  'mono-e': { bg: '#c8c8c8', a: '#1a1a1a', b: '#7a7a7a' },
+  'warm-a': { bg: '#e8dfcf', a: '#2a241c', b: '#b8ad94' },
+  'warm-b': { bg: '#d9ccb0', a: '#3a2f20', b: '#a89674' },
+  'warm-c': { bg: '#f0e7d4', a: '#2a241c', b: '#c4b694' },
+  'warm-d': { bg: '#ddcfad', a: '#1f1a12', b: '#9e8a63' },
+  'warm-e': { bg: '#cab995', a: '#1a1610', b: '#8e7a52' },
+  'dark-a': { bg: '#1a1a1a', a: '#f0f0f0', b: '#3a3a3a' },
+  'dark-b': { bg: '#0f0f0f', a: '#e8e8e8', b: '#2a2a2a' },
+  'dark-c': { bg: '#141414', a: '#d8d8d8', b: '#333333' },
+  'dark-d': { bg: '#1f1f1f', a: '#f0f0f0', b: '#404040' },
+  'dark-e': { bg: '#0a0a0a', a: '#d0d0d0', b: '#262626' },
+  'mono-v-a': { bg: '#d8d8d8', a: '#141414', b: '#8a8a8a' },
+  'mono-v-b': { bg: '#ededed', a: '#2a2a2a', b: '#9e9e9e' },
+  'mono-v-c': { bg: '#c4c4c4', a: '#141414', b: '#7a7a7a' },
+  'mono-v-d': { bg: '#e0e0e0', a: '#1a1a1a', b: '#9a9a9a' },
+  'mono-v-e': { bg: '#b8b8b8', a: '#141414', b: '#707070' },
+  'warm-v-a': { bg: '#e0d2b4', a: '#2a241c', b: '#a8976e' },
+  'warm-v-b': { bg: '#cfbe9a', a: '#1f1a12', b: '#8e7a52' },
+  'warm-v-c': { bg: '#f2e7d0', a: '#2a241c', b: '#b8a47e' },
+  'warm-v-d': { bg: '#d4c5a2', a: '#1f1a12', b: '#9e8a63' },
+  'warm-v-e': { bg: '#c4b089', a: '#1a1610', b: '#7e6a42' },
+  'dark-v-a': { bg: '#111111', a: '#e8e8e8', b: '#2e2e2e' },
+  'dark-v-b': { bg: '#1c1c1c', a: '#f0f0f0', b: '#3e3e3e' },
+  'dark-v-c': { bg: '#0a0a0a', a: '#d0d0d0', b: '#262626' },
+  'dark-v-d': { bg: '#181818', a: '#e0e0e0', b: '#363636' },
+  'dark-v-e': { bg: '#050505', a: '#c8c8c8', b: '#1e1e1e' },
 };
 
 interface SampleImageProps {
@@ -76,7 +86,15 @@ interface SampleImageProps {
   medium: string;
 }
 
-const SampleVideo = ({ src, mime, label }: { src: string; mime: string; label?: string }) => {
+const SampleVideo = ({
+  src,
+  mime,
+  label,
+}: {
+  src: string;
+  mime: string;
+  label?: string;
+}) => {
   const ref = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     const el = ref.current;
@@ -113,7 +131,13 @@ const SampleVideo = ({ src, mime, label }: { src: string; mime: string; label?: 
 
 const SampleImage = ({ sample, label, medium }: SampleImageProps) => {
   if (sample.kind === 'video') {
-    return <SampleVideo src={sample.url} mime={sample.mime} label={sample.alt || label} />;
+    return (
+      <SampleVideo
+        src={sample.url}
+        mime={sample.mime}
+        label={sample.alt || label}
+      />
+    );
   }
   if (sample.kind === 'image') {
     return (
@@ -134,29 +158,75 @@ const SampleImage = ({ sample, label, medium }: SampleImageProps) => {
   }
   const seed = sample.seed;
   const p = PALETTES[seed] || PALETTES['mono-a'];
-  const hash = [...seed].reduce((a,c)=>a+c.charCodeAt(0),0) % 5;
+  const hash = [...seed].reduce((a, c) => a + c.charCodeAt(0), 0) % 5;
   return (
-    <div className="relative w-full h-full overflow-hidden" style={{background: p.bg}}>
-      <svg viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice" className="absolute inset-0 w-full h-full">
-        {hash===0 && (<><rect x="60" y="80" width="180" height="260" fill={p.b}/><ellipse cx="150" cy="200" rx="70" ry="110" fill={p.a}/></>)}
-        {hash===1 && (<><rect x="0" y="240" width="300" height="160" fill={p.b}/><rect x="95" y="100" width="110" height="220" fill={p.a}/></>)}
-        {hash===2 && (<><circle cx="150" cy="240" r="140" fill={p.b}/><rect x="130" y="60" width="40" height="220" fill={p.a}/></>)}
-        {hash===3 && (<><path d="M 0 400 Q 150 160 300 400 Z" fill={p.b}/><circle cx="150" cy="150" r="55" fill={p.a}/></>)}
-        {hash===4 && (<><ellipse cx="150" cy="220" rx="100" ry="150" fill={p.b}/><ellipse cx="150" cy="220" rx="55" ry="90" fill={p.a}/></>)}
+    <div
+      className="relative w-full h-full overflow-hidden"
+      style={{ background: p.bg }}
+    >
+      <svg
+        viewBox="0 0 300 400"
+        preserveAspectRatio="xMidYMid slice"
+        className="absolute inset-0 w-full h-full"
+      >
+        {hash === 0 && (
+          <>
+            <rect x="60" y="80" width="180" height="260" fill={p.b} />
+            <ellipse cx="150" cy="200" rx="70" ry="110" fill={p.a} />
+          </>
+        )}
+        {hash === 1 && (
+          <>
+            <rect x="0" y="240" width="300" height="160" fill={p.b} />
+            <rect x="95" y="100" width="110" height="220" fill={p.a} />
+          </>
+        )}
+        {hash === 2 && (
+          <>
+            <circle cx="150" cy="240" r="140" fill={p.b} />
+            <rect x="130" y="60" width="40" height="220" fill={p.a} />
+          </>
+        )}
+        {hash === 3 && (
+          <>
+            <path d="M 0 400 Q 150 160 300 400 Z" fill={p.b} />
+            <circle cx="150" cy="150" r="55" fill={p.a} />
+          </>
+        )}
+        {hash === 4 && (
+          <>
+            <ellipse cx="150" cy="220" rx="100" ry="150" fill={p.b} />
+            <ellipse cx="150" cy="220" rx="55" ry="90" fill={p.a} />
+          </>
+        )}
       </svg>
-      <div className="absolute inset-0 pointer-events-none bg-postprod-pattern"/>
-      {medium==='video' && (
+      <div className="absolute inset-0 pointer-events-none bg-postprod-pattern" />
+      {medium === 'video' && (
         <div className="absolute top-2 right-2 bg-black/55 text-white font-mono text-micro tracking-meta px-1.5 py-0.5 flex items-center gap-1">
-          <span className="inline-block w-0 h-0 border-l-4 border-l-white border-t-3 border-t-transparent border-b-3 border-b-transparent"/>
+          <span className="inline-block w-0 h-0 border-l-4 border-l-white border-t-3 border-t-transparent border-b-3 border-b-transparent" />
           VIDEO
         </div>
       )}
-      {label && <span className="absolute bottom-1.5 left-2 font-mono text-micro tracking-ui uppercase opacity-55" style={{color: p.a}}>{label}</span>}
+      {label && (
+        <span
+          className="absolute bottom-1.5 left-2 font-mono text-micro tracking-ui uppercase opacity-55"
+          style={{ color: p.a }}
+        >
+          {label}
+        </span>
+      )}
     </div>
   );
 };
 
-const SAMPLE_CYCLE = ['warm-a','warm-b','warm-c','warm-d','warm-e','warm-b'];
+const SAMPLE_CYCLE = [
+  'warm-a',
+  'warm-b',
+  'warm-c',
+  'warm-d',
+  'warm-e',
+  'warm-b',
+];
 
 // Real media items from Strapi (when present) come first; the remaining
 // slots fall back to the palette cycle so the grid stays visually full
@@ -166,13 +236,17 @@ function fillSamples(samples: PPSample[]): SampleSlot[] {
   for (let i = 0; i < 6; i++) {
     const s = samples[i];
     if (s) out.push(s);
-    else out.push({ kind: 'placeholder', seed: SAMPLE_CYCLE[i % SAMPLE_CYCLE.length] });
+    else
+      out.push({
+        kind: 'placeholder',
+        seed: SAMPLE_CYCLE[i % SAMPLE_CYCLE.length],
+      });
   }
   return out;
 }
 
 function adaptStrapiCats(strapi: StrapiPPCat[]): PPCat[] {
-  return strapi.map(c => ({
+  return strapi.map((c) => ({
     k: c.k,
     medium: c.medium,
     fr: c.fr,
@@ -190,8 +264,13 @@ function adaptStrapiCats(strapi: StrapiPPCat[]): PPCat[] {
 const PostprodPage = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
   const { postProdTypes } = useLoaderData({ from: '/$lang/post-production' });
-  const cats: PPCat[] = postProdTypes ? adaptStrapiCats(postProdTypes) : [];
-  const strapiCats: StrapiPPCat[] = postProdTypes ?? [];
+  // `adaptStrapiCats` reconstruit tout le tableau (et six échantillons par
+  // catégorie) à chaque rendu. Sans mémo, son identité change à chaque passe et
+  // sert de dépendance à l'effet ci-dessous.
+  const cats: PPCat[] = useMemo(
+    () => (postProdTypes ? adaptStrapiCats(postProdTypes) : []),
+    [postProdTypes],
+  );
 
   const { type = '' } = useSearch({ from: '/$lang/post-production' });
   const navigate = useNavigate();
@@ -201,16 +280,16 @@ const PostprodPage = () => {
   // Auto-select the first available cat when the URL param is missing OR points
   // to a slug that no longer exists in Strapi. The auto-selection must NOT
   // pollute the URL — fall back silently to "no param" (the default state).
-  const hasValidType = !!type && cats.some(c => c.k === type);
+  const hasValidType = !!type && cats.some((c) => c.k === type);
+  // Dépend de `hasValidType`, pas de `cats` : un booléen stable plutôt qu'un
+  // tableau réalloué. L'ancienne version relançait la navigation à chaque rendu,
+  // et son `eslint-disable` visait une règle qui n'est pas installée.
   useEffect(() => {
-    if (type && cats.length > 0 && !cats.some(c => c.k === type)) {
-      setFilters(null);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [type, cats]);
+    if (type && cats.length > 0 && !hasValidType) setFilters(null);
+  }, [type, hasValidType, cats.length]);
 
   const k = hasValidType ? type : (cats[0]?.k ?? '');
-  const cat = cats.find(c => c.k === k) || cats[0];
+  const cat = cats.find((c) => c.k === k) || cats[0];
 
   const defaultK = cats[0]?.k;
   const setType = (next: string) => {
@@ -222,17 +301,13 @@ const PostprodPage = () => {
     setNavSheetOpen(false);
     if (nextK !== k) setType(nextK);
   };
-  const currentIndex = Math.max(0, cats.findIndex(c => c.k === k));
+  const currentIndex = Math.max(
+    0,
+    cats.findIndex((c) => c.k === k),
+  );
   const currentNumber = String(currentIndex + 1).padStart(2, '0');
 
-  const postprodLabel = lang === 'fr' ? 'Post-production' : 'Post-production';
-  const breadcrumbBase: { name: string; pathname: string }[] = [
-    { name: lang === 'fr' ? 'Accueil' : 'Home', pathname: '' },
-    { name: postprodLabel, pathname: '/post-production' },
-  ];
-  const breadcrumbItems = cat && hasValidType
-    ? [...breadcrumbBase, { name: cat[lang], pathname: `/post-production?type=${cat.k}` }]
-    : breadcrumbBase;
+  const postprodLabel = 'Post-production';
   const dark = !!cat?.featured;
   const bgCls = dark ? 'bg-foreground' : 'bg-white';
   const fgCls = dark ? 'text-white' : 'text-foreground';
@@ -248,8 +323,15 @@ const PostprodPage = () => {
         <EmptyState
           size="page"
           label="Post-production"
-          description={lang === 'fr' ? 'Aucune catégorie configurée. Renseignez vos types de post-production dans Strapi.' : 'No categories configured. Add post-production types in Strapi.'}
-          action={{ label: lang === 'fr' ? 'Retour accueil' : 'Back home', onClick: () => goto('home') }}
+          description={
+            lang === 'fr'
+              ? 'Aucune catégorie configurée. Renseignez vos types de post-production dans Strapi.'
+              : 'No categories configured. Add post-production types in Strapi.'
+          }
+          action={{
+            label: lang === 'fr' ? 'Retour accueil' : 'Back home',
+            onClick: () => goto('home'),
+          }}
         />
       </>
     );
@@ -258,7 +340,6 @@ const PostprodPage = () => {
   return (
     /* Mobile: single-column scrollable. Desktop (md+): sidebar + workspace */
     <main className="edo-page-enter grid w-full grid-cols-[minmax(0,1fr)] edo-hairline md:h-full md:grid-cols-plateau md:grid-rows-app md:overflow-hidden">
-
       {/* Single, stable page h1 — data-independent so it's present at every
           breakpoint and before Strapi resolves. The selected category is an h2. */}
       <h1 className="sr-only">{postprodLabel}</h1>
@@ -268,8 +349,8 @@ const PostprodPage = () => {
         title="Post-production"
         className="col-span-full h-14 md:col-span-full md:row-start-1 md:h-full"
         onMenuClick={openMenu}
-        onLogoClick={()=>goto('home')}
-        onLangToggle={()=>setLang(lang==='fr'?'en':'fr')}
+        onLogoClick={() => goto('home')}
+        onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
         actions={buildMainNav({ lang, goto, exclude: 'postprod' })}
       />
 
@@ -297,7 +378,11 @@ const PostprodPage = () => {
             {cat.tagline[lang]}
           </HoverMarquee>
         </span>
-        <IconSelector width="16" height="16" className="shrink-0 text-foreground" />
+        <IconSelector
+          width="16"
+          height="16"
+          className="shrink-0 text-foreground"
+        />
       </button>
 
       <BottomSheet
@@ -322,7 +407,9 @@ const PostprodPage = () => {
                     'w-full flex items-center gap-4 min-h-14 px-4 py-3',
                     'border-b border-border text-left',
                     'edo-focus-ring cursor-pointer transition-colors duration-150 ease-edo-out',
-                    active ? 'bg-foreground text-background' : 'bg-white text-foreground',
+                    active
+                      ? 'bg-foreground text-background'
+                      : 'bg-white text-foreground',
                   )}
                 >
                   <span
@@ -356,16 +443,29 @@ const PostprodPage = () => {
 
       {/* Desktop sidebar — vertical list, hidden on mobile (mobile uses the inline nav above) */}
       <aside className="hidden bg-white md:col-start-1 md:row-start-2 md:flex md:flex-col md:overflow-x-hidden md:overflow-y-auto">
-        {cats.map((c,idx)=>{
-          const active = k===c.k;
-          const isLast = idx===cats.length-1;
+        {cats.map((c, idx) => {
+          const active = k === c.k;
+          const isLast = idx === cats.length - 1;
           return (
-            <button key={c.k} onClick={()=>setType(c.k)}
-              className={`edo-focus-ring flex-none border-0 ${active?'bg-muted border-l-2 border-l-primary':'bg-white border-l-2 border-l-transparent'} ${idx>0?'border-t border-t-border':''} ${isLast?'border-b border-b-border':''} py-3 px-4 cursor-pointer text-left flex flex-col gap-1 transition-all duration-150 min-h-18`}>
-              <span className={`font-mono text-micro tracking-label ${active?'text-primary':'text-muted-foreground'}`}>{String(idx+1).padStart(2,'0')}</span>
-              <span className={`text-detail ${active?'font-medium':'font-normal'} tracking-copy-tight text-foreground leading-snug whitespace-nowrap overflow-hidden text-ellipsis`}>{c[lang]}</span>
+            <button
+              key={c.k}
+              onClick={() => setType(c.k)}
+              className={`edo-focus-ring flex-none border-0 ${active ? 'bg-muted border-l-2 border-l-primary' : 'bg-white border-l-2 border-l-transparent'} ${idx > 0 ? 'border-t border-t-border' : ''} ${isLast ? 'border-b border-b-border' : ''} py-3 px-4 cursor-pointer text-left flex flex-col gap-1 transition-all duration-150 min-h-18`}
+            >
+              <span
+                className={`font-mono text-micro tracking-label ${active ? 'text-primary' : 'text-muted-foreground'}`}
+              >
+                {String(idx + 1).padStart(2, '0')}
+              </span>
+              <span
+                className={`text-detail ${active ? 'font-medium' : 'font-normal'} tracking-copy-tight text-foreground leading-snug whitespace-nowrap overflow-hidden text-ellipsis`}
+              >
+                {c[lang]}
+              </span>
               <span className="font-mono text-micro text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis mt-auto">
-                {c.price?.kind==='quote' ? common.onRequest[lang] : `${c.price.from?(postprodMsg.from[lang] + ' '):''}${c.price.amount}${c.price.unit?.[lang] ?? ''}`}
+                {c.price?.kind === 'quote'
+                  ? common.onRequest[lang]
+                  : `${c.price.from ? postprodMsg.from[lang] + ' ' : ''}${c.price.amount}${c.price.unit?.[lang] ?? ''}`}
               </span>
             </button>
           );
@@ -386,11 +486,14 @@ const PostprodPage = () => {
       <h2 className="sr-only md:hidden">{cat[lang]}</h2>
 
       {/* Description + pricing panel */}
-      <div className={`${bgCls} ${fgCls} py-8 px-6 md:px-9 flex flex-col justify-between gap-6 md:col-start-2 md:row-start-2 md:overflow-y-auto md:min-h-0`}>
+      <div
+        className={`${bgCls} ${fgCls} py-8 px-6 md:px-9 flex flex-col justify-between gap-6 md:col-start-2 md:row-start-2 md:overflow-y-auto md:min-h-0`}
+      >
         <div className="flex flex-col gap-5">
           <div className="flex items-center gap-2.5 flex-wrap">
             <span className="font-mono text-label tracking-label text-primary">
-              {String(cats.findIndex(x=>x.k===k)+1).padStart(2,'0')} · {postprodMsg.category[lang]}
+              {String(cats.findIndex((x) => x.k === k) + 1).padStart(2, '0')} ·{' '}
+              {postprodMsg.category[lang]}
             </span>
             {cat.featured && (
               <span className="font-mono text-micro tracking-label uppercase bg-primary text-white px-2 py-0.5">
@@ -398,12 +501,17 @@ const PostprodPage = () => {
               </span>
             )}
           </div>
-          <h2 className={`hidden md:block m-0 text-hero font-light tracking-display leading-none ${fgCls}`}>
+          <h2
+            className={`hidden md:block m-0 text-hero font-light tracking-display leading-none ${fgCls}`}
+          >
             {cat[lang]}
           </h2>
           <ul className="mt-2 p-0 list-none flex flex-col gap-1.5">
-            {cat.features[lang].map(f=>(
-              <li key={f} className={`text-detail flex gap-2 items-start leading-snug ${fgCls}`}>
+            {cat.features[lang].map((f) => (
+              <li
+                key={f}
+                className={`text-detail flex gap-2 items-start leading-snug ${fgCls}`}
+              >
                 <span className="text-primary font-mono shrink-0">+</span>
                 <span className="min-w-0">{f}</span>
               </li>
@@ -414,22 +522,39 @@ const PostprodPage = () => {
         <div className={`flex flex-col gap-3 pt-4 border-t ${lineCls}`}>
           {cat.price && (
             <div className="flex items-baseline gap-2.5 flex-wrap">
-              {cat.price.kind==='quote' ? (
-                <span className={`text-page-title font-light tracking-headline leading-none ${fgCls}`}>
+              {cat.price.kind === 'quote' ? (
+                <span
+                  className={`text-page-title font-light tracking-headline leading-none ${fgCls}`}
+                >
                   {common.onRequest[lang]}
                 </span>
               ) : (
                 <>
-                  {cat.price.from && <span className={`font-mono text-label tracking-label uppercase ${mutedCls}`}>{postprodMsg.from[lang]}</span>}
-                  <span className={`text-hero font-light tracking-headline leading-none ${fgCls}`}>{cat.price.amount}</span>
-                  <span className={`text-detail opacity-65 ${fgCls}`}>{cat.price.unit?.[lang] ?? ''}</span>
+                  {cat.price.from && (
+                    <span
+                      className={`font-mono text-label tracking-label uppercase ${mutedCls}`}
+                    >
+                      {postprodMsg.from[lang]}
+                    </span>
+                  )}
+                  <span
+                    className={`text-hero font-light tracking-headline leading-none ${fgCls}`}
+                  >
+                    {cat.price.amount}
+                  </span>
+                  <span className={`text-detail opacity-65 ${fgCls}`}>
+                    {cat.price.unit?.[lang] ?? ''}
+                  </span>
                 </>
               )}
             </div>
           )}
-          <Button onClick={()=>goto('contact')} className="w-full justify-between py-3.5 px-5 mt-2">
+          <Button
+            onClick={() => goto('contact')}
+            className="w-full justify-between py-3.5 px-5 mt-2"
+          >
             {postprodMsg.requestQuote[lang]}
-            <IconArrowRight width="16" height="16"/>
+            <IconArrowRight width="16" height="16" />
           </Button>
         </div>
       </div>
@@ -448,7 +573,10 @@ const PostprodPage = () => {
           >
             <SampleImage
               sample={sample}
-              label={cat.brands?.[i] || `${cat.k.toUpperCase()} · ${String(i + 1).padStart(2, '0')}`}
+              label={
+                cat.brands?.[i] ||
+                `${cat.k.toUpperCase()} · ${String(i + 1).padStart(2, '0')}`
+              }
               medium={cat.medium}
             />
           </div>

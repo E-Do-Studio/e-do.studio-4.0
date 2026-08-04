@@ -6,7 +6,12 @@ import { buildSeoHead } from '../../../lib/seo-head';
 
 export const Route = createFileRoute('/$lang/book/manual')({
   head: ({ params }) =>
-    buildSeoHead({ metaKey: 'book', lang: params.lang as Lang, pathname: '/book/manual', noIndex: true }),
+    buildSeoHead({
+      metaKey: 'book',
+      lang: params.lang as Lang,
+      pathname: '/book/manual',
+      noIndex: true,
+    }),
   validateSearch: manualStepSearch,
   component: ManualBook,
 });

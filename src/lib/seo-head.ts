@@ -24,8 +24,12 @@ function stripContext(node: JsonLdNode): JsonLdNode {
   return copy;
 }
 
-function serializeJsonLd(nodes: (JsonLdNode | null | undefined | false)[]): string | null {
-  const items = nodes.filter((n): n is JsonLdNode => !!n && typeof n === 'object');
+export function serializeJsonLd(
+  nodes: (JsonLdNode | null | undefined | false)[],
+): string | null {
+  const items = nodes.filter(
+    (n): n is JsonLdNode => !!n && typeof n === 'object',
+  );
   if (items.length === 0) return null;
   // Plusieurs schémas sont regroupés dans un @graph unique pour que les moteurs
   // les lisent comme un ensemble partageant le même @context.
@@ -39,10 +43,14 @@ function serializeJsonLd(nodes: (JsonLdNode | null | undefined | false)[]): stri
 /** Paire d'URLs FR/EN d'une route, pour les alternates hreflang. */
 function hreflangPair(metaKey: string, pathname: string) {
   const pair = PRERENDER_ROUTE_PAIRS.find((p) => p.metaKey === metaKey);
-  if (pair) return { fr: `${SITE_ORIGIN}${pair.fr}`, en: `${SITE_ORIGIN}${pair.en}` };
+  if (pair)
+    return { fr: `${SITE_ORIGIN}${pair.fr}`, en: `${SITE_ORIGIN}${pair.en}` };
   // Routes hors du catalogue (articles Discovery, étapes de réservation) : le
   // chemin est identique dans les deux langues, seul le préfixe change.
-  return { fr: `${SITE_ORIGIN}/fr${pathname}`, en: `${SITE_ORIGIN}/en${pathname}` };
+  return {
+    fr: `${SITE_ORIGIN}/fr${pathname}`,
+    en: `${SITE_ORIGIN}/en${pathname}`,
+  };
 }
 
 /**
@@ -59,18 +67,25 @@ export function buildSeoHead(input: SeoHeadInput) {
   const { metaKey, lang, pathname, imageUrl, noIndex, jsonLd = [] } = input;
   const pageMeta = META[metaKey]?.[lang];
   const title = input.title || pageMeta?.title || META.home[lang].title;
-  const description = input.description || pageMeta?.description || META.home[lang].description;
+  const description =
+    input.description || pageMeta?.description || META.home[lang].description;
   const url = `${SITE_ORIGIN}/${lang}${pathname}`;
   const alt = hreflangPair(metaKey, pathname);
 
   const meta: Record<string, string>[] = [
     { title },
     { name: 'description', content: description },
-    { name: 'robots', content: noIndex ? 'noindex, nofollow' : 'index, follow' },
+    {
+      name: 'robots',
+      content: noIndex ? 'noindex, nofollow' : 'index, follow',
+    },
     { property: 'og:title', content: title },
     { property: 'og:description', content: description },
     { property: 'og:locale', content: lang === 'en' ? 'en_US' : 'fr_FR' },
-    { property: 'og:locale:alternate', content: lang === 'en' ? 'fr_FR' : 'en_US' },
+    {
+      property: 'og:locale:alternate',
+      content: lang === 'en' ? 'fr_FR' : 'en_US',
+    },
     { name: 'twitter:title', content: title },
     { name: 'twitter:description', content: description },
   ];

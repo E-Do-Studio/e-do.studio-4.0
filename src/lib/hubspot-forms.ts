@@ -14,14 +14,20 @@
 // be overridden per environment via the VITE_HUBSPOT_* vars. The forms are created
 // by `pnpm hubspot:setup`.
 
-const PORTAL_ID = (import.meta.env.VITE_HUBSPOT_PORTAL_ID || '146117396') as string;
+const PORTAL_ID = (import.meta.env.VITE_HUBSPOT_PORTAL_ID ||
+  '146117396') as string;
 
-export const HUBSPOT_BOOKING_FORM_ID = (import.meta.env.VITE_HUBSPOT_BOOKING_FORM_ID ||
+export const HUBSPOT_BOOKING_FORM_ID = (import.meta.env
+  .VITE_HUBSPOT_BOOKING_FORM_ID ||
   'ca405450-abdb-46ae-aca5-2224e26c48bb') as string;
-export const HUBSPOT_CONTACT_FORM_ID = (import.meta.env.VITE_HUBSPOT_CONTACT_FORM_ID ||
+export const HUBSPOT_CONTACT_FORM_ID = (import.meta.env
+  .VITE_HUBSPOT_CONTACT_FORM_ID ||
   '695867a8-e14f-42d4-90c5-c2f0d3ccd275') as string;
 
-export type HubspotFields = Record<string, string | number | boolean | null | undefined>;
+export type HubspotFields = Record<
+  string,
+  string | number | boolean | null | undefined
+>;
 
 function readHubspotUtk(): string | undefined {
   if (typeof document === 'undefined') return undefined;

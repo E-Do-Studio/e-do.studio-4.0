@@ -10,7 +10,6 @@ import { ResponsiveImage } from './ui/responsive-image';
 import { CellLabel } from './ui/typography';
 import { cn } from './ui/cn';
 import { VideoLoop } from './ui/video-loop';
-import { buildPlateauServiceSchema, buildBreadcrumbSchema } from './lib/structured-data';
 import { usePageContext } from './lib/page-context';
 import type { PlateauSpec } from './lib/strapi';
 import { common, plateau as plateauMsg } from './i18n/messages';
@@ -37,7 +36,15 @@ interface CoverCarouselProps {
 // natural dims are unknown. Controls are frosted-glass squares fading in on
 // hover (always visible on touch).
 const COVER_ASPECT_THRESHOLD = 1.3;
-const Cover = ({ items, lang, plateauName, index, onPrev, onNext, className }: CoverCarouselProps) => {
+const Cover = ({
+  items,
+  lang,
+  plateauName,
+  index,
+  onPrev,
+  onNext,
+  className,
+}: CoverCarouselProps) => {
   const [paused, setPaused] = useState(false);
   useEffect(() => {
     setPaused(false);
@@ -47,15 +54,21 @@ const Cover = ({ items, lang, plateauName, index, onPrev, onNext, className }: C
   const item = items[index];
   const hasMultiple = items.length > 1;
   const total = items.length;
-  const imageAspect = item.width && item.height ? item.width / item.height : null;
+  const imageAspect =
+    item.width && item.height ? item.width / item.height : null;
   const fit: 'cover' | 'contain' =
-    imageAspect != null && imageAspect < COVER_ASPECT_THRESHOLD ? 'contain' : 'cover';
+    imageAspect != null && imageAspect < COVER_ASPECT_THRESHOLD
+      ? 'contain'
+      : 'cover';
   const ctrlBtn =
     'edo-focus-ring absolute z-10 flex h-9 w-9 items-center justify-center cursor-pointer bg-black/35 backdrop-blur-md border border-white/20 text-white transition-[opacity,transform,background-color] duration-150 ease-edo-out hover:bg-black/50 active:scale-[0.96] opacity-100 md:opacity-0 md:scale-95 md:group-hover:opacity-100 md:group-hover:scale-100 md:group-focus-within:opacity-100 md:group-focus-within:scale-100';
 
   return (
     <div
-      className={cn('group relative overflow-hidden bg-white aspect-[4/3] md:aspect-auto md:min-h-0', className)}
+      className={cn(
+        'group relative overflow-hidden bg-white aspect-[4/3] md:aspect-auto md:min-h-0',
+        className,
+      )}
       role={hasMultiple ? 'group' : undefined}
       aria-roledescription={hasMultiple ? 'carousel' : undefined}
       aria-label={hasMultiple ? common.imageCarousel[lang] : undefined}
@@ -91,7 +104,11 @@ const Cover = ({ items, lang, plateauName, index, onPrev, onNext, className }: C
           aria-pressed={paused}
           className={cn(ctrlBtn, 'bottom-3 right-3')}
         >
-          {paused ? <Play size={16} strokeWidth={1.5} /> : <Pause size={16} strokeWidth={1.5} />}
+          {paused ? (
+            <Play size={16} strokeWidth={1.5} />
+          ) : (
+            <Pause size={16} strokeWidth={1.5} />
+          )}
         </button>
       )}
 
@@ -120,7 +137,14 @@ interface ThumbStripProps {
 // strip width, so the full set is visible at once with no scroll and no arrows.
 // Clicking a tile sets it as the cover. Inactive tiles are dimmed; the active
 // tile is shown at full opacity.
-const ThumbStrip = ({ items, lang, plateauName, activeIndex, onSelect, className }: ThumbStripProps) => {
+const ThumbStrip = ({
+  items,
+  lang,
+  plateauName,
+  activeIndex,
+  onSelect,
+  className,
+}: ThumbStripProps) => {
   if (items.length === 0) return null;
   // Tiles touch — `edo-hairline` forces `gap: 0` on the strip, and each tile's
   // 1.5px right-border serves as the visible separator. The bases must sum to
@@ -180,20 +204,18 @@ interface PlateauPageProps {
 
 const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
   const { lang, setLang, openMenu, goto } = usePageContext();
-  const metaKey = slug === 'cyclorama' ? 'cyclorama' : `plateau-${slug}`;
-  const seoOverride = plateaux?.[slug]?.seo?.[lang];
-  const pathname = slug === 'cyclorama' ? '/cyclorama' : `/plateau/${slug}`;
-  const plateauForSchema = plateaux?.[slug];
   const [activeIndex, setActiveIndex] = useState(0);
   const [navSheetOpen, setNavSheetOpen] = useState(false);
   if (!plateaux) return null;
   const p = plateaux[slug] || plateaux.cyclorama;
   if (!p) return null;
-  const order = ['live','eclipse','horizontal','vertical','cyclorama'];
+  const order = ['live', 'eclipse', 'horizontal', 'vertical', 'cyclorama'];
   const coverItems: MediaItem[] = p.media ?? [];
-  const safeIndex = coverItems.length === 0
-    ? 0
-    : ((activeIndex % coverItems.length) + coverItems.length) % coverItems.length;
+  const safeIndex =
+    coverItems.length === 0
+      ? 0
+      : ((activeIndex % coverItems.length) + coverItems.length) %
+        coverItems.length;
   const goPrev = () => setActiveIndex((i) => i - 1);
   const goNext = () => setActiveIndex((i) => i + 1);
 
@@ -209,20 +231,22 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
     setNavSheetOpen(false);
     goto(key === 'cyclorama' ? 'cyclorama' : `plateau-${key}`);
   };
-  const currentNumber = String(Math.max(0, order.indexOf(slug)) + 1).padStart(2, '0');
+  const currentNumber = String(Math.max(0, order.indexOf(slug)) + 1).padStart(
+    2,
+    '0',
+  );
 
   return (
     /* Mobile: single-column stacked, scrollable. Desktop (md+): 4-column bento */
     <main className="edo-page-enter grid w-full edo-hairline md:h-full md:grid-cols-plateau md:grid-rows-plateau md:overflow-hidden">
-
       {/* Unified header — compact right-aligned actions on all breakpoints */}
       <PageHeader
         lang={lang}
         title={common.stages[lang]}
         className="col-span-full h-14 md:col-span-full md:row-start-1 md:h-full"
         onMenuClick={openMenu}
-        onLogoClick={()=>goto('home')}
-        onLangToggle={()=>setLang(lang==='fr'?'en':'fr')}
+        onLogoClick={() => goto('home')}
+        onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
         actions={buildMainNav({ lang, goto, exclude: 'stages' })}
       />
 
@@ -252,7 +276,11 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
             <HoverMarquee className="font-mono text-label uppercase tracking-caption text-muted-foreground">
               {p.tagline[lang]}
             </HoverMarquee>
-            <IconSelector width="16" height="16" className="shrink-0 text-foreground" />
+            <IconSelector
+              width="16"
+              height="16"
+              className="shrink-0 text-foreground"
+            />
           </span>
         </button>
       </div>
@@ -281,7 +309,9 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
                     'w-full flex items-center gap-4 min-h-14 px-4 py-3',
                     'border-b border-border text-left',
                     'edo-focus-ring cursor-pointer transition-colors duration-150 ease-edo-out',
-                    active ? 'bg-foreground text-background' : 'bg-white text-foreground',
+                    active
+                      ? 'bg-foreground text-background'
+                      : 'bg-white text-foreground',
                   )}
                 >
                   <span
@@ -318,13 +348,28 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
           if (!cfg) return null;
           const active = m === slug;
           return (
-            <button key={m} onClick={()=>goto(m==='cyclorama'?'cyclorama':'plateau-'+m)}
+            <button
+              key={m}
+              onClick={() =>
+                goto(m === 'cyclorama' ? 'cyclorama' : 'plateau-' + m)
+              }
               className={`edo-focus-ring flex-none py-3.5 px-4 border-0 cursor-pointer text-left flex flex-col gap-1 transition-colors duration-150
                 md:border-b md:border-border
-                ${active ? 'bg-muted border-b-2 border-b-primary md:border-b-border md:border-l-2 md:border-l-primary' : 'bg-white border-b-2 border-b-transparent md:border-b-border md:border-l-2 md:border-l-transparent hover:bg-muted'}`}>
-              <span className={`font-mono text-label tracking-label ${active?'text-primary':'text-muted-foreground'}`}>{String(i+1).padStart(2,'0')}</span>
-              <span className={`text-cell tracking-copy-tight whitespace-nowrap ${active?'font-medium text-foreground':'font-normal text-muted-foreground'}`}>{cfg.name}</span>
-              <span className="font-mono text-micro tracking-ui uppercase text-muted-foreground hidden md:block">{cfg.tagline[lang]}</span>
+                ${active ? 'bg-muted border-b-2 border-b-primary md:border-b-border md:border-l-2 md:border-l-primary' : 'bg-white border-b-2 border-b-transparent md:border-b-border md:border-l-2 md:border-l-transparent hover:bg-muted'}`}
+            >
+              <span
+                className={`font-mono text-label tracking-label ${active ? 'text-primary' : 'text-muted-foreground'}`}
+              >
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <span
+                className={`text-cell tracking-copy-tight whitespace-nowrap ${active ? 'font-medium text-foreground' : 'font-normal text-muted-foreground'}`}
+              >
+                {cfg.name}
+              </span>
+              <span className="font-mono text-micro tracking-ui uppercase text-muted-foreground hidden md:block">
+                {cfg.tagline[lang]}
+              </span>
             </button>
           );
         })}
@@ -367,7 +412,9 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
       <h1 className="sr-only md:hidden">{p.name}</h1>
       <div className="hidden bg-white py-3.5 px-4 md:col-start-4 md:row-start-2 md:flex md:flex-col md:justify-between md:gap-1">
         <CellLabel>{p.tagline[lang]}</CellLabel>
-        <h1 className="text-tile-large font-light m-0 tracking-display leading-none">{p.name}</h1>
+        <h1 className="text-tile-large font-light m-0 tracking-display leading-none">
+          {p.name}
+        </h1>
       </div>
 
       {/* Specifications */}
@@ -375,9 +422,16 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
         <CellLabel>{plateauMsg.specs[lang]}</CellLabel>
         <div className="flex flex-col flex-1 min-h-0">
           {p.specs.map((s, i) => (
-            <div key={s.k.fr} className={`flex justify-between items-baseline gap-3 text-caption py-1 ${i < p.specs.length - 1 ? 'border-b border-border' : ''}`}>
-              <span className="text-muted-foreground shrink-0">{s.k[lang]}</span>
-              <span className="text-foreground font-mono tracking-caption text-label text-right whitespace-pre-line overflow-hidden line-clamp-2 leading-snug">{(s.v[lang]||'').split(' · ').join(' ')}</span>
+            <div
+              key={s.k.fr}
+              className={`flex justify-between items-baseline gap-3 text-caption py-1 ${i < p.specs.length - 1 ? 'border-b border-border' : ''}`}
+            >
+              <span className="text-muted-foreground shrink-0">
+                {s.k[lang]}
+              </span>
+              <span className="text-foreground font-mono tracking-caption text-label text-right whitespace-pre-line overflow-hidden line-clamp-2 leading-snug">
+                {(s.v[lang] || '').split(' · ').join(' ')}
+              </span>
             </div>
           ))}
         </div>
@@ -388,9 +442,14 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
         <CellLabel>{plateauMsg.rates[lang]}</CellLabel>
         <div className="flex flex-col flex-1 min-h-0">
           {p.rates.map((r, i) => (
-            <div key={r.k.fr} className={`flex justify-between items-baseline text-caption py-1 ${i < p.rates.length - 1 ? 'border-b border-border' : ''}`}>
+            <div
+              key={r.k.fr}
+              className={`flex justify-between items-baseline text-caption py-1 ${i < p.rates.length - 1 ? 'border-b border-border' : ''}`}
+            >
               <span className="text-muted-foreground">{r.k[lang]}</span>
-              <span className="text-foreground font-mono tracking-caption text-caption">{typeof r.v === 'string' ? r.v : r.v[lang]}</span>
+              <span className="text-foreground font-mono tracking-caption text-caption">
+                {typeof r.v === 'string' ? r.v : r.v[lang]}
+              </span>
             </div>
           ))}
         </div>
@@ -405,23 +464,43 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
       <div className="bg-white p-4 flex justify-between items-start gap-6 md:col-start-2 md:col-span-2 md:row-start-5">
         <div className="flex-1 flex flex-col gap-1.5 min-w-0">
           <CellLabel>{common.description[lang]}</CellLabel>
-          <p className="m-0 text-caption text-foreground leading-normal max-w-2xl">{p.desc[lang]}</p>
+          <p className="m-0 text-caption text-foreground leading-normal max-w-2xl">
+            {p.desc[lang]}
+          </p>
         </div>
         <div className="flex-none w-40 flex flex-col gap-1.5">
           <CellLabel>{plateauMsg.uses[lang]}</CellLabel>
           <ul className="list-none m-0 p-0 flex flex-col gap-0.5">
-            {p.uses.map(a => <li key={a.fr} className="text-caption text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">· {a[lang]}</li>)}
+            {p.uses.map((a) => (
+              <li
+                key={a.fr}
+                className="text-caption text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis"
+              >
+                · {a[lang]}
+              </li>
+            ))}
           </ul>
         </div>
       </div>
 
       {/* Book CTA */}
-      <button onClick={()=>{ try{localStorage.setItem('edo-book-plateau', slug);}catch(e){} goto('book'); }}
-        className="edo-focus-ring bg-primary p-4 border-0 cursor-pointer flex flex-col justify-between text-left text-white font-inherit min-h-20 transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90 md:col-start-4 md:row-start-5">
-        <CellLabel className="text-white/80">06 · {common.bookNow[lang]}</CellLabel>
+      <button
+        onClick={() => {
+          try {
+            localStorage.setItem('edo-book-plateau', slug);
+          } catch (e) {}
+          goto('book');
+        }}
+        className="edo-focus-ring bg-primary p-4 border-0 cursor-pointer flex flex-col justify-between text-left text-white font-inherit min-h-20 transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90 md:col-start-4 md:row-start-5"
+      >
+        <CellLabel className="text-white/80">
+          06 · {common.bookNow[lang]}
+        </CellLabel>
         <div className="flex justify-between items-end text-white w-full">
-          <span className="text-tile-large font-medium tracking-headline">{common.bookThisStage[lang]}</span>
-          <IconArrowRight width="20" height="20"/>
+          <span className="text-tile-large font-medium tracking-headline">
+            {common.bookThisStage[lang]}
+          </span>
+          <IconArrowRight width="20" height="20" />
         </div>
       </button>
     </main>

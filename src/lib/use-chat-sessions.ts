@@ -22,7 +22,11 @@ interface ChatSessionsStore {
   sessions: ChatSession[];
 }
 
-const emptyStore = (): ChatSessionsStore => ({ v: VERSION, activeId: null, sessions: [] });
+const emptyStore = (): ChatSessionsStore => ({
+  v: VERSION,
+  activeId: null,
+  sessions: [],
+});
 
 function uid(): string {
   try {
@@ -36,7 +40,9 @@ function deriveTitle(messages: ChatMessage[]): string {
   const firstUser = messages.find((m) => m.role === 'user');
   if (!firstUser) return '';
   const text = firstUser.content.trim().replace(/\s+/g, ' ');
-  return text.length > TITLE_MAX ? `${text.slice(0, TITLE_MAX).trimEnd()}…` : text;
+  return text.length > TITLE_MAX
+    ? `${text.slice(0, TITLE_MAX).trimEnd()}…`
+    : text;
 }
 
 // Empty sessions are never persisted — a "new conversation" is represented by
@@ -48,7 +54,9 @@ function pruneStore(store: ChatSessionsStore): ChatSessionsStore {
     .filter((s) => s.messages.length > 0 && now - s.updatedAt <= MAX_AGE_MS)
     .sort((a, b) => b.updatedAt - a.updatedAt)
     .slice(0, MAX_SESSIONS);
-  const activeId = sessions.some((s) => s.id === store.activeId) ? store.activeId : null;
+  const activeId = sessions.some((s) => s.id === store.activeId)
+    ? store.activeId
+    : null;
   return { v: VERSION, activeId, sessions };
 }
 
@@ -139,13 +147,24 @@ export function useChatSessions(): UseChatSessions {
       if (sessions.some((s) => s.id === activeId)) {
         sessions = sessions.map((s) =>
           s.id === activeId
-            ? { ...s, messages, updatedAt: now, title: s.title || deriveTitle(messages) }
+            ? {
+                ...s,
+                messages,
+                updatedAt: now,
+                title: s.title || deriveTitle(messages),
+              }
             : s,
         );
       } else {
         activeId = uid();
         sessions = [
-          { id: activeId, title: deriveTitle(messages), messages, createdAt: now, updatedAt: now },
+          {
+            id: activeId,
+            title: deriveTitle(messages),
+            messages,
+            createdAt: now,
+            updatedAt: now,
+          },
           ...sessions,
         ];
       }

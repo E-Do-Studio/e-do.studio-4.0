@@ -180,7 +180,9 @@ const MobileNavStrip = ({
         footer={
           <div
             className="flex items-stretch justify-between gap-2 px-3 py-3"
-            style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 12px)' }}
+            style={{
+              paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 12px)',
+            }}
           >
             {draftHasActive ? (
               <button
@@ -262,7 +264,9 @@ const MobileNavStrip = ({
                         <span
                           className={cn(
                             'shrink-0 font-mono text-micro uppercase tracking-label',
-                            isActive ? 'text-background' : 'text-muted-foreground',
+                            isActive
+                              ? 'text-background'
+                              : 'text-muted-foreground',
                           )}
                         >
                           {option.count}

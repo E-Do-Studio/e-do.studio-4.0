@@ -1,4 +1,4 @@
-import { MarqueeCell } from './cells';
+import { MarqueeCell } from './ui/marquee-cell';
 import { cn } from './ui/cn';
 import { SocialLinksRow } from './ui/social-links-row';
 

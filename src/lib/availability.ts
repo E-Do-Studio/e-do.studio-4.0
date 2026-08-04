@@ -21,17 +21,27 @@ export function clearAvailabilityCache(): void {
 
 function getOccupiedHours(arrivalHour: number, totalHours: number): number[] {
   const hours: number[] = [];
-  for (let h = arrivalHour; h < arrivalHour + totalHours && h < STUDIO_CLOSE; h++) {
+  for (
+    let h = arrivalHour;
+    h < arrivalHour + totalHours && h < STUDIO_CLOSE;
+    h++
+  ) {
     hours.push(h);
   }
   return hours;
 }
 
-function isDayFullyBooked(occupiedHours: Set<number>, rentalHours: number): boolean {
+function isDayFullyBooked(
+  occupiedHours: Set<number>,
+  rentalHours: number,
+): boolean {
   for (let start = STUDIO_OPEN; start <= STUDIO_CLOSE - rentalHours; start++) {
     let fits = true;
     for (let h = start; h < start + rentalHours; h++) {
-      if (occupiedHours.has(h)) { fits = false; break; }
+      if (occupiedHours.has(h)) {
+        fits = false;
+        break;
+      }
     }
     if (fits) return false;
   }
@@ -43,10 +53,18 @@ export function useAvailability(
   year: number,
   month: number,
   rentalHours: number = 1,
-  refreshKey: number = 0
-): { availMap: Record<number, AvailabilityState>; bookedHoursMap: Record<number, Set<number>>; loading: boolean } {
-  const [availMap, setAvailMap] = useState<Record<number, AvailabilityState>>({});
-  const [bookedHoursMap, setBookedHoursMap] = useState<Record<number, Set<number>>>({});
+  refreshKey: number = 0,
+): {
+  availMap: Record<number, AvailabilityState>;
+  bookedHoursMap: Record<number, Set<number>>;
+  loading: boolean;
+} {
+  const [availMap, setAvailMap] = useState<Record<number, AvailabilityState>>(
+    {},
+  );
+  const [bookedHoursMap, setBookedHoursMap] = useState<
+    Record<number, Set<number>>
+  >({});
   const [loading, setLoading] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -89,10 +107,18 @@ export function useAvailability(
 
         const occupiedPerDay: Record<number, Set<number>> = {};
         for (const session of data as unknown as SessionAvailabilityRow[]) {
-          if (!session.session_date || session.arrival_hour == null || session.hours == null) continue;
+          if (
+            !session.session_date ||
+            session.arrival_hour == null ||
+            session.hours == null
+          )
+            continue;
           const day = new Date(session.session_date + 'T00:00:00').getDate();
           if (!occupiedPerDay[day]) occupiedPerDay[day] = new Set();
-          for (const h of getOccupiedHours(session.arrival_hour, session.hours)) {
+          for (const h of getOccupiedHours(
+            session.arrival_hour,
+            session.hours,
+          )) {
             occupiedPerDay[day].add(h);
           }
         }
@@ -100,7 +126,9 @@ export function useAvailability(
         const result: Record<number, AvailabilityState> = {};
         for (let d = 1; d <= lastDay; d++) {
           const occupied = occupiedPerDay[d] || new Set();
-          result[d] = isDayFullyBooked(occupied, rentalHours) ? 'unavailable' : 'free';
+          result[d] = isDayFullyBooked(occupied, rentalHours)
+            ? 'unavailable'
+            : 'free';
         }
 
         dayCache.set(cacheKey, result);
@@ -109,13 +137,19 @@ export function useAvailability(
         setLoading(false);
       });
 
-    return () => { controller.abort(); };
+    return () => {
+      controller.abort();
+    };
   }, [plateauKey, year, month, rentalHours, refreshKey]);
 
   return { availMap, bookedHoursMap, loading };
 }
 
-export function isHourBlocked(bookedHours: Set<number> | undefined, arrivalHour: number, rentalHours: number): boolean {
+export function isHourBlocked(
+  bookedHours: Set<number> | undefined,
+  arrivalHour: number,
+  rentalHours: number,
+): boolean {
   if (!bookedHours || bookedHours.size === 0) return false;
   for (let h = arrivalHour; h < arrivalHour + rentalHours; h++) {
     if (bookedHours.has(h)) return true;

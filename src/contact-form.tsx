@@ -1,5 +1,9 @@
 import { useState } from 'react';
-import type { FormEvent, InputHTMLAttributes, TextareaHTMLAttributes } from 'react';
+import type {
+  FormEvent,
+  InputHTMLAttributes,
+  TextareaHTMLAttributes,
+} from 'react';
 import type { ContactFormData, Lang } from './types';
 import { submitContactForm } from './lib/contact';
 import { common, contact as contactMsg } from './i18n/messages';
@@ -18,12 +22,19 @@ export const INITIAL_FORM: ContactFormData = {
 const inputClassName =
   'edo-bento-input w-full border-0 bg-white px-5 font-sans text-cell font-light tracking-copy-tight text-foreground outline-none transition-colors focus:bg-muted';
 
-interface ContactInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
+interface ContactInputProps
+  extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
   value: string;
   onChange: (value: string) => void;
 }
 
-export const ContactInput = ({ value, onChange, className, type = 'text', ...props }: ContactInputProps) => (
+export const ContactInput = ({
+  value,
+  onChange,
+  className,
+  type = 'text',
+  ...props
+}: ContactInputProps) => (
   <input
     type={type}
     value={value}
@@ -33,16 +44,26 @@ export const ContactInput = ({ value, onChange, className, type = 'text', ...pro
   />
 );
 
-interface ContactTextareaProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'onChange'> {
+interface ContactTextareaProps
+  extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'onChange'> {
   value: string;
   onChange: (value: string) => void;
 }
 
-export const ContactTextarea = ({ value, onChange, className, ...props }: ContactTextareaProps) => (
+export const ContactTextarea = ({
+  value,
+  onChange,
+  className,
+  ...props
+}: ContactTextareaProps) => (
   <textarea
     value={value}
     onChange={(event) => onChange(event.target.value)}
-    className={cn(inputClassName, 'col-span-2 h-full min-h-36 resize-none py-4 leading-normal', className)}
+    className={cn(
+      inputClassName,
+      'col-span-2 h-full min-h-36 resize-none py-4 leading-normal',
+      className,
+    )}
     {...props}
   />
 );
@@ -70,7 +91,9 @@ export const ContactForm = ({
       className="grid grid-cols-2 grid-rows-contact-form-compact gap-hairline bg-edo-pure-black md:h-full"
     >
       <div className="col-span-2 flex flex-col justify-center bg-white px-5 py-2.5">
-        <span className="edo-cell-label text-primary">{contactMsg.writeToUs[lang]}</span>
+        <span className="edo-cell-label text-primary">
+          {contactMsg.writeToUs[lang]}
+        </span>
         <h1 className="m-0 mt-0.5 text-tile-large font-light leading-none tracking-display text-foreground">
           {contactMsg.projectVisit[lang]}
         </h1>
@@ -144,9 +167,16 @@ interface ContactSuccessProps {
   continueLabel?: string;
 }
 
-export const ContactSuccess = ({ lang, onNewMessage, onContinue, continueLabel }: ContactSuccessProps) => (
+export const ContactSuccess = ({
+  lang,
+  onNewMessage,
+  onContinue,
+  continueLabel,
+}: ContactSuccessProps) => (
   <div className="flex h-full flex-col items-start justify-center gap-4 bg-white px-7 py-8">
-    <span className="edo-cell-label text-primary">✓ {contactMsg.messageSent[lang]}</span>
+    <span className="edo-cell-label text-primary">
+      ✓ {contactMsg.messageSent[lang]}
+    </span>
     <h1 className="m-0 max-w-lg text-page-title font-light leading-tight tracking-display text-foreground">
       {contactMsg.thanksSoon[lang]}
     </h1>
@@ -192,7 +222,9 @@ export const EmbeddedContactForm = ({
       await submitContactForm(form);
       setSent(true);
     } catch (err) {
-      setSendError(err instanceof Error ? err.message : contactMsg.errorSend[lang]);
+      setSendError(
+        err instanceof Error ? err.message : contactMsg.errorSend[lang],
+      );
     } finally {
       setSending(false);
     }

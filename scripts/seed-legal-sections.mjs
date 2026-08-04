@@ -28,13 +28,20 @@ const DOCS = [
 
 function args() {
   const a = process.argv.slice(2);
-  const out = { dryRun: false, wipe: false, seed: false, token: null, only: null };
+  const out = {
+    dryRun: false,
+    wipe: false,
+    seed: false,
+    token: null,
+    only: null,
+  };
   for (let i = 0; i < a.length; i++) {
     if (a[i] === '--dry-run') out.dryRun = true;
     else if (a[i] === '--wipe') out.wipe = true;
     else if (a[i] === '--seed') out.seed = true;
     else if (a[i] === '--token') out.token = a[++i];
-    else if (a[i].startsWith('--only=')) out.only = a[i].slice('--only='.length);
+    else if (a[i].startsWith('--only='))
+      out.only = a[i].slice('--only='.length);
     else if (a[i] === '--only') out.only = a[++i];
   }
   return out;
@@ -46,7 +53,11 @@ function parseInline(text) {
   let i = 0;
   const flush = (extra) => {
     if (buf) {
-      out.push(extra ? { type: 'text', text: buf, ...extra } : { type: 'text', text: buf });
+      out.push(
+        extra
+          ? { type: 'text', text: buf, ...extra }
+          : { type: 'text', text: buf },
+      );
       buf = '';
     }
   };
@@ -103,7 +114,11 @@ function mdToBlocks(md) {
     }
     const heading = line.match(/^(#{1,6})\s+(.+)$/);
     if (heading) {
-      blocks.push({ type: 'heading', level: heading[1].length, children: parseInline(heading[2].trim()) });
+      blocks.push({
+        type: 'heading',
+        level: heading[1].length,
+        children: parseInline(heading[2].trim()),
+      });
       i++;
       continue;
     }
@@ -113,13 +128,19 @@ function mdToBlocks(md) {
         buf.push(lines[i].replace(/^>\s?/, ''));
         i++;
       }
-      blocks.push({ type: 'quote', children: parseInline(buf.join(' ').trim()) });
+      blocks.push({
+        type: 'quote',
+        children: parseInline(buf.join(' ').trim()),
+      });
       continue;
     }
     if (/^\s*-\s+/.test(line)) {
       const items = [];
       while (i < lines.length && /^\s*-\s+/.test(lines[i])) {
-        items.push({ type: 'list-item', children: parseInline(lines[i].replace(/^\s*-\s+/, '')) });
+        items.push({
+          type: 'list-item',
+          children: parseInline(lines[i].replace(/^\s*-\s+/, '')),
+        });
         i++;
       }
       blocks.push({ type: 'list', format: 'unordered', children: items });
@@ -127,7 +148,11 @@ function mdToBlocks(md) {
     }
     const buf = [line];
     i++;
-    while (i < lines.length && lines[i].trim() && !/^(#{1,6}\s|>|\s*-\s)/.test(lines[i])) {
+    while (
+      i < lines.length &&
+      lines[i].trim() &&
+      !/^(#{1,6}\s|>|\s*-\s)/.test(lines[i])
+    ) {
       buf.push(lines[i]);
       i++;
     }
@@ -143,7 +168,9 @@ function parseSections(content) {
   for (const part of parts) {
     const title = part.match(/^- \*\*title \([A-Z]+\)\*\* : `([^`]+)`/m);
     const slug = part.match(/^- \*\*slug\*\* : `([^`]+)`/m);
-    const body = part.match(/### Body \([A-Z]+\)\s*\n+([\s\S]*?)(?:\n---\s*\n|$)/);
+    const body = part.match(
+      /### Body \([A-Z]+\)\s*\n+([\s\S]*?)(?:\n---\s*\n|$)/,
+    );
     if (!title || !slug || !body) {
       console.warn('  ⚠ section incomplete, skipping:', part.slice(0, 80));
       continue;
@@ -220,7 +247,11 @@ async function wipe(token) {
     for (const item of items) {
       i++;
       process.stdout.write(`\r  ${locale} ${i}/${items.length}...`);
-      await strapi(token, 'DELETE', `/api/legal-sections/${item.documentId}?locale=${locale}`);
+      await strapi(
+        token,
+        'DELETE',
+        `/api/legal-sections/${item.documentId}?locale=${locale}`,
+      );
     }
     console.log(`\r  ✓ ${locale} wipe complete            `);
   }
@@ -262,7 +293,9 @@ async function seed(token, docs) {
       await seedSection(token, s);
     }
   }
-  console.log('\r  ✓ seed complete                                                   ');
+  console.log(
+    '\r  ✓ seed complete                                                   ',
+  );
 }
 
 async function main() {
@@ -278,7 +311,9 @@ async function main() {
   if (opts.only) {
     const filtered = docs.filter((d) => d.key === opts.only);
     if (!filtered.length) {
-      console.error(`error: unknown doc key '${opts.only}'. available: ${docs.map((d) => d.key).join(', ')}`);
+      console.error(
+        `error: unknown doc key '${opts.only}'. available: ${docs.map((d) => d.key).join(', ')}`,
+      );
       process.exit(1);
     }
     docs = filtered;

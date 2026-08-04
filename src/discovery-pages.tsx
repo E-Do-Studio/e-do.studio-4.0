@@ -1,20 +1,25 @@
 import { DiscoveryBentoGrid } from './discovery/discovery-bento-grid';
 import { DiscoveryHeader } from './discovery/discovery-header';
 import { DiscoveryShell } from './discovery/discovery-shell';
-import { buildBlogSchema, buildBreadcrumbSchema } from './lib/structured-data';
-import { useLoaderData } from '@tanstack/react-router';
 import { usePageContext } from './lib/page-context';
 import { SocialClientsBar } from './social-clients-bar';
 
 const DiscoveryV2 = () => {
   const { lang, setLang, openMenu, goto } = usePageContext();
-  const { posts } = useLoaderData({ from: '/$lang/discovery/' });
   return (
     <DiscoveryShell>
       <h1 className="sr-only">
-        {lang === 'fr' ? 'Discovery — Blog & actualités' : 'Discovery — Blog & news'} — E-Do Studio
+        {lang === 'fr'
+          ? 'Discovery — Blog & actualités'
+          : 'Discovery — Blog & news'}{' '}
+        — E-Do Studio
       </h1>
-      <DiscoveryHeader lang={lang} setLang={setLang} openMenu={openMenu} goto={goto} />
+      <DiscoveryHeader
+        lang={lang}
+        setLang={setLang}
+        openMenu={openMenu}
+        goto={goto}
+      />
       <SocialClientsBar className="row-start-2" />
       <DiscoveryBentoGrid lang={lang} goto={goto} />
     </DiscoveryShell>

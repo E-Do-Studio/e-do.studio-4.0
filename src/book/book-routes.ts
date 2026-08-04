@@ -34,11 +34,15 @@ export function bookPickerPath(lang: Lang): string {
 
 export function configuratorPath(lang: Lang, step: 0 | 2 | 3 | 5 | 6): string {
   const key =
-    step === 0 ? 'configurator'
-      : step === 2 ? 'stage'
-      : step === 3 ? 'team'
-      : step === 5 ? 'details'
-      : 'dates';
+    step === 0
+      ? 'configurator'
+      : step === 2
+        ? 'stage'
+        : step === 3
+          ? 'team'
+          : step === 5
+            ? 'details'
+            : 'dates';
   return pathFor(lang, key);
 }
 

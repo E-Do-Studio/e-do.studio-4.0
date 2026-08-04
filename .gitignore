@@ -5,6 +5,8 @@ dist
 .env.local
 .preview
 deno.lock
+# pnpm fait autorité (Dockerfile, nixpacks.toml) — un bun.lock diverge en silence
+bun.lock
 .DS_Store
 .playwright-mcp/
 /*.png

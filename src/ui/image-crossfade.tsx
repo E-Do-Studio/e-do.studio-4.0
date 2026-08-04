@@ -64,13 +64,19 @@ const ImageCrossfade = ({
         {...fetchPriority(priority)}
         loading={priority ? 'eager' : 'lazy'}
         decoding="async"
-        className={cn('pointer-events-none absolute inset-0 h-full w-full object-cover', className)}
+        className={cn(
+          'pointer-events-none absolute inset-0 h-full w-full object-cover',
+          className,
+        )}
       />
     );
   }
 
   return (
-    <div className={cn('pointer-events-none absolute inset-0', className)} aria-hidden={false}>
+    <div
+      className={cn('pointer-events-none absolute inset-0', className)}
+      aria-hidden={false}
+    >
       {images.map((img, i) => {
         const isFirst = i === 0;
         const active = i === index;

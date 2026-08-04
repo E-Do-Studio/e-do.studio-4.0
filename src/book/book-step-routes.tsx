@@ -18,7 +18,8 @@ function useConfigPrereq(minStep: 2 | 3 | 5 | 6) {
     }
     const seen = draft.step || 0;
     if (seen < minStep) {
-      const fallback = seen === 0 ? 0 : seen === 2 ? 2 : seen === 3 ? 3 : seen === 5 ? 5 : 6;
+      const fallback =
+        seen === 0 ? 0 : seen === 2 ? 2 : seen === 3 ? 3 : seen === 5 ? 5 : 6;
       navigate({ to: configuratorPath(lang, fallback), replace: true });
       return;
     }

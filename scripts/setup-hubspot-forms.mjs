@@ -25,29 +25,45 @@ const BASE = 'https://api.hubapi.com';
 if (!TOKEN) {
   console.error('✗ HUBSPOT_PRIVATE_APP_TOKEN manquant.');
   console.error('  Ajoute-le à .env, ou lance :');
-  console.error('  HUBSPOT_PRIVATE_APP_TOKEN=xxx node scripts/setup-hubspot-forms.mjs');
+  console.error(
+    '  HUBSPOT_PRIVATE_APP_TOKEN=xxx node scripts/setup-hubspot-forms.mjs',
+  );
   process.exit(1);
 }
 
 async function hs(path, method = 'GET', body) {
   const res = await fetch(`${BASE}${path}`, {
     method,
-    headers: { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
+    headers: {
+      Authorization: `Bearer ${TOKEN}`,
+      'Content-Type': 'application/json',
+    },
     body: body ? JSON.stringify(body) : undefined,
   });
   const text = await res.text();
   let json = null;
-  try { json = text ? JSON.parse(text) : null; } catch { json = text; }
+  try {
+    json = text ? JSON.parse(text) : null;
+  } catch {
+    json = text;
+  }
   return { ok: res.ok, status: res.status, json, text };
 }
 
 function fail(ctx, res) {
   if (res.status === 403) {
-    console.error(`✗ 403 sur ${ctx} — il manque sûrement un scope sur l'app privée.`);
-    console.error('  Requis : forms, crm.schemas.contacts.write, crm.schemas.contacts.read');
-    console.error('  HubSpot → Settings → Integrations → Private Apps → (ton app) → Scopes');
+    console.error(
+      `✗ 403 sur ${ctx} — il manque sûrement un scope sur l'app privée.`,
+    );
+    console.error(
+      '  Requis : forms, crm.schemas.contacts.write, crm.schemas.contacts.read',
+    );
+    console.error(
+      '  HubSpot → Settings → Integrations → Private Apps → (ton app) → Scopes',
+    );
   }
-  const body = typeof res.json === 'string' ? res.json : JSON.stringify(res.json);
+  const body =
+    typeof res.json === 'string' ? res.json : JSON.stringify(res.json);
   console.error(`✗ ${ctx} → HTTP ${res.status}: ${body}`);
 }
 
@@ -55,10 +71,26 @@ function fail(ctx, res) {
 // The real typing lives here (string / number). The form fields (below) stay on
 // the few well-known widget types; HubSpot maps widget → property on submit.
 
-const GROUP = { name: 'edo_reservation', label: 'E-Do — Réservation', displayOrder: -1 };
+const GROUP = {
+  name: 'edo_reservation',
+  label: 'E-Do — Réservation',
+  displayOrder: -1,
+};
 
-const T = (name, label) => ({ name, label, type: 'string', fieldType: 'text', groupName: GROUP.name });
-const N = (name, label) => ({ name, label, type: 'number', fieldType: 'number', groupName: GROUP.name });
+const T = (name, label) => ({
+  name,
+  label,
+  type: 'string',
+  fieldType: 'text',
+  groupName: GROUP.name,
+});
+const N = (name, label) => ({
+  name,
+  label,
+  type: 'number',
+  fieldType: 'number',
+  groupName: GROUP.name,
+});
 
 const CUSTOM_PROPS = [
   T('brand', 'Marque'),
@@ -151,21 +183,35 @@ function formBody(name, fields) {
 
 async function ensureGroup() {
   const get = await hs(`/crm/v3/properties/contacts/groups/${GROUP.name}`);
-  if (get.ok) { console.log(`• groupe ${GROUP.name} — déjà présent`); return; }
-  if (DRY_RUN) { console.log(`• groupe ${GROUP.name} — à créer`); return; }
+  if (get.ok) {
+    console.log(`• groupe ${GROUP.name} — déjà présent`);
+    return;
+  }
+  if (DRY_RUN) {
+    console.log(`• groupe ${GROUP.name} — à créer`);
+    return;
+  }
   const res = await hs('/crm/v3/properties/contacts/groups', 'POST', GROUP);
   if (res.ok) console.log(`✓ groupe ${GROUP.name} créé`);
-  else if (res.status === 409) console.log(`• groupe ${GROUP.name} — déjà présent`);
+  else if (res.status === 409)
+    console.log(`• groupe ${GROUP.name} — déjà présent`);
   else fail('création groupe', res);
 }
 
 async function ensureProp(p) {
   const get = await hs(`/crm/v3/properties/contacts/${p.name}`);
-  if (get.ok) { console.log(`• propriété ${p.name} — déjà présente`); return; }
-  if (DRY_RUN) { console.log(`• propriété ${p.name} — à créer (${p.type})`); return; }
+  if (get.ok) {
+    console.log(`• propriété ${p.name} — déjà présente`);
+    return;
+  }
+  if (DRY_RUN) {
+    console.log(`• propriété ${p.name} — à créer (${p.type})`);
+    return;
+  }
   const res = await hs('/crm/v3/properties/contacts', 'POST', p);
   if (res.ok) console.log(`✓ propriété ${p.name} créée`);
-  else if (res.status === 409) console.log(`• propriété ${p.name} — déjà présente`);
+  else if (res.status === 409)
+    console.log(`• propriété ${p.name} — déjà présente`);
   else fail(`propriété ${p.name}`, res);
 }
 
@@ -173,14 +219,23 @@ async function ensureForm(name, fields) {
   const list = await hs('/forms/v2/forms');
   if (list.ok && Array.isArray(list.json)) {
     const existing = list.json.find((f) => f.name === name);
-    if (existing) { console.log(`• form "${name}" — déjà présent (${existing.guid})`); return existing.guid; }
+    if (existing) {
+      console.log(`• form "${name}" — déjà présent (${existing.guid})`);
+      return existing.guid;
+    }
   } else if (!list.ok) {
     fail('liste des forms', list);
     return null;
   }
-  if (DRY_RUN) { console.log(`• form "${name}" — à créer (${fields.length} champs)`); return null; }
+  if (DRY_RUN) {
+    console.log(`• form "${name}" — à créer (${fields.length} champs)`);
+    return null;
+  }
   const res = await hs('/forms/v2/forms', 'POST', formBody(name, fields));
-  if (res.ok) { console.log(`✓ form "${name}" créé (${res.json.guid})`); return res.json.guid; }
+  if (res.ok) {
+    console.log(`✓ form "${name}" créé (${res.json.guid})`);
+    return res.json.guid;
+  }
   fail(`création form "${name}"`, res);
   return null;
 }
@@ -202,16 +257,25 @@ async function preflight() {
   }
   if (res.status === 403) {
     console.error('✗ Token reconnu mais scope manquant (HTTP 403).');
-    console.error('  Ajoute à l\'app privée : forms, crm.schemas.contacts.write, crm.schemas.contacts.read');
-    console.error('  HubSpot → Settings → Integrations → Private Apps → (ton app) → Scopes → Commit changes');
+    console.error(
+      "  Ajoute à l'app privée : forms, crm.schemas.contacts.write, crm.schemas.contacts.read",
+    );
+    console.error(
+      '  HubSpot → Settings → Integrations → Private Apps → (ton app) → Scopes → Commit changes',
+    );
     process.exit(1);
   }
-  if (!res.ok) { fail('vérification du token', res); process.exit(1); }
+  if (!res.ok) {
+    fail('vérification du token', res);
+    process.exit(1);
+  }
 }
 
 // ── Main ───────────────────────────────────────────────────────────────────
 
-console.log(DRY_RUN ? '· DRY-RUN — aucune écriture\n' : '· Setup HubSpot Forms\n');
+console.log(
+  DRY_RUN ? '· DRY-RUN — aucune écriture\n' : '· Setup HubSpot Forms\n',
+);
 
 await preflight();
 await ensureGroup();

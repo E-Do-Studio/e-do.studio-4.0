@@ -142,10 +142,7 @@ export async function getBookingDetail(
       .select()
       .eq('booking_id', bookingId)
       .order('generated_at', { ascending: false }),
-    supabase
-      .from('ical_feeds')
-      .select()
-      .eq('booking_id', bookingId),
+    supabase.from('ical_feeds').select().eq('booking_id', bookingId),
   ]);
 
   return {
@@ -184,7 +181,11 @@ export async function updateBookingStatus(
 ): Promise<BookingRow> {
   const { data, error } = await supabase
     .from('bookings')
-    .update(options?.newDate ? { status, preferred_date: options.newDate } : { status })
+    .update(
+      options?.newDate
+        ? { status, preferred_date: options.newDate }
+        : { status },
+    )
     .eq('id', bookingId)
     .select()
     .single();
@@ -205,7 +206,12 @@ export async function updateBookingStatus(
   }
 
   if (options?.reason) {
-    sendStatusChangeEmail(bookingId, options.reason, options.newDate, options.message).catch(() => {});
+    sendStatusChangeEmail(
+      bookingId,
+      options.reason,
+      options.newDate,
+      options.message,
+    ).catch(() => {});
   }
 
   return data;

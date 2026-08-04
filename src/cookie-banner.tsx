@@ -9,9 +9,12 @@ interface CookieBannerProps {
 }
 
 const CookieBanner = ({ lang, onLegalClick }: CookieBannerProps) => {
-  const { consent, accept, reject } = useCookieConsent();
+  const { consent, ready, accept, reject } = useCookieConsent();
 
-  if (consent !== null) return null;
+  // Rien tant que le stockage n'est pas lu : le serveur et le premier rendu
+  // client s'accordent, et un visiteur ayant déjà répondu ne voit plus la
+  // bannière apparaître puis disparaître.
+  if (!ready || consent !== null) return null;
 
   return (
     <div

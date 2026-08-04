@@ -4,7 +4,7 @@
 // quote, code, link, image, plus inline marks (bold, italic, underline,
 // strikethrough, code).
 
-import { Fragment, createElement, type ReactNode } from 'react';
+import { Fragment, createElement, type JSX, type ReactNode } from 'react';
 
 export type BlockNode =
   | { type: 'paragraph'; children: InlineNode[] }
@@ -12,12 +12,28 @@ export type BlockNode =
   | { type: 'list'; format: 'ordered' | 'unordered'; children: ListItemNode[] }
   | { type: 'quote'; children: InlineNode[] }
   | { type: 'code'; children: InlineNode[] }
-  | { type: 'image'; image: { url: string; alternativeText?: string | null; width?: number; height?: number } };
+  | {
+      type: 'image';
+      image: {
+        url: string;
+        alternativeText?: string | null;
+        width?: number;
+        height?: number;
+      };
+    };
 
 export type ListItemNode = { type: 'list-item'; children: InlineNode[] };
 
 export type InlineNode =
-  | { type: 'text'; text: string; bold?: boolean; italic?: boolean; underline?: boolean; strikethrough?: boolean; code?: boolean }
+  | {
+      type: 'text';
+      text: string;
+      bold?: boolean;
+      italic?: boolean;
+      underline?: boolean;
+      strikethrough?: boolean;
+      code?: boolean;
+    }
   | { type: 'link'; url: string; children: InlineNode[] };
 
 // Strapi's blocks editor exposes a single "link" affordance, so editors attach
@@ -54,26 +70,40 @@ function renderInline(node: InlineNode, key: string | number): ReactNode {
   }
   let element: ReactNode = node.text ?? '';
   if (node.code) element = createElement('code', { key: `${key}-c` }, element);
-  if (node.bold) element = createElement('strong', { key: `${key}-b` }, element);
+  if (node.bold)
+    element = createElement('strong', { key: `${key}-b` }, element);
   if (node.italic) element = createElement('em', { key: `${key}-i` }, element);
-  if (node.underline) element = createElement('u', { key: `${key}-u` }, element);
-  if (node.strikethrough) element = createElement('s', { key: `${key}-s` }, element);
+  if (node.underline)
+    element = createElement('u', { key: `${key}-u` }, element);
+  if (node.strikethrough)
+    element = createElement('s', { key: `${key}-s` }, element);
   return createElement(Fragment, { key }, element);
 }
 
-function renderInlineChildren(children: InlineNode[], parentKey: string | number): ReactNode[] {
+function renderInlineChildren(
+  children: InlineNode[],
+  parentKey: string | number,
+): ReactNode[] {
   return children.map((c, i) => renderInline(c, `${parentKey}-${i}`));
 }
 
-export function renderStrapiBlocks(blocks: BlockNode[] | null | undefined): ReactNode {
+export function renderStrapiBlocks(
+  blocks: BlockNode[] | null | undefined,
+): ReactNode {
   if (!Array.isArray(blocks) || blocks.length === 0) return null;
   return blocks.map((block, i) => {
     const key = `b-${i}`;
     switch (block.type) {
       case 'paragraph':
-        return createElement('p', { key }, renderInlineChildren(block.children, key));
+        return createElement(
+          'p',
+          { key },
+          renderInlineChildren(block.children, key),
+        );
       case 'heading':
         return createElement(
+          // React 19 a retiré le namespace `JSX` global : il s'importe
+          // désormais depuis 'react'.
           `h${block.level}` as keyof JSX.IntrinsicElements,
           { key },
           renderInlineChildren(block.children, key),
@@ -84,17 +114,29 @@ export function renderStrapiBlocks(blocks: BlockNode[] | null | undefined): Reac
           Tag,
           { key },
           (block.children ?? []).map((item, j) =>
-            createElement('li', { key: `${key}-li-${j}` }, renderInlineChildren(item.children, `${key}-li-${j}`)),
+            createElement(
+              'li',
+              { key: `${key}-li-${j}` },
+              renderInlineChildren(item.children, `${key}-li-${j}`),
+            ),
           ),
         );
       }
       case 'quote':
-        return createElement('blockquote', { key }, renderInlineChildren(block.children, key));
+        return createElement(
+          'blockquote',
+          { key },
+          renderInlineChildren(block.children, key),
+        );
       case 'code':
         return createElement(
           'pre',
           { key },
-          createElement('code', null, renderInlineChildren(block.children, key)),
+          createElement(
+            'code',
+            null,
+            renderInlineChildren(block.children, key),
+          ),
         );
       case 'image':
         return createElement('img', {

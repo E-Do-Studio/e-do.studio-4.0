@@ -6,13 +6,16 @@ import { cn } from './ui/cn';
 import { HoverMarquee } from './ui/hover-marquee';
 import { IconArrowRight, IconSelector } from './ui/icons';
 import { PageHeader, buildMainNav } from './ui/page-header';
-import { buildWebPageSchema, buildBreadcrumbSchema } from './lib/structured-data';
 import type { Lang } from './types';
 import { usePageContext } from './lib/page-context';
 import { common, legalPage } from './i18n/messages';
 import { useLoaderData } from '@tanstack/react-router';
 import type { LegalSectionContent, LegalDocumentKey } from './lib/strapi';
-import { renderStrapiBlocks, type BlockNode, type InlineNode } from './lib/render-blocks';
+import {
+  renderStrapiBlocks,
+  type BlockNode,
+  type InlineNode,
+} from './lib/render-blocks';
 
 function inlineText(children: InlineNode[]): string {
   return children
@@ -103,7 +106,9 @@ const StrapiSectionsRenderer = ({ sections, lang }: SectionRendererProps) => (
               <h4 className="m-0 mb-2 text-cell font-medium tracking-copy-tight text-foreground">
                 {article.t}
               </h4>
-              <div className={PROSE_CLASS}>{renderStrapiBlocks(s.body[lang])}</div>
+              <div className={PROSE_CLASS}>
+                {renderStrapiBlocks(s.body[lang])}
+              </div>
             </div>
           </article>
         );
@@ -124,12 +129,16 @@ const StrapiSectionsRenderer = ({ sections, lang }: SectionRendererProps) => (
                   <span className="font-mono text-label tracking-ui uppercase text-muted-foreground">
                     {r.k}
                   </span>
-                  <span className="text-foreground tracking-copy-tight">{r.v}</span>
+                  <span className="text-foreground tracking-copy-tight">
+                    {r.v}
+                  </span>
                 </div>
               ))}
             </div>
           ) : (
-            <div className={PROSE_CLASS}>{renderStrapiBlocks(s.body[lang])}</div>
+            <div className={PROSE_CLASS}>
+              {renderStrapiBlocks(s.body[lang])}
+            </div>
           )}
         </section>
       );
@@ -145,26 +154,33 @@ const LegalPage = () => {
   const setSec = (next: LegalDocumentKey) =>
     navigate({ to: '.', search: next === 'mentions' ? {} : { doc: next } });
   const [navSheetOpen, setNavSheetOpen] = useState(false);
-  const { documents: legalDocs, sections: legalSectionsByDoc } = useLoaderData({ from: '/$lang/legal' });
+  const { documents: legalDocs, sections: legalSectionsByDoc } = useLoaderData({
+    from: '/$lang/legal',
+  });
 
   const sections = legalDocs ?? [];
   const active = sections.find((s) => s.k === sec) ?? sections[0];
-  const activeIndex = Math.max(0, sections.findIndex((s) => s.k === sec));
+  const activeIndex = Math.max(
+    0,
+    sections.findIndex((s) => s.k === sec),
+  );
   const currentNumber = String(activeIndex + 1).padStart(2, '0');
   const navigateToSection = (next: LegalDocumentKey) => {
     setNavSheetOpen(false);
     if (next !== sec) setSec(next);
   };
-  const allSections = legalSectionsByDoc?.[sec]?.filter((s) => s.body[lang]?.length > 0) ?? [];
+  const allSections =
+    legalSectionsByDoc?.[sec]?.filter((s) => s.body[lang]?.length > 0) ?? [];
   const introSection = allSections.find((s) => s.slug === `${sec}-intro`);
   const strapiBody = allSections.filter((s) => s !== introSection);
   const intro = introSection ? blocksToPlainText(introSection.body[lang]) : '';
   const hasStrapiBody = strapiBody.length > 0;
-  const articleCount = strapiBody.filter((s) => tryParseArticle(s.title[lang])).length;
+  const articleCount = strapiBody.filter((s) =>
+    tryParseArticle(s.title[lang]),
+  ).length;
 
   return (
     <main className="edo-page-enter grid w-full edo-hairline md:grid-cols-contact-shell md:grid-rows-app md:h-full md:overflow-hidden">
-
       {/* Unified header — compact right-aligned actions on all breakpoints */}
       <PageHeader
         lang={lang}
@@ -194,7 +210,11 @@ const LegalPage = () => {
           <HoverMarquee className="text-cell tracking-copy-tight font-medium text-foreground">
             {active[lang]}
           </HoverMarquee>
-          <IconSelector width="16" height="16" className="ml-auto shrink-0 text-foreground" />
+          <IconSelector
+            width="16"
+            height="16"
+            className="ml-auto shrink-0 text-foreground"
+          />
         </button>
       )}
 
@@ -220,7 +240,9 @@ const LegalPage = () => {
                     'w-full flex items-center gap-4 min-h-14 px-4 py-3',
                     'border-b border-border text-left',
                     'edo-focus-ring cursor-pointer transition-colors duration-150 ease-edo-out',
-                    isActive ? 'bg-foreground text-background' : 'bg-white text-foreground',
+                    isActive
+                      ? 'bg-foreground text-background'
+                      : 'bg-white text-foreground',
                   )}
                 >
                   <span
@@ -234,7 +256,11 @@ const LegalPage = () => {
                   <HoverMarquee className="text-cell tracking-copy-tight font-medium">
                     {s[lang]}
                   </HoverMarquee>
-                  <IconArrowRight width="16" height="16" className="ml-auto shrink-0" />
+                  <IconArrowRight
+                    width="16"
+                    height="16"
+                    className="ml-auto shrink-0"
+                  />
                 </button>
               </li>
             );
@@ -250,9 +276,17 @@ const LegalPage = () => {
         {sections.map((s, i) => {
           const isActive = sec === s.k;
           return (
-            <button key={s.k} onClick={() => setSec(s.k)} className={`edo-focus-ring flex-none py-3 px-4 border-0 cursor-pointer text-left flex flex-col gap-0.5 font-inherit transition-all duration-150 ${isActive ? 'bg-muted border-l-2 border-l-primary' : 'bg-transparent border-l-2 border-l-transparent hover:bg-muted'}`}>
-              <span className="font-mono text-micro tracking-label text-muted-foreground">0{i + 1}</span>
-              <span className={`text-detail tracking-copy-tight whitespace-nowrap ${isActive ? 'font-medium text-foreground' : 'font-normal text-muted-foreground'}`}>
+            <button
+              key={s.k}
+              onClick={() => setSec(s.k)}
+              className={`edo-focus-ring flex-none py-3 px-4 border-0 cursor-pointer text-left flex flex-col gap-0.5 font-inherit transition-all duration-150 ${isActive ? 'bg-muted border-l-2 border-l-primary' : 'bg-transparent border-l-2 border-l-transparent hover:bg-muted'}`}
+            >
+              <span className="font-mono text-micro tracking-label text-muted-foreground">
+                0{i + 1}
+              </span>
+              <span
+                className={`text-detail tracking-copy-tight whitespace-nowrap ${isActive ? 'font-medium text-foreground' : 'font-normal text-muted-foreground'}`}
+              >
                 {s[lang]}
               </span>
             </button>
@@ -260,25 +294,36 @@ const LegalPage = () => {
         })}
 
         <div className="px-4 py-cell-lg border-t border-border mt-3">
-          <span className="edo-cell-label mb-2.5 block">{legalPage.gotQuestion[lang]}</span>
+          <span className="edo-cell-label mb-2.5 block">
+            {legalPage.gotQuestion[lang]}
+          </span>
           <p className="text-caption text-muted-foreground leading-normal mb-3">
             {legalPage.writeDirectly[lang]}
           </p>
-          <a href="mailto:contact@e-do.studio" className="edo-focus-ring inline-flex items-center gap-2 text-caption text-foreground no-underline border-b border-hairline pb-0.5">contact@e-do.studio <IconArrowRight width="10" height="10" /></a>
+          <a
+            href="mailto:contact@e-do.studio"
+            className="edo-focus-ring inline-flex items-center gap-2 text-caption text-foreground no-underline border-b border-hairline pb-0.5"
+          >
+            contact@e-do.studio <IconArrowRight width="10" height="10" />
+          </a>
         </div>
         <div className="flex-1" />
       </div>
 
       {/* Main content */}
       <div className="bg-muted overflow-auto md:col-start-2 md:col-span-3 md:row-start-2">
-
         <div className="bg-white pt-9 px-5 pb-7 border-b border-border grid grid-cols-fluid-auto gap-6 items-end md:px-10">
           <div>
             <span className="edo-cell-label text-primary">
-              {String(sections.findIndex((s) => s.k === sec) + 1).padStart(2, '0')} · {common.legal[lang]}
+              {String(sections.findIndex((s) => s.k === sec) + 1).padStart(
+                2,
+                '0',
+              )}{' '}
+              · {common.legal[lang]}
             </span>
             <h1 className="mt-2.5 mb-3 text-page-title font-light tracking-display leading-none text-foreground">
-              {active ? active[lang] : ''}<span className="text-primary">.</span>
+              {active ? active[lang] : ''}
+              <span className="text-primary">.</span>
             </h1>
             {intro && (
               <p className="m-0 text-detail text-muted-foreground leading-relaxed max-w-2xl">
@@ -290,12 +335,13 @@ const LegalPage = () => {
             <span className="font-mono text-label tracking-meta uppercase text-muted-foreground">
               {legalPage.lastUpdated[lang]}
             </span>
-            <span className="font-mono text-detail tracking-caption text-foreground">{active?.updated ?? ''}</span>
+            <span className="font-mono text-detail tracking-caption text-foreground">
+              {active?.updated ?? ''}
+            </span>
           </div>
         </div>
 
         <div className="pt-2 px-5 pb-10 max-w-5xl md:px-10">
-
           {hasStrapiBody && articleCount > 0 && (
             <div className="pt-4 pb-2 border-b border-border flex justify-between font-mono text-label tracking-meta uppercase text-muted-foreground">
               <span>{articleCount} articles</span>
@@ -309,34 +355,45 @@ const LegalPage = () => {
 
           {!hasStrapiBody && legalDocs && (
             <p className="py-12 text-center text-detail text-muted-foreground">
-              {lang === 'fr' ? 'Contenu en cours de mise à jour.' : 'Content being updated.'}
+              {lang === 'fr'
+                ? 'Contenu en cours de mise à jour.'
+                : 'Content being updated.'}
             </p>
           )}
 
           {sec === 'cookies' && (
             <div className="mt-9 bg-foreground text-white py-7 px-8 grid grid-cols-fluid-auto gap-6 items-center">
               <div>
-                <span className="font-mono text-label tracking-label uppercase text-primary">© GRW · E-Do Studio</span>
+                <span className="font-mono text-label tracking-label uppercase text-primary">
+                  © GRW · E-Do Studio
+                </span>
                 <p className="mt-1.5 text-detail leading-copy opacity-75 max-w-xl">
                   {legalPage.allRightsReserved[lang]}
                 </p>
               </div>
-              <Button variant="default" size="lg" onClick={() => goto('home')}>{legalPage.backToHome[lang]} <IconArrowRight width="14" height="14" /></Button>
+              <Button variant="default" size="lg" onClick={() => goto('home')}>
+                {legalPage.backToHome[lang]}{' '}
+                <IconArrowRight width="14" height="14" />
+              </Button>
             </div>
           )}
 
           <div className="mt-8 flex justify-end items-center gap-5 font-mono text-label tracking-code uppercase text-muted-foreground">
-            <button onClick={() => window.print()} className="edo-focus-ring bg-transparent border-0 cursor-pointer text-foreground font-inherit tracking-inherit text-transform-inherit">
+            <button
+              onClick={() => window.print()}
+              className="edo-focus-ring bg-transparent border-0 cursor-pointer text-foreground font-inherit tracking-inherit text-transform-inherit"
+            >
               ↓ {legalPage.print[lang]}
             </button>
-            <a href="mailto:contact@e-do.studio" className="edo-focus-ring text-foreground no-underline">
+            <a
+              href="mailto:contact@e-do.studio"
+              className="edo-focus-ring text-foreground no-underline"
+            >
               contact@e-do.studio
             </a>
           </div>
-
         </div>
       </div>
-
     </main>
   );
 };

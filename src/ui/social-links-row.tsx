@@ -22,7 +22,10 @@ const LAYOUT_CLASSES: Record<'auto' | 'row', string> = {
   row: 'grid grid-cols-4 gap-hairline bg-hairline',
 };
 
-const SocialLinksRow = ({ className, layout = 'auto' }: SocialLinksRowProps) => {
+const SocialLinksRow = ({
+  className,
+  layout = 'auto',
+}: SocialLinksRowProps) => {
   const { siteData } = usePageContext();
   const items: SocialLink[] = siteData.socialLinks ?? [];
   return (
@@ -36,7 +39,9 @@ const SocialLinksRow = ({ className, layout = 'auto' }: SocialLinksRowProps) => 
           className="edo-focus-ring group flex items-center justify-between border-0 bg-white px-3 py-3 text-foreground no-underline transition-colors duration-150 hover:bg-muted"
         >
           <SocialIcon kind={s.k} size={12} />
-          <span className="font-mono text-micro tracking-meta">{labelFor(s)}</span>
+          <span className="font-mono text-micro tracking-meta">
+            {labelFor(s)}
+          </span>
         </a>
       ))}
     </div>

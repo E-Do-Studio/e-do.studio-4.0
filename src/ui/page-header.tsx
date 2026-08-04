@@ -75,7 +75,10 @@ const PageHeaderActionButton = ({
         <IconArrowRight
           width={isPrimary ? 14 : 12}
           height={isPrimary ? 14 : 12}
-          className={cn('shrink-0', isPrimary || isDark ? 'text-white' : undefined)}
+          className={cn(
+            'shrink-0',
+            isPrimary || isDark ? 'text-white' : undefined,
+          )}
         />
       )}
     </>
@@ -90,11 +93,7 @@ const PageHeaderActionButton = ({
   }
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={actionClassName}
-    >
+    <button type="button" onClick={onClick} className={actionClassName}>
       {content}
     </button>
   );
@@ -259,13 +258,22 @@ interface BuildMainNavOpts {
   exclude?: MainNavId;
 }
 
-const buildMainNav = ({ lang, goto, exclude }: BuildMainNavOpts): PageHeaderAction[] => {
-  const items: { id: MainNavId; label: string; screen: string; primary?: boolean }[] = [
-    { id: 'stages',   label: common.stages[lang],    screen: 'plateau-live' },
-    { id: 'postprod', label: common.postProd[lang],  screen: 'postprod' },
-    { id: 'gallery',  label: common.gallery[lang],   screen: 'gallery' },
-    { id: 'contact',  label: common.contactUs[lang], screen: 'contact' },
-    { id: 'book',     label: common.book[lang],      screen: 'book', primary: true },
+const buildMainNav = ({
+  lang,
+  goto,
+  exclude,
+}: BuildMainNavOpts): PageHeaderAction[] => {
+  const items: {
+    id: MainNavId;
+    label: string;
+    screen: string;
+    primary?: boolean;
+  }[] = [
+    { id: 'stages', label: common.stages[lang], screen: 'plateau-live' },
+    { id: 'postprod', label: common.postProd[lang], screen: 'postprod' },
+    { id: 'gallery', label: common.gallery[lang], screen: 'gallery' },
+    { id: 'contact', label: common.contactUs[lang], screen: 'contact' },
+    { id: 'book', label: common.book[lang], screen: 'book', primary: true },
   ];
   return items
     .filter((it) => it.id !== exclude)

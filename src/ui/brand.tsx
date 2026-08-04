@@ -97,18 +97,33 @@ const Clock = () => {
           );
         })}
         <line
-          x1="50" y1="50" x2="50" y2="26"
-          stroke="currentColor" strokeWidth="3" strokeLinecap="round"
+          x1="50"
+          y1="50"
+          x2="50"
+          y2="26"
+          stroke="currentColor"
+          strokeWidth="3"
+          strokeLinecap="round"
           transform={`rotate(${hourDeg},50,50)`}
         />
         <line
-          x1="50" y1="50" x2="50" y2="18"
-          stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+          x1="50"
+          y1="50"
+          x2="50"
+          y2="18"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
           transform={`rotate(${minDeg},50,50)`}
         />
         <line
-          x1="50" y1="55" x2="50" y2="16"
-          stroke="var(--primary)" strokeWidth="1" strokeLinecap="round"
+          x1="50"
+          y1="55"
+          x2="50"
+          y2="16"
+          stroke="var(--primary)"
+          strokeWidth="1"
+          strokeLinecap="round"
           transform={`rotate(${secDeg},50,50)`}
         />
         <circle cx="50" cy="50" r="2.5" fill="currentColor" />

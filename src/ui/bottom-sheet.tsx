@@ -128,11 +128,14 @@ const BottomSheet = ({
   );
 
   // Touch handlers for swipe-down to close.
-  const onTouchStart = useCallback((event: React.TouchEvent<HTMLDivElement>) => {
-    if (event.touches.length !== 1) return;
-    dragStartRef.current = { y: event.touches[0].clientY, t: Date.now() };
-    dragDeltaRef.current = 0;
-  }, []);
+  const onTouchStart = useCallback(
+    (event: React.TouchEvent<HTMLDivElement>) => {
+      if (event.touches.length !== 1) return;
+      dragStartRef.current = { y: event.touches[0].clientY, t: Date.now() };
+      dragDeltaRef.current = 0;
+    },
+    [],
+  );
 
   const onTouchMove = useCallback((event: React.TouchEvent<HTMLDivElement>) => {
     const start = dragStartRef.current;
@@ -246,7 +249,9 @@ const BottomSheet = ({
         </div>
 
         {footer ? (
-          <div className="shrink-0 border-t border-border bg-white">{footer}</div>
+          <div className="shrink-0 border-t border-border bg-white">
+            {footer}
+          </div>
         ) : null}
       </div>
     </dialog>

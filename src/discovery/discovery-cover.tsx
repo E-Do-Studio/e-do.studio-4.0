@@ -1,4 +1,3 @@
-import React from 'react';
 import type { DiscoveryPost, Lang } from '../types';
 import { ResponsiveImage } from '../ui/responsive-image';
 import { VideoLoop } from '../ui/video-loop';
@@ -17,14 +16,14 @@ interface DiscoveryCoverMediaProps {
 
 // Wraps the cover decision: video (autoplay loop muet) or image (responsive).
 // No procedural fallback — nothing renders when the post has no coverMedia.
-export const DiscoveryCoverMedia: React.FC<DiscoveryCoverMediaProps> = ({
+export const DiscoveryCoverMedia = ({
   post,
   lang,
   className,
   sizes,
   priority,
   controls = false,
-}) => {
+}: DiscoveryCoverMediaProps) => {
   if (!post.coverUrl) {
     return null;
   }
@@ -41,7 +40,9 @@ export const DiscoveryCoverMedia: React.FC<DiscoveryCoverMediaProps> = ({
         />
       );
     }
-    return <VideoLoop src={post.coverUrl} className={className} objectFit="cover" />;
+    return (
+      <VideoLoop src={post.coverUrl} className={className} objectFit="cover" />
+    );
   }
   return (
     <ResponsiveImage

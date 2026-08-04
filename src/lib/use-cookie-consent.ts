@@ -24,12 +24,25 @@ function writeConsent(value: Exclude<CookieConsent, null>) {
 
 export function useCookieConsent(): {
   consent: CookieConsent;
+  /** Faux tant que le stockage n'a pas été lu — voir la note ci-dessous. */
+  ready: boolean;
   accept: () => void;
   reject: () => void;
 } {
-  const [consent, setConsent] = useState<CookieConsent>(() => readConsent());
+  // L'état ne peut pas être amorcé depuis localStorage : le serveur n'y a pas
+  // accès et rendait donc toujours la bannière, quand le client la retirait
+  // aussitôt. Résultat, un flash de bannière à chaque visite d'un visiteur ayant
+  // déjà répondu, plus une incohérence d'hydratation.
+  //
+  // `ready` distingue « stockage pas encore lu » de « aucun consentement
+  // enregistré ». Sans lui, le premier rendu client afficherait la bannière puis
+  // la retirerait : on aurait juste déplacé le flash.
+  const [consent, setConsent] = useState<CookieConsent>(null);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    setConsent(readConsent());
+    setReady(true);
     const onChange = () => setConsent(readConsent());
     window.addEventListener(CHANGE_EVENT, onChange);
     window.addEventListener('storage', onChange);
@@ -49,7 +62,7 @@ export function useCookieConsent(): {
     setConsent('rejected');
   }, []);
 
-  return { consent, accept, reject };
+  return { consent, ready, accept, reject };
 }
 
 export const COOKIE_CONSENT_EVENT = CHANGE_EVENT;

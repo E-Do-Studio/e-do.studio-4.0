@@ -2,7 +2,13 @@ import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { cn } from './cn';
 
 type ButtonSize = 'sm' | 'default' | 'lg' | 'icon';
-type ButtonVariant = 'default' | 'outline' | 'secondary' | 'ghost' | 'link' | 'destructive';
+type ButtonVariant =
+  | 'default'
+  | 'outline'
+  | 'secondary'
+  | 'ghost'
+  | 'link'
+  | 'destructive';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -19,7 +25,8 @@ const sizeMap: Record<ButtonSize, string> = {
 
 const variantMap: Record<ButtonVariant, string> = {
   default: 'bg-primary text-primary-foreground hover:opacity-90',
-  outline: 'border border-foreground bg-background text-foreground hover:bg-muted',
+  outline:
+    'border border-foreground bg-background text-foreground hover:bg-muted',
   secondary: 'bg-secondary text-secondary-foreground hover:bg-muted',
   ghost: 'bg-transparent text-foreground hover:bg-muted',
   link: 'bg-transparent p-0 text-primary underline underline-offset-1',

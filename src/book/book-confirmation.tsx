@@ -2,16 +2,45 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { usePageContext } from '../lib/page-context';
 import { SCREEN_TO_PATH } from '../lib/screens';
-import { Button } from '../ui/button';
 import { IconArrowRight } from '../ui/icons';
 import { PageHeader, buildMainNav } from '../ui/page-header';
 import { clearDraft } from '../lib/use-booking-draft';
 import { booking, bookPicker, common } from '../i18n/messages';
-import { loadConfirmation, clearConfirmation, type ConfirmationSnapshot } from './confirmation-snapshot';
+import {
+  loadConfirmation,
+  clearConfirmation,
+  type ConfirmationSnapshot,
+} from './confirmation-snapshot';
 import type { Lang } from '../types';
 
-const MONTHS_FR = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
-const MONTHS_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MONTHS_FR = [
+  'Janvier',
+  'Février',
+  'Mars',
+  'Avril',
+  'Mai',
+  'Juin',
+  'Juillet',
+  'Août',
+  'Septembre',
+  'Octobre',
+  'Novembre',
+  'Décembre',
+];
+const MONTHS_EN = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
 
 const fmtEUR = (n: unknown): string => {
   if (n == null || Number.isNaN(Number(n))) return '0';
@@ -19,7 +48,11 @@ const fmtEUR = (n: unknown): string => {
   const truncated = Math.trunc(num * 100) / 100;
   const hasDecimals = truncated !== Math.trunc(truncated);
   return truncated.toLocaleString('fr-FR', {
-    minimumFractionDigits: hasDecimals ? (truncated * 10 !== Math.trunc(truncated * 10) ? 2 : 1) : 0,
+    minimumFractionDigits: hasDecimals
+      ? truncated * 10 !== Math.trunc(truncated * 10)
+        ? 2
+        : 1
+      : 0,
     maximumFractionDigits: 2,
   });
 };
@@ -49,11 +82,17 @@ const ConfirmedView = ({
   const isMultiPlateau = (snapshot.slotIds || []).filter(Boolean).length > 1;
   const ref = useMemo(() => {
     if (snapshot.savedRef) return snapshot.savedRef;
-    const prefix = snapshot.mode === 'quote' ? 'EDO-Q-' : snapshot.mode === 'booking' ? 'EDO-R-' : 'EDO-';
+    const prefix =
+      snapshot.mode === 'quote'
+        ? 'EDO-Q-'
+        : snapshot.mode === 'booking'
+          ? 'EDO-R-'
+          : 'EDO-';
     return prefix + Math.random().toString(36).substring(2, 8).toUpperCase();
   }, [snapshot.savedRef, snapshot.mode]);
 
-  const plateauLabel = snapshot.plateauName[lang] || (lang === 'fr' ? 'Plateau' : 'Stage');
+  const plateauLabel =
+    snapshot.plateauName[lang] || (lang === 'fr' ? 'Plateau' : 'Stage');
   const copy = (() => {
     if (snapshot.mode === 'quote') {
       return {
@@ -128,36 +167,53 @@ const ConfirmedView = ({
           <div className="bg-white px-5 md:px-6 py-5 md:py-6 flex flex-col justify-between gap-3.5 min-h-44">
             <div className="flex flex-col gap-3.5">
               <div>
-                <div className="edo-cell-label text-muted-foreground mb-1">{booking.reference[lang]}</div>
-                <div className="font-mono text-cell tracking-ui text-foreground">{ref}</div>
+                <div className="edo-cell-label text-muted-foreground mb-1">
+                  {booking.reference[lang]}
+                </div>
+                <div className="font-mono text-cell tracking-ui text-foreground">
+                  {ref}
+                </div>
               </div>
               <div>
-                <div className="edo-cell-label text-muted-foreground mb-1">{booking.issued[lang]}</div>
+                <div className="edo-cell-label text-muted-foreground mb-1">
+                  {booking.issued[lang]}
+                </div>
                 <div className="font-mono text-caption text-foreground">
-                  {new Date().toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-GB', {
-                    day: '2-digit',
-                    month: 'short',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
+                  {new Date().toLocaleDateString(
+                    lang === 'fr' ? 'fr-FR' : 'en-GB',
+                    {
+                      day: '2-digit',
+                      month: 'short',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    },
+                  )}
                 </div>
               </div>
             </div>
             <div>
-              <div className="edo-cell-label text-muted-foreground mb-1">{booking.contactLabel[lang]}</div>
+              <div className="edo-cell-label text-muted-foreground mb-1">
+                {booking.contactLabel[lang]}
+              </div>
               <div className="text-detail font-medium tracking-copy-tight">
                 {[contact.prenom, contact.nom].filter(Boolean).join(' ') || '—'}
               </div>
-              <div className="text-caption text-muted-foreground">{contact.email || '—'}</div>
+              <div className="text-caption text-muted-foreground">
+                {contact.email || '—'}
+              </div>
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 edo-hairline">
           <div className="bg-white px-5 py-3">
-            <div className="edo-cell-label text-muted-foreground mb-1">{booking.stage[lang]}</div>
-            <div className="text-cell font-medium tracking-headline">{plateauLabel}</div>
+            <div className="edo-cell-label text-muted-foreground mb-1">
+              {booking.stage[lang]}
+            </div>
+            <div className="text-cell font-medium tracking-headline">
+              {plateauLabel}
+            </div>
           </div>
           <div className="bg-white px-5 py-3">
             <div className="edo-cell-label text-muted-foreground mb-1">
@@ -166,22 +222,36 @@ const ConfirmedView = ({
             {snapshot.sessions && snapshot.sessions.length > 1 ? (
               <ul className="flex flex-col gap-1 list-none p-0 m-0">
                 {snapshot.sessions.map((s, i) => (
-                  <li key={`${s.plateauKey}-${i}`} className="text-detail font-medium tracking-copy-tight">
-                    <span className="text-muted-foreground">{s.plateauName[lang]}</span>
+                  <li
+                    key={`${s.plateauKey}-${i}`}
+                    className="text-detail font-medium tracking-copy-tight"
+                  >
+                    <span className="text-muted-foreground">
+                      {s.plateauName[lang]}
+                    </span>
                     {' · '}
                     {s.date
                       ? `${s.date.d} ${months[s.date.m]} ${s.date.y}`
-                      : (snapshot.mode === 'quote' ? booking.notSet[lang] : '—')}
+                      : snapshot.mode === 'quote'
+                        ? booking.notSet[lang]
+                        : '—'}
                     {s.arrivalHour != null && (
-                      <> · {fmtTime(s.arrivalHour)}–{fmtTime(s.arrivalHour + s.hours)}</>
+                      <>
+                        {' '}
+                        · {fmtTime(s.arrivalHour)}–
+                        {fmtTime(s.arrivalHour + s.hours)}
+                      </>
                     )}
                   </li>
                 ))}
               </ul>
             ) : snapshot.selected ? (
               <div className="text-cell font-medium tracking-headline">
-                {snapshot.selected.d} {months[snapshot.selected.m]} {snapshot.selected.y} ·{' '}
-                {fmtTime(snapshot.arrivalHour ?? 10)}–{fmtTime((snapshot.arrivalHour ?? 10) + (snapshot.rentalHours || 0))}
+                {snapshot.selected.d} {months[snapshot.selected.m]}{' '}
+                {snapshot.selected.y} · {fmtTime(snapshot.arrivalHour ?? 10)}–
+                {fmtTime(
+                  (snapshot.arrivalHour ?? 10) + (snapshot.rentalHours || 0),
+                )}
               </div>
             ) : (
               <div className="text-cell font-medium tracking-headline text-muted-foreground">
@@ -190,33 +260,53 @@ const ConfirmedView = ({
             )}
           </div>
           <div className="bg-white px-5 py-3">
-            <div className="edo-cell-label text-muted-foreground mb-1">{booking.company[lang]}</div>
-            <div className="text-detail font-medium tracking-copy-tight">{contact.societe || '—'}</div>
+            <div className="edo-cell-label text-muted-foreground mb-1">
+              {booking.company[lang]}
+            </div>
+            <div className="text-detail font-medium tracking-copy-tight">
+              {contact.societe || '—'}
+            </div>
           </div>
           <div className="bg-white px-5 py-3">
-            <div className="edo-cell-label text-muted-foreground mb-1">SIREN</div>
-            <div className="font-mono text-caption tracking-caption">{contact.siren || '—'}</div>
+            <div className="edo-cell-label text-muted-foreground mb-1">
+              SIREN
+            </div>
+            <div className="font-mono text-caption tracking-caption">
+              {contact.siren || '—'}
+            </div>
           </div>
         </div>
 
         <div className="bg-white px-5 md:px-12 py-cell pb-5 flex-1">
-          <div className="edo-cell-label text-muted-foreground mb-2.5">{booking.quoteBreakdown[lang]}</div>
+          <div className="edo-cell-label text-muted-foreground mb-2.5">
+            {booking.quoteBreakdown[lang]}
+          </div>
           <div className="flex flex-col">
-            {(snapshot.rows as { lbl: string; amt: number; onReq?: boolean }[]).map((r, i, arr) => (
+            {(
+              snapshot.rows as { lbl: string; amt: number; onReq?: boolean }[]
+            ).map((r, i, arr) => (
               <div
                 key={i}
                 className={`flex flex-col py-1.5 gap-0.5 ${i === arr.length - 1 ? '' : 'border-b border-b-border'}`}
               >
                 <div className="flex justify-between items-baseline text-caption">
-                  <span className="tracking-copy-tight text-foreground">{r.lbl}</span>
+                  <span className="tracking-copy-tight text-foreground">
+                    {r.lbl}
+                  </span>
                   <span className="font-mono tabular-nums text-foreground">
-                    {r.onReq ? (lang === 'fr' ? 'sur demande' : 'on request') : `${fmtEUR(r.amt)} €`}
+                    {r.onReq
+                      ? lang === 'fr'
+                        ? 'sur demande'
+                        : 'on request'
+                      : `${fmtEUR(r.amt)} €`}
                   </span>
                 </div>
               </div>
             ))}
             <div className="flex justify-between items-baseline mt-3 pt-2.5 border-t-2 border-t-foreground">
-              <span className="font-mono text-caption tracking-meta uppercase">Total HT*</span>
+              <span className="font-mono text-caption tracking-meta uppercase">
+                Total HT*
+              </span>
               <span className="text-page-title font-light tracking-display tabular-nums">
                 {fmtEUR(snapshot.total)} €
               </span>
@@ -235,7 +325,8 @@ const ConfirmedView = ({
           </div>
           <div className="bg-white px-5 py-3 flex items-center justify-end">
             <button onClick={onNewRequest} className={navBtnOrangeCls}>
-              {booking.newRequest[lang]} <IconArrowRight width="14" height="14" />
+              {booking.newRequest[lang]}{' '}
+              <IconArrowRight width="14" height="14" />
             </button>
           </div>
         </div>
@@ -293,7 +384,8 @@ const BookConfirmation = () => {
               onClick={() => navigate({ to: SCREEN_TO_PATH.book(lang) })}
               className="edo-focus-ring mt-8 inline-flex h-control cursor-pointer items-center gap-2 border-0 bg-primary px-cell-lg font-mono text-caption tracking-meta uppercase text-white transition-all duration-150 ease-edo-out hover:opacity-90"
             >
-              {bookPicker.resumeBooking[lang]} <IconArrowRight width="14" height="14" />
+              {bookPicker.resumeBooking[lang]}{' '}
+              <IconArrowRight width="14" height="14" />
             </button>
           </div>
         </div>

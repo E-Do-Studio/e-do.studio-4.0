@@ -60,6 +60,20 @@ async function resolveStatic(pathname) {
   }
 }
 
+// Le tunnel de réservation porte l'état du visiteur (étape, brouillon,
+// confirmation) : il ne doit être conservé par aucun intermédiaire ni par le
+// navigateur. Le reste est du contenu éditorial identique pour tout le monde.
+const PRIVATE_PATHS = /^\/(fr|en)\/(reserver|book)(\/|$)/;
+
+// `max-age=0` garde le navigateur en revalidation — une publication CMS ne peut
+// pas rester coincée chez un visiteur. `s-maxage` + `stale-while-revalidate`
+// s'adressent à un cache partagé : aujourd'hui Caddy proxifie sans cacher, donc
+// cette partie est inerte, mais elle rend l'ajout d'un CDN immédiat.
+function htmlCacheControl(pathname) {
+  if (PRIVATE_PATHS.test(pathname)) return 'no-store';
+  return 'public, max-age=0, s-maxage=60, stale-while-revalidate=300';
+}
+
 function toWebRequest(req) {
   const url = `http://${req.headers.host ?? 'localhost'}${req.url}`;
   const hasBody = req.method !== 'GET' && req.method !== 'HEAD';
@@ -81,16 +95,20 @@ const server = createServer(async (req, res) => {
       // vidéos) est stable mais peut être remplacé — cache plus court.
       res.writeHead(200, {
         'Content-Type': MIME[extname(filePath)] ?? 'application/octet-stream',
-        'Cache-Control': pathname.startsWith('/assets/')
-          ? 'public, max-age=31536000, immutable'
-          : 'public, max-age=3600',
+        'Cache-Control':
+          pathname.startsWith('/assets/') || pathname.startsWith('/fonts/')
+            ? 'public, max-age=31536000, immutable'
+            : 'public, max-age=3600',
       });
       pipeSafely(createReadStream(filePath), res, req.url);
       return;
     }
 
     const response = await fetchHandler(toWebRequest(req));
-    res.writeHead(response.status, Object.fromEntries(response.headers));
+    const headers = Object.fromEntries(response.headers);
+    if (!headers['cache-control'])
+      headers['Cache-Control'] = htmlCacheControl(pathname);
+    res.writeHead(response.status, headers);
     if (response.body) {
       pipeSafely(Readable.fromWeb(response.body), res, req.url);
     } else {

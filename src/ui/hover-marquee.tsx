@@ -50,7 +50,10 @@ const HoverMarquee = ({ children, className }: HoverMarqueeProps) => {
     const startup = track.animate(
       [
         { transform: 'translateX(0)', offset: 0 },
-        { transform: 'translateX(0)', offset: START_DELAY_MS / startupDuration },
+        {
+          transform: 'translateX(0)',
+          offset: START_DELAY_MS / startupDuration,
+        },
         { transform: `translateX(-${overflow}px)`, offset: 1 },
       ],
       { duration: startupDuration, easing: 'linear', fill: 'forwards' },
@@ -65,9 +68,15 @@ const HoverMarquee = ({ children, className }: HoverMarqueeProps) => {
       const pingPong = track.animate(
         [
           { transform: `translateX(-${overflow}px)`, offset: 0 },
-          { transform: `translateX(-${overflow}px)`, offset: at(PAUSE_AT_END_MS) },
+          {
+            transform: `translateX(-${overflow}px)`,
+            offset: at(PAUSE_AT_END_MS),
+          },
           { transform: 'translateX(0)', offset: at(PAUSE_AT_END_MS + travel) },
-          { transform: 'translateX(0)', offset: at(PAUSE_AT_END_MS + travel + PAUSE_AT_START_MS) },
+          {
+            transform: 'translateX(0)',
+            offset: at(PAUSE_AT_END_MS + travel + PAUSE_AT_START_MS),
+          },
           { transform: `translateX(-${overflow}px)`, offset: 1 },
         ],
         { duration: cycle, iterations: Infinity, easing: 'linear' },

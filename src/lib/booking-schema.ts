@@ -7,8 +7,8 @@ const msgs = {
     tel: 'Numéro de téléphone invalide',
     siren: 'Le SIREN doit contenir 9 chiffres',
     cgv: 'Vous devez accepter les CGV',
-    typesArticles: "Sélectionnez au moins un type d’article",
-    quantite: "Indiquez la quantité d’articles",
+    typesArticles: 'Sélectionnez au moins un type d’article',
+    quantite: 'Indiquez la quantité d’articles',
     vues: 'Indiquez le nombre de vues par article',
   },
   en: {
@@ -25,7 +25,10 @@ const msgs = {
 
 export type Lang = 'fr' | 'en';
 
-export function createContactSchema(lang: Lang, opts: { requireProductFields: boolean }) {
+export function createContactSchema(
+  lang: Lang,
+  opts: { requireProductFields: boolean },
+) {
   const m = msgs[lang];
 
   const base = z.object({
@@ -36,7 +39,10 @@ export function createContactSchema(lang: Lang, opts: { requireProductFields: bo
     nom: z.string().min(1, m.required),
     prenom: z.string().min(1, m.required),
     email: z.string().email(m.email),
-    tel: z.string().min(6, m.tel).regex(/^[\d\s+\-().]+$/, m.tel),
+    tel: z
+      .string()
+      .min(6, m.tel)
+      .regex(/^[\d\s+\-().]+$/, m.tel),
     typesArticles: opts.requireProductFields
       ? z.array(z.string()).min(1, m.typesArticles)
       : z.array(z.string()),
@@ -60,7 +66,9 @@ export function validateContact(
   data: unknown,
   lang: Lang,
   opts: { requireProductFields: boolean },
-): { success: true; data: z.infer<ReturnType<typeof createContactSchema>> } | { success: false; errors: ContactFormErrors } {
+):
+  | { success: true; data: z.infer<ReturnType<typeof createContactSchema>> }
+  | { success: false; errors: ContactFormErrors } {
   const schema = createContactSchema(lang, opts);
   const result = schema.safeParse(data);
 

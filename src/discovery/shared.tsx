@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { HeaderAction, HeaderActionText } from '../ui/header-action';
 import { IconArrowRight } from '../ui/icons';
 import { cn } from '../ui/cn';
@@ -6,13 +6,17 @@ import { microBase } from './styles';
 
 interface ArrowIconProps extends React.SVGProps<SVGSVGElement> {}
 
-export const ArrowIcon: React.FC<ArrowIconProps> = (props) => <IconArrowRight {...props} />;
+export const ArrowIcon = (props: ArrowIconProps) => (
+  <IconArrowRight {...props} />
+);
 
 interface CellBadgeProps {
   n?: number;
 }
 
-export const CellBadge: React.FC<CellBadgeProps> = () => null;
+// Badge volontairement neutralisé : conserve son type de props pour que les
+// appelants continuent de compiler.
+export const CellBadge = (_: CellBadgeProps) => null;
 
 interface ArticleMetaProps {
   post: import('../types').DiscoveryPost;
@@ -21,9 +25,17 @@ interface ArticleMetaProps {
   read?: boolean;
 }
 
-export const ArticleMeta: React.FC<ArticleMetaProps> = ({ post, lang, muted = false, read = true }) => (
-  <span className={cn(microBase, muted ? 'text-muted-foreground' : 'text-primary')}>
-    {post.tag[lang]}{read ? ` · ${post.read}` : ''}
+export const ArticleMeta = ({
+  post,
+  lang,
+  muted = false,
+  read = true,
+}: ArticleMetaProps) => (
+  <span
+    className={cn(microBase, muted ? 'text-muted-foreground' : 'text-primary')}
+  >
+    {post.tag[lang]}
+    {read ? ` · ${post.read}` : ''}
   </span>
 );
 

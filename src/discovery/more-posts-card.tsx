@@ -1,4 +1,3 @@
-import React from 'react';
 import type { DiscoveryCategory, DiscoveryPost, Lang } from '../types';
 import { ArticleMeta, CellBadge } from './shared';
 import { DiscoveryCoverMedia } from './discovery-cover';
@@ -20,11 +19,27 @@ interface MorePostsCardProps {
   badge?: number;
 }
 
-export const MorePostsCard: React.FC<MorePostsCardProps> = ({ posts, cats, lang, onOpen, cat, setCat, className, badge }) => {
-  const filteredPosts = cat === 'all' ? posts : posts.filter((post) => post.cat === cat);
+export const MorePostsCard = ({
+  posts,
+  cats,
+  lang,
+  onOpen,
+  cat,
+  setCat,
+  className,
+  badge,
+}: MorePostsCardProps) => {
+  const filteredPosts =
+    cat === 'all' ? posts : posts.filter((post) => post.cat === cat);
 
   return (
-    <section className={cn(cellBase, 'order-2 flex min-h-108 flex-col bg-white lg:min-h-0', className)}>
+    <section
+      className={cn(
+        cellBase,
+        'order-2 flex min-h-108 flex-col bg-white lg:min-h-0',
+        className,
+      )}
+    >
       {badge != null && <CellBadge n={badge} />}
 
       <div className="flex shrink-0 flex-col gap-2.5 border-b border-border px-cell py-3.5">
@@ -36,7 +51,13 @@ export const MorePostsCard: React.FC<MorePostsCardProps> = ({ posts, cats, lang,
             {filteredPosts.length}/{posts.length}
           </span>
         </div>
-        <FilterChips cats={cats} value={cat} onChange={setCat} lang={lang} compact />
+        <FilterChips
+          cats={cats}
+          value={cat}
+          onChange={setCat}
+          lang={lang}
+          compact
+        />
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto">

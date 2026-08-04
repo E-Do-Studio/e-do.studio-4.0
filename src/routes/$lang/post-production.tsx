@@ -4,6 +4,11 @@ import { settle } from '../../lib/route-data';
 import { fetchPostProdTypes } from '../../lib/strapi';
 import type { Lang } from '../../types';
 import { buildSeoHead } from '../../lib/seo-head';
+import {
+  buildPageBreadcrumb,
+  buildPostProdServiceSchema,
+} from '../../lib/structured-data';
+import { common } from '../../i18n/messages';
 
 export const Route = createFileRoute('/$lang/post-production')({
   // `?type=` est une cible de redirection 301 depuis les URLs v3
@@ -25,11 +30,29 @@ export const Route = createFileRoute('/$lang/post-production')({
       metaKey: 'postprod',
       lang,
       pathname: '/post-production',
-      title: strapiSeo?.title || (cat ? `${cat[lang]} — Post-production — E-Do Studio Paris` : undefined),
+      title:
+        strapiSeo?.title ||
+        (cat
+          ? `${cat[lang]} — Post-production — E-Do Studio Paris`
+          : undefined),
       description:
-        strapiSeo?.description || cat?.tagline[lang] || cat?.features[lang]?.[0] || undefined,
+        strapiSeo?.description ||
+        cat?.tagline[lang] ||
+        cat?.features[lang]?.[0] ||
+        undefined,
       imageUrl: strapiSeo?.imageUrl,
       noIndex: strapiSeo?.noIndex,
+      jsonLd: [
+        cats.length > 0 &&
+          buildPostProdServiceSchema({
+            cats,
+            lang,
+            pathname: '/post-production',
+          }),
+        buildPageBreadcrumb(lang, [
+          { name: common.postProd[lang], pathname: '/post-production' },
+        ]),
+      ],
     });
   },
   component: PostprodPage,

@@ -5,7 +5,10 @@ interface PreviewBannerProps {
   lang: Lang;
 }
 
-const LABELS: Record<Lang, { mode: string; status: { draft: string; published: string }; exit: string }> = {
+const LABELS: Record<
+  Lang,
+  { mode: string; status: { draft: string; published: string }; exit: string }
+> = {
   fr: {
     mode: 'Mode preview',
     status: { draft: 'Brouillon', published: 'Publié' },

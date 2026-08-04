@@ -9,12 +9,15 @@ import type {
 export type { BookingSessionData, BookingQuoteData, CreateBookingInput };
 
 type BookingInsert = Database['public']['Tables']['bookings']['Insert'];
-type BookingSessionInsert = Database['public']['Tables']['booking_sessions']['Insert'];
-type BookingQuoteInsert = Database['public']['Tables']['booking_quotes']['Insert'];
+type BookingSessionInsert =
+  Database['public']['Tables']['booking_sessions']['Insert'];
+type BookingQuoteInsert =
+  Database['public']['Tables']['booking_quotes']['Insert'];
 type BookingRow = Database['public']['Tables']['bookings']['Row'];
 
 function generateReference(mode: 'quote' | 'booking' | 'request'): string {
-  const prefix = mode === 'quote' ? 'EDO-Q-' : mode === 'booking' ? 'EDO-R-' : 'EDO-';
+  const prefix =
+    mode === 'quote' ? 'EDO-Q-' : mode === 'booking' ? 'EDO-R-' : 'EDO-';
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let code = '';
   for (let i = 0; i < 6; i++) {
@@ -61,14 +64,19 @@ async function findConflictingSession(slot: SessionSlot): Promise<boolean> {
   return false;
 }
 
-export async function createBooking(input: CreateBookingInput): Promise<CreateBookingResult> {
+export async function createBooking(
+  input: CreateBookingInput,
+): Promise<CreateBookingResult> {
   const reference = generateReference(input.mode);
-  const quoteRef = input.mode === 'booking' ? generateReference('quote') : reference;
+  const quoteRef =
+    input.mode === 'booking' ? generateReference('quote') : reference;
 
-  const fallbackDate = input.preferredDate ? dateToIso(input.preferredDate) : null;
+  const fallbackDate = input.preferredDate
+    ? dateToIso(input.preferredDate)
+    : null;
   const fallbackHour = input.arrivalHour;
 
-  const resolvedSessions = input.sessions.map(s => {
+  const resolvedSessions = input.sessions.map((s) => {
     const date = s.date ? dateToIso(s.date) : fallbackDate;
     const arrivalHour = s.arrivalHour ?? fallbackHour;
     return { session: s, date, arrivalHour };
@@ -83,7 +91,9 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
       hours: r.session.hours,
     });
     if (conflict) {
-      throw new Error('Ce créneau est déjà réservé. Veuillez choisir un autre horaire.');
+      throw new Error(
+        'Ce créneau est déjà réservé. Veuillez choisir un autre horaire.',
+      );
     }
   }
 
@@ -94,7 +104,9 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
   const bookingData: BookingInsert = {
     reference,
     status: input.mode === 'booking' ? 'pending' : 'draft',
-    client_name: [input.contact.prenom, input.contact.nom].filter(Boolean).join(' '),
+    client_name: [input.contact.prenom, input.contact.nom]
+      .filter(Boolean)
+      .join(' '),
     client_first_name: input.contact.prenom || null,
     client_last_name: input.contact.nom || null,
     client_email: input.contact.email,
@@ -122,24 +134,26 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
   }
 
   if (input.sessions.length > 0) {
-    const sessionRows: BookingSessionInsert[] = resolvedSessions.map(({ session: s, date, arrivalHour }) => ({
-      booking_id: booking.id,
-      plateau_key: s.plateauKey,
-      slot_type: s.slotType ?? 'hour',
-      hours: s.hours,
-      session_date: date,
-      arrival_hour: arrivalHour,
-      cyclo_mode: s.cycloMode,
-      product_type: s.productType,
-      method: s.method,
-      submethod: s.submethod,
-      media: s.media,
-      views: s.views,
-      views_count: s.viewsCount,
-      quantity: s.quantity,
-      postprod_enabled: s.postprodEnabled,
-      postprod_video: s.postprodVideo,
-    }));
+    const sessionRows: BookingSessionInsert[] = resolvedSessions.map(
+      ({ session: s, date, arrivalHour }) => ({
+        booking_id: booking.id,
+        plateau_key: s.plateauKey,
+        slot_type: s.slotType ?? 'hour',
+        hours: s.hours,
+        session_date: date,
+        arrival_hour: arrivalHour,
+        cyclo_mode: s.cycloMode,
+        product_type: s.productType,
+        method: s.method,
+        submethod: s.submethod,
+        media: s.media,
+        views: s.views,
+        views_count: s.viewsCount,
+        quantity: s.quantity,
+        postprod_enabled: s.postprodEnabled,
+        postprod_video: s.postprodVideo,
+      }),
+    );
 
     const { error: sessionsError } = await supabase
       .from('booking_sessions')
@@ -168,8 +182,12 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
   // Best-effort instant sync. It is no longer the guarantee: the server-side
   // reconcile cron (reconcile_calendar_sync) re-pushes any booking left
   // unsynced, so a failure here is logged, not swallowed, and self-heals.
-  syncToCalendar(booking.id).catch((e) => console.error('calendar sync failed', e));
-  sendBookingEmails(booking.id).catch((e) => console.error('booking email failed', e));
+  syncToCalendar(booking.id).catch((e) =>
+    console.error('calendar sync failed', e),
+  );
+  sendBookingEmails(booking.id).catch((e) =>
+    console.error('booking email failed', e),
+  );
 
   return { booking, reference };
 }

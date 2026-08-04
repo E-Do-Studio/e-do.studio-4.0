@@ -1,38 +1,46 @@
-import { useEffect, useMemo, useState } from "react";
-import type { CSSProperties, ReactNode } from "react";
-import { Link, useLoaderData, useNavigate, useSearch } from "@tanstack/react-router";
-import { usePageContext } from "./lib/page-context";
-import { SCREEN_TO_PATH } from "./lib/screens";
-import { buildGalleryCollectionSchema, buildBreadcrumbSchema } from "./lib/structured-data";
-import type { GalleryCategory, GalleryProject } from "./lib/strapi";
-import type { Lang } from "./types";
-import { EmptyState } from "./ui/empty-state";
-import { HoverMarquee } from "./ui/hover-marquee";
-import { MobileNavStrip } from "./ui/mobile-nav-strip";
-import { PageHeader, buildMainNav } from "./ui/page-header";
-import { ResponsiveImage } from "./ui/responsive-image";
-import type { StripGroup } from "./ui/mobile-nav-strip";
-import { cn } from "./ui/cn";
-import { common, galleryPage, mobileNav } from "./i18n/messages";
-import { GalleryLightbox } from "./gallery-lightbox";
+import { useEffect, useMemo, useState } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
+import {
+  Link,
+  useLoaderData,
+  useNavigate,
+  useSearch,
+} from '@tanstack/react-router';
+import { usePageContext } from './lib/page-context';
+import { SCREEN_TO_PATH } from './lib/screens';
+import type { GalleryCategory, GalleryProject } from './lib/strapi';
+import type { Lang } from './types';
+import { EmptyState } from './ui/empty-state';
+import { HoverMarquee } from './ui/hover-marquee';
+import { MobileNavStrip } from './ui/mobile-nav-strip';
+import { PageHeader, buildMainNav } from './ui/page-header';
+import { ResponsiveImage } from './ui/responsive-image';
+import { VideoLoop } from './ui/video-loop';
+import type { StripGroup } from './ui/mobile-nav-strip';
+import { cn } from './ui/cn';
+import { common, galleryPage, mobileNav } from './i18n/messages';
+import { GalleryLightbox } from './gallery-lightbox';
 
 const PLATEAU_LABELS: Record<string, { fr: string; en: string }> = {
-  cyclorama: { fr: "Cyclorama", en: "Cyclorama" },
-  horizontal: { fr: "Horizontal", en: "Horizontal" },
-  vertical: { fr: "Vertical", en: "Vertical" },
-  eclipse: { fr: "Eclipse", en: "Eclipse" },
-  live: { fr: "Live", en: "Live" },
+  cyclorama: { fr: 'Cyclorama', en: 'Cyclorama' },
+  horizontal: { fr: 'Horizontal', en: 'Horizontal' },
+  vertical: { fr: 'Vertical', en: 'Vertical' },
+  eclipse: { fr: 'Eclipse', en: 'Eclipse' },
+  live: { fr: 'Live', en: 'Live' },
 };
 
 const PLATEAU_TO_SCREEN: Record<string, string> = {
-  cyclorama: "cyclorama",
-  horizontal: "plateau-horizontal",
-  vertical: "plateau-vertical",
-  eclipse: "plateau-eclipse",
-  live: "plateau-live",
+  cyclorama: 'cyclorama',
+  horizontal: 'plateau-horizontal',
+  vertical: 'plateau-vertical',
+  eclipse: 'plateau-eclipse',
+  live: 'plateau-live',
 };
 
-function resolvePlateauPath(plateau: string | undefined, lang: Lang): string | null {
+function resolvePlateauPath(
+  plateau: string | undefined,
+  lang: Lang,
+): string | null {
   if (!plateau) return null;
   const screen = PLATEAU_TO_SCREEN[plateau];
   if (!screen) return null;
@@ -44,9 +52,9 @@ const PROJECT_PALETTES: Record<
   string,
   { bgClass: string; accent: string; soft: string }
 > = {
-  mono: { bgClass: "bg-muted", accent: "#141414", soft: "#bfbfbf" },
-  dark: { bgClass: "bg-foreground", accent: "#f5f5f5", soft: "#2a2a2a" },
-  warm: { bgClass: "bg-edo-warm", accent: "#141414", soft: "#b8ad94" },
+  mono: { bgClass: 'bg-muted', accent: '#141414', soft: '#bfbfbf' },
+  dark: { bgClass: 'bg-foreground', accent: '#f5f5f5', soft: '#2a2a2a' },
+  warm: { bgClass: 'bg-edo-warm', accent: '#141414', soft: '#b8ad94' },
 };
 
 function buildCrossFilterMaps(projects: GalleryProject[]) {
@@ -94,19 +102,19 @@ const GalleryFilters = ({
   catToPlateaux,
   plateauToCats,
 }: GalleryFiltersProps) => {
-  const hasFilters = cat !== "all" || plateau !== "all";
+  const hasFilters = cat !== 'all' || plateau !== 'all';
 
   return (
     <aside className="flex flex-col bg-white">
       <FilterHeader label={galleryPage.categories[lang]} />
       <FilterCell
         label={common.all[lang]}
-        active={cat === "all"}
-        onClick={() => setCat("all")}
+        active={cat === 'all'}
+        onClick={() => setCat('all')}
       />
       {categories.map((category) => {
         const dimmed =
-          plateau !== "all" &&
+          plateau !== 'all' &&
           !(plateauToCats[plateau] ?? []).includes(category.k);
         return (
           <FilterCell
@@ -115,7 +123,7 @@ const GalleryFilters = ({
             active={cat === category.k}
             dimmed={dimmed}
             onClick={() => {
-              if (dimmed) setPlateau("all");
+              if (dimmed) setPlateau('all');
               setCat(category.k);
             }}
           />
@@ -125,13 +133,12 @@ const GalleryFilters = ({
       <FilterHeader label={common.stages[lang]} />
       <FilterCell
         label={common.all[lang]}
-        active={plateau === "all"}
-        onClick={() => setPlateau("all")}
+        active={plateau === 'all'}
+        onClick={() => setPlateau('all')}
       />
       {plateauOptions.map((option) => {
         const dimmed =
-          cat !== "all" &&
-          !(catToPlateaux[cat] ?? []).includes(option.k);
+          cat !== 'all' && !(catToPlateaux[cat] ?? []).includes(option.k);
         return (
           <FilterCell
             key={option.k}
@@ -139,7 +146,7 @@ const GalleryFilters = ({
             active={plateau === option.k}
             dimmed={dimmed}
             onClick={() => {
-              if (dimmed) setCat("all");
+              if (dimmed) setCat('all');
               setPlateau(option.k);
             }}
           />
@@ -149,8 +156,8 @@ const GalleryFilters = ({
       {hasFilters && (
         <button
           onClick={() => {
-            setCat("all");
-            setPlateau("all");
+            setCat('all');
+            setPlateau('all');
           }}
           className="edo-focus-ring shrink-0 cursor-pointer border-0 border-b border-border bg-white px-3.5 py-3 text-left font-mono text-label uppercase tracking-label text-primary transition-colors hover:bg-muted"
         >
@@ -183,11 +190,11 @@ const FilterCell = ({
   <button
     onClick={onClick}
     className={cn(
-      "edo-focus-ring flex w-full shrink-0 cursor-pointer items-center justify-between gap-2 border-0 border-b border-l-2 border-b-border px-3.5 py-2 text-left text-detail tracking-copy-tight text-foreground transition-colors",
+      'edo-focus-ring flex w-full shrink-0 cursor-pointer items-center justify-between gap-2 border-0 border-b border-l-2 border-b-border px-3.5 py-2 text-left text-detail tracking-copy-tight text-foreground transition-colors',
       active
-        ? "border-l-primary bg-muted font-medium"
-        : "border-l-transparent bg-white font-normal hover:bg-muted",
-      dimmed && "opacity-30",
+        ? 'border-l-primary bg-muted font-medium'
+        : 'border-l-transparent bg-white font-normal hover:bg-muted',
+      dimmed && 'opacity-30',
     )}
   >
     <span className="overflow-hidden text-ellipsis whitespace-nowrap">
@@ -245,11 +252,20 @@ const ProjectRow = ({
   onOpenLightbox: (projectId: number, imageIndex: number) => void;
 }) => {
   const to = resolvePlateauPath(project.plateau, lang);
-  const plateauLabel = PLATEAU_LABELS[project.plateau]?.[lang] ?? project.plateau;
+  const plateauLabel =
+    PLATEAU_LABELS[project.plateau]?.[lang] ?? project.plateau;
   const ariaLabel = `${project.brand} — ${plateauLabel}`;
   return (
-    <div className="edo-list-row group grid grid-cols-gallery-row-mobile md:grid-cols-gallery-row [&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-hairline" style={style}>
-      <ProjectLabel project={project} lang={lang} to={to} ariaLabel={ariaLabel} />
+    <div
+      className="edo-list-row group grid grid-cols-gallery-row-mobile md:grid-cols-gallery-row [&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-hairline"
+      style={style}
+    >
+      <ProjectLabel
+        project={project}
+        lang={lang}
+        to={to}
+        ariaLabel={ariaLabel}
+      />
       {[0, 1, 2].map((imageIndex) => (
         <ProjectImage
           key={imageIndex}
@@ -266,12 +282,12 @@ const ProjectRow = ({
 const usePrefersReducedMotion = (): boolean => {
   const [reduced, setReduced] = useState(false);
   useEffect(() => {
-    if (typeof window === "undefined" || !window.matchMedia) return;
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
     const update = () => setReduced(mq.matches);
     update();
-    mq.addEventListener("change", update);
-    return () => mq.removeEventListener("change", update);
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
   }, []);
   return reduced;
 };
@@ -287,9 +303,10 @@ const ProjectLabel = ({
   to: string | null;
   ariaLabel: string;
 }) => {
-  const plateauLabel = PLATEAU_LABELS[project.plateau]?.[lang] ?? project.plateau;
+  const plateauLabel =
+    PLATEAU_LABELS[project.plateau]?.[lang] ?? project.plateau;
   const className =
-    "edo-focus-ring relative flex cursor-pointer flex-col items-center justify-between overflow-hidden border-0 bg-white px-2 py-2 md:px-2.5 md:py-3.5 text-left font-sans no-underline text-inherit";
+    'edo-focus-ring relative flex cursor-pointer flex-col items-center justify-between overflow-hidden border-0 bg-white px-2 py-2 md:px-2.5 md:py-3.5 text-left font-sans no-underline text-inherit';
   const content = (
     <>
       <HoverMarquee className="max-w-full self-start font-mono text-micro uppercase tracking-code text-muted-foreground transition-colors group-hover:text-primary">
@@ -312,7 +329,9 @@ const ProjectLabel = ({
       </Link>
     );
   }
-  return <div className={className.replace("cursor-pointer ", "")}>{content}</div>;
+  return (
+    <div className={className.replace('cursor-pointer ', '')}>{content}</div>
+  );
 };
 
 const ProjectImage = ({
@@ -330,12 +349,17 @@ const ProjectImage = ({
   const item = project.media[imageIndex];
 
   const wrapperClass =
-    "edo-focus-ring relative block aspect-portrait overflow-hidden bg-white no-underline text-inherit";
+    'edo-focus-ring relative block aspect-portrait overflow-hidden bg-white no-underline text-inherit';
 
   let inner: ReactNode;
   if (!item) {
-    inner = <ProjectCoverFallback project={project} seed={project.id * 3 + imageIndex} />;
-  } else if (item.kind === "embed") {
+    inner = (
+      <ProjectCoverFallback
+        project={project}
+        seed={project.id * 3 + imageIndex}
+      />
+    );
+  } else if (item.kind === 'embed') {
     const altText = item.alt || `${project.brand} — ${imageIndex + 1}`;
     // pointer-events-none so the click reaches the wrapping button (opens the
     // lightbox, where the iframe becomes interactive).
@@ -351,22 +375,20 @@ const ProjectImage = ({
         className="absolute inset-0 h-full w-full border-0 pointer-events-none select-none"
       />
     );
-  } else if (item.kind === "video") {
+  } else if (item.kind === 'video') {
     const altText = item.alt || `${project.brand} — ${imageIndex + 1}`;
+    // VideoLoop plutôt qu'un <video autoPlay> : l'attribut déclenchait le
+    // téléchargement et la lecture de chaque tuile présente dans le DOM, même
+    // hors écran. La lecture est ici conditionnée à la visibilité réelle.
     inner = (
-      <video
+      <VideoLoop
         key={item.url}
-        autoPlay={!reducedMotion}
-        loop
-        muted
-        playsInline
-        preload="metadata"
-        disablePictureInPicture
-        aria-label={altText}
-        className="absolute inset-0 h-full w-full object-cover pointer-events-none select-none"
-      >
-        <source src={item.url} type={item.mime} />
-      </video>
+        src={item.url}
+        mime={item.mime}
+        paused={reducedMotion}
+        ariaLabel={altText}
+        className="absolute inset-0 h-full w-full"
+      />
     );
   } else {
     const altText = item.alt || `${project.brand} — ${imageIndex + 1}`;
@@ -386,7 +408,7 @@ const ProjectImage = ({
         type="button"
         onClick={onOpen}
         aria-label={ariaLabel}
-        className={cn(wrapperClass, "cursor-pointer border-0 p-0 text-left")}
+        className={cn(wrapperClass, 'cursor-pointer border-0 p-0 text-left')}
       >
         {inner}
       </button>
@@ -395,13 +417,19 @@ const ProjectImage = ({
   return <div className={wrapperClass}>{inner}</div>;
 };
 
-const ProjectCoverFallback = ({ project, seed }: { project: GalleryProject; seed: number }) => {
+const ProjectCoverFallback = ({
+  project,
+  seed,
+}: {
+  project: GalleryProject;
+  seed: number;
+}) => {
   const palette = PROJECT_PALETTES[project.tone] || PROJECT_PALETTES.mono;
   const layout = seed % 4;
 
   return (
     <div
-      className={cn("relative h-full w-full overflow-hidden", palette.bgClass)}
+      className={cn('relative h-full w-full overflow-hidden', palette.bgClass)}
     >
       <svg
         viewBox="0 0 300 380"
@@ -417,13 +445,25 @@ const ProjectCoverFallback = ({ project, seed }: { project: GalleryProject; seed
         {layout === 1 && (
           <>
             <rect x="0" y="220" width="300" height="160" fill={palette.soft} />
-            <rect x="100" y="110" width="100" height="210" fill={palette.accent} />
+            <rect
+              x="100"
+              y="110"
+              width="100"
+              height="210"
+              fill={palette.accent}
+            />
           </>
         )}
         {layout === 2 && (
           <>
             <circle cx="150" cy="220" r="120" fill={palette.soft} />
-            <rect x="130" y="60" width="40" height="200" fill={palette.accent} />
+            <rect
+              x="130"
+              y="60"
+              width="40"
+              height="200"
+              fill={palette.accent}
+            />
           </>
         )}
         {layout === 3 && (
@@ -444,8 +484,8 @@ const GalleryPageV3 = () => {
   // Page servie par deux routes (/galerie en FR, /gallery en EN), d'où l'accès
   // non strict aux search params comme aux données du loader.
   const search = useSearch({ strict: false }) as GalleryFilters;
-  const cat = search.cat ?? "all";
-  const plateau = search.plateau ?? "all";
+  const cat = search.cat ?? 'all';
+  const plateau = search.plateau ?? 'all';
   const navigate = useNavigate();
 
   // Mise à jour partielle : une clé absente de `next` garde sa valeur courante,
@@ -465,9 +505,9 @@ const GalleryPageV3 = () => {
       },
     });
 
-  const setCat = (c: string) => setFilters({ cat: c === "all" ? null : c });
+  const setCat = (c: string) => setFilters({ cat: c === 'all' ? null : c });
   const setPlateau = (p: string) =>
-    setFilters({ plateau: p === "all" ? null : p });
+    setFilters({ plateau: p === 'all' ? null : p });
 
   // La page est servie par deux routes (/galerie en FR, /gallery en EN) qui
   // partagent le même loader, d'où l'accès non strict à ses données.
@@ -479,9 +519,15 @@ const GalleryPageV3 = () => {
   const projects = loaderData.projects ?? [];
   const categories = loaderData.categories ?? [];
 
-  const [lightbox, setLightbox] = useState<{ projectId: number; imageIndex: number } | null>(null);
+  const [lightbox, setLightbox] = useState<{
+    projectId: number;
+    imageIndex: number;
+  } | null>(null);
   const lightboxProject = useMemo(
-    () => (lightbox ? projects.find((p) => p.id === lightbox.projectId) ?? null : null),
+    () =>
+      lightbox
+        ? (projects.find((p) => p.id === lightbox.projectId) ?? null)
+        : null,
     [lightbox, projects],
   );
 
@@ -507,8 +553,8 @@ const GalleryPageV3 = () => {
     () =>
       projects.filter(
         (project) =>
-          (cat === "all" || project.cat === cat) &&
-          (plateau === "all" || project.plateau === plateau),
+          (cat === 'all' || project.cat === cat) &&
+          (plateau === 'all' || project.plateau === plateau),
       ),
     [projects, cat, plateau],
   );
@@ -533,41 +579,40 @@ const GalleryPageV3 = () => {
     const allLabel = common.all[lang];
     const catGroupOptions = [
       {
-        k: "all",
+        k: 'all',
         label: allLabel,
       },
       ...categories.map((category) => ({
         k: category.k,
         label: category[lang],
         dimmed:
-          plateau !== "all" &&
+          plateau !== 'all' &&
           !(plateauToCats[plateau] ?? []).includes(category.k),
       })),
     ];
 
     const plateauGroupOptions = [
       {
-        k: "all",
+        k: 'all',
         label: allLabel,
       },
       ...plateauOptions.map((option) => ({
         k: option.k,
         label: option[lang],
-        dimmed:
-          cat !== "all" && !(catToPlateaux[cat] ?? []).includes(option.k),
+        dimmed: cat !== 'all' && !(catToPlateaux[cat] ?? []).includes(option.k),
       })),
     ];
 
     return [
       {
-        key: "cat",
+        key: 'cat',
         label: galleryPage.categories[lang],
         options: catGroupOptions,
         value: cat,
         onSelect: setCat,
       },
       {
-        key: "plateau",
+        key: 'plateau',
         label: common.stages[lang],
         options: plateauGroupOptions,
         value: plateau,
@@ -576,42 +621,43 @@ const GalleryPageV3 = () => {
     ];
   }, [
     lang,
-    projects,
     categories,
     plateauOptions,
     cat,
     plateau,
     catToPlateaux,
     plateauToCats,
+    setCat,
+    setPlateau,
   ]);
 
   const activeFilterCount =
-    (cat !== "all" ? 1 : 0) + (plateau !== "all" ? 1 : 0);
+    (cat !== 'all' ? 1 : 0) + (plateau !== 'all' ? 1 : 0);
   const hasActiveFilters = activeFilterCount > 0;
 
   const filterSummary = useMemo(() => {
     const parts: string[] = [];
-    if (cat !== "all") parts.push(catLabelMap[cat] ?? cat);
-    if (plateau !== "all") parts.push(plateauLabelMap[plateau] ?? plateau);
-    return parts.length > 0 ? parts.join(", ") : common.all[lang];
+    if (cat !== 'all') parts.push(catLabelMap[cat] ?? cat);
+    if (plateau !== 'all') parts.push(plateauLabelMap[plateau] ?? plateau);
+    return parts.length > 0 ? parts.join(', ') : common.all[lang];
   }, [cat, plateau, catLabelMap, plateauLabelMap, lang]);
 
   const mobileCountFor = (draft: Record<string, string>) => {
-    const draftCat = draft.cat ?? "all";
-    const draftPlateau = draft.plateau ?? "all";
+    const draftCat = draft.cat ?? 'all';
+    const draftPlateau = draft.plateau ?? 'all';
     return projects.filter(
       (project) =>
-        (draftCat === "all" || project.cat === draftCat) &&
-        (draftPlateau === "all" || project.plateau === draftPlateau),
+        (draftCat === 'all' || project.cat === draftCat) &&
+        (draftPlateau === 'all' || project.plateau === draftPlateau),
     ).length;
   };
 
   const applyMobileFilters = (draft: Record<string, string>) => {
-    const nextCat = draft.cat ?? "all";
-    const nextPlateau = draft.plateau ?? "all";
+    const nextCat = draft.cat ?? 'all';
+    const nextPlateau = draft.plateau ?? 'all';
     setFilters({
-      cat: nextCat === "all" ? null : nextCat,
-      plateau: nextPlateau === "all" ? null : nextPlateau,
+      cat: nextCat === 'all' ? null : nextCat,
+      plateau: nextPlateau === 'all' ? null : nextPlateau,
     });
   };
 
@@ -626,9 +672,9 @@ const GalleryPageV3 = () => {
         titleClassName="lg:col-start-2 lg:col-span-2"
         rightBlockClassName="lg:col-start-4 lg:col-span-2"
         onMenuClick={openMenu}
-        onLogoClick={() => goto("home")}
-        onLangToggle={() => setLang(lang === "fr" ? "en" : "fr")}
-        actions={buildMainNav({ lang, goto, exclude: "gallery" })}
+        onLogoClick={() => goto('home')}
+        onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
+        actions={buildMainNav({ lang, goto, exclude: 'gallery' })}
       />
 
       <div className="grid grid-cols-1 edo-hairline md:col-span-full md:row-start-2 md:min-h-0 md:overflow-hidden md:grid-cols-gallery-shell">
@@ -638,7 +684,9 @@ const GalleryPageV3 = () => {
           hasActive={hasActiveFilters}
           activeCount={activeFilterCount}
           summary={filterSummary}
-          ariaLabel={lang === "fr" ? "Filtrer la galerie" : "Filter the gallery"}
+          ariaLabel={
+            lang === 'fr' ? 'Filtrer la galerie' : 'Filter the gallery'
+          }
           lang={lang}
           countFor={mobileCountFor}
           onApply={applyMobileFilters}
@@ -675,11 +723,11 @@ const GalleryPageV3 = () => {
           onClose={() => setLightbox(null)}
           onBook={() => {
             setLightbox(null);
-            goto("book");
+            goto('book');
           }}
           onContact={() => {
             setLightbox(null);
-            goto("contact");
+            goto('contact');
           }}
         />
       )}

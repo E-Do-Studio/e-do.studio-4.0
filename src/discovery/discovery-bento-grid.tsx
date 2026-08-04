@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import { useLoaderData, useNavigate } from '@tanstack/react-router';
 import type { Lang } from '../types';
 import type { DiscoveryCategory, DiscoveryPost } from '../types';
@@ -8,7 +8,12 @@ import { useIsDesktop } from '../ui/use-is-desktop';
 const AssistantChat = lazy(() => import('../assistant-chat'));
 import { ArticleCard, ArticleEmptyCard } from './article-card';
 import { MorePostsCard } from './more-posts-card';
-import { BookCtaTile, NewsletterCard, SplitArticleCard, SplitArticleEmptyCard } from './tiles';
+import {
+  BookCtaTile,
+  NewsletterCard,
+  SplitArticleCard,
+  SplitArticleEmptyCard,
+} from './tiles';
 
 // Stable reference so the memos below don't re-run on every loading render.
 const EMPTY_POSTS: DiscoveryPost[] = [];
@@ -19,7 +24,7 @@ interface DiscoveryBentoGridProps {
   goto: (screen: string) => void;
 }
 
-export const DiscoveryBentoGrid: React.FC<DiscoveryBentoGridProps> = ({ lang, goto }) => {
+export const DiscoveryBentoGrid = ({ lang, goto }: DiscoveryBentoGridProps) => {
   const [cat, setCat] = useState('all');
   const isDesktop = useIsDesktop();
   const navigate = useNavigate();
@@ -28,28 +33,34 @@ export const DiscoveryBentoGrid: React.FC<DiscoveryBentoGridProps> = ({ lang, go
   const cats = categories ?? EMPTY_CATS;
 
   const openPost = (post: DiscoveryPost) =>
-    navigate({ to: '/$lang/discovery/$slug', params: { lang, slug: post.slug } });
+    navigate({
+      to: '/$lang/discovery/$slug',
+      params: { lang, slug: post.slug },
+    });
 
   // Left column is fixed to the latest Backstage article.
   const backstagePost = useMemo(
-    () => allPosts.find(p => p.cat === 'backstage') ?? null,
-    [allPosts]
+    () => allPosts.find((p) => p.cat === 'backstage') ?? null,
+    [allPosts],
   );
   // Middle column, top = the pinned article (Strapi `featured` flag).
   const pinnedPost = useMemo(
-    () => allPosts.find(p => p.featured && p !== backstagePost) ?? null,
-    [allPosts, backstagePost]
+    () => allPosts.find((p) => p.featured && p !== backstagePost) ?? null,
+    [allPosts, backstagePost],
   );
   // Middle column, bottom = the most recent article not already surfaced.
   const latestPost = useMemo(
-    () => allPosts.find(p => p !== backstagePost && p !== pinnedPost) ?? null,
-    [allPosts, backstagePost, pinnedPost]
+    () => allPosts.find((p) => p !== backstagePost && p !== pinnedPost) ?? null,
+    [allPosts, backstagePost, pinnedPost],
   );
   // "Plus d'articles" = the rest — every post not already surfaced above,
   // so each article appears exactly once on the page.
   const morePosts = useMemo(
-    () => allPosts.filter(p => p !== backstagePost && p !== pinnedPost && p !== latestPost),
-    [allPosts, backstagePost, pinnedPost, latestPost]
+    () =>
+      allPosts.filter(
+        (p) => p !== backstagePost && p !== pinnedPost && p !== latestPost,
+      ),
+    [allPosts, backstagePost, pinnedPost, latestPost],
   );
 
   return (

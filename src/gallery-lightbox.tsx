@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ArrowLeft as IconArrowLeft,
   ArrowRight as IconArrowRight,
@@ -6,18 +6,18 @@ import {
   Plus,
   RotateCcw,
   X,
-} from "lucide-react";
-import type { GalleryProject } from "./lib/strapi";
-import type { Lang } from "./types";
-import { common } from "./i18n/messages";
-import { cn } from "./ui/cn";
+} from 'lucide-react';
+import type { GalleryProject } from './lib/strapi';
+import type { Lang } from './types';
+import { common } from './i18n/messages';
+import { cn } from './ui/cn';
 
 const PLATEAU_LABELS: Record<string, { fr: string; en: string }> = {
-  cyclorama: { fr: "Cyclorama", en: "Cyclorama" },
-  horizontal: { fr: "Horizontal", en: "Horizontal" },
-  vertical: { fr: "Vertical", en: "Vertical" },
-  eclipse: { fr: "Eclipse", en: "Eclipse" },
-  live: { fr: "Live", en: "Live" },
+  cyclorama: { fr: 'Cyclorama', en: 'Cyclorama' },
+  horizontal: { fr: 'Horizontal', en: 'Horizontal' },
+  vertical: { fr: 'Vertical', en: 'Vertical' },
+  eclipse: { fr: 'Eclipse', en: 'Eclipse' },
+  live: { fr: 'Live', en: 'Live' },
 };
 
 const MIN_SCALE = 1;
@@ -50,20 +50,18 @@ export const GalleryLightbox = ({
   );
   const hasMultiple = total > 1;
   const item = project.media[index];
-  const isVideo = !!item && item.kind === "video";
-  const isEmbed = !!item && item.kind === "embed";
+  const isVideo = !!item && item.kind === 'video';
+  const isEmbed = !!item && item.kind === 'embed';
   // Only still images support pan/zoom; videos and iframe embeds are excluded.
   const zoomable = !!item && !isVideo && !isEmbed;
-  const plateauLabel = PLATEAU_LABELS[project.plateau]?.[lang] ?? project.plateau;
+  const plateauLabel =
+    PLATEAU_LABELS[project.plateau]?.[lang] ?? project.plateau;
 
   const prev = useCallback(
     () => setIndex((i) => (i - 1 + total) % total),
     [total],
   );
-  const next = useCallback(
-    () => setIndex((i) => (i + 1) % total),
-    [total],
-  );
+  const next = useCallback(() => setIndex((i) => (i + 1) % total), [total]);
 
   const [scale, setScale] = useState(1);
   const [tx, setTx] = useState(0);
@@ -94,9 +92,12 @@ export const GalleryLightbox = ({
     setAnimate(false);
   }, [index, resetTransform]);
 
-  useEffect(() => () => {
-    if (animateTimer.current) window.clearTimeout(animateTimer.current);
-  }, []);
+  useEffect(
+    () => () => {
+      if (animateTimer.current) window.clearTimeout(animateTimer.current);
+    },
+    [],
+  );
 
   const applyZoomAt = useCallback(
     (factor: number, cursorX: number, cursorY: number) => {
@@ -129,8 +130,8 @@ export const GalleryLightbox = ({
       const factor = Math.exp(-delta * 0.0025);
       applyZoomAt(factor, cursorX, cursorY);
     };
-    el.addEventListener("wheel", handler, { passive: false });
-    return () => el.removeEventListener("wheel", handler);
+    el.addEventListener('wheel', handler, { passive: false });
+    return () => el.removeEventListener('wheel', handler);
   }, [applyZoomAt, zoomable]);
 
   const onSurfaceClick = useCallback(
@@ -168,30 +169,30 @@ export const GalleryLightbox = ({
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key === 'Escape') {
         onClose();
         return;
       }
-      if (hasMultiple && e.key === "ArrowLeft") {
+      if (hasMultiple && e.key === 'ArrowLeft') {
         prev();
         return;
       }
-      if (hasMultiple && e.key === "ArrowRight") {
+      if (hasMultiple && e.key === 'ArrowRight') {
         next();
         return;
       }
       if (!zoomable) return;
-      if (e.key === "+" || e.key === "=") zoomIn();
-      else if (e.key === "-" || e.key === "_") zoomOut();
-      else if (e.key === "0") zoomReset();
+      if (e.key === '+' || e.key === '=') zoomIn();
+      else if (e.key === '-' || e.key === '_') zoomOut();
+      else if (e.key === '0') zoomReset();
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
   }, [hasMultiple, zoomable, next, onClose, prev, zoomIn, zoomOut, zoomReset]);
 
   useEffect(() => {
     const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = previous;
     };
@@ -202,7 +203,7 @@ export const GalleryLightbox = ({
   };
 
   const zoomBtn =
-    "edo-focus-ring flex h-8 w-8 items-center justify-center cursor-pointer text-white transition-[background-color,opacity] duration-150 ease-edo-out hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent active:scale-[0.96]";
+    'edo-focus-ring flex h-8 w-8 items-center justify-center cursor-pointer text-white transition-[background-color,opacity] duration-150 ease-edo-out hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent active:scale-[0.96]';
 
   const canReset = scale !== MIN_SCALE || tx !== 0 || ty !== 0;
 
@@ -217,7 +218,7 @@ export const GalleryLightbox = ({
       <div
         onMouseDown={(e) => e.stopPropagation()}
         className="relative flex flex-col edo-hairline border border-hairline overflow-hidden bg-white h-full max-h-[900px] max-w-full shadow-2xl"
-        style={{ aspectRatio: aspect ? `${aspect}` : "4 / 5" }}
+        style={{ aspectRatio: aspect ? `${aspect}` : '4 / 5' }}
       >
         <div className="group relative flex-1 min-h-0 overflow-hidden bg-background">
           <button
@@ -232,12 +233,12 @@ export const GalleryLightbox = ({
             ref={surfaceRef}
             onClick={onSurfaceClick}
             className={cn(
-              "absolute inset-0 select-none",
+              'absolute inset-0 select-none',
               !zoomable
-                ? "cursor-default"
+                ? 'cursor-default'
                 : scale > MIN_SCALE
-                  ? "cursor-zoom-out"
-                  : "cursor-zoom-in",
+                  ? 'cursor-zoom-out'
+                  : 'cursor-zoom-in',
             )}
           >
             {item ? (
@@ -284,8 +285,8 @@ export const GalleryLightbox = ({
                   className="pointer-events-none absolute inset-0 h-full w-full object-cover"
                   style={{
                     transform: `translate(${tx}px, ${ty}px) scale(${scale})`,
-                    transformOrigin: "center",
-                    transition: animate ? "transform 200ms ease-out" : "none",
+                    transformOrigin: 'center',
+                    transition: animate ? 'transform 200ms ease-out' : 'none',
                   }}
                 />
               )
@@ -331,7 +332,7 @@ export const GalleryLightbox = ({
 
         <div
           className="grid shrink-0 edo-hairline bg-white"
-          style={{ gridTemplateColumns: "auto 1fr 1fr auto" }}
+          style={{ gridTemplateColumns: 'auto 1fr 1fr auto' }}
         >
           <button
             type="button"

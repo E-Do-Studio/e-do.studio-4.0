@@ -121,10 +121,22 @@ export const NotFoundPage = () => {
         aria-label={copy.explore}
         className="mt-4 flex w-full max-w-xl flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:justify-center"
       >
-        <NavLink href={galleryHref} label={copy.links.gallery} navigate={navigate} />
-        <NavLink href={cycloramaHref} label={copy.links.cyclorama} navigate={navigate} />
+        <NavLink
+          href={galleryHref}
+          label={copy.links.gallery}
+          navigate={navigate}
+        />
+        <NavLink
+          href={cycloramaHref}
+          label={copy.links.cyclorama}
+          navigate={navigate}
+        />
         <NavLink href={bookHref} label={copy.links.book} navigate={navigate} />
-        <NavLink href={contactHref} label={copy.links.contact} navigate={navigate} />
+        <NavLink
+          href={contactHref}
+          label={copy.links.contact}
+          navigate={navigate}
+        />
       </nav>
       <script
         type="application/ld+json"

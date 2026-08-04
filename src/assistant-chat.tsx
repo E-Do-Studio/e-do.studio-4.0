@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
+import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { useRouterState } from '@tanstack/react-router';
 import { cn } from './ui/cn';
@@ -8,13 +9,31 @@ import { assistant as assistantMsg, common } from './i18n/messages';
 import { supabase } from './lib/supabase';
 import { useChatSessions, type ChatSession } from './lib/use-chat-sessions';
 import { createBooking } from './lib/bookings';
-import { BOOK_PLATEAUX, fmtEUR, isValidSiren, type CreateBookingInput } from './lib/booking-engine';
+import {
+  BOOK_PLATEAUX,
+  fmtEUR,
+  isValidSiren,
+  type CreateBookingInput,
+} from './lib/booking-engine';
 
 const MAX_INPUT_CHARS = 1500;
 
-const getQuickReplies = (lang: Lang) => lang === 'fr'
-  ? ['Réservation guidée', 'Tarifs cyclo', 'Dispos semaine prochaine', 'Livraison post-prod', 'Visite studio']
-  : ['Guided booking', 'Cyclo rates', 'Next-week availability', 'Post-prod delivery', 'Studio tour'];
+const getQuickReplies = (lang: Lang) =>
+  lang === 'fr'
+    ? [
+        'Réservation guidée',
+        'Tarifs cyclo',
+        'Dispos semaine prochaine',
+        'Livraison post-prod',
+        'Visite studio',
+      ]
+    : [
+        'Guided booking',
+        'Cyclo rates',
+        'Next-week availability',
+        'Post-prod delivery',
+        'Studio tour',
+      ];
 
 type ChatError = 'rate_limited' | 'other';
 
@@ -32,21 +51,35 @@ const CURRENT_PAGE_RE = /^\/[a-z0-9/_-]*$/i;
 const sanitizeCurrentPage = (path: string): string | undefined => {
   if (!path) return undefined;
   const stripped = path.split('?')[0].split('#')[0];
-  return CURRENT_PAGE_RE.test(stripped) && stripped.length <= 200 ? stripped : undefined;
+  return CURRENT_PAGE_RE.test(stripped) && stripped.length <= 200
+    ? stripped
+    : undefined;
 };
 
 const sendAssistantMessage = async (
   messages: ChatMessage[],
   lang: Lang,
   currentPage: string | undefined,
-): Promise<{ reply: string; bookingProposal?: CreateBookingInput | null; suggestions?: string[]; collectContact?: boolean } | { error: ChatError }> => {
-  const { data, error } = await supabase.functions.invoke<ChatResponse>('chat', {
-    body: { messages, lang, currentPage },
-  });
+): Promise<
+  | {
+      reply: string;
+      bookingProposal?: CreateBookingInput | null;
+      suggestions?: string[];
+      collectContact?: boolean;
+    }
+  | { error: ChatError }
+> => {
+  const { data, error } = await supabase.functions.invoke<ChatResponse>(
+    'chat',
+    {
+      body: { messages, lang, currentPage },
+    },
+  );
 
   if (error) {
     // supabase-js exposes the HTTP status on FunctionsHttpError via context.response
-    const ctx = (error as unknown as { context?: { response?: Response } }).context;
+    const ctx = (error as unknown as { context?: { response?: Response } })
+      .context;
     const status = ctx?.response?.status;
     if (status === 429) return { error: 'rate_limited' };
     // Some payloads return 200 with { error } — covered below.
@@ -87,7 +120,7 @@ const AssistantHeader = ({
         <span
           className={cn(
             'h-1.5 w-1.5 rounded-full',
-            loading ? 'animate-pulse bg-primary' : 'bg-primary'
+            loading ? 'animate-pulse bg-primary' : 'bg-primary',
           )}
         />
       )}
@@ -130,7 +163,10 @@ const formatRelative = (ts: number, lang: Lang): string => {
   if (diffHr < 24) return rtf.format(-diffHr, 'hour');
   const diffDay = Math.round(diffHr / 24);
   if (diffDay < 7) return rtf.format(-diffDay, 'day');
-  return new Intl.DateTimeFormat(lang, { day: 'numeric', month: 'short' }).format(ts);
+  return new Intl.DateTimeFormat(lang, {
+    day: 'numeric',
+    month: 'short',
+  }).format(ts);
 };
 
 interface ChatSessionListProps {
@@ -229,9 +265,17 @@ const AssistantPrompt = ({ lang, onSend }: AssistantPromptProps) => (
   <>
     <div className="text-cell font-normal leading-snug tracking-headline text-foreground">
       {lang === 'fr' ? (
-        <>Un <span className="text-primary">devis</span> ? Une <span className="text-primary">visite</span> ? Une question sur la <span className="text-primary">post-production</span> ?</>
+        <>
+          Un <span className="text-primary">devis</span> ? Une{' '}
+          <span className="text-primary">visite</span> ? Une question sur la{' '}
+          <span className="text-primary">post-production</span> ?
+        </>
       ) : (
-        <>A <span className="text-primary">quote</span>? A <span className="text-primary">tour</span>? A question about <span className="text-primary">post-prod</span>?</>
+        <>
+          A <span className="text-primary">quote</span>? A{' '}
+          <span className="text-primary">tour</span>? A question about{' '}
+          <span className="text-primary">post-prod</span>?
+        </>
       )}
     </div>
 
@@ -278,22 +322,34 @@ const assistantMarkdownComponents = {
     <em className="italic">{children}</em>
   ),
   h1: ({ children }: { children?: React.ReactNode }) => (
-    <div className="mb-1 mt-2 font-mono text-nano uppercase tracking-code text-primary first:mt-0">{children}</div>
+    <div className="mb-1 mt-2 font-mono text-nano uppercase tracking-code text-primary first:mt-0">
+      {children}
+    </div>
   ),
   h2: ({ children }: { children?: React.ReactNode }) => (
-    <div className="mb-1 mt-2 font-mono text-nano uppercase tracking-code text-primary first:mt-0">{children}</div>
+    <div className="mb-1 mt-2 font-mono text-nano uppercase tracking-code text-primary first:mt-0">
+      {children}
+    </div>
   ),
   h3: ({ children }: { children?: React.ReactNode }) => (
-    <div className="mb-1 mt-2 font-mono text-nano uppercase tracking-code text-primary first:mt-0">{children}</div>
+    <div className="mb-1 mt-2 font-mono text-nano uppercase tracking-code text-primary first:mt-0">
+      {children}
+    </div>
   ),
   h4: ({ children }: { children?: React.ReactNode }) => (
-    <div className="mb-1 mt-2 font-mono text-nano uppercase tracking-code text-primary first:mt-0">{children}</div>
+    <div className="mb-1 mt-2 font-mono text-nano uppercase tracking-code text-primary first:mt-0">
+      {children}
+    </div>
   ),
   ul: ({ children }: { children?: React.ReactNode }) => (
-    <ul className="m-0 mb-2 list-disc pl-4 text-detail leading-normal last:mb-0">{children}</ul>
+    <ul className="m-0 mb-2 list-disc pl-4 text-detail leading-normal last:mb-0">
+      {children}
+    </ul>
   ),
   ol: ({ children }: { children?: React.ReactNode }) => (
-    <ol className="m-0 mb-2 list-decimal pl-4 text-detail leading-normal last:mb-0">{children}</ol>
+    <ol className="m-0 mb-2 list-decimal pl-4 text-detail leading-normal last:mb-0">
+      {children}
+    </ol>
   ),
   li: ({ children }: { children?: React.ReactNode }) => (
     <li className="mb-0.5 text-detail leading-normal">{children}</li>
@@ -315,7 +371,20 @@ const assistantMarkdownComponents = {
   },
 };
 
-const ALLOWED_MARKDOWN_ELEMENTS = ['p', 'strong', 'em', 'a', 'ul', 'ol', 'li', 'br', 'h1', 'h2', 'h3', 'h4'];
+const ALLOWED_MARKDOWN_ELEMENTS = [
+  'p',
+  'strong',
+  'em',
+  'a',
+  'ul',
+  'ol',
+  'li',
+  'br',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+];
 
 const ChatBubble = ({ role, content }: ChatBubbleProps) => {
   const isUser = role === 'user';
@@ -327,7 +396,7 @@ const ChatBubble = ({ role, content }: ChatBubbleProps) => {
           'max-w-message break-words text-detail leading-normal tracking-copy-tight',
           isUser
             ? 'bg-foreground px-3 py-2 text-white whitespace-pre-wrap'
-            : 'bg-transparent py-1 text-foreground'
+            : 'bg-transparent py-1 text-foreground',
         )}
       >
         {!isUser && (
@@ -359,7 +428,10 @@ const TypingBubble = () => (
       </div>
       <div className="flex h-3.5 items-center gap-1">
         {[0, 1, 2].map((dot) => (
-          <span key={dot} className="edo-typing-dot h-1 w-1 rounded-full bg-foreground" />
+          <span
+            key={dot}
+            className="edo-typing-dot h-1 w-1 rounded-full bg-foreground"
+          />
         ))}
       </div>
     </div>
@@ -375,7 +447,14 @@ interface AssistantInputProps {
   inputRef: React.Ref<HTMLInputElement>;
 }
 
-const AssistantInput = ({ input, setInput, loading, lang, onSend, inputRef }: AssistantInputProps) => (
+const AssistantInput = ({
+  input,
+  setInput,
+  loading,
+  lang,
+  onSend,
+  inputRef,
+}: AssistantInputProps) => (
   <form
     name="assistant-chat"
     aria-label="Assistant chat"
@@ -389,7 +468,9 @@ const AssistantInput = ({ input, setInput, loading, lang, onSend, inputRef }: As
       ref={inputRef}
       name="message"
       value={input}
-      onChange={(event) => setInput(event.target.value.slice(0, MAX_INPUT_CHARS))}
+      onChange={(event) =>
+        setInput(event.target.value.slice(0, MAX_INPUT_CHARS))
+      }
       disabled={loading}
       maxLength={MAX_INPUT_CHARS}
       placeholder={assistantMsg.placeholder[lang]}
@@ -407,12 +488,40 @@ const AssistantInput = ({ input, setInput, loading, lang, onSend, inputRef }: As
 );
 
 const MONTHS_SHORT: Record<Lang, string[]> = {
-  fr: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'],
-  en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  fr: [
+    'janv.',
+    'févr.',
+    'mars',
+    'avr.',
+    'mai',
+    'juin',
+    'juil.',
+    'août',
+    'sept.',
+    'oct.',
+    'nov.',
+    'déc.',
+  ],
+  en: [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ],
 };
 
-const fmtRecapDate = (d: { y: number; m: number; d: number } | null, lang: Lang) =>
-  d ? `${d.d} ${MONTHS_SHORT[lang][d.m]} ${d.y}` : '—';
+const fmtRecapDate = (
+  d: { y: number; m: number; d: number } | null,
+  lang: Lang,
+) => (d ? `${d.d} ${MONTHS_SHORT[lang][d.m]} ${d.y}` : '—');
 
 interface ContactFormProps {
   lang: Lang;
@@ -421,8 +530,15 @@ interface ContactFormProps {
 
 const ContactForm = ({ lang, onSubmit }: ContactFormProps) => {
   const [f, setF] = useState({
-    prenom: '', nom: '', email: '', tel: '',
-    societe: '', adresseFacturation: '', marque: '', siren: '', autresInfos: '',
+    prenom: '',
+    nom: '',
+    email: '',
+    tel: '',
+    societe: '',
+    adresseFacturation: '',
+    marque: '',
+    siren: '',
+    autresInfos: '',
   });
   const [err, setErr] = useState<string | null>(null);
   const upd = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -430,7 +546,14 @@ const ContactForm = ({ lang, onSubmit }: ContactFormProps) => {
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!f.prenom.trim() || !f.nom.trim() || !f.email.trim() || !f.tel.trim() || !f.societe.trim() || !f.adresseFacturation.trim()) {
+    if (
+      !f.prenom.trim() ||
+      !f.nom.trim() ||
+      !f.email.trim() ||
+      !f.tel.trim() ||
+      !f.societe.trim() ||
+      !f.adresseFacturation.trim()
+    ) {
       setErr(assistantMsg.contactErrRequired[lang]);
       return;
     }
@@ -452,7 +575,8 @@ const ContactForm = ({ lang, onSubmit }: ContactFormProps) => {
     ];
     if (f.marque.trim()) parts.push(`Marque: ${f.marque.trim()}`);
     parts.push(f.siren.trim() ? `SIREN: ${f.siren.trim()}` : 'SIREN: aucun');
-    if (f.autresInfos.trim()) parts.push(`Autres infos: ${f.autresInfos.trim()}`);
+    if (f.autresInfos.trim())
+      parts.push(`Autres infos: ${f.autresInfos.trim()}`);
     onSubmit('Mes coordonnées — ' + parts.join(' · '));
   };
 
@@ -460,22 +584,72 @@ const ContactForm = ({ lang, onSubmit }: ContactFormProps) => {
     'w-full border border-border bg-white px-2 py-1.5 text-detail text-foreground outline-none transition-colors focus:border-foreground';
 
   return (
-    <form onSubmit={submit} className="shrink-0 border border-border bg-white p-3">
+    <form
+      onSubmit={submit}
+      className="shrink-0 border border-border bg-white p-3"
+    >
       <div className="mb-2 font-mono text-nano uppercase tracking-code text-primary">
         {assistantMsg.contactFormTitle[lang]}
       </div>
       <div className="flex flex-col gap-1.5">
         <div className="flex gap-1.5">
-          <input className={inputCls} placeholder={assistantMsg.contactFirstName[lang]} value={f.prenom} onChange={upd('prenom')} />
-          <input className={inputCls} placeholder={assistantMsg.contactLastName[lang]} value={f.nom} onChange={upd('nom')} />
+          <input
+            className={inputCls}
+            placeholder={assistantMsg.contactFirstName[lang]}
+            value={f.prenom}
+            onChange={upd('prenom')}
+          />
+          <input
+            className={inputCls}
+            placeholder={assistantMsg.contactLastName[lang]}
+            value={f.nom}
+            onChange={upd('nom')}
+          />
         </div>
-        <input className={inputCls} type="email" placeholder={assistantMsg.contactEmail[lang]} value={f.email} onChange={upd('email')} />
-        <input className={inputCls} type="tel" placeholder={assistantMsg.contactPhone[lang]} value={f.tel} onChange={upd('tel')} />
-        <input className={inputCls} placeholder={assistantMsg.contactCompany[lang]} value={f.societe} onChange={upd('societe')} />
-        <input className={inputCls} placeholder={assistantMsg.contactBillingAddress[lang]} value={f.adresseFacturation} onChange={upd('adresseFacturation')} />
-        <input className={inputCls} placeholder={assistantMsg.contactBrand[lang]} value={f.marque} onChange={upd('marque')} />
-        <input className={inputCls} placeholder={assistantMsg.contactSiren[lang]} value={f.siren} onChange={upd('siren')} />
-        <input className={inputCls} placeholder={assistantMsg.contactNotes[lang]} value={f.autresInfos} onChange={upd('autresInfos')} />
+        <input
+          className={inputCls}
+          type="email"
+          placeholder={assistantMsg.contactEmail[lang]}
+          value={f.email}
+          onChange={upd('email')}
+        />
+        <input
+          className={inputCls}
+          type="tel"
+          placeholder={assistantMsg.contactPhone[lang]}
+          value={f.tel}
+          onChange={upd('tel')}
+        />
+        <input
+          className={inputCls}
+          placeholder={assistantMsg.contactCompany[lang]}
+          value={f.societe}
+          onChange={upd('societe')}
+        />
+        <input
+          className={inputCls}
+          placeholder={assistantMsg.contactBillingAddress[lang]}
+          value={f.adresseFacturation}
+          onChange={upd('adresseFacturation')}
+        />
+        <input
+          className={inputCls}
+          placeholder={assistantMsg.contactBrand[lang]}
+          value={f.marque}
+          onChange={upd('marque')}
+        />
+        <input
+          className={inputCls}
+          placeholder={assistantMsg.contactSiren[lang]}
+          value={f.siren}
+          onChange={upd('siren')}
+        />
+        <input
+          className={inputCls}
+          placeholder={assistantMsg.contactNotes[lang]}
+          value={f.autresInfos}
+          onChange={upd('autresInfos')}
+        />
       </div>
       {err && <div className="mt-1.5 text-micro text-primary">{err}</div>}
       <button
@@ -498,7 +672,15 @@ interface BookingRecapCardProps {
   onConfirm: () => void;
 }
 
-const BookingRecapCard = ({ proposal, lang, cgv, setCgv, busy, error, onConfirm }: BookingRecapCardProps) => {
+const BookingRecapCard = ({
+  proposal,
+  lang,
+  cgv,
+  setCgv,
+  busy,
+  error,
+  onConfirm,
+}: BookingRecapCardProps) => {
   const ttc = Math.round(proposal.quote.total * 1.2);
   return (
     <div className="shrink-0 border border-border bg-white p-3">
@@ -510,7 +692,10 @@ const BookingRecapCard = ({ proposal, lang, cgv, setCgv, busy, error, onConfirm 
         {proposal.sessions.map((s) => {
           const px = BOOK_PLATEAUX.find((p) => p.k === s.plateauKey);
           return (
-            <div key={`${s.plateauKey}-${s.date}-${s.arrivalHour ?? ''}`} className="flex justify-between gap-2 text-detail">
+            <div
+              key={`${s.plateauKey}-${s.date}-${s.arrivalHour ?? ''}`}
+              className="flex justify-between gap-2 text-detail"
+            >
               <span className="text-foreground">
                 {px ? px[lang] : s.plateauKey} · {fmtRecapDate(s.date, lang)}
                 {s.arrivalHour != null ? ` · ${s.arrivalHour}h` : ''}
@@ -525,7 +710,9 @@ const BookingRecapCard = ({ proposal, lang, cgv, setCgv, busy, error, onConfirm 
         {proposal.quote.rows.map((r) => (
           <div key={r.lbl} className="flex justify-between gap-2 text-micro">
             <span className="text-muted-foreground">{r.lbl}</span>
-            <span className="text-foreground">{r.onReq ? '—' : `${fmtEUR(r.amt)} €`}</span>
+            <span className="text-foreground">
+              {r.onReq ? '—' : `${fmtEUR(r.amt)} €`}
+            </span>
           </div>
         ))}
       </div>
@@ -539,7 +726,9 @@ const BookingRecapCard = ({ proposal, lang, cgv, setCgv, busy, error, onConfirm 
       </div>
 
       <div className="mb-2 border-t border-hairline pt-2 text-micro text-muted-foreground">
-        {assistantMsg.bookingContact[lang]}: {proposal.contact.prenom} {proposal.contact.nom} · {proposal.contact.email} · {proposal.contact.tel}
+        {assistantMsg.bookingContact[lang]}: {proposal.contact.prenom}{' '}
+        {proposal.contact.nom} · {proposal.contact.email} ·{' '}
+        {proposal.contact.tel}
         {proposal.contact.siren ? ` · SIREN ${proposal.contact.siren}` : ''}
       </div>
 
@@ -565,7 +754,9 @@ const BookingRecapCard = ({ proposal, lang, cgv, setCgv, busy, error, onConfirm 
         onClick={onConfirm}
         className="edo-focus-ring flex w-full cursor-pointer items-center justify-center border-0 bg-primary px-3 py-2 text-detail text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
       >
-        {busy ? assistantMsg.bookingConfirming[lang] : assistantMsg.bookingConfirm[lang]}
+        {busy
+          ? assistantMsg.bookingConfirming[lang]
+          : assistantMsg.bookingConfirm[lang]}
       </button>
     </div>
   );
@@ -598,7 +789,9 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
   const [bookingErr, setBookingErr] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const currentPath = useRouterState({ select: (s) => s.resolvedLocation?.pathname ?? '' });
+  const currentPath = useRouterState({
+    select: (s) => s.resolvedLocation?.pathname ?? '',
+  });
 
   const mode: 'prompt' | 'chat' = messages.length === 0 ? 'prompt' : 'chat';
   const savedSessions = sessions.filter((s) => s.messages.length > 0);
@@ -613,7 +806,10 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
     const trimmed = (text || '').trim().slice(0, MAX_INPUT_CHARS);
     if (!trimmed || loading) return;
 
-    const nextMessages: ChatMessage[] = [...messages, { role: 'user', content: trimmed }];
+    const nextMessages: ChatMessage[] = [
+      ...messages,
+      { role: 'user', content: trimmed },
+    ];
     setActiveMessages(nextMessages);
     setInput('');
     setLoading(true);
@@ -621,9 +817,16 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
     setCollectContact(false);
 
     try {
-      const result = await sendAssistantMessage(nextMessages, lang, sanitizeCurrentPage(currentPath));
+      const result = await sendAssistantMessage(
+        nextMessages,
+        lang,
+        sanitizeCurrentPage(currentPath),
+      );
       if ('reply' in result) {
-        setActiveMessages([...nextMessages, { role: 'assistant', content: result.reply }]);
+        setActiveMessages([
+          ...nextMessages,
+          { role: 'assistant', content: result.reply },
+        ]);
         setSuggestions(result.suggestions ?? []);
         setCollectContact(result.collectContact ?? false);
         if (result.bookingProposal) {
@@ -632,13 +835,20 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
           setBookingErr(null);
         }
       } else {
-        const fallback = result.error === 'rate_limited'
-          ? assistantMsg.rateLimited[lang]
-          : assistantMsg.errorFallback[lang];
-        setActiveMessages([...nextMessages, { role: 'assistant', content: fallback }]);
+        const fallback =
+          result.error === 'rate_limited'
+            ? assistantMsg.rateLimited[lang]
+            : assistantMsg.errorFallback[lang];
+        setActiveMessages([
+          ...nextMessages,
+          { role: 'assistant', content: fallback },
+        ]);
       }
     } catch (_error) {
-      setActiveMessages([...nextMessages, { role: 'assistant', content: assistantMsg.errorFallback[lang] }]);
+      setActiveMessages([
+        ...nextMessages,
+        { role: 'assistant', content: assistantMsg.errorFallback[lang] },
+      ]);
     } finally {
       setLoading(false);
     }
@@ -660,14 +870,25 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
       const result = await createBooking({ ...proposal, mode: 'booking' });
       setProposal(null);
       setCgv(false);
-      setActiveMessages([...messages, {
-        role: 'assistant',
-        content: assistantMsg.bookingSuccess[lang].replace('{ref}', result.reference),
-      }]);
+      setActiveMessages([
+        ...messages,
+        {
+          role: 'assistant',
+          content: assistantMsg.bookingSuccess[lang].replace(
+            '{ref}',
+            result.reference,
+          ),
+        },
+      ]);
     } catch (e) {
       const msg = e instanceof Error ? e.message : '';
-      const isConflict = msg.includes('réservé') || msg.includes('already booked');
-      setBookingErr(isConflict ? assistantMsg.bookingConflict[lang] : assistantMsg.bookingError[lang]);
+      const isConflict =
+        msg.includes('réservé') || msg.includes('already booked');
+      setBookingErr(
+        isConflict
+          ? assistantMsg.bookingConflict[lang]
+          : assistantMsg.bookingError[lang],
+      );
     } finally {
       setBookingBusy(false);
     }
@@ -684,7 +905,7 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
     <div
       className={cn(
         'edo-assistant-card group relative flex h-full w-full flex-col gap-2.5 overflow-hidden bg-white px-cell pb-3 pt-3.5',
-        className || 'col-start-10 col-end-13 row-start-4 row-end-6 min-h-0'
+        className || 'col-start-10 col-end-13 row-start-4 row-end-6 min-h-0',
       )}
     >
       {badge != null && (
@@ -710,7 +931,11 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
           className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto pr-1 scrollbar-thin"
         >
           {messages.map((message, index) => (
-            <ChatBubble key={`${message.role}-${index}`} role={message.role} content={message.content} />
+            <ChatBubble
+              key={`${message.role}-${index}`}
+              role={message.role}
+              content={message.content}
+            />
           ))}
           {loading && <TypingBubble />}
 

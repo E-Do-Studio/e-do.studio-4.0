@@ -22,10 +22,10 @@ const NavOverlay = ({ isOpen, onClose }: NavOverlayProps) => (
     onClick={onClose}
     aria-hidden="true"
     className={cn(
-      "fixed inset-0 z-overlay bg-black/40 backdrop-blur-sm transition-opacity duration-300",
+      'fixed inset-0 z-overlay bg-black/40 backdrop-blur-sm transition-opacity duration-300',
       isOpen
-        ? "pointer-events-auto opacity-100"
-        : "pointer-events-none opacity-0",
+        ? 'pointer-events-auto opacity-100'
+        : 'pointer-events-none opacity-0',
     )}
   />
 );
@@ -59,7 +59,13 @@ interface NavItemLinkProps {
   navigate: (opts: { to: string }) => void;
 }
 
-const NavItemLink = ({ item, index, lang, onClose, navigate }: NavItemLinkProps) => {
+const NavItemLink = ({
+  item,
+  index,
+  lang,
+  onClose,
+  navigate,
+}: NavItemLinkProps) => {
   if (item.disabled) {
     return (
       <div
@@ -68,7 +74,9 @@ const NavItemLink = ({ item, index, lang, onClose, navigate }: NavItemLinkProps)
         className="relative flex min-h-13 cursor-not-allowed flex-col justify-between gap-1 border-b border-hairline px-4 py-2.5"
       >
         <div className="flex items-center justify-between gap-2">
-          <CellLabel className="leading-none">{String(index + 1).padStart(2, "0")}</CellLabel>
+          <CellLabel className="leading-none">
+            {String(index + 1).padStart(2, '0')}
+          </CellLabel>
           <span className="inline-flex items-center gap-1 font-mono text-micro leading-none uppercase tracking-meta text-muted-foreground">
             <IconLock width="9" height="9" aria-hidden="true" />
             {homeMsg.comingSoon[lang]}
@@ -90,7 +98,7 @@ const NavItemLink = ({ item, index, lang, onClose, navigate }: NavItemLinkProps)
       }}
       className="edo-focus-ring relative flex min-h-13 cursor-pointer flex-col justify-between gap-1 border-b border-hairline px-4 py-2.5 no-underline transition-colors hover:bg-muted"
     >
-      <CellLabel>{String(index + 1).padStart(2, "0")}</CellLabel>
+      <CellLabel>{String(index + 1).padStart(2, '0')}</CellLabel>
       <span className="mt-auto text-cell font-light text-foreground">
         {item.label}
       </span>
@@ -111,10 +119,15 @@ const NavExternalLink = ({ href, label, index }: NavExternalLinkProps) => (
     rel="noopener noreferrer"
     className="edo-focus-ring relative flex min-h-13 cursor-pointer flex-col justify-between gap-1 border-b border-hairline px-4 py-2.5 no-underline transition-colors hover:bg-muted"
   >
-    <CellLabel>{String(index + 1).padStart(2, "0")}</CellLabel>
+    <CellLabel>{String(index + 1).padStart(2, '0')}</CellLabel>
     <span className="mt-auto flex items-baseline gap-1.5 text-cell font-light text-foreground">
       {label}
-      <span aria-hidden="true" className="font-mono text-micro tracking-meta text-muted-foreground">↗</span>
+      <span
+        aria-hidden="true"
+        className="font-mono text-micro tracking-meta text-muted-foreground"
+      >
+        ↗
+      </span>
     </span>
   </a>
 );
@@ -127,12 +140,12 @@ interface NavFooterProps {
 }
 
 const NavFooter = ({ lang, setLang, onClose, navigate }: NavFooterProps) => {
-  const bookingHref = lang === "fr" ? "/fr/reserver" : "/en/book";
+  const bookingHref = lang === 'fr' ? '/fr/reserver' : '/en/book';
 
   return (
     <div className="grid grid-cols-auto-fluid border-t border-hairline">
       <button
-        onClick={() => setLang(lang === "fr" ? "en" : "fr")}
+        onClick={() => setLang(lang === 'fr' ? 'en' : 'fr')}
         className="edo-focus-ring h-12 w-12 cursor-pointer border-0 border-r border-hairline bg-white font-mono text-caption uppercase tracking-label transition-colors hover:bg-muted"
       >
         {common.langToggleLabel[lang]}
@@ -172,15 +185,25 @@ const NavMenu = ({ lang, isOpen, onClose, setLang }: NavMenuProps) => {
         aria-hidden={isOpen ? undefined : true}
         {...({ inert: isOpen ? undefined : '' } as Record<string, unknown>)}
         className={cn(
-          "fixed left-0 top-0 z-sheet flex h-full w-72 flex-col border-r border-hairline bg-white transition-transform duration-300 ease-edo-out",
-          isOpen ? "translate-x-0" : "-translate-x-full",
+          'fixed left-0 top-0 z-sheet flex h-full w-72 flex-col border-r border-hairline bg-white transition-transform duration-300 ease-edo-out',
+          isOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
         <NavHeader onClose={onClose} lang={lang} />
 
-        <nav className="flex flex-1 flex-col overflow-y-auto" aria-label={common.menu[lang]}>
+        <nav
+          className="flex flex-1 flex-col overflow-y-auto"
+          aria-label={common.menu[lang]}
+        >
           {nav.items[lang].map((item, index) => (
-            <NavItemLink key={item.href} item={item} index={index} lang={lang} onClose={onClose} navigate={navigate} />
+            <NavItemLink
+              key={item.href}
+              item={item}
+              index={index}
+              lang={lang}
+              onClose={onClose}
+              navigate={navigate}
+            />
           ))}
           <NavExternalLink
             href="https://etouch.e-do.studio"
@@ -190,7 +213,12 @@ const NavMenu = ({ lang, isOpen, onClose, setLang }: NavMenuProps) => {
           <SocialLinksRow className="mt-auto border-t border-hairline" />
         </nav>
 
-        <NavFooter lang={lang} setLang={setLang} onClose={onClose} navigate={navigate} />
+        <NavFooter
+          lang={lang}
+          setLang={setLang}
+          onClose={onClose}
+          navigate={navigate}
+        />
       </aside>
     </>
   );

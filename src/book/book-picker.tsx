@@ -1,10 +1,8 @@
 import { useLoaderData, useNavigate } from '@tanstack/react-router';
 import { usePageContext } from '../lib/page-context';
-import { SCREEN_TO_PATH } from '../lib/screens';
 import { cn } from '../ui/cn';
 import { IconArrowRight } from '../ui/icons';
 import { PageHeader, buildMainNav } from '../ui/page-header';
-import { buildWebPageSchema, buildBreadcrumbSchema } from '../lib/structured-data';
 import { bookPicker, booking } from '../i18n/messages';
 import { configuratorPath, manualPath } from './book-routes';
 import { ContactRail, ContactRightColumn } from '../contact-page';
@@ -20,14 +18,21 @@ interface TileProps {
   lang: Lang;
 }
 
-const PickerTile = ({ index, label, description, variant, onClick, lang }: TileProps) => {
+const PickerTile = ({
+  index,
+  label,
+  description,
+  variant,
+  onClick,
+  lang,
+}: TileProps) => {
   const onDark = variant === 'primary' || variant === 'foreground';
   const palette =
     variant === 'primary'
       ? 'bg-primary text-primary-foreground hover:bg-edo-orange/90'
       : variant === 'foreground'
-      ? 'bg-edo-black text-edo-white hover:bg-edo-dark'
-      : 'bg-white text-foreground hover:bg-edo-gray-50';
+        ? 'bg-edo-black text-edo-white hover:bg-edo-dark'
+        : 'bg-white text-foreground hover:bg-edo-gray-50';
   const subtleTone = onDark ? 'text-white/75' : 'text-muted-foreground';
   const labelMutedTone = subtleTone;
   const descTone = subtleTone;
@@ -42,7 +47,12 @@ const PickerTile = ({ index, label, description, variant, onClick, lang }: TileP
       )}
     >
       <div className="flex items-start justify-between">
-        <span className={cn('font-mono text-label tracking-meta uppercase', idxTone)}>
+        <span
+          className={cn(
+            'font-mono text-label tracking-meta uppercase',
+            idxTone,
+          )}
+        >
           {String(index).padStart(2, '0')}
         </span>
         <IconArrowRight
@@ -52,11 +62,23 @@ const PickerTile = ({ index, label, description, variant, onClick, lang }: TileP
         />
       </div>
       <div className="mt-auto flex flex-col gap-2">
-        <span className={cn('font-mono text-label uppercase tracking-label', labelMutedTone)}>
+        <span
+          className={cn(
+            'font-mono text-label uppercase tracking-label',
+            labelMutedTone,
+          )}
+        >
           {lang === 'fr' ? 'Mode' : 'Mode'}
         </span>
-        <span className="text-tile-title font-light tracking-headline leading-tight">{label}</span>
-        <span className={cn('text-detail leading-snug tracking-copy-tight md:min-h-[2lh]', descTone)}>
+        <span className="text-tile-title font-light tracking-headline leading-tight">
+          {label}
+        </span>
+        <span
+          className={cn(
+            'text-detail leading-snug tracking-copy-tight md:min-h-[2lh]',
+            descTone,
+          )}
+        >
           {description}
         </span>
       </div>
@@ -67,12 +89,12 @@ const PickerTile = ({ index, label, description, variant, onClick, lang }: TileP
 const BookPicker = () => {
   const { lang, setLang, openMenu, goto, siteData } = usePageContext();
   const navigate = useNavigate();
-  const bookPathname = lang === 'fr' ? '/reserver' : '/book';
-
   const contact = siteData.contact;
   const hours = siteData.studioHours;
   // Servie par deux routes (/reserver en FR, /book en EN) au loader partagé.
-  const { teamMembers } = useLoaderData({ strict: false }) as { teamMembers: TeamMember[] | null };
+  const { teamMembers } = useLoaderData({ strict: false }) as {
+    teamMembers: TeamMember[] | null;
+  };
   const team = teamMembers ?? [];
   const closures = siteData.businessInfo?.closures ?? [];
 
@@ -132,7 +154,12 @@ const BookPicker = () => {
         </div>
       </main>
 
-      <ContactRail lang={lang} contact={contact} hours={hours} closures={closures} />
+      <ContactRail
+        lang={lang}
+        contact={contact}
+        hours={hours}
+        closures={closures}
+      />
 
       <ContactRightColumn lang={lang} contact={contact} team={team} />
     </div>

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense } from 'react';
 import { cn } from './ui/cn';
 import { useIsDesktop } from './ui/use-is-desktop';
 import { HoverMarquee } from './ui/hover-marquee';
@@ -14,11 +14,6 @@ import { SocialClientsBar } from './social-clients-bar';
 
 const AssistantChat = lazy(() => import('./assistant-chat'));
 import { useLoaderData } from '@tanstack/react-router';
-import {
-  buildLocalBusinessSchema,
-  buildWebSiteSchema,
-} from './lib/structured-data';
-import type { Lang } from './types';
 import { usePageContext } from './lib/page-context';
 import { common, home as homeMsg } from './i18n/messages';
 import { fetchPriority } from './ui/fetch-priority';
@@ -33,50 +28,32 @@ interface MachineRowItem {
 // empty on first refresh. Titles match the Strapi `machines` collection and
 // subs mirror homeMsg.machineSubs (the same overrides we apply at runtime).
 const HOME_FALLBACK_MACHINES: MachineRowItem[] = [
-  { slug: 'horizontal', fr: { t: 'Horizontal', sub: 'Packshot à plat' }, en: { t: 'Horizontal', sub: 'Flat packshot' } },
-  { slug: 'vertical', fr: { t: 'Vertical', sub: 'Packshot ghost / piqué' }, en: { t: 'Vertical', sub: 'Ghost / pinned packshot' } },
-  { slug: 'eclipse', fr: { t: 'Éclipse', sub: 'Photo et vidéo objets et access' }, en: { t: 'Eclipse', sub: 'Object & accessory photo / video' } },
-  { slug: 'live', fr: { t: 'Live', sub: 'Photo et vidéo Porté' }, en: { t: 'Live', sub: 'On-model photo & video' } },
+  {
+    slug: 'horizontal',
+    fr: { t: 'Horizontal', sub: 'Packshot à plat' },
+    en: { t: 'Horizontal', sub: 'Flat packshot' },
+  },
+  {
+    slug: 'vertical',
+    fr: { t: 'Vertical', sub: 'Packshot ghost / piqué' },
+    en: { t: 'Vertical', sub: 'Ghost / pinned packshot' },
+  },
+  {
+    slug: 'eclipse',
+    fr: { t: 'Éclipse', sub: 'Photo et vidéo objets et access' },
+    en: { t: 'Eclipse', sub: 'Object & accessory photo / video' },
+  },
+  {
+    slug: 'live',
+    fr: { t: 'Live', sub: 'Photo et vidéo Porté' },
+    en: { t: 'Live', sub: 'On-model photo & video' },
+  },
 ];
-
-interface MachineRowProps {
-  idx: number;
-  m: MachineRowItem;
-  lang: Lang;
-  onClick: () => void;
-  isLast: boolean;
-}
-
-const MachineRow = ({ idx, m, lang, onClick, isLast }: MachineRowProps) => (
-  <button
-    onClick={onClick}
-    className={cn(
-      'edo-focus-ring flex cursor-pointer items-center border-0 bg-white text-left',
-      'grid grid-cols-machine-row gap-3.5 px-4 py-2.5',
-      'font-sans text-foreground transition-colors duration-150',
-      'hover:bg-muted',
-      isLast ? 'border-none' : 'border-b border-border',
-    )}
-  >
-    <span className="font-mono text-label text-muted-foreground tracking-meta">
-      {String(idx + 1).padStart(2, '0')}
-    </span>
-    <div className="min-w-0 overflow-hidden">
-      <HoverMarquee className="text-cell font-medium tracking-headline leading-cell">
-        {m[lang].t}
-      </HoverMarquee>
-      <HoverMarquee className="mt-1 text-label font-mono text-muted-foreground uppercase tracking-caption">
-        {m[lang].sub}
-      </HoverMarquee>
-    </div>
-    <IconArrowRight className="text-muted-foreground transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5" width="16" height="16" />
-  </button>
-);
 
 const DirectionA = () => {
   const { lang, setLang, openMenu, goto, siteData } = usePageContext();
   const isDesktop = useIsDesktop();
-  const { socialLinks, machines, contact, studioHours, businessInfo: business } = siteData;
+  const { machines, contact } = siteData;
   const { announcement, homeHero } = useLoaderData({ from: '/$lang/' });
   const announcementText = announcement?.[lang]?.trim() ?? '';
   // SHOWREEL cell (small video tile): always video, as it was before EDO-176.
@@ -86,8 +63,11 @@ const DirectionA = () => {
   const galleryHasCmsPosters = heroPosters.length > 0;
   const galleryUseCrossfade = heroPosters.length >= 2;
   const heroUseFallback = !heroCmsVideo;
-  const heroVideo = heroCmsVideo ?? (heroUseFallback ? '/videos/showreel.mp4' : undefined);
-  const heroVideoPoster = heroUseFallback ? '/showreel-preview.webp' : undefined;
+  const heroVideo =
+    heroCmsVideo ?? (heroUseFallback ? '/videos/showreel.mp4' : undefined);
+  const heroVideoPoster = heroUseFallback
+    ? '/showreel-preview.webp'
+    : undefined;
   // Aperçu statique en couche de base de la cellule showreel ; quand le CMS
   // fournit une vidéo, VideoLoop apparaît par-dessus en fondu.
   const heroShowStaticPicture = !heroCmsVideo;
@@ -115,32 +95,71 @@ const DirectionA = () => {
       <PageHeader
         lang={lang}
         title={homeMsg.monSatHours[lang]}
-        titleAside={announcementText ? (
-          <span className="flex min-w-0 items-center gap-2 font-mono text-cell font-medium text-foreground">
-            <span aria-hidden className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-            <span className="truncate uppercase">{announcementText}</span>
-          </span>
-        ) : undefined}
+        titleAside={
+          announcementText ? (
+            <span className="flex min-w-0 items-center gap-2 font-mono text-cell font-medium text-foreground">
+              <span
+                aria-hidden
+                className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
+              />
+              <span className="truncate uppercase">{announcementText}</span>
+            </span>
+          ) : undefined
+        }
         className="col-span-2 h-14 md:col-start-1 md:col-span-12 md:row-start-1 md:h-full"
         subgrid={false}
         onMenuClick={openMenu}
         onLogoClick={() => goto('home')}
         onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
         actions={[
-          { id: 'book', label: common.book[lang], onClick: () => goto('book'), variant: 'primary', className: 'md:hidden' },
+          {
+            id: 'book',
+            label: common.book[lang],
+            onClick: () => goto('book'),
+            variant: 'primary',
+            className: 'md:hidden',
+          },
           ...(contact?.phone
-            ? [{ id: 'phone', label: contact.phone.replace(/^\+33\s?/, '0'), href: contact.phoneHref || `tel:${contact.phone.replace(/\s/g, '')}`, showArrow: false, className: 'hidden sm:flex' }]
+            ? [
+                {
+                  id: 'phone',
+                  label: contact.phone.replace(/^\+33\s?/, '0'),
+                  href:
+                    contact.phoneHref ||
+                    `tel:${contact.phone.replace(/\s/g, '')}`,
+                  showArrow: false,
+                  className: 'hidden sm:flex',
+                },
+              ]
             : []),
-          { id: 'contact', label: common.contactUs[lang], onClick: () => goto('contact'), className: 'hidden md:flex' },
-          { id: 'legal', label: 'Legal', onClick: () => goto('legal'), showArrow: false, className: 'hidden md:flex' },
-          { id: 'etouch', label: 'Etouch', href: 'https://etouch.e-do.studio', target: '_blank', rel: 'noopener noreferrer', variant: 'dark', showArrow: false, className: 'hidden sm:flex' },
+          {
+            id: 'contact',
+            label: common.contactUs[lang],
+            onClick: () => goto('contact'),
+            className: 'hidden md:flex',
+          },
+          {
+            id: 'legal',
+            label: 'Legal',
+            onClick: () => goto('legal'),
+            showArrow: false,
+            className: 'hidden md:flex',
+          },
+          {
+            id: 'etouch',
+            label: 'Etouch',
+            href: 'https://etouch.e-do.studio',
+            target: '_blank',
+            rel: 'noopener noreferrer',
+            variant: 'dark',
+            showArrow: false,
+            className: 'hidden sm:flex',
+          },
         ]}
       />
 
       {/* ── Row 2: Social links + clients marquee ── */}
-      <SocialClientsBar
-        className="col-span-2 md:col-start-1 md:col-end-13 md:row-start-2"
-      />
+      <SocialClientsBar className="col-span-2 md:col-start-1 md:col-end-13 md:row-start-2" />
 
       {/* ── Rows 3-4 left: E-commerce section ── */}
       <div className="col-span-2 min-h-72 flex flex-col overflow-hidden bg-white md:col-start-1 md:col-end-7 md:row-start-3 md:row-end-5 md:min-h-0">
@@ -184,8 +203,12 @@ const DirectionA = () => {
                   />
                 </div>
                 <div className="transition-transform duration-200 ease-edo-out group-hover:-translate-y-0.5">
-                  <HoverMarquee className="text-cell font-medium tracking-headline leading-tight text-foreground">{m[lang].t}</HoverMarquee>
-                  <HoverMarquee className="mt-1 text-micro font-mono uppercase tracking-caption text-muted-foreground transition-colors duration-200 group-hover:text-foreground">{m[lang].sub}</HoverMarquee>
+                  <HoverMarquee className="text-cell font-medium tracking-headline leading-tight text-foreground">
+                    {m[lang].t}
+                  </HoverMarquee>
+                  <HoverMarquee className="mt-1 text-micro font-mono uppercase tracking-caption text-muted-foreground transition-colors duration-200 group-hover:text-foreground">
+                    {m[lang].sub}
+                  </HoverMarquee>
                 </div>
               </button>
             ))}
@@ -244,7 +267,9 @@ const DirectionA = () => {
           <div className="flex-shrink-0">
             <IconArrowRight
               className="transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5 group-hover:scale-110"
-              width="16" height="16"            />
+              width="16"
+              height="16"
+            />
           </div>
         </div>
       </button>
@@ -274,7 +299,8 @@ const DirectionA = () => {
           <div className="flex flex-shrink-0 items-center justify-center">
             <IconArrowRight
               className="transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5"
-              width="16" height="16"
+              width="16"
+              height="16"
             />
           </div>
         </div>
@@ -297,7 +323,8 @@ const DirectionA = () => {
           </div>
           <IconArrowRight
             className="flex-shrink-0 transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5"
-            width="16" height="16"
+            width="16"
+            height="16"
           />
         </div>
       </button>
@@ -354,9 +381,33 @@ const DirectionA = () => {
         tabIndex={-1}
         className="pointer-events-none cursor-not-allowed group relative col-span-2 h-20 flex items-center justify-between gap-3 border-0 bg-foreground px-4 py-3 text-left text-white md:col-span-3 md:col-start-1 md:col-end-4 md:row-start-6 md:h-21"
       >
-        <svg viewBox="0 0 200 84" preserveAspectRatio="none" className="absolute inset-0 h-full w-full opacity-20">
-          {[...Array(7)].map((_, i) => (<line key={'h' + i} x1="0" y1={i * 14} x2="200" y2={i * 14} stroke="currentColor" strokeWidth="0.3" />))}
-          {[...Array(14)].map((_, i) => (<line key={'v' + i} x1={i * 14} y1="0" x2={i * 14} y2="84" stroke="currentColor" strokeWidth="0.3" />))}
+        <svg
+          viewBox="0 0 200 84"
+          preserveAspectRatio="none"
+          className="absolute inset-0 h-full w-full opacity-20"
+        >
+          {[...Array(7)].map((_, i) => (
+            <line
+              key={'h' + i}
+              x1="0"
+              y1={i * 14}
+              x2="200"
+              y2={i * 14}
+              stroke="currentColor"
+              strokeWidth="0.3"
+            />
+          ))}
+          {[...Array(14)].map((_, i) => (
+            <line
+              key={'v' + i}
+              x1={i * 14}
+              y1="0"
+              x2={i * 14}
+              y2="84"
+              stroke="currentColor"
+              strokeWidth="0.3"
+            />
+          ))}
         </svg>
         <div className="relative flex min-w-0 flex-col gap-1">
           <CellLabel className="text-white/70">Discovery</CellLabel>
@@ -369,7 +420,10 @@ const DirectionA = () => {
             <IconLock width="11" height="11" />
             {homeMsg.comingSoon[lang]}
           </span>
-          <span className="sm:hidden inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 p-1.5 text-white/80" aria-hidden="true">
+          <span
+            className="sm:hidden inline-flex items-center justify-center rounded-full border border-white/20 bg-white/10 p-1.5 text-white/80"
+            aria-hidden="true"
+          >
             <IconLock width="12" height="12" />
           </span>
         </div>
@@ -404,7 +458,6 @@ const DirectionA = () => {
           mobile. Desktop keeps the in-grid AssistantChat. Logic lives in
           MobileAssistantFab so the discovery page can reuse the same UX. */}
       <MobileAssistantFab lang={lang} />
-
     </main>
   );
 };

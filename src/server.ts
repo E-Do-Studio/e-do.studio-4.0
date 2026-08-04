@@ -1,4 +1,7 @@
-import { createStartHandler, defaultRenderHandler } from '@tanstack/react-start/server';
+import {
+  createStartHandler,
+  defaultRenderHandler,
+} from '@tanstack/react-start/server';
 
 // Entrée serveur applicative, en rendu **non-streaming**.
 //
@@ -16,4 +19,11 @@ import { createStartHandler, defaultRenderHandler } from '@tanstack/react-start/
 // Le streaming ne nous apportait rien : toutes les données sont résolues dans
 // les loaders **avant** le rendu, il n'y a aucun chargement progressif à
 // diffuser. Le seul Suspense est celui du code-splitting.
-export default createStartHandler(defaultRenderHandler);
+// Exporté sous la forme `{ fetch }`, et non comme la fonction nue que renvoie
+// `createStartHandler`. C'est le contrat que documente et qu'attend le plugin de
+// dev de Start, qui appelle `(await import(entry)).default.fetch(request)` — une
+// fonction nue lui faisait lever « .default.fetch is not a function » et rendait
+// `pnpm dev` inutilisable sur toutes les routes.
+//
+// La production n'est pas affectée : server.mjs accepte déjà les deux formes.
+export default { fetch: createStartHandler(defaultRenderHandler) };

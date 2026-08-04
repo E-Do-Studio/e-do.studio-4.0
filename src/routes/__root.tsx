@@ -7,19 +7,18 @@ import {
   useRouter,
   useRouterState,
 } from '@tanstack/react-router';
-import { useEffect, useState } from 'react';
-import type { Lang } from '../types';
-import { initPreviewMode, isPreviewActive } from '../lib/preview-mode';
-import { NavMenu } from '../nav-menu';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CookieBanner } from '../cookie-banner';
-import { PreviewBanner } from '../preview-banner';
-import { NotFoundPage } from '../not-found-page';
-import { useGoogleAnalytics } from '../lib/use-google-analytics';
-import { useGoogleTagManager } from '../lib/use-google-tag-manager';
-import { PageContext, type PageContextValue, type SiteData } from '../lib/page-context';
-import { SCREEN_TO_PATH } from '../lib/screens';
-import { META } from '../lib/seo-meta';
+import {
+  PageContext,
+  type PageContextValue,
+  type SiteData,
+} from '../lib/page-context';
+import { initPreviewMode, isPreviewActive } from '../lib/preview-mode';
 import { settle } from '../lib/route-data';
+import { SCREEN_TO_PATH } from '../lib/screens';
+import { serializeJsonLd } from '../lib/seo-head';
+import { META } from '../lib/seo-meta';
 import {
   fetchContact,
   fetchMachines,
@@ -28,6 +27,21 @@ import {
   fetchSocialLinks,
   fetchStudioHours,
 } from '../lib/strapi';
+import {
+  buildLocalBusinessSchema,
+  buildWebSiteSchema,
+} from '../lib/structured-data';
+import { COOKIE_CONSENT_STORAGE_KEY } from '../lib/use-cookie-consent';
+import { useGoogleAnalytics } from '../lib/use-google-analytics';
+import {
+  GTM_CONSENT_CATEGORIES,
+  GTM_SCRIPT_ID,
+  useGoogleTagManager,
+} from '../lib/use-google-tag-manager';
+import { NavMenu } from '../nav-menu';
+import { NotFoundPage } from '../not-found-page';
+import { PreviewBanner } from '../preview-banner';
+import type { Lang } from '../types';
 // Import à effet de bord, et non `?url` : ce dernier était résolu dans
 // l'environnement serveur, qui calcule son propre hash de fichier. Le href posé
 // dans le head() ne correspondait donc pas à la feuille réellement émise par le
@@ -39,37 +53,52 @@ const DEFAULT_LANG: Lang = 'fr';
 
 const GTM_ID = import.meta.env.VITE_GTM_ID as string | undefined;
 
-// Organization + WebSite : socle identitaire présent sur toutes les pages. Les
-// schémas spécifiques (LocalBusiness, Service, BlogPosting…) sont ajoutés par
-// le head() de chaque route via buildSeoHead.
-const BASELINE_JSONLD = JSON.stringify({
-  '@context': 'https://schema.org',
-  '@graph': [
-    {
-      '@type': 'Organization',
-      '@id': 'https://e-do.studio/#organization',
-      name: 'E-Do Studio',
-      url: 'https://e-do.studio',
-      logo: 'https://e-do.studio/brand/logo-full.webp',
-      description:
-        'Studio photo et vidéo professionnel à Paris. Location de plateaux, cyclorama et services de post-production.',
-      address: {
-        '@type': 'PostalAddress',
-        addressLocality: 'Paris',
-        addressCountry: 'FR',
-      },
-      knowsAbout: ['photographie', 'vidéo', 'post-production', 'cyclorama', 'studio photo'],
-    },
-    {
-      '@type': 'WebSite',
-      '@id': 'https://e-do.studio/#website',
-      url: 'https://e-do.studio',
-      name: 'E-Do Studio',
-      inLanguage: 'fr-FR',
-      publisher: { '@id': 'https://e-do.studio/#organization' },
-    },
-  ],
-});
+// Socle identitaire présent sur toutes les pages : c'est le nœud que tous les
+// autres schémas référencent via `@id`. Construit depuis le CMS plutôt qu'écrit
+// en dur — l'adresse, le téléphone, les horaires et les réseaux viennent du
+// loader ci-dessous. Les schémas spécifiques (Service, BlogPosting…) sont
+// ajoutés par le head() de chaque route via buildSeoHead.
+function baselineJsonLd(lang: Lang, site: Partial<SiteData> | undefined) {
+  return serializeJsonLd([
+    buildLocalBusinessSchema({
+      lang,
+      contact: site?.contact,
+      hours: site?.studioHours,
+      business: site?.businessInfo,
+      socials: site?.socialLinks,
+    }),
+    buildWebSiteSchema(lang),
+  ]);
+}
+
+// Amorçage GTM, en ligne dans le <head>.
+//
+// Deux corrections par rapport à la version précédente :
+//
+// 1. Le script créé porte désormais l'`id` que useGoogleTagManager cherche pour
+//    savoir si le conteneur est déjà là. Sans lui, le garde-fou du hook ne
+//    matchait jamais et GTM était chargé deux fois par page.
+// 2. Le Consent Mode par défaut est poussé ICI, avant le conteneur. Il vivait
+//    dans un useEffect, donc après l'amorçage : le conteneur démarrait sans
+//    consentement déclaré.
+//
+// La forme `gtag()` (push de `arguments`, pas d'un tableau littéral) est celle
+// que documente Google pour le Consent Mode.
+function gtmBootstrap(id: string): string {
+  const safeId = id.replace(/[^\w-]/g, '');
+  const denied = GTM_CONSENT_CATEGORIES.map((c) => `${c}:'denied'`).join(',');
+  const granted = GTM_CONSENT_CATEGORIES.map((c) => `${c}:'granted'`).join(',');
+  return [
+    `(function(w,d,s,l,i){w[l]=w[l]||[];function g(){w[l].push(arguments)}`,
+    `g('consent','default',{${denied}});`,
+    `try{if(localStorage.getItem('${COOKIE_CONSENT_STORAGE_KEY}')==='accepted')g('consent','update',{${granted}})}catch(e){}`,
+    `w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});`,
+    `var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';`,
+    `j.id='${GTM_SCRIPT_ID}';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;`,
+    `f.parentNode.insertBefore(j,f);`,
+    `})(window,document,'script','dataLayer','${safeId}');`,
+  ].join('');
+}
 
 // Évite un reflow piloté par le swap de police sur le premier rendu.
 const CRITICAL_CSS =
@@ -129,29 +158,39 @@ function LangLayout() {
   // d'où un échec d'hydratation sur toutes les routes anglaises.
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const langSegment = pathname.split('/')[1];
-  const lang: Lang = VALID_LANGS.includes(langSegment as Lang) ? (langSegment as Lang) : DEFAULT_LANG;
+  const lang: Lang = VALID_LANGS.includes(langSegment as Lang)
+    ? (langSegment as Lang)
+    : DEFAULT_LANG;
   useGoogleAnalytics(siteData.siteDefaults?.googleAnalyticsId);
   useGoogleTagManager();
 
-  const setLang = (newLang: Lang) => {
-    persistLang(newLang);
-    const rest = pathname.replace(/^\/(fr|en)/, '');
-    navigate({ to: `/${newLang}${rest}` });
-  };
+  const setLang = useCallback(
+    (newLang: Lang) => {
+      persistLang(newLang);
+      const rest = pathname.replace(/^\/(fr|en)/, '');
+      navigate({ to: `/${newLang}${rest}` });
+    },
+    [pathname, navigate],
+  );
 
-  const goto = (screen: string) => {
-    setMenuOpen(false);
-    const resolver = SCREEN_TO_PATH[screen];
-    if (resolver) navigate({ to: resolver(lang) });
-  };
+  const goto = useCallback(
+    (screen: string) => {
+      setMenuOpen(false);
+      const resolver = SCREEN_TO_PATH[screen];
+      if (resolver) navigate({ to: resolver(lang) });
+    },
+    [lang, navigate],
+  );
 
-  const pageContext: PageContextValue = {
-    lang,
-    setLang,
-    openMenu: () => setMenuOpen(true),
-    goto,
-    siteData,
-  };
+  const openMenu = useCallback(() => setMenuOpen(true), []);
+
+  // Sans mémo, l'objet était recréé à chaque rendu de la racine : tout
+  // consommateur de PageContext re-rendait à chaque changement de route, même
+  // quand rien de ce qu'il lit n'avait bougé.
+  const pageContext: PageContextValue = useMemo(
+    () => ({ lang, setLang, openMenu, goto, siteData }),
+    [lang, setLang, openMenu, goto, siteData],
+  );
 
   return (
     <html lang={lang}>
@@ -191,7 +230,9 @@ function LangLayout() {
 export const Route = createRootRoute({
   component: LangLayout,
   notFoundComponent: NotFoundPage,
-  head: () => ({
+  // `params.lang` n'existe pas au niveau racine sur toutes les vues (la 404 n'est
+  // pas une route) : on retombe sur le français, qui est aussi le x-default.
+  head: ({ params, loaderData }) => ({
     meta: [
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width,initial-scale=1' },
@@ -211,7 +252,10 @@ export const Route = createRootRoute({
         content: 'E-Do Studio — Studio photo & vidéo professionnel à Paris',
       },
       { name: 'twitter:card', content: 'summary_large_image' },
-      { name: 'twitter:image', content: 'https://e-do.studio/twitter-card.png' },
+      {
+        name: 'twitter:image',
+        content: 'https://e-do.studio/twitter-card.png',
+      },
     ],
     links: [
       // Pas de lien vers la feuille ici : Vite l'émet depuis son manifeste,
@@ -220,14 +264,46 @@ export const Route = createRootRoute({
       { rel: 'dns-prefetch', href: 'https://cms.e-do.studio' },
       // Coupes critiques : Light (titres), Regular (corps) et Mono Book
       // (eyebrows). Les autres graisses ABC Favorit chargent à la demande.
-      { rel: 'preload', as: 'font', type: 'font/woff2', href: '/fonts/ABCFavorit-Light.woff2', crossOrigin: '' },
-      { rel: 'preload', as: 'font', type: 'font/woff2', href: '/fonts/ABCFavorit-Regular_1.woff2', crossOrigin: '' },
-      { rel: 'preload', as: 'font', type: 'font/woff2', href: '/fonts/ABCFavoritMono-Book.woff2', crossOrigin: '' },
+      {
+        rel: 'preload',
+        as: 'font',
+        type: 'font/woff2',
+        href: '/fonts/ABCFavorit-Light.woff2',
+        crossOrigin: '',
+      },
+      {
+        rel: 'preload',
+        as: 'font',
+        type: 'font/woff2',
+        href: '/fonts/ABCFavorit-Regular_1.woff2',
+        crossOrigin: '',
+      },
+      {
+        rel: 'preload',
+        as: 'font',
+        type: 'font/woff2',
+        href: '/fonts/ABCFavoritMono-Book.woff2',
+        crossOrigin: '',
+      },
       { rel: 'shortcut icon', href: '/favicon.ico' },
-      { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32x32.png' },
-      { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16x16.png' },
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '32x32',
+        href: '/favicon-32x32.png',
+      },
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '16x16',
+        href: '/favicon-16x16.png',
+      },
       { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
-      { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
+      {
+        rel: 'apple-touch-icon',
+        sizes: '180x180',
+        href: '/apple-touch-icon.png',
+      },
       { rel: 'manifest', href: '/site.webmanifest' },
     ],
     // Passe par head() et non par un <style> dans le JSX : HeadContent gère
@@ -235,24 +311,39 @@ export const Route = createRootRoute({
     // fait échouer l'hydratation (React bascule alors tout en rendu client).
     styles: [{ children: CRITICAL_CSS }],
     scripts: [
-      { type: 'application/ld+json', children: BASELINE_JSONLD },
-      ...(GTM_ID
-        ? [{
-            children: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${GTM_ID.replace(/'/g, "")}');`,
-          }]
-        : []),
+      {
+        type: 'application/ld+json',
+        children: baselineJsonLd(
+          (params as { lang?: string }).lang === 'en' ? 'en' : DEFAULT_LANG,
+          loaderData,
+        ),
+      },
+      ...(GTM_ID ? [{ children: gtmBootstrap(GTM_ID) }] : []),
     ],
   }),
   loader: async (): Promise<SiteData> => {
-    const [contact, socialLinks, studioHours, businessInfo, machines, siteDefaults] =
-      await Promise.all([
-        settle(fetchContact()),
-        settle(fetchSocialLinks()),
-        settle(fetchStudioHours()),
-        settle(fetchSiteBusinessInfo()),
-        settle(fetchMachines()),
-        settle(fetchSiteDefaults()),
-      ]);
-    return { contact, socialLinks, studioHours, businessInfo, machines, siteDefaults };
+    const [
+      contact,
+      socialLinks,
+      studioHours,
+      businessInfo,
+      machines,
+      siteDefaults,
+    ] = await Promise.all([
+      settle(fetchContact()),
+      settle(fetchSocialLinks()),
+      settle(fetchStudioHours()),
+      settle(fetchSiteBusinessInfo()),
+      settle(fetchMachines()),
+      settle(fetchSiteDefaults()),
+    ]);
+    return {
+      contact,
+      socialLinks,
+      studioHours,
+      businessInfo,
+      machines,
+      siteDefaults,
+    };
   },
 });

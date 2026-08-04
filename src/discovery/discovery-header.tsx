@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Lang } from '../types';
 import { PageHeader } from '../ui/page-header';
 import { common } from '../i18n/messages';
@@ -10,7 +9,12 @@ interface DiscoveryHeaderProps {
   goto: (screen: string) => void;
 }
 
-export const DiscoveryHeader: React.FC<DiscoveryHeaderProps> = ({ lang, setLang, openMenu, goto }) => (
+export const DiscoveryHeader = ({
+  lang,
+  setLang,
+  openMenu,
+  goto,
+}: DiscoveryHeaderProps) => (
   <PageHeader
     lang={lang}
     title="Discovery"
@@ -20,10 +24,31 @@ export const DiscoveryHeader: React.FC<DiscoveryHeaderProps> = ({ lang, setLang,
     onLogoClick={() => goto('home')}
     onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
     actions={[
-      { id: 'book', label: common.book[lang], onClick: () => goto('book'), variant: 'primary', className: 'md:hidden' },
-      { id: 'gallery', label: common.gallery[lang], onClick: () => goto('gallery'), className: 'hidden md:flex' },
-      { id: 'plateaux', label: common.stages[lang], onClick: () => goto('plateau-live'), className: 'hidden md:flex' },
-      { id: 'contact', label: common.contactUs[lang], onClick: () => goto('contact'), className: 'hidden lg:flex' },
+      {
+        id: 'book',
+        label: common.book[lang],
+        onClick: () => goto('book'),
+        variant: 'primary',
+        className: 'md:hidden',
+      },
+      {
+        id: 'gallery',
+        label: common.gallery[lang],
+        onClick: () => goto('gallery'),
+        className: 'hidden md:flex',
+      },
+      {
+        id: 'plateaux',
+        label: common.stages[lang],
+        onClick: () => goto('plateau-live'),
+        className: 'hidden md:flex',
+      },
+      {
+        id: 'contact',
+        label: common.contactUs[lang],
+        onClick: () => goto('contact'),
+        className: 'hidden lg:flex',
+      },
     ]}
   />
 );

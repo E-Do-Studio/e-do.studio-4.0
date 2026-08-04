@@ -5,4 +5,5 @@ import type { DiscoveryPost } from '../types';
 // the surrounding layout (no empty cover box).
 // Lives outside discovery-cover.tsx so that file only exports components and
 // Fast Refresh can preserve their state.
-export const hasCover = (post: DiscoveryPost): boolean => Boolean(post.coverUrl);
+export const hasCover = (post: DiscoveryPost): boolean =>
+  Boolean(post.coverUrl);

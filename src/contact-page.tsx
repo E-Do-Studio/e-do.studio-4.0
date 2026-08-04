@@ -4,9 +4,13 @@ import { cn } from './ui/cn';
 import { PageHeader, buildMainNav } from './ui/page-header';
 import { SocialLinksRow } from './ui/social-links-row';
 import { CellLabel } from './ui/typography';
-import { buildContactPageSchema, buildBreadcrumbSchema } from './lib/structured-data';
 import { useLoaderData } from '@tanstack/react-router';
-import type { ContactInfo, StudioHours as StudioHoursData, TeamMember as StrapiTeamMember, ClosurePeriod } from './lib/strapi';
+import type {
+  ContactInfo,
+  StudioHours as StudioHoursData,
+  TeamMember as StrapiTeamMember,
+  ClosurePeriod,
+} from './lib/strapi';
 import type { Lang, ContactFormData, Bilingual } from './types';
 import { usePageContext } from './lib/page-context';
 import { submitContactForm } from './lib/contact';
@@ -35,14 +39,27 @@ interface ContactRailProps {
   hours: StudioHoursData | null;
 }
 
-const ContactRail = ({ lang, contact, hours, closures }: ContactRailProps & { closures: ClosurePeriod[] }) => {
+const ContactRail = ({
+  lang,
+  contact,
+  hours,
+  closures,
+}: ContactRailProps & { closures: ClosurePeriod[] }) => {
   const today = new Date().toISOString().slice(0, 10);
   const hasClosures = closures.some((c) => c.endsAt >= today);
   return (
     <aside className="flex flex-col overflow-auto bg-white md:col-start-1 md:row-start-2 md:grid md:grid-rows-contact-form md:gap-hairline md:overflow-hidden md:bg-hairline">
       <FindUsSection lang={lang} contact={contact} className="md:row-[1/5]" />
-      <HoursSection lang={lang} hours={hours} className={hasClosures ? 'md:row-[5/6]' : 'md:row-[5/7]'} />
-      <ClosuresSection lang={lang} closures={closures} className="md:row-[6/7]" />
+      <HoursSection
+        lang={lang}
+        hours={hours}
+        className={hasClosures ? 'md:row-[5/6]' : 'md:row-[5/7]'}
+      />
+      <ClosuresSection
+        lang={lang}
+        closures={closures}
+        className="md:row-[6/7]"
+      />
       <PhoneSection lang={lang} contact={contact} className="md:row-[7/8]" />
       <div className="flex-1 md:hidden" />
       <SocialLinksRow className="border-t border-hairline md:row-[8/9] md:auto-rows-[2.75rem] md:border-t-0" />
@@ -61,33 +78,53 @@ function formatClosureDate(iso: string, lang: Lang): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
   const locale = lang === 'fr' ? 'fr-FR' : 'en-US';
-  return d.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
+  return d.toLocaleDateString(locale, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
 }
 
-const ClosuresSection = ({ lang, closures, className }: ClosuresSectionProps) => {
+const ClosuresSection = ({
+  lang,
+  closures,
+  className,
+}: ClosuresSectionProps) => {
   const today = new Date().toISOString().slice(0, 10);
   const upcoming = closures
     .filter((c) => c.endsAt >= today)
     .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
   if (upcoming.length === 0) return null;
   return (
-    <section className={cn('border-b border-border bg-white p-6 md:border-b-0', className)}>
+    <section
+      className={cn(
+        'border-b border-border bg-white p-6 md:border-b-0',
+        className,
+      )}
+    >
       <CellLabel className="mb-5 block">
         {lang === 'fr' ? 'Fermetures' : 'Closures'}
       </CellLabel>
       <div className="flex flex-col gap-3 text-caption">
         {upcoming.map((c) => (
-          <div key={`${c.startsAt}-${c.endsAt}`} className="flex flex-col gap-0.5">
+          <div
+            key={`${c.startsAt}-${c.endsAt}`}
+            className="flex flex-col gap-0.5"
+          >
             <span className="font-mono tracking-ui">
               {c.startsAt === c.endsAt
                 ? formatClosureDate(c.startsAt, lang)
                 : `${formatClosureDate(c.startsAt, lang)} → ${formatClosureDate(c.endsAt, lang)}`}
             </span>
             {c.label && (
-              <span className="text-muted-foreground">{c.label[lang] || c.label.fr}</span>
+              <span className="text-muted-foreground">
+                {c.label[lang] || c.label.fr}
+              </span>
             )}
             {c.note && (
-              <span className="opacity-55 text-muted-foreground">{c.note[lang] || c.note.fr}</span>
+              <span className="opacity-55 text-muted-foreground">
+                {c.note[lang] || c.note.fr}
+              </span>
             )}
           </div>
         ))}
@@ -105,12 +142,23 @@ interface FindUsSectionProps {
 const FindUsSection = ({ lang, contact, className }: FindUsSectionProps) => {
   const c = contact;
   const showFallback = !c;
-  const eyebrowFromEntries = c?.entries && c.entries.length > 0
-    ? c.entries.map((e) => `${e.label}${e.address ? ` ${e.address}` : ''}`).join(' · ')
-    : null;
-  const eyebrow = eyebrowFromEntries || c?.address.complement || 'Parc d’activités Victor Hugo · Bât. 6.7';
+  const eyebrowFromEntries =
+    c?.entries && c.entries.length > 0
+      ? c.entries
+          .map((e) => `${e.label}${e.address ? ` ${e.address}` : ''}`)
+          .join(' · ')
+      : null;
+  const eyebrow =
+    eyebrowFromEntries ||
+    c?.address.complement ||
+    'Parc d’activités Victor Hugo · Bât. 6.7';
   return (
-    <section className={cn('border-b border-border bg-white p-6 md:overflow-auto md:border-b-0', className)}>
+    <section
+      className={cn(
+        'border-b border-border bg-white p-6 md:overflow-auto md:border-b-0',
+        className,
+      )}
+    >
       <CellLabel className="mb-5 block">{contactMsg.findUs[lang]}</CellLabel>
       {showFallback ? (
         <UnavailableNote lang={lang} />
@@ -120,21 +168,35 @@ const FindUsSection = ({ lang, contact, className }: FindUsSectionProps) => {
             <span className="mb-2 block font-mono text-label font-normal uppercase tracking-ui text-muted-foreground">
               {eyebrow}
             </span>
-            {c?.address.street}<br />
-            {c?.address.postalCode} <span className="whitespace-nowrap">{c?.address.city}</span>
-            {c?.address.country ? <>,<br />{c.address.country}</> : null}
+            {c?.address.street}
+            <br />
+            {c?.address.postalCode}{' '}
+            <span className="whitespace-nowrap">{c?.address.city}</span>
+            {c?.address.country ? (
+              <>
+                ,<br />
+                {c.address.country}
+              </>
+            ) : null}
           </div>
           {c?.transport && c.transport.length > 0 && (
             <div className="mt-5 flex flex-col gap-2.5 font-mono text-label leading-relaxed tracking-ui text-muted-foreground">
               {c.transport.map((t, i) => {
                 const { line, name } = parseMetroLabel(t.label);
-                if (!line) return <div key={i} className="whitespace-nowrap">{t.label}</div>;
+                if (!line)
+                  return (
+                    <div key={i} className="whitespace-nowrap">
+                      {t.label}
+                    </div>
+                  );
                 return (
                   <MetroLine
                     key={i}
                     line={line}
                     label={name}
-                    className={METRO_COLOR_BY_LINE[line] ?? 'bg-muted text-foreground'}
+                    className={
+                      METRO_COLOR_BY_LINE[line] ?? 'bg-muted text-foreground'
+                    }
                   />
                 );
               })}
@@ -154,7 +216,12 @@ interface MetroLineProps {
 
 const MetroLine = ({ line, label, className }: MetroLineProps) => (
   <div className="flex items-center gap-2 whitespace-nowrap">
-    <span className={cn('inline-flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full text-label font-bold tracking-normal', className)}>
+    <span
+      className={cn(
+        'inline-flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full text-label font-bold tracking-normal',
+        className,
+      )}
+    >
       {line}
     </span>
     {label}
@@ -171,14 +238,26 @@ const HoursSection = ({ lang, hours, className }: HoursSectionProps) => {
   const h = hours;
   const showFallback = !h;
   return (
-    <section className={cn('border-b border-border bg-white p-6 md:border-b-0', className)}>
+    <section
+      className={cn(
+        'border-b border-border bg-white p-6 md:border-b-0',
+        className,
+      )}
+    >
       <CellLabel className="mb-5 block">{contactMsg.hours[lang]}</CellLabel>
       {showFallback ? (
         <UnavailableNote lang={lang} />
       ) : (
         <div className="flex flex-col gap-3 text-caption">
-          <HoursRow label={contactMsg.monFri[lang]} value={h?.weekday[lang] || '—'} />
-          <HoursRow label={contactMsg.satSun[lang]} value={h?.weekend[lang] || common.onRequest[lang]} muted />
+          <HoursRow
+            label={contactMsg.monFri[lang]}
+            value={h?.weekday[lang] || '—'}
+          />
+          <HoursRow
+            label={contactMsg.satSun[lang]}
+            value={h?.weekend[lang] || common.onRequest[lang]}
+            muted
+          />
         </div>
       )}
     </section>
@@ -194,7 +273,12 @@ interface HoursRowProps {
 const HoursRow = ({ label, value, muted = false }: HoursRowProps) => (
   <div className="flex items-baseline justify-between gap-3 whitespace-nowrap">
     <span className="text-muted-foreground">{label}</span>
-    <span className={cn('text-caption', muted ? 'text-muted-foreground' : 'font-mono text-foreground')}>
+    <span
+      className={cn(
+        'text-caption',
+        muted ? 'text-muted-foreground' : 'font-mono text-foreground',
+      )}
+    >
       {value}
     </span>
   </div>
@@ -215,7 +299,10 @@ const PhoneSection = ({ lang, contact, className }: PhoneSectionProps) => {
       {showFallback ? (
         <UnavailableNote lang={lang} />
       ) : c?.phone ? (
-        <a href={c.phoneHref} className="text-detail font-medium tracking-copy-tight text-primary no-underline">
+        <a
+          href={c.phoneHref}
+          className="text-detail font-medium tracking-copy-tight text-primary no-underline"
+        >
           {c.phone}
         </a>
       ) : null}
@@ -241,10 +328,27 @@ interface ContactFormPanelProps {
   goto: (screen: string) => void;
 }
 
-const ContactFormPanel = ({ lang, form, sent, sending, sendError, setForm, setSent, submit, goto }: ContactFormPanelProps) => (
+const ContactFormPanel = ({
+  lang,
+  form,
+  sent,
+  sending,
+  sendError,
+  setForm,
+  setSent,
+  submit,
+  goto,
+}: ContactFormPanelProps) => (
   <main className="overflow-hidden bg-white md:col-start-2 md:col-span-2 md:row-start-2">
     {!sent ? (
-      <ContactForm lang={lang} form={form} setForm={setForm} submit={submit} sending={sending} sendError={sendError} />
+      <ContactForm
+        lang={lang}
+        form={form}
+        setForm={setForm}
+        submit={submit}
+        sending={sending}
+        sendError={sendError}
+      />
     ) : (
       <ContactSuccess
         lang={lang}
@@ -265,15 +369,29 @@ interface ContactRightColumnProps {
   team: StrapiTeamMember[];
 }
 
-const ContactRightColumn = ({ lang, contact, team }: ContactRightColumnProps) => (
+const ContactRightColumn = ({
+  lang,
+  contact,
+  team,
+}: ContactRightColumnProps) => (
   <aside className="grid grid-rows-2 overflow-hidden md:col-start-4 md:row-start-2 min-h-72 md:min-h-0">
-    <ContactMap lang={lang} contact={contact} className="border-b border-hairline" />
+    <ContactMap
+      lang={lang}
+      contact={contact}
+      className="border-b border-hairline"
+    />
     <TeamPanel lang={lang} members={team} />
   </aside>
 );
 
-function buildMapsEmbedFallback(fullAddress?: string, street?: string, postalCode?: string, city?: string): string {
-  const q = fullAddress || [street, postalCode, city].filter(Boolean).join(', ');
+function buildMapsEmbedFallback(
+  fullAddress?: string,
+  street?: string,
+  postalCode?: string,
+  city?: string,
+): string {
+  const q =
+    fullAddress || [street, postalCode, city].filter(Boolean).join(', ');
   return `https://www.google.com/maps?q=${encodeURIComponent(q)}&z=17&output=embed`;
 }
 
@@ -294,8 +412,13 @@ const ContactMap = ({ lang, contact, className }: ContactMapProps) => {
   const c = contact;
   const showFallback = !c;
   const embedUrl = forceMapPlanView(
-    c?.mapsEmbedUrl
-    || buildMapsEmbedFallback(c?.fullAddress, c?.address.street, c?.address.postalCode, c?.address.city),
+    c?.mapsEmbedUrl ||
+      buildMapsEmbedFallback(
+        c?.fullAddress,
+        c?.address.street,
+        c?.address.postalCode,
+        c?.address.city,
+      ),
   );
   return (
     <section className={cn('relative overflow-hidden bg-edo-warm', className)}>
@@ -316,9 +439,17 @@ const ContactMap = ({ lang, contact, className }: ContactMapProps) => {
   );
 };
 
-const TeamPanel = ({ lang, members }: { lang: Lang; members: StrapiTeamMember[] }) => (
+const TeamPanel = ({
+  lang,
+  members,
+}: {
+  lang: Lang;
+  members: StrapiTeamMember[];
+}) => (
   <section className="flex flex-col gap-3.5 bg-foreground p-6 text-white">
-    <span className="edo-cell-label text-white/70">{contactMsg.team[lang]}</span>
+    <span className="edo-cell-label text-white/70">
+      {contactMsg.team[lang]}
+    </span>
     <div className="flex flex-col gap-2.5">
       {members.map((member) => (
         <TeamMemberRow key={member.id} member={member} lang={lang} />
@@ -335,11 +466,18 @@ interface TeamMemberRowProps {
 const TeamMemberRow = ({ member, lang }: TeamMemberRowProps) => (
   <div className="grid grid-cols-fluid-auto gap-2 border-b border-white/10 py-2">
     <div className="flex flex-col gap-0.5">
-      <span className="text-detail tracking-copy-tight text-white">{member.name[lang]}</span>
-      <span className="font-mono text-micro uppercase tracking-ui text-white/55">{member.role[lang]}</span>
+      <span className="text-detail tracking-copy-tight text-white">
+        {member.name[lang]}
+      </span>
+      <span className="font-mono text-micro uppercase tracking-ui text-white/55">
+        {member.role[lang]}
+      </span>
     </div>
     {member.email && member.emailHref && (
-      <a href={member.emailHref} className="self-center font-mono text-label tracking-caption text-primary no-underline">
+      <a
+        href={member.emailHref}
+        className="self-center font-mono text-label tracking-caption text-primary no-underline"
+      >
         {member.email}
       </a>
     )}
@@ -366,7 +504,9 @@ const ContactPage = () => {
       await submitContactForm(form);
       setSent(true);
     } catch (err) {
-      setSendError(err instanceof Error ? err.message : contactMsg.errorSend[lang]);
+      setSendError(
+        err instanceof Error ? err.message : contactMsg.errorSend[lang],
+      );
     } finally {
       setSending(false);
     }
@@ -385,8 +525,23 @@ const ContactPage = () => {
         onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
         actions={buildMainNav({ lang, goto, exclude: 'contact' })}
       />
-      <ContactFormPanel lang={lang} form={form} sent={sent} sending={sending} sendError={sendError} setForm={setForm} setSent={setSent} submit={submit} goto={goto} />
-      <ContactRail lang={lang} contact={contact} hours={hours} closures={closures} />
+      <ContactFormPanel
+        lang={lang}
+        form={form}
+        sent={sent}
+        sending={sending}
+        sendError={sendError}
+        setForm={setForm}
+        setSent={setSent}
+        submit={submit}
+        goto={goto}
+      />
+      <ContactRail
+        lang={lang}
+        contact={contact}
+        hours={hours}
+        closures={closures}
+      />
       <ContactRightColumn lang={lang} contact={contact} team={team} />
     </div>
   );
