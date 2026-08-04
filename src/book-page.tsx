@@ -894,7 +894,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
 
       <nav
         aria-label={t('booking.bookingSteps')}
-        className="md:hidden bg-white border-b border-hairline"
+        className="md:hidden bg-background border-b border-hairline"
       >
         <ol className="flex items-center px-5 pt-4">
           {STEPS.map((s, i) => {
@@ -923,11 +923,11 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                       !active &&
                         !done &&
                         clickable &&
-                        'bg-white text-foreground border border-foreground cursor-pointer',
+                        'bg-background text-foreground border border-foreground cursor-pointer',
                       !active &&
                         !done &&
                         !clickable &&
-                        'bg-white text-muted-foreground border border-hairline opacity-50 cursor-not-allowed',
+                        'bg-background text-muted-foreground border border-hairline opacity-50 cursor-not-allowed',
                     )}
                   >
                     {done ? '✓' : String(i + 1).padStart(2, '0')}
@@ -957,7 +957,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
         </div>
       </nav>
 
-      <div className="hidden md:flex md:col-start-1 md:row-start-2 md:flex-col md:overflow-y-auto md:min-h-0 bg-white">
+      <div className="hidden md:flex md:col-start-1 md:row-start-2 md:flex-col md:overflow-y-auto md:min-h-0 bg-background">
         {STEPS.map((s, i) => {
           const active = step === s.n;
           const curIdx = STEPS.findIndex((x) => x.n === step);
@@ -993,7 +993,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
         name="booking"
         aria-label="Booking"
         onSubmit={(e) => e.preventDefault()}
-        className="bg-white overflow-auto flex flex-col md:col-start-2 md:col-span-2 md:row-start-2 md:min-h-0"
+        className="bg-background overflow-auto flex flex-col md:col-start-2 md:col-span-2 md:row-start-2 md:min-h-0"
       >
         {mode === 'manual' && (
           <div className="flex flex-col md:flex-row md:items-stretch md:min-h-control bg-muted box-border shrink-0 border-b border-hairline">
@@ -1018,7 +1018,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                   setSelected(null);
                   goToStep(1, 'manual');
                 }}
-                className="edo-focus-ring flex-1 bg-transparent border-l border-hairline px-5 py-3 md:py-0 cursor-pointer font-mono text-micro tracking-code uppercase text-foreground whitespace-nowrap leading-normal inline-flex items-center justify-center transition-colors duration-150 hover:bg-white"
+                className="edo-focus-ring flex-1 bg-transparent border-l border-hairline px-5 py-3 md:py-0 cursor-pointer font-mono text-micro tracking-code uppercase text-foreground whitespace-nowrap leading-normal inline-flex items-center justify-center transition-colors duration-150 hover:bg-background"
               >
                 ↻ {t('common.reset')}
               </button>
@@ -1101,7 +1101,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                   });
                 if (allVisite) return null;
                 return (
-                  <div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local">
+                  <div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 bg-background flex-wrap sticky top-0 z-local">
                     <span className="edo-cell-label text-primary whitespace-nowrap">
                       02 · {t('booking.rentalDuration')}
                     </span>
@@ -1139,7 +1139,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
               setSlots={setSlots}
               fallback={{ team, setTeam }}
               topBanner={
-                <div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local">
+                <div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 bg-background flex-wrap sticky top-0 z-local">
                   <span className="edo-cell-label text-primary whitespace-nowrap">
                     03 · {t('booking.teamOptional')}
                   </span>
@@ -1174,7 +1174,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
               setSlots={setSlots}
               fallback={{ postprod: {}, setPostprod: () => {} }}
               topBanner={
-                <div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local">
+                <div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 bg-background flex-wrap sticky top-0 z-local">
                   <span className="edo-cell-label text-primary whitespace-nowrap">
                     04 · {t('booking.postProdOptional')}
                   </span>
@@ -1279,7 +1279,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
               })();
               return (
                 <div>
-                  <div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 md:gap-4 bg-white flex-wrap sticky top-0 z-10">
+                  <div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 md:gap-4 bg-background flex-wrap sticky top-0 z-10">
                     <span className="edo-cell-label text-primary whitespace-nowrap">
                       {t('booking.stageFallback')}{' '}
                       {String(safeIdx + 1).padStart(2, '0')} /{' '}
@@ -1298,7 +1298,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                             key={xid}
                             onClick={() => setDateIdx(i)}
                             title={slotLabel(xid)}
-                            className={`${active ? 'bg-foreground text-white border-foreground' : has ? 'bg-primary text-white border-primary' : 'bg-white text-foreground border-border'} border px-2.5 py-1 cursor-pointer font-mono text-label tracking-ui min-w-7 text-center`}
+                            className={`${active ? 'bg-foreground text-white border-foreground' : has ? 'bg-primary text-white border-primary' : 'bg-background text-foreground border-border'} border px-2.5 py-1 cursor-pointer font-mono text-label tracking-ui min-w-7 text-center`}
                           >
                             {String(i + 1).padStart(2, '0')}
                             {has ? ' ✓' : ''}
@@ -1461,7 +1461,7 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
           </div>
         )}
         {step > 0 && (
-          <div className="border-t border-hairline flex flex-col md:flex-row md:items-stretch shrink-0 bg-white md:min-h-control">
+          <div className="border-t border-hairline flex flex-col md:flex-row md:items-stretch shrink-0 bg-background md:min-h-control">
             {(() => {
               const idx = STEPS.findIndex((s) => s.n === step);
               const isFirst = idx <= 0;
@@ -1503,9 +1503,9 @@ const BookPageV2 = ({ forcedStep, forceManual }: BookPageV2Props = {}) => {
                 return false;
               };
               const backBtnCls =
-                'edo-focus-ring bg-white border-0 cursor-pointer font-mono text-caption tracking-meta uppercase text-foreground px-5 py-3 md:py-0 inline-flex items-center justify-start gap-2 transition-colors duration-150 min-h-control md:flex-1 md:min-h-0 min-w-0 hover:bg-muted';
+                'edo-focus-ring bg-background border-0 cursor-pointer font-mono text-caption tracking-meta uppercase text-foreground px-5 py-3 md:py-0 inline-flex items-center justify-start gap-2 transition-colors duration-150 min-h-control md:flex-1 md:min-h-0 min-w-0 hover:bg-muted';
               const navBtnSecondaryCls =
-                'edo-focus-ring bg-white border-t md:border-t-0 md:border-l border-hairline cursor-pointer font-mono text-caption tracking-meta uppercase text-foreground px-5 py-3 md:py-0 inline-flex items-center justify-center gap-2 transition-colors duration-150 min-h-control md:min-h-0 flex-1 min-w-0 hover:bg-muted';
+                'edo-focus-ring bg-background border-t md:border-t-0 md:border-l border-hairline cursor-pointer font-mono text-caption tracking-meta uppercase text-foreground px-5 py-3 md:py-0 inline-flex items-center justify-center gap-2 transition-colors duration-150 min-h-control md:min-h-0 flex-1 min-w-0 hover:bg-muted';
               const navBtnPrimaryCls =
                 'edo-focus-ring bg-primary border-t md:border-t-0 md:border-l border-hairline cursor-pointer text-white font-mono text-caption tracking-meta uppercase px-5 py-3 md:py-0 inline-flex items-center justify-center gap-2 transition-opacity duration-150 min-h-control md:min-h-0 flex-1 min-w-0 hover:opacity-90';
               const navBtnOrangeCls =
@@ -2089,7 +2089,7 @@ const CfgChoice = ({ idx, on, onClick, label, desc, sub }: AnyProps) => (
   <button
     type="button"
     onClick={onClick}
-    className={`group edo-focus-ring ${on ? 'bg-foreground text-white' : 'bg-white text-foreground hover:bg-muted'} border-0 outline-none shadow-none p-5 sm:p-3.5 text-left cursor-pointer font-inherit flex flex-col gap-1 transition-all duration-150 min-w-0 min-h-32 sm:min-h-28`}
+    className={`group edo-focus-ring ${on ? 'bg-foreground text-white' : 'bg-background text-foreground hover:bg-muted'} border-0 outline-none shadow-none p-5 sm:p-3.5 text-left cursor-pointer font-inherit flex flex-col gap-1 transition-all duration-150 min-w-0 min-h-32 sm:min-h-28`}
   >
     <div className="flex justify-between items-start">
       {idx != null && (
@@ -2395,7 +2395,7 @@ const Step0Configurator = ({
           type="button"
           key={qKey + ':collapsed'}
           onClick={() => setOpenQ(qKey)}
-          className="edo-focus-ring w-full bg-white border-0 border-b border-b-foreground px-5 md:px-6 min-h-control py-3 md:py-0 box-border cursor-pointer font-inherit text-left flex items-center gap-3 md:gap-3.5 transition-colors duration-150 hover:bg-muted"
+          className="edo-focus-ring w-full bg-background border-0 border-b border-b-foreground px-5 md:px-6 min-h-control py-3 md:py-0 box-border cursor-pointer font-inherit text-left flex items-center gap-3 md:gap-3.5 transition-colors duration-150 hover:bg-muted"
         >
           <span className="edo-cell-label text-primary shrink-0 w-7">
             {q.num}
@@ -2442,7 +2442,7 @@ const Step0Configurator = ({
               setTouchedQs(new Set());
               if (onReset) onReset();
             }}
-            className="edo-focus-ring flex-1 bg-transparent border-l border-hairline px-5 py-3 md:py-0 cursor-pointer font-mono text-micro tracking-code uppercase text-foreground whitespace-nowrap leading-normal inline-flex items-center justify-center transition-colors duration-150 hover:bg-white"
+            className="edo-focus-ring flex-1 bg-transparent border-l border-hairline px-5 py-3 md:py-0 cursor-pointer font-mono text-micro tracking-code uppercase text-foreground whitespace-nowrap leading-normal inline-flex items-center justify-center transition-colors duration-150 hover:bg-background"
           >
             ↻ {t('mobileNav.reset')}
           </button>
@@ -2464,13 +2464,13 @@ const Step0Configurator = ({
             <button
               type="button"
               onClick={addSession}
-              className="edo-focus-ring bg-white border border-border px-3.5 py-2 cursor-pointer font-mono text-label tracking-meta uppercase text-foreground flex items-center gap-2 h-8"
+              className="edo-focus-ring bg-background border border-border px-3.5 py-2 cursor-pointer font-mono text-label tracking-meta uppercase text-foreground flex items-center gap-2 h-8"
             >
               + {t('booking.addASession')}
             </button>
           </div>
           <div
-            className="grid bg-white border-t border-b border-hairline"
+            className="grid bg-background border-t border-b border-hairline"
             style={{
               gridTemplateColumns: `repeat(${sessions.length}, minmax(0,1fr))`,
               gap: 1,
@@ -2495,7 +2495,7 @@ const Step0Configurator = ({
                     setOpenQ(null);
                     setTouchedQs(new Set());
                   }}
-                  className={`${isActive ? 'bg-foreground text-white' : 'bg-white text-foreground'} border-0 px-3.5 py-3 text-left cursor-pointer font-inherit flex flex-col gap-1 min-w-0`}
+                  className={`${isActive ? 'bg-foreground text-white' : 'bg-background text-foreground'} border-0 px-3.5 py-3 text-left cursor-pointer font-inherit flex flex-col gap-1 min-w-0`}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span
@@ -2705,7 +2705,7 @@ const Step0Configurator = ({
               </span>
             </div>
             <div className="grid grid-cols-1 gap-hairline bg-edo-pure-black border-b border-hairline">
-              <div className="bg-white px-4 sm:px-3 py-4 sm:py-2.5 flex flex-col gap-2 min-w-0">
+              <div className="bg-background px-4 sm:px-3 py-4 sm:py-2.5 flex flex-col gap-2 min-w-0">
                 <div className="flex items-center gap-1.5 max-w-xs min-w-0">
                   <Input
                     value={S.quantity}
@@ -2716,7 +2716,7 @@ const Step0Configurator = ({
                     }
                     placeholder="—"
                     inputMode="numeric"
-                    className="h-auto min-w-0 flex-1 rounded-none border-border bg-white px-3.5 py-2.5 text-center font-mono text-cell tracking-copy-tight"
+                    className="h-auto min-w-0 flex-1 rounded-none border-border bg-background px-3.5 py-2.5 text-center font-mono text-cell tracking-copy-tight"
                   />
                 </div>
               </div>
@@ -2754,7 +2754,7 @@ const Step0Configurator = ({
                           : [...cur, v.k],
                       });
                     }}
-                    className={`${on ? 'bg-foreground text-white' : 'bg-white text-foreground'} border-0 px-4 sm:px-3 py-4 sm:py-2.5 text-left cursor-pointer font-inherit flex flex-col gap-1.5 min-h-22 sm:min-h-18 min-w-0`}
+                    className={`${on ? 'bg-foreground text-white' : 'bg-background text-foreground'} border-0 px-4 sm:px-3 py-4 sm:py-2.5 text-left cursor-pointer font-inherit flex flex-col gap-1.5 min-h-22 sm:min-h-18 min-w-0`}
                   >
                     <span
                       className={`font-mono text-label tracking-meta uppercase ${on ? 'text-white/60' : 'text-muted-foreground'}`}
@@ -2797,7 +2797,7 @@ const Step0Configurator = ({
               </span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-hairline bg-edo-pure-black border-b border-hairline">
-              <div className="bg-white px-4 sm:px-3 py-4 sm:py-2.5 flex flex-col gap-2 min-w-0">
+              <div className="bg-background px-4 sm:px-3 py-4 sm:py-2.5 flex flex-col gap-2 min-w-0">
                 <span className="edo-cell-label text-muted-foreground">
                   {t('booking.numberOfProducts')}
                 </span>
@@ -2811,11 +2811,11 @@ const Step0Configurator = ({
                     }
                     placeholder="—"
                     inputMode="numeric"
-                    className="flex-1 min-w-0 w-full bg-white border border-border outline-none px-3.5 py-2.5 font-mono text-cell tracking-copy-tight text-foreground text-center"
+                    className="flex-1 min-w-0 w-full bg-background border border-border outline-none px-3.5 py-2.5 font-mono text-cell tracking-copy-tight text-foreground text-center"
                   />
                 </div>
               </div>
-              <div className="bg-white px-4 sm:px-3 py-4 sm:py-2.5 flex flex-col gap-2 min-w-0">
+              <div className="bg-background px-4 sm:px-3 py-4 sm:py-2.5 flex flex-col gap-2 min-w-0">
                 <span className="edo-cell-label text-muted-foreground">
                   {t('booking.viewsPerProduct')}
                 </span>
@@ -2829,7 +2829,7 @@ const Step0Configurator = ({
                     }
                     placeholder="—"
                     inputMode="numeric"
-                    className="flex-1 min-w-0 w-full bg-white border border-border outline-none px-3.5 py-2.5 font-mono text-cell tracking-copy-tight text-foreground text-center"
+                    className="flex-1 min-w-0 w-full bg-background border border-border outline-none px-3.5 py-2.5 font-mono text-cell tracking-copy-tight text-foreground text-center"
                   />
                 </div>
               </div>
@@ -2856,7 +2856,7 @@ const Step0Configurator = ({
                     : '1fr',
               }}
             >
-              <div className="bg-white px-4 sm:px-3.5 py-4 sm:py-2.5 flex items-center justify-between gap-3">
+              <div className="bg-background px-4 sm:px-3.5 py-4 sm:py-2.5 flex items-center justify-between gap-3">
                 <div>
                   <div className="text-detail font-medium tracking-copy-tight">
                     {t('booking.postProductionByEDo')}
@@ -2878,7 +2878,7 @@ const Step0Configurator = ({
                 />
               </div>
               {(S.media || []).includes('video') && S.postprod && (
-                <div className="bg-white px-4 sm:px-3.5 py-4 sm:py-2.5 flex items-center justify-between gap-3">
+                <div className="bg-background px-4 sm:px-3.5 py-4 sm:py-2.5 flex items-center justify-between gap-3">
                   <div>
                     <div className="text-detail font-medium tracking-copy-tight">
                       {t('booking.videoEditing2')}
@@ -2911,17 +2911,17 @@ const Step0Configurator = ({
         </div>
       )}
       {sessionValid(active) && activeIdx === sessions.length - 1 && (
-        <div className="px-6 py-1.5 flex justify-center items-center bg-white">
+        <div className="px-6 py-1.5 flex justify-center items-center bg-background">
           <button
             type="button"
             onClick={addSession}
-            className="edo-focus-ring bg-white border border-border px-4 py-1.5 cursor-pointer font-mono text-label tracking-meta uppercase text-foreground flex items-center gap-2 h-7"
+            className="edo-focus-ring bg-background border border-border px-4 py-1.5 cursor-pointer font-mono text-label tracking-meta uppercase text-foreground flex items-center gap-2 h-7"
           >
             + {t('booking.addAnotherProductSession')}
           </button>
         </div>
       )}
-      <div className="h-4 bg-white" />
+      <div className="h-4 bg-background" />
     </div>
   );
 };
@@ -2977,7 +2977,7 @@ const MultiPlateauStep = ({
         return (
           <div key={id}>
             {list.length > 1 && (
-              <div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 bg-white flex-wrap">
+              <div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 bg-background flex-wrap">
                 <span className="edo-cell-label text-primary whitespace-nowrap">
                   {t('booking.stageFallback')}{' '}
                   {String(idx + 1).padStart(2, '0')}
@@ -3012,7 +3012,7 @@ const Step1Plateau = ({
   const t = useT();
   return (
     <div>
-      <div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local">
+      <div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 bg-background flex-wrap sticky top-0 z-local">
         <span className="edo-cell-label text-primary whitespace-nowrap">
           01 · {t('booking.stageFallback')}
         </span>
@@ -3066,7 +3066,7 @@ const Step1Plateau = ({
               onClick={() => {
                 togglePlateau(px.k);
               }}
-              className={`group edo-focus-ring ${on ? 'bg-foreground text-white' : 'bg-white text-foreground hover:bg-muted'} border-0 px-cell py-4 text-left cursor-pointer font-inherit flex flex-col gap-1.5 transition-all duration-150 min-w-0`}
+              className={`group edo-focus-ring ${on ? 'bg-foreground text-white' : 'bg-background text-foreground hover:bg-muted'} border-0 px-cell py-4 text-left cursor-pointer font-inherit flex flex-col gap-1.5 transition-all duration-150 min-w-0`}
             >
               <div className="flex justify-between items-start">
                 <span
@@ -3243,12 +3243,12 @@ const Step2Date = ({
   ]);
   return (
     <div>
-      <div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local">
+      <div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 bg-background flex-wrap sticky top-0 z-local">
         <span className="edo-cell-label text-primary whitespace-nowrap">{`06 · ${t('booking.pickADate')}`}</span>
       </div>
 
       <div className="flex min-w-0 edo-hairline">
-        <div className="flex min-w-0 flex-1 items-baseline gap-x-4 md:gap-x-6 gap-y-2 bg-white px-5 md:px-6 py-3 flex-wrap">
+        <div className="flex min-w-0 flex-1 items-baseline gap-x-4 md:gap-x-6 gap-y-2 bg-background px-5 md:px-6 py-3 flex-wrap">
           <h2 className="m-0 text-page-title font-light tracking-headline shrink-0">
             {months[viewM]}{' '}
             <span className="text-muted-foreground">{viewY}</span>
@@ -3262,7 +3262,7 @@ const Step2Date = ({
             <span className="inline-flex items-center gap-2">
               <span
                 aria-hidden
-                className="inline-block w-2.5 h-2.5 bg-white border border-foreground"
+                className="inline-block w-2.5 h-2.5 bg-background border border-foreground"
               />
               {t('booking.calFreeLegend')}
             </span>
@@ -3293,7 +3293,7 @@ const Step2Date = ({
           type="button"
           onClick={prevMonth}
           aria-label={t('booking.calPrevMonth')}
-          className="edo-focus-ring flex basis-header flex-none cursor-pointer items-center justify-center border-0 bg-white font-mono text-detail text-foreground transition-colors hover:bg-muted"
+          className="edo-focus-ring flex basis-header flex-none cursor-pointer items-center justify-center border-0 bg-background font-mono text-detail text-foreground transition-colors hover:bg-muted"
         >
           {'←'}
         </button>
@@ -3301,7 +3301,7 @@ const Step2Date = ({
           type="button"
           onClick={nextMonth}
           aria-label={t('booking.calNextMonth')}
-          className="edo-focus-ring flex basis-header flex-none cursor-pointer items-center justify-center border-0 bg-white font-mono text-detail text-foreground transition-colors hover:bg-muted"
+          className="edo-focus-ring flex basis-header flex-none cursor-pointer items-center justify-center border-0 bg-background font-mono text-detail text-foreground transition-colors hover:bg-muted"
         >
           {'→'}
         </button>
@@ -3370,7 +3370,7 @@ const Step2Date = ({
                         ? 'bg-edo-sand text-foreground cursor-pointer hover:bg-edo-warm'
                         : tdy
                           ? 'bg-primary/8 text-foreground cursor-pointer hover:bg-primary/15'
-                          : 'bg-white text-foreground cursor-pointer hover:bg-edo-gray-100',
+                          : 'bg-background text-foreground cursor-pointer hover:bg-edo-gray-100',
               ].join(' ')}
             >
               <span
@@ -3409,7 +3409,7 @@ const Step2Date = ({
         })}
       </div>
 
-      <div className="border-b border-hairline bg-white px-5 md:px-6 py-2.5 flex items-center gap-3 md:gap-5 flex-wrap">
+      <div className="border-b border-hairline bg-background px-5 md:px-6 py-2.5 flex items-center gap-3 md:gap-5 flex-wrap">
         <span className="edo-cell-label">{t('booking.arrivalTime')}</span>
         <span className="font-mono text-label tracking-ui text-muted-foreground">
           {String(arrivalHour).padStart(2, '0')}:00 {'→'}{' '}
@@ -3417,7 +3417,7 @@ const Step2Date = ({
           {rentalHours}h
         </span>
       </div>
-      <div className="grid grid-cols-5 sm:grid-cols-10 gap-hairline bg-white border-b border-hairline w-full">
+      <div className="grid grid-cols-5 sm:grid-cols-10 gap-hairline bg-background border-b border-hairline w-full">
         {Array.from({ length: 10 }, (_, i) => i + 9).map((h) => {
           const on = arrivalHour === h;
           const endsTooLate = h + rentalHours > 19;
@@ -3439,7 +3439,7 @@ const Step2Date = ({
                       ? t('booking.endsPastClosing', { hour: h + rentalHours })
                       : ''
               }
-              className={`${on ? 'bg-foreground text-white' : disabled ? 'bg-muted text-muted-foreground' : 'bg-white text-foreground hover:bg-edo-gray-100'} border-0 ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'} flex items-center justify-center font-mono text-caption tracking-caption min-w-0 py-3 sm:py-0 sm:aspect-arrival transition-colors duration-100${booked ? ' line-through' : ''}`}
+              className={`${on ? 'bg-foreground text-white' : disabled ? 'bg-muted text-muted-foreground' : 'bg-background text-foreground hover:bg-edo-gray-100'} border-0 ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'} flex items-center justify-center font-mono text-caption tracking-caption min-w-0 py-3 sm:py-0 sm:aspect-arrival transition-colors duration-100${booked ? ' line-through' : ''}`}
             >
               {String(h).padStart(2, '0')}:00
             </button>
@@ -3478,7 +3478,7 @@ const BentoSlotTile = ({
     <button
       type="button"
       onClick={onClick}
-      className={`group edo-focus-ring ${on ? 'bg-foreground text-white' : 'bg-white text-foreground hover:bg-muted'} border-0 px-cell py-4 text-left cursor-pointer font-inherit flex flex-col gap-1.5 transition-all duration-150 min-w-0 min-h-44`}
+      className={`group edo-focus-ring ${on ? 'bg-foreground text-white' : 'bg-background text-foreground hover:bg-muted'} border-0 px-cell py-4 text-left cursor-pointer font-inherit flex flex-col gap-1.5 transition-all duration-150 min-w-0 min-h-44`}
     >
       <div className="flex justify-between items-start">
         <span
@@ -3592,8 +3592,8 @@ const Step3Slot = ({
             s={t('booking.studioVisitIsFreeAnd')}
           />
         </div>
-        <div className="grid grid-cols-1 gap-hairline bg-white border-t border-b border-hairline w-full">
-          <div className="bg-white px-5 md:px-12 py-6 md:py-8 flex flex-wrap items-baseline gap-3 md:gap-5">
+        <div className="grid grid-cols-1 gap-hairline bg-background border-t border-b border-hairline w-full">
+          <div className="bg-background px-5 md:px-12 py-6 md:py-8 flex flex-wrap items-baseline gap-3 md:gap-5">
             <span className="text-hero font-light tracking-display leading-none">
               0 €
             </span>
@@ -3649,8 +3649,8 @@ const Step3Slot = ({
         />
       </div>
       {(slotType === 'hour' || slotType === 'half') && (
-        <div className="grid grid-cols-1 gap-hairline bg-white border-b border-hairline w-full">
-          <div className="bg-white px-5 md:px-12 py-5 flex items-center justify-between gap-5 flex-wrap">
+        <div className="grid grid-cols-1 gap-hairline bg-background border-b border-hairline w-full">
+          <div className="bg-background px-5 md:px-12 py-5 flex items-center justify-between gap-5 flex-wrap">
             <div className="flex flex-col gap-1 min-w-0">
               <span className="edo-cell-label">
                 {slotType === 'hour'
@@ -3702,8 +3702,8 @@ const Step3Slot = ({
         </div>
       )}
       {slotType === 'full' && (
-        <div className="grid grid-cols-1 gap-hairline bg-white border-b border-hairline w-full">
-          <div className="bg-white px-5 md:px-12 py-5 flex items-center justify-between gap-5 flex-wrap">
+        <div className="grid grid-cols-1 gap-hairline bg-background border-b border-hairline w-full">
+          <div className="bg-background px-5 md:px-12 py-5 flex items-center justify-between gap-5 flex-wrap">
             <div className="flex flex-col gap-1 min-w-0">
               <span className="edo-cell-label">
                 {t('booking.totalDuration')}
@@ -3803,7 +3803,7 @@ const Step5Team = ({ lang, p, team, setTeam, configSessions }: AnyProps) => {
           return (
             <div
               key={e.k}
-              className="bg-white px-5 py-4 flex items-center justify-between gap-5"
+              className="bg-background px-5 py-4 flex items-center justify-between gap-5"
             >
               <div>
                 <div className="text-detail font-medium tracking-copy-tight flex items-center gap-2">
@@ -3829,7 +3829,7 @@ const Step5Team = ({ lang, p, team, setTeam, configSessions }: AnyProps) => {
                   </span>
                   <span
                     onClick={() => setDays(e.k, n > 0 ? 0 : 1)}
-                    className={`w-5.5 h-5.5 border-1-5 ${n > 0 ? 'border-primary bg-primary' : 'border-input bg-white'} inline-flex items-center justify-center text-white text-detail font-bold`}
+                    className={`w-5.5 h-5.5 border-1-5 ${n > 0 ? 'border-primary bg-primary' : 'border-input bg-background'} inline-flex items-center justify-center text-white text-detail font-bold`}
                   >
                     {n > 0 ? '✓' : ''}
                   </span>
@@ -3843,7 +3843,7 @@ const Step5Team = ({ lang, p, team, setTeam, configSessions }: AnyProps) => {
                   </span>
                   <span
                     onClick={() => toggleReq(e.k)}
-                    className={`w-5.5 h-5.5 border-1-5 ${onReq ? 'border-primary bg-primary' : 'border-input bg-white'} inline-flex items-center justify-center text-white text-detail font-bold`}
+                    className={`w-5.5 h-5.5 border-1-5 ${onReq ? 'border-primary bg-primary' : 'border-input bg-background'} inline-flex items-center justify-center text-white text-detail font-bold`}
                   >
                     {onReq ? '✓' : ''}
                   </span>
@@ -3877,7 +3877,7 @@ const Step6Postprod = ({
     <div className="px-5 md:px-12 pb-6">
       <div className="flex flex-col gap-hairline bg-border">
         <div
-          className={`bg-white px-5 md:px-6 py-5 flex items-center justify-between gap-5 ${enabled ? 'border-l-3 border-l-primary' : 'border-l-3 border-l-transparent'}`}
+          className={`bg-background px-5 md:px-6 py-5 flex items-center justify-between gap-5 ${enabled ? 'border-l-3 border-l-primary' : 'border-l-3 border-l-transparent'}`}
         >
           <div>
             <div className="text-cell font-medium tracking-copy-tight">
@@ -3907,7 +3907,7 @@ const Step6Postprod = ({
         </div>
         {enabled && videoAllowed && (
           <div
-            className={`bg-white px-5 md:px-6 py-5 flex items-center justify-between gap-5 ${video ? 'border-l-3 border-l-primary' : 'border-l-3 border-l-transparent'}`}
+            className={`bg-background px-5 md:px-6 py-5 flex items-center justify-between gap-5 ${video ? 'border-l-3 border-l-primary' : 'border-l-3 border-l-transparent'}`}
           >
             <div>
               <div className="text-cell font-medium tracking-copy-tight">
@@ -3954,7 +3954,7 @@ const ARTICLE_TYPES: AnyProps[] = [
 const BentoField = ({ label, children, span, error }: AnyProps) => (
   <Field
     data-invalid={error ? true : undefined}
-    className="min-h-control gap-hairline bg-white px-4 py-2.5 data-[invalid=true]:ring-1 data-[invalid=true]:ring-destructive data-[invalid=true]:ring-inset sm:px-3 sm:py-1.5"
+    className="min-h-control gap-hairline bg-background px-4 py-2.5 data-[invalid=true]:ring-1 data-[invalid=true]:ring-destructive data-[invalid=true]:ring-inset sm:px-3 sm:py-1.5"
     {...(span ? { style: { gridColumn: span } } : {})}
   >
     <FieldLabel className="edo-cell-label text-micro tracking-meta text-muted-foreground">
@@ -4008,7 +4008,7 @@ const Step7Contact = ({
   };
   return (
     <div>
-      <div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 bg-white flex-wrap sticky top-0 z-local">
+      <div className="px-5 md:px-6 border-b border-hairline flex items-center min-h-control py-3 md:py-0 md:h-control box-border gap-3 bg-background flex-wrap sticky top-0 z-local">
         <span className="edo-cell-label text-primary whitespace-nowrap">
           05 · {t('assistant.contactFormTitle')}
         </span>
@@ -4096,7 +4096,7 @@ const Step7Contact = ({
         {!isCyclo && !hideProductFields && (
           <>
             <div
-              className={`bg-white px-3 py-1.5 col-span-1 sm:col-span-2 flex flex-col gap-1 min-h-control ${errors.typesArticles ? 'ring-1 ring-inset ring-destructive' : ''}`}
+              className={`bg-background px-3 py-1.5 col-span-1 sm:col-span-2 flex flex-col gap-1 min-h-control ${errors.typesArticles ? 'ring-1 ring-inset ring-destructive' : ''}`}
             >
               <span className="edo-cell-label text-muted-foreground text-micro tracking-meta">
                 {t('booking.itemTypes')}
@@ -4114,7 +4114,7 @@ const Step7Contact = ({
                       <span
                         className={`w-2 h-2 border ${on ? 'border-white bg-primary' : 'border-muted-foreground bg-transparent'} inline-flex items-center justify-center shrink-0`}
                       >
-                        {on && <span className="w-0.5 h-0.5 bg-white" />}
+                        {on && <span className="w-0.5 h-0.5 bg-background" />}
                       </span>
                       <span className="overflow-hidden text-ellipsis">
                         {t[lang]}
@@ -4168,7 +4168,7 @@ const Step7Contact = ({
             </BentoField>
           </>
         )}
-        <div className="bg-white px-3 py-1.5 col-span-1 sm:col-span-2 flex flex-col gap-0.5 min-h-control">
+        <div className="bg-background px-3 py-1.5 col-span-1 sm:col-span-2 flex flex-col gap-0.5 min-h-control">
           <span className="edo-cell-label text-muted-foreground text-micro tracking-meta">
             {t('booking.otherInformation')}
           </span>
@@ -4183,7 +4183,7 @@ const Step7Contact = ({
           />
         </div>
         <label
-          className={`col-span-1 sm:col-span-2 bg-white px-3 py-1.5 flex flex-col gap-0.5 cursor-pointer min-h-control ${errors.cgvAccepted ? 'ring-1 ring-inset ring-destructive' : ''}`}
+          className={`col-span-1 sm:col-span-2 bg-background px-3 py-1.5 flex flex-col gap-0.5 cursor-pointer min-h-control ${errors.cgvAccepted ? 'ring-1 ring-inset ring-destructive' : ''}`}
         >
           <span className="edo-cell-label text-muted-foreground text-micro tracking-meta">
             CGV *

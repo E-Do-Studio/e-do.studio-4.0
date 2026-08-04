@@ -24,7 +24,7 @@ export const NewsletterCard = ({
     <section
       className={cn(
         cellBase,
-        'order-5 flex min-h-36 flex-col justify-between gap-2.5 bg-white px-cell-lg py-cell text-foreground lg:min-h-0',
+        'order-5 flex min-h-36 flex-col justify-between gap-2.5 bg-background px-cell-lg py-cell text-foreground lg:min-h-0',
         className,
       )}
     >
@@ -77,7 +77,7 @@ export const SplitArticleCard = ({
       onClick={onOpen}
       className={cn(
         cellBase,
-        'edo-focus-ring group order-6 grid min-h-104 cursor-pointer grid-cols-1 border-0 bg-white p-0 text-left transition-opacity hover:opacity-95 lg:min-h-0',
+        'edo-focus-ring group order-6 grid min-h-104 cursor-pointer grid-cols-1 border-0 bg-background p-0 text-left transition-opacity hover:opacity-95 lg:min-h-0',
         cover && 'sm:grid-cols-2',
         className,
       )}
@@ -139,7 +139,7 @@ export const SplitArticleEmptyCard = ({
       aria-label={t('discoveryPage.noPosts')}
       className={cn(
         cellBase,
-        'order-6 grid min-h-104 grid-cols-1 bg-white sm:grid-cols-2 lg:min-h-0',
+        'order-6 grid min-h-104 grid-cols-1 bg-background sm:grid-cols-2 lg:min-h-0',
         className,
       )}
     >

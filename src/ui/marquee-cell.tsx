@@ -33,9 +33,9 @@ const MarqueeCell = ({
   }, [list, pxPerSecond, size]);
 
   if (list.length === 0)
-    return <div className="flex h-full items-center bg-white" />;
+    return <div className="flex h-full items-center bg-background" />;
   return (
-    <div className="relative flex h-full items-center overflow-hidden bg-white">
+    <div className="relative flex h-full items-center overflow-hidden bg-background">
       <div
         ref={trackRef}
         className="inline-flex whitespace-nowrap pl-5"

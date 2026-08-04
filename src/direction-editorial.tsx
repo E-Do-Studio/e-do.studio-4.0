@@ -178,7 +178,7 @@ const DirectionA = () => {
       <SocialClientsBar className="col-span-2 md:col-start-1 md:col-end-13 md:row-start-2" />
 
       {/* ── Rows 3-4 left: E-commerce section ── */}
-      <div className="col-span-2 min-h-72 flex flex-col overflow-hidden bg-white md:col-start-1 md:col-end-7 md:row-start-3 md:row-end-5 md:min-h-0">
+      <div className="col-span-2 min-h-72 flex flex-col overflow-hidden bg-background md:col-start-1 md:col-end-7 md:row-start-3 md:row-end-5 md:min-h-0">
         <div className="flex flex-shrink-0 flex-col gap-4 px-5 pt-6 pb-5 md:flex-1 md:min-h-0 md:px-7 md:pt-5 md:pb-4">
           {/* Une seule clé par phrase, le fragment stylé étant balisé dans la
               traduction : découper la phrase en deux clés figeait l'ordre des
@@ -197,14 +197,14 @@ const DirectionA = () => {
           </p>
         </div>
 
-        <div className="flex flex-1 min-h-0 overflow-hidden bg-white md:flex-none md:w-full md:max-h-full md:aspect-[4/1]">
-          <div className="grid flex-1 grid-cols-2 content-end bg-white md:grid-cols-4 md:content-stretch">
+        <div className="flex flex-1 min-h-0 overflow-hidden bg-background md:flex-none md:w-full md:max-h-full md:aspect-[4/1]">
+          <div className="grid flex-1 grid-cols-2 content-end bg-background md:grid-cols-4 md:content-stretch">
             {ecomMachines.map((m, i) => (
               <button
                 key={m.slug}
                 onClick={() => goto('plateau-' + m.slug)}
                 className={cn(
-                  'edo-focus-ring group flex aspect-[4/3] min-w-0 cursor-pointer flex-col justify-between bg-white px-3 py-3 text-left text-foreground transition-colors duration-150 hover:bg-muted md:aspect-auto md:h-full md:w-full md:px-4 md:py-4',
+                  'edo-focus-ring group flex aspect-[4/3] min-w-0 cursor-pointer flex-col justify-between bg-background px-3 py-3 text-left text-foreground transition-colors duration-150 hover:bg-muted md:aspect-auto md:h-full md:w-full md:px-4 md:py-4',
                   'border-t border-l border-edo-gray-200',
                   i % 2 === 0 && 'border-l-0',
                   i === 0 ? 'md:border-l-0' : 'md:border-l',
@@ -302,7 +302,7 @@ const DirectionA = () => {
       {/* ── Rows 5-6 middle (desktop) / mobile row A left: Cyclorama ── */}
       <button
         onClick={() => goto('cyclorama')}
-        className="edo-focus-ring group col-span-1 h-36 flex cursor-pointer flex-col justify-between border-0 bg-white p-5 text-left text-foreground transition-colors duration-150 hover:bg-muted md:col-span-3 md:col-start-4 md:col-end-7 md:row-start-5 md:row-end-7 md:h-auto md:min-h-0"
+        className="edo-focus-ring group col-span-1 h-36 flex cursor-pointer flex-col justify-between border-0 bg-background p-5 text-left text-foreground transition-colors duration-150 hover:bg-muted md:col-span-3 md:col-start-4 md:col-end-7 md:row-start-5 md:row-end-7 md:h-auto md:min-h-0"
       >
         <CellLabel>Espace</CellLabel>
         <div className="flex items-end justify-between gap-3">
@@ -327,7 +327,7 @@ const DirectionA = () => {
       {/* ── Rows 5-6 right (desktop) / mobile row A right: Post-production ── */}
       <button
         onClick={() => goto('postprod')}
-        className="edo-focus-ring group col-span-1 h-36 flex cursor-pointer flex-col justify-between border-0 bg-white p-5 text-left text-foreground transition-colors duration-150 hover:bg-muted md:col-start-7 md:col-end-10 md:row-start-5 md:row-end-7 md:mt-home-offset md:h-home-offset"
+        className="edo-focus-ring group col-span-1 h-36 flex cursor-pointer flex-col justify-between border-0 bg-background p-5 text-left text-foreground transition-colors duration-150 hover:bg-muted md:col-start-7 md:col-end-10 md:row-start-5 md:row-end-7 md:mt-home-offset md:h-home-offset"
       >
         <CellLabel>Service</CellLabel>
         <div className="flex items-end justify-between gap-2.5">
@@ -454,7 +454,7 @@ const DirectionA = () => {
           fallback={
             <div
               aria-hidden
-              className="hidden bg-white md:flex md:col-start-10 md:col-end-13 md:row-start-5 md:row-end-7 md:min-h-0"
+              className="hidden bg-background md:flex md:col-start-10 md:col-end-13 md:row-start-5 md:row-end-7 md:min-h-0"
             />
           }
         >
@@ -466,7 +466,7 @@ const DirectionA = () => {
       ) : (
         <div
           aria-hidden
-          className="hidden bg-white md:flex md:col-start-10 md:col-end-13 md:row-start-5 md:row-end-7 md:min-h-0"
+          className="hidden bg-background md:flex md:col-start-10 md:col-end-13 md:row-start-5 md:row-end-7 md:min-h-0"
         />
       )}
 

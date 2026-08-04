@@ -36,7 +36,7 @@ const SocialLinksRow = ({
           href={s.href}
           target="_blank"
           rel="noopener noreferrer"
-          className="edo-focus-ring group flex items-center justify-between border-0 bg-white px-3 py-3 text-foreground no-underline transition-colors duration-150 hover:bg-muted"
+          className="edo-focus-ring group flex items-center justify-between border-0 bg-background px-3 py-3 text-foreground no-underline transition-colors duration-150 hover:bg-muted"
         >
           <SocialIcon kind={s.k} size={12} />
           <span className="font-mono text-micro tracking-meta">

@@ -135,7 +135,7 @@ const MobileNavStrip = ({
     <>
       <div
         className={cn(
-          'sticky top-14 z-30 flex h-14 items-stretch border-b border-border bg-white md:hidden',
+          'sticky top-14 z-30 flex h-14 items-stretch border-b border-border bg-background md:hidden',
           className,
         )}
         role="toolbar"
@@ -216,7 +216,7 @@ const MobileNavStrip = ({
                         'edo-focus-ring relative flex min-h-11 cursor-pointer select-none items-center gap-3 border-t border-border px-4 py-3 transition-colors duration-150 ease-edo-out',
                         isActive
                           ? 'bg-foreground text-background'
-                          : 'bg-white text-foreground hover:bg-muted',
+                          : 'bg-background text-foreground hover:bg-muted',
                         dimmed && !isActive && 'opacity-40',
                       )}
                     >
@@ -234,7 +234,7 @@ const MobileNavStrip = ({
                           'grid size-4 shrink-0 place-items-center border',
                           isActive
                             ? 'border-background bg-background'
-                            : 'border-border bg-white',
+                            : 'border-border bg-background',
                         )}
                       >
                         {isActive ? (

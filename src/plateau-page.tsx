@@ -73,7 +73,7 @@ const Cover = ({
   return (
     <div
       className={cn(
-        'group relative overflow-hidden bg-white aspect-[4/3] md:aspect-auto md:min-h-0',
+        'group relative overflow-hidden bg-background aspect-[4/3] md:aspect-auto md:min-h-0',
         className,
       )}
       role={hasMultiple ? 'group' : undefined}
@@ -175,7 +175,7 @@ const ThumbStrip = ({
               aria-label={`${item.alt[lang] || plateauName} — ${i + 1} / ${items.length}`}
               aria-current={isActive ? 'true' : undefined}
               className={cn(
-                'edo-focus-ring group relative h-full shrink-0 overflow-hidden bg-white border-0 p-0 cursor-pointer transition-opacity duration-150 ease-edo-out',
+                'edo-focus-ring group relative h-full shrink-0 overflow-hidden bg-background border-0 p-0 cursor-pointer transition-opacity duration-150 ease-edo-out',
                 isActive ? 'opacity-100' : 'opacity-60 hover:opacity-100',
               )}
               style={{ flexBasis: tileBasis }}
@@ -262,7 +262,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
           (gallery filters) — h-14 wrapper with min-h-11 trigger button. Tap
           opens a Drawer listing all plateaux. */}
       <div
-        className="sticky top-14 z-30 flex h-14 items-stretch border-b border-border bg-white md:hidden"
+        className="sticky top-14 z-30 flex h-14 items-stretch border-b border-border bg-background md:hidden"
         role="toolbar"
         aria-label={t('common.stages')}
       >
@@ -322,7 +322,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
                     'edo-focus-ring cursor-pointer transition-colors duration-150 ease-edo-out',
                     active
                       ? 'bg-foreground text-background'
-                      : 'bg-white text-foreground',
+                      : 'bg-background text-foreground',
                   )}
                 >
                   <span
@@ -354,7 +354,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
       </Drawer>
 
       {/* Desktop sidebar: vertical list, hidden on mobile (replaced by inline pill nav). */}
-      <div className="hidden bg-white md:col-start-1 md:row-start-2 md:row-span-4 md:flex md:flex-col md:overflow-x-hidden md:overflow-y-auto">
+      <div className="hidden bg-background md:col-start-1 md:row-start-2 md:row-span-4 md:flex md:flex-col md:overflow-x-hidden md:overflow-y-auto">
         {order.map((m, i) => {
           const cfg = plateaux[m];
           if (!cfg) return null;
@@ -367,7 +367,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
               }
               className={`edo-focus-ring flex-none py-3.5 px-4 border-0 cursor-pointer text-left flex flex-col gap-1 transition-colors duration-150
                 md:border-b md:border-border
-                ${active ? 'bg-muted border-b-2 border-b-primary md:border-b-border md:border-l-2 md:border-l-primary' : 'bg-white border-b-2 border-b-transparent md:border-b-border md:border-l-2 md:border-l-transparent hover:bg-muted'}`}
+                ${active ? 'bg-muted border-b-2 border-b-primary md:border-b-border md:border-l-2 md:border-l-primary' : 'bg-background border-b-2 border-b-transparent md:border-b-border md:border-l-2 md:border-l-transparent hover:bg-muted'}`}
             >
               <span
                 className={`font-mono text-label tracking-label ${active ? 'text-primary' : 'text-muted-foreground'}`}
@@ -422,7 +422,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
           in the right-hand column. The h1 below stays in the DOM on mobile
           via sr-only so screen readers always have a page heading. */}
       <h1 className="sr-only md:hidden">{p.name}</h1>
-      <div className="hidden bg-white py-3.5 px-4 md:col-start-4 md:row-start-2 md:flex md:flex-col md:justify-between md:gap-1">
+      <div className="hidden bg-background py-3.5 px-4 md:col-start-4 md:row-start-2 md:flex md:flex-col md:justify-between md:gap-1">
         <CellLabel>{p.tagline[lang]}</CellLabel>
         <h1 className="text-tile-large font-light m-0 tracking-display leading-none">
           {p.name}
@@ -430,7 +430,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
       </div>
 
       {/* Specifications */}
-      <div className="bg-white p-3 px-4 flex flex-col gap-1.5 md:col-start-4 md:row-start-3">
+      <div className="bg-background p-3 px-4 flex flex-col gap-1.5 md:col-start-4 md:row-start-3">
         <CellLabel>{t('plateau.specs')}</CellLabel>
         <div className="flex flex-col flex-1 min-h-0">
           {p.specs.map((s, i) => (
@@ -450,7 +450,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
       </div>
 
       {/* Rates */}
-      <div className="bg-white px-4 pt-2.5 pb-3 flex flex-col gap-1 md:col-start-4 md:row-start-4">
+      <div className="bg-background px-4 pt-2.5 pb-3 flex flex-col gap-1 md:col-start-4 md:row-start-4">
         <CellLabel>{t('plateau.rates')}</CellLabel>
         <div className="flex flex-col flex-1 min-h-0">
           {p.rates.map((r, i) => (
@@ -473,7 +473,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
       </div>
 
       {/* Description + Uses */}
-      <div className="bg-white p-4 flex justify-between items-start gap-6 md:col-start-2 md:col-span-2 md:row-start-5">
+      <div className="bg-background p-4 flex justify-between items-start gap-6 md:col-start-2 md:col-span-2 md:row-start-5">
         <div className="flex-1 flex flex-col gap-1.5 min-w-0">
           <CellLabel>{t('common.description')}</CellLabel>
           <p className="m-0 text-caption text-foreground leading-normal max-w-2xl">

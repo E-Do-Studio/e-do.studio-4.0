@@ -33,7 +33,7 @@ const PickerTile = ({
       ? 'bg-primary text-primary-foreground hover:bg-edo-orange/90'
       : variant === 'foreground'
         ? 'bg-edo-black text-edo-white hover:bg-edo-dark'
-        : 'bg-white text-foreground hover:bg-edo-gray-50';
+        : 'bg-background text-foreground hover:bg-edo-gray-50';
   const subtleTone = onDark ? 'text-white/75' : 'text-muted-foreground';
   const labelMutedTone = subtleTone;
   const descTone = subtleTone;
@@ -118,8 +118,8 @@ const BookPicker = () => {
         actions={buildMainNav({ lang, goto })}
       />
 
-      <main className="flex flex-col overflow-auto bg-white md:col-start-2 md:col-span-2 md:row-start-2">
-        <div className="bg-white px-6 py-10 md:px-12 md:py-14">
+      <main className="flex flex-col overflow-auto bg-background md:col-start-2 md:col-span-2 md:row-start-2">
+        <div className="bg-background px-6 py-10 md:px-12 md:py-14">
           <h1 className="m-0 text-hero font-light tracking-display leading-solid text-balance text-foreground">
             {t('bookPicker.title')}
           </h1>

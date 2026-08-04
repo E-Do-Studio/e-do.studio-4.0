@@ -145,7 +145,7 @@ const NavFooter = ({ lang, setLang, onClose, navigate }: NavFooterProps) => {
     <div className="grid grid-cols-auto-fluid border-t border-hairline">
       <button
         onClick={() => setLang(lang === 'fr' ? 'en' : 'fr')}
-        className="edo-focus-ring h-12 w-12 cursor-pointer border-0 border-r border-hairline bg-white font-mono text-caption uppercase tracking-label transition-colors hover:bg-muted"
+        className="edo-focus-ring h-12 w-12 cursor-pointer border-0 border-r border-hairline bg-background font-mono text-caption uppercase tracking-label transition-colors hover:bg-muted"
       >
         {t('common.langToggleLabel')}
       </button>

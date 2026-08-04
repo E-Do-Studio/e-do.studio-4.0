@@ -192,7 +192,7 @@ const ChatSessionList = ({
 }: ChatSessionListProps) => {
   const t = useT();
   return (
-    <div className="absolute inset-0 z-40 flex flex-col bg-white">
+    <div className="absolute inset-0 z-40 flex flex-col bg-background">
       <div className="flex shrink-0 items-center justify-between border-b border-hairline px-cell py-3">
         <span className="edo-cell-label">{t('assistant.history')}</span>
         <button
@@ -296,7 +296,7 @@ interface QuickReplyButtonProps {
 const QuickReplyButton = ({ children, onClick }: QuickReplyButtonProps) => (
   <button
     onClick={onClick}
-    className="edo-focus-ring cursor-pointer rounded-full border border-border bg-white px-2.5 py-1.5 font-mono text-micro uppercase tracking-ui text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+    className="edo-focus-ring cursor-pointer rounded-full border border-border bg-background px-2.5 py-1.5 font-mono text-micro uppercase tracking-ui text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
   >
     {children}
   </button>
@@ -577,7 +577,7 @@ const ContactForm = ({ lang, onSubmit }: ContactFormProps) => {
   return (
     <form
       onSubmit={submit}
-      className="shrink-0 border border-border bg-white p-3"
+      className="shrink-0 border border-border bg-background p-3"
     >
       <div className="mb-2 font-mono text-nano uppercase tracking-code text-primary">
         {t('assistant.contactFormTitle')}
@@ -666,7 +666,7 @@ const BookingRecapCard = ({
   const t = useT();
   const ttc = Math.round(proposal.quote.total * 1.2);
   return (
-    <div className="shrink-0 border border-border bg-white p-3">
+    <div className="shrink-0 border border-border bg-background p-3">
       <div className="mb-2 font-mono text-nano uppercase tracking-code text-primary">
         {t('assistant.bookingRecapTitle')}
       </div>
@@ -884,7 +884,7 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
   return (
     <div
       className={cn(
-        'edo-assistant-card group relative flex h-full w-full flex-col gap-2.5 overflow-hidden bg-white px-cell pb-3 pt-3.5',
+        'edo-assistant-card group relative flex h-full w-full flex-col gap-2.5 overflow-hidden bg-background px-cell pb-3 pt-3.5',
         className || 'col-start-10 col-end-13 row-start-4 row-end-6 min-h-0',
       )}
     >

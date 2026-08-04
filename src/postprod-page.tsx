@@ -322,7 +322,7 @@ const PostprodPage = () => {
 
   const postprodLabel = 'Post-production';
   const dark = !!cat?.featured;
-  const bgCls = dark ? 'bg-foreground' : 'bg-white';
+  const bgCls = dark ? 'bg-foreground' : 'bg-background';
   const fgCls = dark ? 'text-white' : 'text-foreground';
   const mutedCls = dark ? 'text-white/62' : 'text-muted-foreground';
   const lineCls = dark ? 'border-white/18' : 'border-border';
@@ -376,7 +376,7 @@ const PostprodPage = () => {
         aria-haspopup="dialog"
         aria-expanded={navSheetOpen}
         aria-controls="postprod-nav-sheet"
-        className="col-span-full sticky top-14 z-30 md:hidden flex items-center gap-4 min-h-14 w-full px-4 py-2.5 bg-white border-b border-border text-left edo-focus-ring cursor-pointer"
+        className="col-span-full sticky top-14 z-30 md:hidden flex items-center gap-4 min-h-14 w-full px-4 py-2.5 bg-background border-b border-border text-left edo-focus-ring cursor-pointer"
       >
         <span className="font-mono text-label tracking-label text-muted-foreground">
           {currentNumber}
@@ -423,7 +423,7 @@ const PostprodPage = () => {
                     'edo-focus-ring cursor-pointer transition-colors duration-150 ease-edo-out',
                     active
                       ? 'bg-foreground text-background'
-                      : 'bg-white text-foreground',
+                      : 'bg-background text-foreground',
                   )}
                 >
                   <span
@@ -457,7 +457,7 @@ const PostprodPage = () => {
       </Drawer>
 
       {/* Desktop sidebar — vertical list, hidden on mobile (mobile uses the inline nav above) */}
-      <aside className="hidden bg-white md:col-start-1 md:row-start-2 md:flex md:flex-col md:overflow-x-hidden md:overflow-y-auto">
+      <aside className="hidden bg-background md:col-start-1 md:row-start-2 md:flex md:flex-col md:overflow-x-hidden md:overflow-y-auto">
         {cats.map((c, idx) => {
           const active = k === c.k;
           const isLast = idx === cats.length - 1;
@@ -465,7 +465,7 @@ const PostprodPage = () => {
             <button
               key={c.k}
               onClick={() => setType(c.k)}
-              className={`edo-focus-ring flex-none border-0 ${active ? 'bg-muted border-l-2 border-l-primary' : 'bg-white border-l-2 border-l-transparent'} ${idx > 0 ? 'border-t border-t-border' : ''} ${isLast ? 'border-b border-b-border' : ''} py-3 px-4 cursor-pointer text-left flex flex-col gap-1 transition-all duration-150 min-h-18`}
+              className={`edo-focus-ring flex-none border-0 ${active ? 'bg-muted border-l-2 border-l-primary' : 'bg-background border-l-2 border-l-transparent'} ${idx > 0 ? 'border-t border-t-border' : ''} ${isLast ? 'border-b border-b-border' : ''} py-3 px-4 cursor-pointer text-left flex flex-col gap-1 transition-all duration-150 min-h-18`}
             >
               <span
                 className={`font-mono text-micro tracking-label ${active ? 'text-primary' : 'text-muted-foreground'}`}

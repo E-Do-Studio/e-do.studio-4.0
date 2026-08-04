@@ -79,21 +79,67 @@ describe('renderInlineMarkdown', () => {
   });
 });
 
-// Ces cas documentent le comportement ACTUEL, qui est vulnérable : le
-// contenu CMS est interpolé dans du HTML sans échappement, et la sortie part
-// dans dangerouslySetInnerHTML (discovery-post-page.tsx, discovery/tiles.tsx).
-// Le durcissement fait partie du lot sécurité encore en attente ; ces tests
-// échoueront alors, ce qui est le signal recherché.
-describe('échappement (dette connue)', () => {
-  it("n'échappe pas les guillemets d'une URL d'image", () => {
+// La sortie part dans dangerouslySetInnerHTML (discovery-post-page.tsx,
+// discovery/tiles.tsx) et l'entrée est du contenu éditorial Strapi.
+describe('échappement', () => {
+  it("ne laisse pas une URL d'image sortir de son attribut", () => {
     const html = renderMarkdown(
       '![x](https://cdn.test/a.jpg" onerror="alert(1))',
     );
-    expect(html).toContain('onerror=');
+    // Le guillemet est neutralisé : `onerror` reste du texte à l'intérieur de
+    // la valeur de `src`, il ne devient jamais un attribut du <img>. On teste
+    // donc l'absence de la séquence d'échappement — un guillemet BRUT suivi
+    // d'un attribut — et non celle de la sous-chaîne « onerror », qui survit
+    // légitimement sous forme inerte.
+    expect(html).toContain('&quot;');
+    expect(html).not.toContain('.jpg" onerror');
   });
 
-  it("n'interdit pas le schéma javascript: dans un lien", () => {
+  it("n'émet pas de lien au schéma javascript:", () => {
     const html = renderMarkdown('[clic](javascript:alert(1))');
-    expect(html).toContain('javascript:');
+    expect(html).not.toContain('javascript:');
+    expect(html).toContain('href=""');
+  });
+
+  it.each(['data:text/html,<script>', 'vbscript:msgbox(1)'])(
+    'neutralise aussi %s',
+    (url) => {
+      expect(renderMarkdown(`[x](${url})`)).toContain('href=""');
+    },
+  );
+
+  it('laisse passer http, https, mailto, tel et les chemins relatifs', () => {
+    for (const url of [
+      'https://e-do.studio',
+      'http://e-do.studio',
+      'mailto:contact@e-do.studio',
+      'tel:+33144041149',
+      '/fr/galerie',
+      '#ancre',
+    ]) {
+      expect(renderMarkdown(`[x](${url})`)).toContain(`href="${url}"`);
+    }
+  });
+
+  // Cas réel : les médias Strapi sont servis depuis R2 avec des URLs parfois
+  // signées. `&` devient `&amp;` dans l'attribut — c'est la forme HTML correcte,
+  // que le navigateur redécode (vérifié au navigateur, pas seulement ici).
+  it('encode les esperluettes d’une URL signée sans la casser', () => {
+    const html = renderMarkdown(
+      '![x](https://cdn.r2.dev/a.jpg?sig=abc&exp=123)',
+    );
+    expect(html).toContain('src="https://cdn.r2.dev/a.jpg?sig=abc&amp;exp=123"');
+  });
+
+  it('échappe le contenu textuel d’une légende', () => {
+    const html = renderMarkdown('![<script>alert(1)</script>](https://c.test/a.jpg)');
+    expect(html).not.toContain('<script>');
+    expect(html).toContain('&lt;script&gt;');
+  });
+
+  it('échappe aussi les liens du rendu inline', () => {
+    expect(renderInlineMarkdown('[x](javascript:alert(1))')).not.toContain(
+      'javascript:',
+    );
   });
 });

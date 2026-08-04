@@ -37,7 +37,7 @@ export const MorePostsCard = ({
     <section
       className={cn(
         cellBase,
-        'order-2 flex min-h-108 flex-col bg-white lg:min-h-0',
+        'order-2 flex min-h-108 flex-col bg-background lg:min-h-0',
         className,
       )}
     >
@@ -70,7 +70,7 @@ export const MorePostsCard = ({
               type="button"
               onClick={() => onOpen(post)}
               className={cn(
-                'edo-focus-ring group grid w-full cursor-pointer items-center gap-3 border-0 border-b border-border bg-white px-cell pb-3.5 pt-3 text-left transition-colors hover:bg-muted',
+                'edo-focus-ring group grid w-full cursor-pointer items-center gap-3 border-0 border-b border-border bg-background px-cell pb-3.5 pt-3 text-left transition-colors hover:bg-muted',
                 cover ? 'grid-cols-thumb-row' : 'grid-cols-1',
               )}
             >

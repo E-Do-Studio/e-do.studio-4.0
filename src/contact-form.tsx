@@ -41,7 +41,7 @@ export const ContactForm = ({
       onSubmit={submit}
       className="grid grid-cols-2 grid-rows-contact-form-compact gap-hairline bg-edo-pure-black md:h-full"
     >
-      <div className="col-span-2 flex flex-col justify-center bg-white px-5 py-2.5">
+      <div className="col-span-2 flex flex-col justify-center bg-background px-5 py-2.5">
         <span className="edo-cell-label text-primary">
           {t('contact.writeToUs')}
         </span>
@@ -129,7 +129,7 @@ export const ContactSuccess = ({
 }: ContactSuccessProps) => {
   const t = useT();
   return (
-    <div className="flex h-full flex-col items-start justify-center gap-4 bg-white px-7 py-8">
+    <div className="flex h-full flex-col items-start justify-center gap-4 bg-background px-7 py-8">
       <span className="edo-cell-label text-primary">
         ✓ {t('contact.messageSent')}
       </span>
@@ -187,7 +187,7 @@ export const EmbeddedContactForm = ({
   };
 
   return (
-    <div className={cn('bg-white md:h-full', className)}>
+    <div className={cn('bg-background md:h-full', className)}>
       {!sent ? (
         <ContactForm
           lang={lang}

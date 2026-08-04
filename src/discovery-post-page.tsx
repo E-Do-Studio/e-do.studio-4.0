@@ -93,7 +93,7 @@ export const DiscoveryPostPage = () => {
         <div className="row-start-1 flex edo-hairline">
           <button
             onClick={backToIndex}
-            className="edo-focus-ring flex flex-none cursor-pointer items-center gap-2.5 border-0 bg-white px-4 text-foreground transition-colors hover:bg-muted md:px-cell-lg"
+            className="edo-focus-ring flex flex-none cursor-pointer items-center gap-2.5 border-0 bg-background px-4 text-foreground transition-colors hover:bg-muted md:px-cell-lg"
           >
             <span className="inline-block rotate-180">
               <ArrowIcon width="14" height="14" />
@@ -102,7 +102,7 @@ export const DiscoveryPostPage = () => {
               {t('discoveryPage.backToJournal')}
             </span>
           </button>
-          <div className="flex min-w-0 flex-1 items-center gap-3.5 bg-white px-4 md:px-6">
+          <div className="flex min-w-0 flex-1 items-center gap-3.5 bg-background px-4 md:px-6">
             <span className="edo-cell-label text-primary">
               {post.tag[lang]}
             </span>
@@ -123,7 +123,7 @@ export const DiscoveryPostPage = () => {
               className="absolute inset-0 h-full w-full object-cover"
             />
           </div>
-          <article className="flex min-h-0 flex-col gap-5 overflow-y-auto bg-white px-6 py-8 md:px-12 md:py-10">
+          <article className="flex min-h-0 flex-col gap-5 overflow-y-auto bg-background px-6 py-8 md:px-12 md:py-10">
             <ArticleMeta post={post} lang={lang} />
             <h1 className="m-0 text-balance text-hero font-light leading-none tracking-display text-foreground">
               {post.title[lang]}

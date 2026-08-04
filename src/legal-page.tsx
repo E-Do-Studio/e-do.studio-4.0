@@ -209,7 +209,7 @@ const LegalPage = () => {
           aria-haspopup="dialog"
           aria-expanded={navSheetOpen}
           aria-controls="legal-nav-sheet"
-          className="sticky top-14 z-30 md:hidden flex items-center gap-4 min-h-14 w-full px-4 py-3 bg-white border-b border-border text-left edo-focus-ring cursor-pointer"
+          className="sticky top-14 z-30 md:hidden flex items-center gap-4 min-h-14 w-full px-4 py-3 bg-background border-b border-border text-left edo-focus-ring cursor-pointer"
         >
           <span className="font-mono text-label tracking-label text-muted-foreground">
             {currentNumber}
@@ -252,7 +252,7 @@ const LegalPage = () => {
                     'edo-focus-ring cursor-pointer transition-colors duration-150 ease-edo-out',
                     isActive
                       ? 'bg-foreground text-background'
-                      : 'bg-white text-foreground',
+                      : 'bg-background text-foreground',
                   )}
                 >
                   <span
@@ -280,7 +280,7 @@ const LegalPage = () => {
       </Drawer>
 
       {/* Desktop sidebar — vertical list, hidden on mobile (replaced by trigger + sheet above). */}
-      <div className="hidden bg-white overflow-auto md:col-start-1 md:row-start-2 md:flex md:flex-col">
+      <div className="hidden bg-background overflow-auto md:col-start-1 md:row-start-2 md:flex md:flex-col">
         <div className="px-4 pt-4 pb-2.5 shrink-0">
           <span className="edo-cell-label">{t('legalPage.contents')}</span>
         </div>
@@ -323,7 +323,7 @@ const LegalPage = () => {
 
       {/* Main content */}
       <div className="bg-muted overflow-auto md:col-start-2 md:col-span-3 md:row-start-2">
-        <div className="bg-white pt-9 px-5 pb-7 border-b border-border grid grid-cols-fluid-auto gap-6 items-end md:px-10">
+        <div className="bg-background pt-9 px-5 pb-7 border-b border-border grid grid-cols-fluid-auto gap-6 items-end md:px-10">
           <div>
             <span className="edo-cell-label text-primary">
               {String(sections.findIndex((s) => s.k === sec) + 1).padStart(

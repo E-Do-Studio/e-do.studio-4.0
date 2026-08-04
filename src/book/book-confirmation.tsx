@@ -104,7 +104,7 @@ const ConfirmedView = ({
       />
       <div className="overflow-auto flex flex-col edo-hairline md:col-span-2 md:row-start-2 md:min-h-0">
         <div className="grid edo-hairline grid-cols-1 md:grid-cols-confirmation-hero">
-          <div className="bg-white pt-6 md:pt-7 px-5 md:px-12 pb-6 flex flex-col gap-2.5 min-h-44">
+          <div className="bg-background pt-6 md:pt-7 px-5 md:px-12 pb-6 flex flex-col gap-2.5 min-h-44">
             <div className="inline-flex items-center gap-2.5 py-1.5 px-3 bg-primary text-white font-mono text-micro tracking-label uppercase self-start">
               ● {copy.status}
             </div>
@@ -115,7 +115,7 @@ const ConfirmedView = ({
               {copy.body}
             </p>
           </div>
-          <div className="bg-white px-5 md:px-6 py-5 md:py-6 flex flex-col justify-between gap-3.5 min-h-44">
+          <div className="bg-background px-5 md:px-6 py-5 md:py-6 flex flex-col justify-between gap-3.5 min-h-44">
             <div className="flex flex-col gap-3.5">
               <div>
                 <div className="edo-cell-label text-muted-foreground mb-1">
@@ -158,7 +158,7 @@ const ConfirmedView = ({
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 edo-hairline">
-          <div className="bg-white px-5 py-3">
+          <div className="bg-background px-5 py-3">
             <div className="edo-cell-label text-muted-foreground mb-1">
               {t('booking.stage')}
             </div>
@@ -166,7 +166,7 @@ const ConfirmedView = ({
               {plateauLabel}
             </div>
           </div>
-          <div className="bg-white px-5 py-3">
+          <div className="bg-background px-5 py-3">
             <div className="edo-cell-label text-muted-foreground mb-1">
               {isMultiPlateau ? t('booking.dates') : t('booking.date')}
             </div>
@@ -210,7 +210,7 @@ const ConfirmedView = ({
               </div>
             )}
           </div>
-          <div className="bg-white px-5 py-3">
+          <div className="bg-background px-5 py-3">
             <div className="edo-cell-label text-muted-foreground mb-1">
               {t('booking.company')}
             </div>
@@ -218,7 +218,7 @@ const ConfirmedView = ({
               {contact.societe || '—'}
             </div>
           </div>
-          <div className="bg-white px-5 py-3">
+          <div className="bg-background px-5 py-3">
             <div className="edo-cell-label text-muted-foreground mb-1">
               SIREN
             </div>
@@ -228,7 +228,7 @@ const ConfirmedView = ({
           </div>
         </div>
 
-        <div className="bg-white px-5 md:px-12 py-cell pb-5 flex-1">
+        <div className="bg-background px-5 md:px-12 py-cell pb-5 flex-1">
           <div className="edo-cell-label text-muted-foreground mb-2.5">
             {t('booking.quoteBreakdown')}
           </div>
@@ -267,12 +267,12 @@ const ConfirmedView = ({
         </div>
 
         <div className="grid grid-cols-2 edo-hairline">
-          <div className="bg-white px-5 py-3 flex items-center">
+          <div className="bg-background px-5 py-3 flex items-center">
             <button onClick={() => goto('home')} className={navBtnCls}>
               ← {t('booking.backHome')}
             </button>
           </div>
-          <div className="bg-white px-5 py-3 flex items-center justify-end">
+          <div className="bg-background px-5 py-3 flex items-center justify-end">
             <button onClick={onNewRequest} className={navBtnOrangeCls}>
               {t('booking.newRequest')}{' '}
               <ArrowRight width="14" height="14" />
@@ -318,7 +318,7 @@ const BookConfirmation = () => {
           onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
           actions={buildMainNav({ lang, goto })}
         />
-        <div className="md:row-start-2 md:overflow-y-auto md:min-h-0 bg-white">
+        <div className="md:row-start-2 md:overflow-y-auto md:min-h-0 bg-background">
           <div className="px-5 py-10 md:px-12 md:py-14">
             <span className="font-mono text-label tracking-meta uppercase text-muted-foreground">
               {t('bookPicker.confirmationMissingTitle')}

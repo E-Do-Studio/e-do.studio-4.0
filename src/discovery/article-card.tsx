@@ -37,7 +37,7 @@ export const ArticleCard = ({
       onClick={onOpen}
       className={cn(
         cellBase,
-        'edo-focus-ring group order-1 grid min-h-80 cursor-pointer border-0 bg-white p-0 text-left transition-opacity hover:opacity-90 lg:min-h-0',
+        'edo-focus-ring group order-1 grid min-h-80 cursor-pointer border-0 bg-background p-0 text-left transition-opacity hover:opacity-90 lg:min-h-0',
         cover
           ? headline
             ? 'grid-rows-article-headline lg:grid-rows-article-headline-lg'
@@ -109,7 +109,7 @@ export const ArticleEmptyCard = ({
       aria-label={t('discoveryPage.noFeaturedPost')}
       className={cn(
         cellBase,
-        'order-1 grid min-h-80 grid-rows-article-auto bg-white lg:min-h-0',
+        'order-1 grid min-h-80 grid-rows-article-auto bg-background lg:min-h-0',
         headline && 'lg:grid-rows-article-headline-lg',
         className,
       )}

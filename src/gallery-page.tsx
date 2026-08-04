@@ -114,7 +114,7 @@ const GalleryFilters = ({
   const hasFilters = cat !== 'all' || plateau !== 'all';
 
   return (
-    <aside className="flex flex-col bg-white">
+    <aside className="flex flex-col bg-background">
       <FilterHeader label={t('galleryPage.categories')} />
       <FilterCell
         label={t('common.all')}
@@ -168,7 +168,7 @@ const GalleryFilters = ({
             setCat('all');
             setPlateau('all');
           }}
-          className="edo-focus-ring shrink-0 cursor-pointer border-0 border-b border-border bg-white px-3.5 py-3 text-left font-mono text-label uppercase tracking-label text-primary transition-colors hover:bg-muted"
+          className="edo-focus-ring shrink-0 cursor-pointer border-0 border-b border-border bg-background px-3.5 py-3 text-left font-mono text-label uppercase tracking-label text-primary transition-colors hover:bg-muted"
         >
           ↺ {t('common.reset')}
         </button>
@@ -178,7 +178,7 @@ const GalleryFilters = ({
 };
 
 const FilterHeader = ({ label }: { label: string }) => (
-  <div className="flex shrink-0 items-center border-b border-border bg-white px-3.5 pb-1 pt-2">
+  <div className="flex shrink-0 items-center border-b border-border bg-background px-3.5 pb-1 pt-2">
     <span className="font-mono text-micro uppercase tracking-label text-muted-foreground">
       {label}
     </span>
@@ -202,7 +202,7 @@ const FilterCell = ({
       'edo-focus-ring flex w-full shrink-0 cursor-pointer items-center justify-between gap-2 border-0 border-b border-l-2 border-b-border px-3.5 py-2 text-left text-detail tracking-copy-tight text-foreground transition-colors',
       active
         ? 'border-l-primary bg-muted font-medium'
-        : 'border-l-transparent bg-white font-normal hover:bg-muted',
+        : 'border-l-transparent bg-background font-normal hover:bg-muted',
       dimmed && 'opacity-30',
     )}
   >
@@ -229,7 +229,7 @@ const GalleryContent = ({
 }: GalleryContentProps) => {
   const t = useT();
   return (
-    <div className="min-h-0 overflow-y-auto bg-white edo-hairline md:col-start-2 md:col-span-4">
+    <div className="min-h-0 overflow-y-auto bg-background edo-hairline md:col-start-2 md:col-span-4">
       <div className="flex flex-col [&>*:not(:last-child)]:border-b [&>*:not(:last-child)]:border-hairline">
         {loaded && filtered.length === 0 ? (
           <Empty>
@@ -313,7 +313,7 @@ const ProjectLabel = ({
   const plateauLabel =
     PLATEAU_LABELS[project.plateau]?.[lang] ?? project.plateau;
   const className =
-    'edo-focus-ring relative flex cursor-pointer flex-col items-center justify-between overflow-hidden border-0 bg-white px-2 py-2 md:px-2.5 md:py-3.5 text-left font-sans no-underline text-inherit';
+    'edo-focus-ring relative flex cursor-pointer flex-col items-center justify-between overflow-hidden border-0 bg-background px-2 py-2 md:px-2.5 md:py-3.5 text-left font-sans no-underline text-inherit';
   const content = (
     <>
       <HoverMarquee className="max-w-full self-start font-mono text-micro uppercase tracking-code text-muted-foreground transition-colors group-hover:text-primary">
@@ -356,7 +356,7 @@ const ProjectImage = ({
   const item = project.media[imageIndex];
 
   const wrapperClass =
-    'edo-focus-ring relative block aspect-portrait overflow-hidden bg-white no-underline text-inherit';
+    'edo-focus-ring relative block aspect-portrait overflow-hidden bg-background no-underline text-inherit';
 
   let inner: ReactNode;
   if (!item) {
@@ -697,7 +697,7 @@ const GalleryPageV3 = () => {
           countFor={mobileCountFor}
           onApply={applyMobileFilters}
         />
-        <div className="hidden bg-white md:block md:overflow-y-auto">
+        <div className="hidden bg-background md:block md:overflow-y-auto">
           <GalleryFilters
             lang={lang}
             cat={cat}

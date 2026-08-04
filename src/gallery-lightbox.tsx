@@ -220,7 +220,7 @@ export const GalleryLightbox = ({
           // changement d'image puis sautait au ratio réel une fois chargée,
           // soit deux sauts par navigation. Le cadre ne bouge plus et les
           // médias s'y inscrivent en `object-contain`.
-          className="relative flex flex-col edo-hairline border border-hairline overflow-hidden bg-white h-full max-h-[900px] max-w-full aspect-[4/5] shadow-2xl"
+          className="relative flex flex-col edo-hairline border border-hairline overflow-hidden bg-background h-full max-h-[900px] max-w-full aspect-[4/5] shadow-2xl"
         >
         <div className="group relative flex-1 min-h-0 overflow-hidden bg-background">
           <button
@@ -323,7 +323,7 @@ export const GalleryLightbox = ({
         </div>
 
         <div
-          className="grid shrink-0 edo-hairline bg-white"
+          className="grid shrink-0 edo-hairline bg-background"
           style={{ gridTemplateColumns: 'auto 1fr 1fr auto' }}
         >
           <button
@@ -331,14 +331,14 @@ export const GalleryLightbox = ({
             onClick={prev}
             disabled={!hasMultiple}
             aria-label={t('common.prevImage')}
-            className="edo-focus-ring flex h-14 w-14 md:h-16 md:w-16 cursor-pointer items-center justify-center bg-white text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-white"
+            className="edo-focus-ring flex h-14 w-14 md:h-16 md:w-16 cursor-pointer items-center justify-center bg-background text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-background"
           >
             <ArrowLeft size={20} strokeWidth={1.5} />
           </button>
           <button
             type="button"
             onClick={onContact}
-            className="edo-focus-ring flex h-14 md:h-16 cursor-pointer items-center justify-center gap-2 bg-white font-mono uppercase text-detail tracking-code text-foreground transition-colors hover:bg-muted"
+            className="edo-focus-ring flex h-14 md:h-16 cursor-pointer items-center justify-center gap-2 bg-background font-mono uppercase text-detail tracking-code text-foreground transition-colors hover:bg-muted"
           >
             {t('common.contactUs')}
             <ArrowRight size={14} strokeWidth={1.5} />
@@ -356,7 +356,7 @@ export const GalleryLightbox = ({
             onClick={next}
             disabled={!hasMultiple}
             aria-label={t('common.nextImage')}
-            className="edo-focus-ring flex h-14 w-14 md:h-16 md:w-16 cursor-pointer items-center justify-center bg-white text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-white"
+            className="edo-focus-ring flex h-14 w-14 md:h-16 md:w-16 cursor-pointer items-center justify-center bg-background text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-background"
           >
             <ArrowRight size={20} strokeWidth={1.5} />
           </button>

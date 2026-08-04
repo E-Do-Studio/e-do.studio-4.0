@@ -141,7 +141,7 @@ export const DiscoveryBentoGrid = ({ lang, goto }: DiscoveryBentoGridProps) => {
             fallback={
               <div
                 aria-hidden
-                className="hidden md:flex order-8 min-h-88 bg-white md:col-span-2 lg:col-start-7 lg:col-span-2 lg:row-start-4 lg:row-span-3 lg:order-none lg:min-h-0"
+                className="hidden md:flex order-8 min-h-88 bg-background md:col-span-2 lg:col-start-7 lg:col-span-2 lg:row-start-4 lg:row-span-3 lg:order-none lg:min-h-0"
               />
             }
           >
@@ -153,7 +153,7 @@ export const DiscoveryBentoGrid = ({ lang, goto }: DiscoveryBentoGridProps) => {
         ) : (
           <div
             aria-hidden
-            className="hidden md:flex order-8 min-h-88 bg-white md:col-span-2 lg:col-start-7 lg:col-span-2 lg:row-start-4 lg:row-span-3 lg:order-none lg:min-h-0"
+            className="hidden md:flex order-8 min-h-88 bg-background md:col-span-2 lg:col-start-7 lg:col-span-2 lg:row-start-4 lg:row-span-3 lg:order-none lg:min-h-0"
           />
         )}
       </main>

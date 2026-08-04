@@ -44,7 +44,7 @@ const ContactRail = ({
   const today = new Date().toISOString().slice(0, 10);
   const hasClosures = closures.some((c) => c.endsAt >= today);
   return (
-    <aside className="flex flex-col overflow-auto bg-white md:col-start-1 md:row-start-2 md:grid md:grid-rows-contact-form md:gap-hairline md:overflow-hidden md:bg-hairline">
+    <aside className="flex flex-col overflow-auto bg-background md:col-start-1 md:row-start-2 md:grid md:grid-rows-contact-form md:gap-hairline md:overflow-hidden md:bg-hairline">
       <FindUsSection lang={lang} contact={contact} className="md:row-[1/5]" />
       <HoursSection
         lang={lang}
@@ -94,7 +94,7 @@ const ClosuresSection = ({
   return (
     <section
       className={cn(
-        'border-b border-border bg-white p-6 md:border-b-0',
+        'border-b border-border bg-background p-6 md:border-b-0',
         className,
       )}
     >
@@ -150,7 +150,7 @@ const FindUsSection = ({ lang, contact, className }: FindUsSectionProps) => {
   return (
     <section
       className={cn(
-        'border-b border-border bg-white p-6 md:overflow-auto md:border-b-0',
+        'border-b border-border bg-background p-6 md:overflow-auto md:border-b-0',
         className,
       )}
     >
@@ -236,7 +236,7 @@ const HoursSection = ({ lang, hours, className }: HoursSectionProps) => {
   return (
     <section
       className={cn(
-        'border-b border-border bg-white p-6 md:border-b-0',
+        'border-b border-border bg-background p-6 md:border-b-0',
         className,
       )}
     >
@@ -291,7 +291,7 @@ const PhoneSection = ({ lang, contact, className }: PhoneSectionProps) => {
   const c = contact;
   const showFallback = !c;
   return (
-    <section className={cn('bg-white p-6', className)}>
+    <section className={cn('bg-background p-6', className)}>
       <CellLabel className="mb-5 block">{t('contact.phone')}</CellLabel>
       {showFallback ? (
         <UnavailableNote />
@@ -341,7 +341,7 @@ const ContactFormPanel = ({
 }: ContactFormPanelProps) => {
   const t = useT();
   return (
-    <main className="overflow-hidden bg-white md:col-start-2 md:col-span-2 md:row-start-2">
+    <main className="overflow-hidden bg-background md:col-start-2 md:col-span-2 md:row-start-2">
       {!sent ? (
         <ContactForm
           lang={lang}
