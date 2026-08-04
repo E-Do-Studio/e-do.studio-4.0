@@ -975,7 +975,21 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
               onClick={() => {
                 if (clickable) goToStep(s.n);
               }}
-              className={`flex-none ${active ? 'bg-muted border-b-2 border-b-primary md:border-b-0 md:border-l-4 md:border-l-primary' : 'bg-transparent border-b-2 border-b-transparent md:border-b-0 md:border-l-4 md:border-l-transparent'} ${i < STEPS.length - 1 ? 'md:border-b md:border-b-border' : 'md:border-b-0'} px-4 h-12 md:px-6 md:h-11 ${clickable ? 'cursor-pointer' : 'cursor-not-allowed'} text-left flex items-center gap-3.5 transition-all duration-150 ${clickable ? 'opacity-100' : 'opacity-35'}`}
+              variant="cell"
+              aria-pressed={active}
+              aria-disabled={!clickable}
+              // Le conteneur est `hidden md:flex` : toute classe sans préfixe
+              // `md:` ne s'appliquerait qu'en dessous du palier, où l'élément
+              // n'existe pas. Le filet entre étapes est porté par tous et
+              // retiré au dernier, plutôt que calculé depuis l'index.
+              className={cn(
+                'h-11 flex-none justify-start gap-3.5 border-b border-l-4 border-b-border px-6 text-left',
+                'last:border-b-0',
+                active
+                  ? 'border-l-primary bg-muted'
+                  : 'border-l-transparent bg-transparent',
+                !clickable && 'cursor-not-allowed opacity-35',
+              )}
             >
               <span
                 className={`font-mono text-xs tracking-widest ${active ? 'text-primary' : done ? 'text-foreground' : 'text-muted-foreground'} min-w-5.5`}
