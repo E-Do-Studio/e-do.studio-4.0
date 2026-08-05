@@ -92,7 +92,7 @@ export const DiscoveryPostPage = () => {
 
   return (
     <>
-      <main className="animate-in fade-in duration-300 grid w-full grid-rows-[var(--spacing-header)_44px_minmax(0,1fr)] md:h-full gap-px bg-border overflow-hidden">
+      <main className="grid w-full grid-rows-[var(--spacing-header)_44px_minmax(0,1fr)] md:h-full gap-px bg-border overflow-hidden">
         <PageHeader className="row-start-1" />
 
         {/* Retour au journal et méta de l'article, en rangée 2 — la même forme
@@ -101,6 +101,10 @@ export const DiscoveryPostPage = () => {
           <Button
             onClick={backToIndex}
             variant="header"
+            // Sans `size`, cette cellule héritait `h-8` de `size="default"` et
+            // flottait dans sa rangée de 44px, laissant passer 12px du filet
+            // noir sous elle. Ses `gap-2.5 px-4 md:px-6` l'emportent toujours.
+            size="header"
             className="flex-none gap-2.5 px-4 md:px-6"
           >
             <span className="inline-block rotate-180">
