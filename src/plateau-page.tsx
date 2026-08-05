@@ -11,7 +11,7 @@ import {
 import { CarouselNav } from './ui/carousel-nav';
 import { HoverMarquee } from './ui/hover-marquee';
 import { ArrowRight, ChevronsUpDown, Pause, Play, X } from 'lucide-react';
-import { PageHeader, buildMainNav } from './ui/page-header';
+import { PageHeader } from './ui/page-header';
 import { ResponsiveImage } from './ui/responsive-image';
 import { cn } from '@/lib/utils';
 import { VideoLoop } from './ui/video-loop';
@@ -252,11 +252,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
     /* Mobile: single-column stacked, scrollable. Desktop (md+): 4-column bento */
     <main className="animate-in fade-in duration-300 grid w-full gap-px bg-border md:h-full md:grid-cols-[var(--spacing-logo)_repeat(3,minmax(0,1fr))] md:grid-rows-[var(--spacing-header)_78px_minmax(0,1.58fr)_minmax(0,0.5fr)_minmax(0,0.52fr)] md:overflow-hidden">
       {/* Unified header — compact right-aligned actions on all breakpoints */}
-      <PageHeader
-        title={t('common.stages')}
-        className="col-span-full md:row-start-1"
-        actions={buildMainNav({ lang, goto, exclude: 'stages' })}
-      />
+      <PageHeader className="col-span-full md:row-start-1" />
 
       {/* Mobile navigation: same sticky strip gabarit as MobileNavStrip
  (gallery filters) — h-14 wrapper with min-h-11 trigger button. Tap

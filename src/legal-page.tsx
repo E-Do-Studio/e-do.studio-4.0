@@ -11,7 +11,7 @@ import {
 import { cn } from '@/lib/utils';
 import { HoverMarquee } from './ui/hover-marquee';
 import { ArrowRight, ChevronsUpDown, X } from 'lucide-react';
-import { PageHeader, buildMainNav } from './ui/page-header';
+import { PageHeader } from './ui/page-header';
 import type { Lang } from './types';
 import { usePageContext } from './lib/page-context';
 import { useT } from './i18n/use-t';
@@ -187,11 +187,7 @@ const LegalPage = () => {
   return (
     <main className="animate-in fade-in duration-300 grid w-full gap-px bg-border md:grid-cols-[var(--spacing-logo)_repeat(3,minmax(0,1fr))] md:grid-rows-[var(--spacing-header)_minmax(0,1fr)] md:h-full md:overflow-hidden">
       {/* Unified header — compact right-aligned actions on all breakpoints */}
-      <PageHeader
-        title={t('common.legal')}
-        className="col-span-full md:row-start-1"
-        actions={buildMainNav({ lang, goto })}
-      />
+      <PageHeader className="col-span-full md:row-start-1" />
 
       {/* Mobile navigation: sticky single-row trigger showing the current legal
  section. Tap opens a Drawer listing all sections; selecting a row

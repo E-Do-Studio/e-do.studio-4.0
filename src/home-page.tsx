@@ -122,21 +122,6 @@ const HomePage = () => {
         }
         className="col-span-2 md:col-start-1 md:col-span-12 md:row-start-1"
         subgrid={false}
-        actions={[
-          {
-            id: 'book',
-            label: t('common.book'),
-            onClick: () => goto('book'),
-            variant: 'primary',
-            className: 'md:hidden',
-          },
-          {
-            id: 'contact',
-            label: t('common.contactUs'),
-            onClick: () => goto('contact'),
-            className: 'hidden lg:flex',
-          },
-        ]}
       />
 
       {/* ── Row 2: Social links + clients marquee ── */}

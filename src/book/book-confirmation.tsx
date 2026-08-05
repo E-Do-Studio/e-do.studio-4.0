@@ -4,7 +4,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { usePageContext } from '../lib/page-context';
 import { SCREEN_TO_PATH } from '../lib/screens';
 import { ArrowRight } from 'lucide-react';
-import { PageHeader, buildMainNav } from '../ui/page-header';
+import { PageHeader } from '../ui/page-header';
 import { clearDraft } from '../lib/use-booking-draft';
 import { useT } from '../i18n/use-t';
 import {
@@ -87,11 +87,9 @@ const ConfirmedView = ({
   return (
     <div className="grid w-full gap-px bg-border md:h-full md:grid-cols-[var(--spacing-logo)_minmax(0,1fr)] md:grid-rows-[var(--spacing-header)_minmax(0,1fr)] md:overflow-hidden">
       <PageHeader
-        title={t('booking.title')}
-        subtitle={copy.tag}
+        title={copy.tag}
         className="col-span-full md:col-start-1 md:col-span-2 md:row-start-1"
         subgrid={false}
-        actions={buildMainNav({ lang, goto })}
       />
       <div className="overflow-auto flex flex-col gap-px bg-border md:col-span-2 md:row-start-2 md:min-h-0">
         <div className="grid gap-px bg-border grid-cols-1 md:grid-cols-[1.6fr_1fr]">
@@ -298,12 +296,7 @@ const BookConfirmation = () => {
   if (!snapshot) {
     return (
       <div className="animate-in fade-in duration-300 grid w-full gap-px bg-border md:h-full md:grid-rows-[var(--spacing-header)_minmax(0,1fr)]">
-        <PageHeader
-          title={t('booking.title')}
-          className="col-span-full md:row-start-1"
-          subgrid={false}
-          actions={buildMainNav({ lang, goto })}
-        />
+        <PageHeader className="col-span-full md:row-start-1" subgrid={false} />
         <div className="md:row-start-2 md:overflow-y-auto md:min-h-0 bg-background">
           <div className="px-5 py-10 md:px-12 md:py-14">
             <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">

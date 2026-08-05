@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { usePageContext } from '../lib/page-context';
 import { cn } from '@/lib/utils';
 import { ArrowRight } from 'lucide-react';
-import { PageHeader, buildMainNav } from '../ui/page-header';
+import { PageHeader } from '../ui/page-header';
 import { useT } from '../i18n/use-t';
 import { configuratorPath, manualPath } from './book-routes';
 import { ContactRail, ContactRightColumn } from '../contact-page';
@@ -89,11 +89,7 @@ const BookPicker = () => {
 
   return (
     <div className="animate-in fade-in duration-300 grid w-full gap-px bg-border md:h-full md:grid-cols-[var(--spacing-logo)_repeat(3,minmax(0,1fr))] md:grid-rows-[var(--spacing-header)_minmax(0,1fr)] md:overflow-hidden">
-      <PageHeader
-        title={t('booking.title')}
-        className="col-span-full md:row-start-1"
-        actions={buildMainNav({ lang, goto })}
-      />
+      <PageHeader className="col-span-full md:row-start-1" />
 
       <main className="flex flex-col overflow-auto bg-background md:col-start-2 md:col-span-2 md:row-start-2">
         <div className="bg-background px-6 py-10 md:px-12 md:py-14">

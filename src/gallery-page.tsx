@@ -24,7 +24,7 @@ import {
   plateauLabel as displayPlateau,
 } from './lib/plateau-labels';
 import { MobileNavStrip } from './ui/mobile-nav-strip';
-import { PageHeader, buildMainNav } from './ui/page-header';
+import { PageHeader } from './ui/page-header';
 import { ResponsiveImage } from './ui/responsive-image';
 import { VideoLoop } from './ui/video-loop';
 import { usePrefersReducedMotion } from './ui/use-media-query';
@@ -673,11 +673,9 @@ const GalleryPageV3 = () => {
       <h1 className="sr-only">{t('common.gallery')} — E-Do Studio Paris</h1>
 
       <PageHeader
-        title={t('common.gallery')}
         className="col-span-full md:row-start-1"
         titleClassName="lg:col-start-2 lg:col-span-2"
         rightBlockClassName="lg:col-start-4 lg:col-span-2"
-        actions={buildMainNav({ lang, goto, exclude: 'gallery' })}
       />
 
       <div className="grid grid-cols-1 gap-px bg-border md:col-span-full md:row-start-2 md:min-h-0 md:overflow-hidden md:grid-cols-[var(--spacing-logo)_80px_repeat(3,minmax(0,1fr))]">

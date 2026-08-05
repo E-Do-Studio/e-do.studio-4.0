@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/empty';
 import { HoverMarquee } from './ui/hover-marquee';
 import { ArrowRight, ChevronsUpDown, X } from 'lucide-react';
-import { PageHeader, buildMainNav } from './ui/page-header';
+import { PageHeader } from './ui/page-header';
 import { ResponsiveImage } from './ui/responsive-image';
 import { useLoaderData } from '@tanstack/react-router';
 import type { PPCat as StrapiPPCat, PPSample } from './lib/strapi';
@@ -357,11 +357,7 @@ const PostprodPage = () => {
  breakpoint and before Strapi resolves. The selected category is an h2. */}
       <h1 className="sr-only">{postprodLabel}</h1>
 
-      <PageHeader
-        title={postprodLabel}
-        className="col-span-full md:row-start-1"
-        actions={buildMainNav({ lang, goto, exclude: 'postprod' })}
-      />
+      <PageHeader className="col-span-full md:row-start-1" />
 
       {/* Mobile navigation: sticky single-row trigger showing the current
  post-prod type. Tap opens a Drawer listing all types; selecting

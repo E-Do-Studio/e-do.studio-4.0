@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { cn } from '@/lib/utils';
-import { PageHeader, buildMainNav } from './ui/page-header';
+import { PageHeader } from './ui/page-header';
 import { SocialLinksRow } from './ui/social-links-row';
 import { useLoaderData } from '@tanstack/react-router';
 import type {
@@ -533,11 +533,7 @@ const ContactPage = () => {
     <div className="animate-in fade-in duration-300 grid w-full gap-px bg-border md:h-full md:grid-cols-[var(--spacing-logo)_repeat(3,minmax(0,1fr))] md:grid-rows-[var(--spacing-header)_minmax(0,1fr)] md:overflow-hidden">
       <h1 className="sr-only">{t('common.contactUs')} — E-Do Studio Paris</h1>
       {/* Unified header — compact right-aligned actions on all breakpoints */}
-      <PageHeader
-        title={t('common.contactUs')}
-        className="col-span-full md:row-start-1"
-        actions={buildMainNav({ lang, goto, exclude: 'contact' })}
-      />
+      <PageHeader className="col-span-full md:row-start-1" />
       <ContactFormPanel
         lang={lang}
         form={form}

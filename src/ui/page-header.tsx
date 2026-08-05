@@ -1,34 +1,32 @@
 import type { ReactNode } from 'react';
-import type { Lang } from '../types';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useRouterState } from '@tanstack/react-router';
+import { type MainNavItem, MAIN_NAV, activeNavId } from '../lib/nav';
 import { usePageContext } from '../lib/page-context';
 import { Wordmark } from './brand';
 import { HoverMarquee } from './hover-marquee';
 import { ArrowRight, Menu } from 'lucide-react';
-import { getT } from '../i18n';
 import { useT } from '../i18n/use-t';
 
-interface PageHeaderAction {
-  id: string;
-  label: ReactNode;
-  onClick?: () => void;
-  href?: string;
-  target?: string;
-  rel?: string;
-  variant?: 'default' | 'primary' | 'dark';
-  showArrow?: boolean;
-  className?: string;
-  expand?: boolean;
-}
-
 interface PageHeaderProps {
-  title: ReactNode;
+  /**
+   * Contenu éditorial de la cellule orange, optionnel.
+   *
+   * Il portait le nom de la page, que chaque appelant écrivait à la main en
+   * regard d'un `exclude` qu'il fallait garder d'accord avec — rien ne l'y
+   * obligeait, et post-prod affichait « Post-production » à gauche pendant que
+   * sa cellule de nav disait « Post-prod ». La page courante est maintenant
+   * marquée dans la bande elle-même ; la cellule est libre pour ce qui n'est
+   * qu'à cette page : horaires et annonce sur l'accueil, étape du tunnel de
+   * réservation, nom de la rubrique sur Discovery. Vide ailleurs — elle reste
+   * rendue, c'est elle qui pousse la navigation à droite.
+   */
+  title?: ReactNode;
   subtitle?: ReactNode;
   // Rendered as its own header cell (with a hairline divider) immediately to
   // the right of the title cell. Used on the home page for the CMS announcement.
   titleAside?: ReactNode;
-  actions?: PageHeaderAction[];
   className?: string;
   // md+ subgrid placement overrides. Defaults match the plateau/contact
   // layout: title spans cols 2-3 (= the wide content area), right block sits
@@ -41,71 +39,62 @@ interface PageHeaderProps {
   subgrid?: boolean;
 }
 
-const EMPTY_PAGE_HEADER_ACTIONS: PageHeaderAction[] = [];
+/**
+ * La destination que l'URL courante allume, ou `null`.
+ *
+ * `location` et non `resolvedLocation` : ce dernier est indéfini au premier
+ * rendu, côté serveur comme côté client — le même piège qu'à la racine, où il
+ * avait fait échouer l'hydratation de toutes les routes anglaises.
+ */
+const useActiveNavId = () =>
+  activeNavId(useRouterState({ select: (s) => s.location.pathname }));
 
-const PageHeaderActionButton = ({
-  label,
-  onClick,
-  href,
-  target,
-  rel,
-  variant = 'default',
-  showArrow = true,
-  className,
-  expand,
-}: PageHeaderAction) => {
-  const isPrimary = variant === 'primary';
-  const isDark = variant === 'dark';
-  const actionClassName = cn(
-    // Aucune géométrie ici : `size="header"` porte la hauteur, l'écart et le
-    // padding, et la base du Button porte `font-mono text-xs uppercase
-    // tracking-widest`. Le filet entre deux actions vient du conteneur.
-    //
-    // Ce qui était écrit à la main donnait trois interlettrages côte à côte
-    // dans la même bande — `tracking-wide` sur la cellule orange,
-    // `tracking-wider` sur les destinations, `tracking-widest` sur la langue —
-    // et trois paddings pour un seul rôle. Il n'en reste qu'un de chaque.
-    'no-underline',
-    expand ? 'flex-1' : 'flex-none',
-    // La variante sombre n'inverse que des couleurs : l'appelant pose `dark` et
-    // les tokens s'occupent du reste.
-    isDark && 'dark bg-background hover:text-primary',
-    className,
-  );
-  const actionVariant = isPrimary ? 'default' : 'header';
-  const content = (
-    <>
-      <HoverMarquee className="min-w-0">{label}</HoverMarquee>
-      {/* Aucune couleur ici : la flèche hérite de celle du bouton. Elle se
-          voyait forcer `text-foreground` sur les variantes primaire et sombre,
-          c'est-à-dire du noir sur le pavé orange, à côté d'un libellé blanc.
-          Aucune dimension non plus : la base contraint l'icône par CSS, ce qui
-          l'emporte sur les attributs `width` et `height`. */}
-      {showArrow && <ArrowRight data-icon="inline-end" />}
-    </>
-  );
+/**
+ * Le repère de la cellule orange quand on est déjà dans le tunnel.
+ *
+ * Un point, pas la flèche : celle-ci promet « aller là », ce qui est faux sur
+ * la page où l'on se trouve. Rendu dans une boîte `size-4`, exactement celle
+ * de l'icône qu'il remplace — l'état courant ne doit pas changer la largeur
+ * d'une cellule, la bande n'a que 48px de marge à 1024.
+ */
+const ActiveDot = () => (
+  <span
+    aria-hidden
+    data-icon="inline-end"
+    className="flex size-4 items-center justify-center"
+  >
+    <span className="size-1.5 rounded-full bg-current" />
+  </span>
+);
 
-  if (href) {
-    return (
-      <Button
-        variant={actionVariant}
-        size="header"
-        render={<a href={href} target={target} rel={rel} />}
-        className={actionClassName}
-      >
-        {content}
-      </Button>
-    );
-  }
-
+const NavCell = ({ item, active }: { item: MainNavItem; active: boolean }) => {
+  const t = useT();
+  const { goto } = usePageContext();
   return (
     <Button
-      variant={actionVariant}
+      variant={item.primary ? 'default' : 'header'}
       size="header"
-      onClick={onClick}
-      className={actionClassName}
+      onClick={() => goto(item.screen)}
+      // `aria-current` et non `aria-pressed` : ces cellules sont des
+      // destinations, pas des bascules — et `aria-pressed` deviendrait
+      // franchement invalide le jour où elles seront de vrais liens.
+      aria-current={active ? 'page' : undefined}
+      className={cn(
+        // Aucune géométrie ici : `size="header"` porte la hauteur, l'écart et
+        // le padding, la base du Button porte la police et l'interlettrage.
+        'no-underline flex-1 md:flex-none',
+        // Les destinations attendent `lg`, mesure à l'appui : en français, la
+        // bande complète demande 976px (logo 240, espaceur 49, PLATEAUX 108,
+        // POST-PROD 117, GALERIE 100, NOUS CONTACTER 159, RÉSERVER 132, EN 72).
+        // À 768 il en manquait deux cents. L'anglais est 84px moins cher :
+        // c'est le français qui contraint. La cellule orange, elle, reste
+        // visible partout — c'est le seul appel à l'action de la bande.
+        !item.primary && 'hidden lg:flex',
+      )}
     >
-      {content}
+      <HoverMarquee className="min-w-0">{t(item.labelKey)}</HoverMarquee>
+      {item.primary &&
+        (active ? <ActiveDot /> : <ArrowRight data-icon="inline-end" />)}
     </Button>
   );
 };
@@ -124,13 +113,7 @@ const CELL_DIVIDERS =
 
 const RIGHT_BLOCK_BASE_CLASS = `flex min-w-0 ${CELL_DIVIDERS}`;
 
-const LangButton = ({
-  onLangToggle,
-  className,
-}: {
-  onLangToggle: () => void;
-  className?: string;
-}) => {
+const LangButton = ({ onLangToggle }: { onLangToggle: () => void }) => {
   const t = useT();
   return (
     <Button
@@ -141,7 +124,7 @@ const LangButton = ({
       // qui remet `flex-basis` à `auto`. La base ne tenait que parce que
       // Tailwind émet `basis-14` après `flex-none` — un ordre sur lequel on ne
       // veut pas parier. Une largeur, elle, n'est pas touchée par le raccourci.
-      className={cn('w-14 flex-none px-0 md:w-18', className)}
+      className="w-14 flex-none px-0 md:w-18"
     >
       {/* Sans enveloppe : la base du Button pose déjà `font-mono text-xs
           tracking-widest` et la variante `header` pose `text-foreground`. Le
@@ -155,7 +138,6 @@ const PageHeader = ({
   title,
   subtitle,
   titleAside,
-  actions = EMPTY_PAGE_HEADER_ACTIONS,
   className,
   titleClassName,
   rightBlockClassName,
@@ -165,12 +147,9 @@ const PageHeader = ({
   // appelants construisaient ces trois rappels à l'identique et les passaient en
   // props. Ils sont dans le contexte, et le header est rendu dedans partout.
   const { lang, setLang, openMenu, goto } = usePageContext();
-  const onMenuClick = openMenu;
-  const onLogoClick = () => goto('home');
   const onLangToggle = () => setLang(lang === 'fr' ? 'en' : 'fr');
-  const hasMobileAction = actions.some(
-    (a) => !(a.className ?? '').split(' ').includes('hidden'),
-  );
+  const active = useActiveNavId();
+
   const titleCell = (
     <div
       className={cn(
@@ -179,23 +158,35 @@ const PageHeader = ({
         subgrid && (titleClassName ?? DEFAULT_TITLE_CLASS),
       )}
     >
-      <div
-        className={cn(
-          'flex min-w-0 items-baseline overflow-hidden',
-          subtitle ? 'gap-3.5' : 'gap-0',
-        )}
-      >
-        <span className="font-mono text-xs uppercase tracking-widest text-primary min-w-0 md:shrink-0">
-          <HoverMarquee>{title}</HoverMarquee>
-        </span>
-        {subtitle && (
-          <HoverMarquee className="font-mono text-xs tracking-widest text-muted-foreground">
-            {subtitle}
-          </HoverMarquee>
-        )}
-      </div>
+      {title && (
+        <div
+          className={cn(
+            'flex min-w-0 items-baseline overflow-hidden',
+            subtitle ? 'gap-3.5' : 'gap-0',
+          )}
+        >
+          <span className="font-mono text-xs uppercase tracking-widest text-primary min-w-0 md:shrink-0">
+            <HoverMarquee>{title}</HoverMarquee>
+          </span>
+          {subtitle && (
+            <HoverMarquee className="font-mono text-xs tracking-widest text-muted-foreground">
+              {subtitle}
+            </HoverMarquee>
+          )}
+        </div>
+      )}
     </div>
   );
+
+  // La bande rend les mêmes destinations, dans le même ordre, sur toutes les
+  // pages. Elle en retirait celle où l'on se trouvait : aucune destination
+  // n'était jamais deux fois au même endroit, et l'`exclude` qui décidait de
+  // la coupe était passé à la main — oublié sur les mentions légales et dans
+  // tout le tunnel de réservation, qui affichaient cinq cellules quand les
+  // autres en affichaient quatre.
+  const nav = MAIN_NAV.map((item) => (
+    <NavCell key={item.id} item={item} active={item.id === active} />
+  ));
 
   return (
     <header
@@ -220,7 +211,7 @@ const PageHeader = ({
       >
         <Button
           variant="header"
-          onClick={onMenuClick}
+          onClick={openMenu}
           aria-label="Open menu"
           // `lg:hidden` et non `md:hidden` : le burger doit couvrir toute la
           // plage où la bande ne peut pas afficher ses destinations, sinon
@@ -231,7 +222,7 @@ const PageHeader = ({
         </Button>
         <Button
           variant="header"
-          onClick={onLogoClick}
+          onClick={() => goto('home')}
           aria-label="E-Do Studio home"
           className="h-full min-w-0 flex-1 p-2"
         >
@@ -249,42 +240,24 @@ const PageHeader = ({
 
       {subgrid ? (
         /* Subgrid mode — actions + lang are wrapped in a single right block
-           grid cell whose width matches the body's rightmost column. On mobile,
-           if a primary action is visible (e.g. Book CTA), the wrapper grows
-           so the action fills the space between logo and the 54px LangButton. */
+           grid cell whose width matches the body's rightmost column. On mobile
+           the wrapper grows so the orange cell fills the space between the logo
+           and the language button. */
         <div
           className={cn(
             RIGHT_BLOCK_BASE_CLASS,
-            'lg:justify-end',
-            hasMobileAction && 'flex-1 md:flex-initial',
+            'lg:justify-end flex-1 md:flex-initial',
             rightBlockClassName ?? DEFAULT_RIGHT_BLOCK_CLASS,
           )}
         >
-          {actions.map((action) => (
-            <PageHeaderActionButton
-              key={action.id}
-              {...action}
-              className={cn(action.className, 'flex-1 md:flex-none')}
-            />
-          ))}
+          {nav}
           <LangButton onLangToggle={onLangToggle} />
         </div>
       ) : (
         /* Flex mode — actions + lang are wrapped in a single right block.
-           Same mobile-grow behavior for the primary action if visible. */
-        <div
-          className={cn(
-            RIGHT_BLOCK_BASE_CLASS,
-            hasMobileAction && 'flex-1 md:flex-initial',
-          )}
-        >
-          {actions.map((action) => (
-            <PageHeaderActionButton
-              key={action.id}
-              {...action}
-              className={cn(action.className, 'flex-1 md:flex-none')}
-            />
-          ))}
+           Same mobile-grow behavior. */
+        <div className={cn(RIGHT_BLOCK_BASE_CLASS, 'flex-1 md:flex-initial')}>
+          {nav}
           <LangButton onLangToggle={onLangToggle} />
         </div>
       )}
@@ -292,49 +265,5 @@ const PageHeader = ({
   );
 };
 
-type MainNavId = 'stages' | 'postprod' | 'gallery' | 'contact' | 'book';
-
-interface BuildMainNavOpts {
-  lang: Lang;
-  goto: (screen: string) => void;
-  exclude?: MainNavId;
-}
-
-const buildMainNav = ({
-  lang,
-  goto,
-  exclude,
-}: BuildMainNavOpts): PageHeaderAction[] => {
-  const t = getT(lang);
-  const items: {
-    id: MainNavId;
-    label: string;
-    screen: string;
-    primary?: boolean;
-  }[] = [
-    { id: 'stages', label: t('common.stages'), screen: 'plateau-live' },
-    { id: 'postprod', label: t('common.postProd'), screen: 'postprod' },
-    { id: 'gallery', label: t('common.gallery'), screen: 'gallery' },
-    { id: 'contact', label: t('common.contactUs'), screen: 'contact' },
-    { id: 'book', label: t('common.book'), screen: 'book', primary: true },
-  ];
-  return items
-    .filter((it) => it.id !== exclude)
-    .map((it) => ({
-      id: it.id,
-      label: it.label,
-      onClick: () => goto(it.screen),
-      variant: it.primary ? 'primary' : 'default',
-      showArrow: !!it.primary,
-      // Les destinations attendent `lg`, mesure à l'appui : en français, la
-      // bande complète demande 976px (logo 240, espaceur 49, PLATEAUX 108,
-      // POST-PROD 117, GALERIE 100, NOUS CONTACTER 159, RÉSERVER 132, EN 72).
-      // À 768 il en manquait deux cents, et toutes les pages débordaient —
-      // jusqu'à 471px sur le tunnel de réservation. L'anglais est 84px moins
-      // cher : c'est le français qui contraint.
-      className: it.primary ? undefined : 'hidden lg:flex',
-    }));
-};
-
-export { PageHeader, buildMainNav };
-export type { PageHeaderAction, PageHeaderProps, MainNavId };
+export { PageHeader };
+export type { PageHeaderProps };
