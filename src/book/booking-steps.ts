@@ -98,5 +98,44 @@ function canGoNext({
   return true;
 }
 
-export { STEP, canGoNext, resolveSlotList, stepsFor };
-export type { CanGoNextArgs, StepDef };
+interface StepProgress extends StepDef {
+  index: number;
+  active: boolean;
+  /** Étape antérieure à la courante, donc franchie. */
+  done: boolean;
+  /** Atteignable d'un clic depuis l'étape courante. */
+  clickable: boolean;
+}
+
+/**
+ * L'avancement, étape par étape. Le rail de gauche et la nav mobile en font
+ * deux lectures différentes ; ils partaient chacun du même calcul recopié.
+ *
+ * Le configurateur reste toujours atteignable : c'est le retour en arrière du
+ * tunnel, pas une étape à franchir.
+ */
+function stepProgress(
+  steps: StepDef[],
+  current: number,
+  canNext: boolean,
+): StepProgress[] {
+  const currentIdx = steps.findIndex((s) => s.n === current);
+  return steps.map((s, index) => {
+    const active = s.n === current;
+    const done = currentIdx > -1 && index < currentIdx;
+    return {
+      ...s,
+      index,
+      active,
+      done,
+      clickable:
+        done ||
+        active ||
+        (index === currentIdx + 1 && canNext) ||
+        s.n === STEP.CONFIG,
+    };
+  });
+}
+
+export { STEP, canGoNext, resolveSlotList, stepProgress, stepsFor };
+export type { CanGoNextArgs, StepDef, StepProgress };

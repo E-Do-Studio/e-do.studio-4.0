@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { BookingSession, SlotState } from '../lib/booking-engine';
 import { makeBlankSession } from '../lib/booking-engine';
-import { STEP, canGoNext, resolveSlotList, stepsFor } from './booking-steps';
+import {
+  STEP,
+  canGoNext,
+  resolveSlotList,
+  stepProgress,
+  stepsFor,
+} from './booking-steps';
 
 const t = ((key: string) => key) as never;
 
@@ -143,5 +149,60 @@ describe('canGoNext', () => {
         slots: { 'live#0': dated['live#0'] },
       }),
     ).toBe(false);
+  });
+});
+
+describe('stepProgress', () => {
+  const steps = stepsFor('manual', t);
+
+  it("marque l'étape courante et celles franchies", () => {
+    const p = stepProgress(steps, STEP.TEAM, false);
+    expect(p.map((s) => s.active)).toEqual([
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+    ]);
+    expect(p.map((s) => s.done)).toEqual([
+      true,
+      true,
+      false,
+      false,
+      false,
+      false,
+    ]);
+  });
+
+  it("n'ouvre l'étape suivante que si l'étape courante est franchissable", () => {
+    const blocked = stepProgress(steps, STEP.PLATEAU, false);
+    expect(blocked.find((s) => s.n === STEP.DURATION)?.clickable).toBe(false);
+    const open = stepProgress(steps, STEP.PLATEAU, true);
+    expect(open.find((s) => s.n === STEP.DURATION)?.clickable).toBe(true);
+  });
+
+  it('laisse les étapes franchies cliquables, jamais celles au-delà', () => {
+    const p = stepProgress(steps, STEP.CONTACT, true);
+    expect(p.find((s) => s.n === STEP.PLATEAU)?.clickable).toBe(true);
+    expect(p.find((s) => s.n === STEP.DATE)?.clickable).toBe(true);
+  });
+
+  it('garde le configurateur toujours atteignable', () => {
+    // Il n'est pas dans la liste manuelle ; en mode config il est en tête et
+    // reste cliquable même depuis la dernière étape.
+    const p = stepProgress(stepsFor('config', t), STEP.DATE, false);
+    expect(p.find((s) => s.n === STEP.CONFIG)?.clickable).toBe(true);
+  });
+
+  it('retombe sur la première étape quand la courante est hors liste', () => {
+    // Cas réel : le mode bascule et l'étape courante n'est plus dans la liste
+    // (POSTPROD n'existe qu'en manuel, PLATEAU pas en config). Aucune étape
+    // n'est alors courante ni franchie, et seule la première reste ouverte.
+    const p = stepProgress(steps, 99, true);
+    expect(p.every((s) => !s.active && !s.done)).toBe(true);
+    expect(p.filter((s) => s.clickable).map((s) => s.n)).toEqual([
+      STEP.PLATEAU,
+    ]);
   });
 });
