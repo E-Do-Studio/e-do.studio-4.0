@@ -42,11 +42,15 @@ const buttonVariants = cva(
         // `aria-current=page` marque la destination où l'on se trouve déjà.
         // Une couleur, et rien d'autre : ni gras, ni bordure, ni soulignement,
         // qui changeraient la largeur de la cellule — la bande d'en-tête n'a
-        // que 48px de marge à 1024. Pas `bg-muted` non plus : `hover` l'occupe
-        // déjà, une cellule courante grisée en permanence serait indistincte
-        // d'une cellule survolée.
+        // qu'une poignée de pixels de marge à 1024. Pas `bg-muted` non plus :
+        // `hover` l'occupe déjà, une cellule courante grisée en permanence
+        // serait indistincte d'une cellule survolée.
+        //
+        // Aucun `aria-pressed` ici : la bande ne porte que des destinations,
+        // jamais de bascule. La règle qui s'y trouvait ne s'est jamais
+        // déclenchée, et disait le contraire du paragraphe ci-dessus.
         header:
-          "bg-background text-foreground hover:bg-muted aria-pressed:bg-muted aria-[current=page]:text-primary",
+          "bg-background text-foreground hover:bg-muted aria-[current=page]:text-primary",
         outline:
           "border border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
         secondary:
