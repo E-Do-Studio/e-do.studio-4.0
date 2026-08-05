@@ -8,7 +8,6 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useNavigate, useSearch } from '@tanstack/react-router';
-import type { TFunction } from 'i18next';
 import { ArrowRight, X } from 'lucide-react';
 import {
   Fragment,
@@ -24,6 +23,31 @@ import {
   pathForStep,
   type BookMode,
 } from './book/book-routes';
+import {
+  ACCESS_SUBS,
+  ARTICLE_TYPES,
+  MEDIA_OPTIONS,
+  PACKSHOT_VIEWS,
+  PAP_METHODS,
+  PAP_PACKSHOT_SUBS,
+  PRODUCTS,
+  PROJECT_TYPES,
+  catDesc,
+  catLabel,
+  findEntry,
+} from './book/catalog';
+import {
+  STEP,
+  canGoNext,
+  resolveSlotList,
+  stepsFor,
+} from './book/booking-steps';
+import type { BookPageProps, ContactState } from './book/booking-types';
+import {
+  buildBookingHubspotFields,
+  buildCollectedFormFields,
+} from './book/hubspot-fields';
+import { buildSlotLabels } from './book/slot-labels';
 import {
   saveConfirmation,
   type ConfirmationMode,
@@ -80,28 +104,6 @@ import { PageHeader } from './ui/page-header';
 
 type AnyProps = Record<string, any>;
 
-interface ContactState {
-  marque: string;
-  societe: string;
-  siren: string;
-  adresseFacturation: string;
-  nom: string;
-  prenom: string;
-  email: string;
-  tel: string;
-  typesArticles: string[];
-  quantiteArticles: string;
-  vuesParArticle: string;
-  autresInfos: string;
-  cgvAccepted: boolean;
-  autreType?: string;
-}
-
-interface BookPageProps {
-  forcedStep?: number;
-  forceManual?: boolean;
-}
-
 // CGV consent is deliberately not persisted across a real browser refresh (the
 // user must tick it again), but it MUST survive configurator step navigation:
 // each step is its own route, so BookPage remounts and rehydrates from the
@@ -124,6 +126,30 @@ const NO_PLATEAU: BookPlateau = {
   fdUnit: 'full',
 };
 
+// Créneau vierge. Le cyclorama n'a pas de `slotType` : sa durée passe par
+// `cycloMode` (cf. rentalHoursFor dans booking-engine).
+const makeSlotState = (plateauKey: string): SlotState => ({
+  plateauKey,
+  slotType: BOOK_PLATEAUX.find((x) => x.k === plateauKey)?.isCyclo
+    ? null
+    : 'hour',
+  hours: 1,
+  cycloMode: 'halfH',
+  paint: false,
+  kwh: 0,
+  team: {},
+  postprod: {},
+});
+
+// Géométrie des actions de bas de tunnel — pleine hauteur de bande, empilées
+// sous `md`. Tout le reste (mono capitales, anneau de focus, curseur, état
+// désactivé) vient des variantes de `Button` : `variant="cell"` pour les
+// actions sur fond de page, la variante par défaut pour l'action principale.
+const FOOTER_ACTION =
+  'h-auto min-h-11 flex-1 whitespace-normal border-t border-border px-5 py-3 md:min-h-0 md:border-t-0 md:border-l md:py-0';
+const FOOTER_BACK =
+  'h-auto min-h-11 justify-start whitespace-normal px-5 py-3 md:min-h-0 md:flex-1 md:py-0';
+
 const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
   const t = useT();
   const { lang } = usePageContext();
@@ -145,10 +171,7 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
     if (forceManual && manualStepQuery != null) return manualStepQuery;
     if (forcedStep != null) return forcedStep;
     if (draft) return draft.step;
-    try {
-      if (localStorage.getItem('')) return 1;
-    } catch (e) {}
-    return 1;
+    return STEP.PLATEAU;
   });
   const [configGlobal, setConfigGlobal] = useState<ConfigGlobal>(() =>
     draft
@@ -163,39 +186,25 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
   );
   const [configApplied, setConfigApplied] = useState<boolean>(() => {
     if (forceManual) return false;
-    if (forcedStep != null && forcedStep !== 0 && forcedStep !== 1) return true;
+    if (
+      forcedStep != null &&
+      forcedStep !== STEP.CONFIG &&
+      forcedStep !== STEP.PLATEAU
+    ) {
+      return true;
+    }
     return draft ? draft.configApplied : false;
   });
-  const [plateau, setPlateau] = useState<string | null>(() => {
-    if (draft) return draft.plateau;
-    try {
-      const pre = localStorage.getItem('');
-      if (pre) {
-        localStorage.removeItem('');
-        return pre;
-      }
-    } catch (e) {}
-    return null;
-  });
+  const [plateau, setPlateau] = useState<string | null>(
+    () => draft?.plateau ?? null,
+  );
   const [slotIds, setSlotIds] = useState<string[]>(() =>
     draft ? draft.slotIds : plateau ? [plateau] : [],
   );
   const [slots, setSlots] = useState<Record<string, SlotState>>(() => {
     if (draft) return draft.slots as Record<string, SlotState>;
     if (!plateau) return {};
-    const px = BOOK_PLATEAUX.find((x) => x.k === plateau);
-    return {
-      [plateau]: {
-        plateauKey: plateau,
-        slotType: px && px.isCyclo ? null : 'hour',
-        hours: 1,
-        cycloMode: 'halfH',
-        paint: false,
-        kwh: 0,
-        team: {},
-        postprod: {},
-      },
-    };
+    return { [plateau]: makeSlotState(plateau) };
   });
   const togglePlateau = (k: string) => {
     setSlotIds((prev) => {
@@ -203,20 +212,7 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
       const next = isAdding ? [...prev, k] : prev.filter((x) => x !== k);
       setPlateau(next[0] || null);
       if (isAdding) {
-        const px = BOOK_PLATEAUX.find((x) => x.k === k);
-        setSlots((p) => ({
-          ...p,
-          [k]: {
-            plateauKey: k,
-            slotType: px && px.isCyclo ? null : 'hour',
-            hours: 1,
-            cycloMode: 'halfH',
-            paint: false,
-            kwh: 0,
-            team: {},
-            postprod: {},
-          },
-        }));
+        setSlots((p) => ({ ...p, [k]: makeSlotState(k) }));
       } else {
         setSlots((p) => {
           const n = { ...p };
@@ -465,72 +461,45 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
     const t = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     return dt < t;
   };
-  const contactValid = () => {
+  // Une seule validation par changement d'état, partagée par la garde de
+  // navigation et par la soumission. `canNext()` est appelé une dizaine de fois
+  // par rendu (rail d'étapes, nav mobile, barre d'actions) : sans mémo, chaque
+  // appel relançait le schéma Zod. Dépend de `p.isCyclo`/`p.isVisite` et non de
+  // `p` — `p` est un objet neuf à chaque rendu quand aucun plateau ne
+  // correspond, ce qui annulerait le mémo.
+  const contactValidation = useMemo(() => {
     const requireProductFields = !p.isCyclo && !p.isVisite && !configApplied;
-    const result = validateContact(contact, lang as 'fr' | 'en', {
+    return validateContact(contact, lang as 'fr' | 'en', {
       requireProductFields,
     });
-    return result.success;
-  };
-  // Memoised because `handleSubmit` captures it: as a plain function it was only
-  // kept fresh by `configApplied` transitively re-creating `buildSessionsData`,
-  // which is in handleSubmit's deps. Depend on `p.isCyclo`/`p.isVisite` rather
-  // than `p` — `p` is a new object literal on every render when no plateau
-  // matches, which would defeat the memo.
+  }, [p.isCyclo, p.isVisite, configApplied, contact, lang]);
+  const contactValid = () => contactValidation.success;
   const runContactValidation = useCallback(() => {
-    const requireProductFields = !p.isCyclo && !p.isVisite && !configApplied;
-    const result = validateContact(contact, lang as 'fr' | 'en', {
-      requireProductFields,
-    });
-    if (!result.success) {
-      setContactErrors(result.errors);
+    if (!contactValidation.success) {
+      setContactErrors(contactValidation.errors);
       return false;
     }
     setContactErrors({});
     return true;
-  }, [p.isCyclo, p.isVisite, configApplied, contact, lang]);
+  }, [contactValidation]);
   const handleContactNext = (nextN: number | null) => {
     if (!runContactValidation()) return;
     if (nextN !== null) goToStep(nextN);
   };
-  const canNext = () => {
-    if (step === 0)
-      return (
-        (configSessions || []).length > 0 &&
-        configSessions.every(isSessionValid)
-      );
-    if (step === 1) return (slotIds && slotIds.length > 0) || !!plateau;
-    if (step === 2) return true;
-    if (step === 5) return contactValid();
-    if (step === 6) {
-      const list =
-        slotIds && slotIds.length > 0 ? slotIds : plateau ? [plateau] : [];
-      if (list.length <= 1) return !!selected;
-      return list.every(
-        (id) => slots[id] && slots[id].date && slots[id].arrivalHour != null,
-      );
-    }
-    return true;
-  };
+  const canNext = () =>
+    canGoNext({
+      step,
+      configSessions,
+      slotIds,
+      plateau,
+      slots,
+      selected,
+      contactValid: contactValid(),
+    });
   const canQuote = () => contactValid();
-  const mode = configApplied || step === 0 ? 'config' : 'manual';
-  const STEPS =
-    mode === 'config'
-      ? [
-          { n: 0, label: t('bookPicker.configuratorLabel') },
-          { n: 2, label: t('booking.stepSlot') },
-          { n: 3, label: t('booking.stepTeam') },
-          { n: 5, label: t('booking.stepContact') },
-          { n: 6, label: t('booking.date') },
-        ]
-      : [
-          { n: 1, label: t('booking.stage') },
-          { n: 2, label: t('booking.stepSlot') },
-          { n: 3, label: t('booking.stepTeam') },
-          { n: 4, label: t('common.postProd') },
-          { n: 5, label: t('booking.stepContact') },
-          { n: 6, label: t('booking.date') },
-        ];
+  const mode: BookMode =
+    configApplied || step === STEP.CONFIG ? 'config' : 'manual';
+  const STEPS = stepsFor(mode, t);
   const seedFromConfig = () => {
     const validRecs: {
       session: BookingSession;
@@ -626,10 +595,7 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
     if (!seeded) return;
     const { sessions, recs } = seeded;
     const productLabels = sessions
-      .map((s) => {
-        const p = PRODUCTS.find((x) => x.k === s.product);
-        return p ? p[lang] : '';
-      })
+      .map((s) => catLabel(t, findEntry(PRODUCTS, s.product)))
       .filter(Boolean);
     const totalSKUs = sessions.reduce(
       (sum, s) => sum + (Number(s.quantity) || 0),
@@ -643,10 +609,7 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
       const px = BOOK_PLATEAUX.find((x) => x.k === r.plateau);
       const s = r.session;
       const productLbl =
-        catLabel(
-          t,
-          PRODUCTS.find((x) => x.k === s.product),
-        ) || s.product;
+        catLabel(t, findEntry(PRODUCTS, s.product)) || s.product;
       const subLbl = s.submethod ? ` · ${s.submethod}` : '';
       const mediaLbl = (s.media || []).length
         ? ` (${(s.media || []).join('+')})`
@@ -689,14 +652,29 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
       autresInfos: c.autresInfos || '',
     }));
     setConfigApplied(true);
-    goToStep(2, 'config');
+    goToStep(STEP.DURATION, 'config');
+  };
+  // Remet à zéro tout ce que l'utilisateur a choisi côté créneaux — les
+  // coordonnées et les sessions du configurateur ne bougent pas.
+  const resetSelection = () => {
+    setPlateau(null);
+    setSlotIds([]);
+    setSlots({});
+    setSlotType('hour');
+    setHours(1);
+    setCycloMode('halfH');
+    setPaint(false);
+    setKwh(0);
+    setTeam({});
+    setPp({});
+    setSelected(null);
   };
   const skipConfig = () => {
     setConfigApplied(false);
     setSlotIds([]);
     setSlots({});
     setPlateau(null);
-    goToStep(1, 'manual');
+    goToStep(STEP.PLATEAU, 'manual');
   };
   useEffect(() => {
     // Auto-seed slots from configurator state when:
@@ -705,7 +683,7 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
     // In any other situation (manual flow, forced manual), do NOT auto-seed —
     // would clobber the user's manual selections.
     if (forceManual) return;
-    if (!configApplied && step !== 0) return;
+    if (!configApplied && step !== STEP.CONFIG) return;
     const hasValid = configSessions.some(
       (s) =>
         s.projectType === 'cyclorama' ||
@@ -721,7 +699,7 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
     if (innerScrollRef.current) innerScrollRef.current.scrollTop = 0;
   }, [step, dateIdx]);
   useEffect(() => {
-    if (step === 6) setDateIdx(0);
+    if (step === STEP.DATE) setDateIdx(0);
   }, [step]);
 
   const buildSessionsData = useCallback(
@@ -765,7 +743,7 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
         const firstDate =
           selected ||
           (() => {
-            const ids = slotIds && slotIds.length > 0 ? slotIds : [];
+            const ids = slotIds ?? [];
             for (const id of ids) {
               const st = slots[id];
               if (st?.date) return st.date;
@@ -872,7 +850,7 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
   );
 
   return (
-    <div className="animate-in fade-in duration-300 grid w-full gap-px bg-border md:h-full md:overflow-hidden md:grid-cols-[var(--spacing-logo)_minmax(0,1fr)_minmax(0,1fr)_300px] md:grid-rows-[var(--spacing-header)_minmax(0,1fr)]">
+    <div className="grid w-full gap-px bg-border md:h-full md:overflow-hidden md:grid-cols-[var(--spacing-logo)_minmax(0,1fr)_minmax(0,1fr)_300px] md:grid-rows-[var(--spacing-header)_minmax(0,1fr)]">
       {/* Pleine largeur, comme partout ailleurs. La bande s'arrêtait aux trois
           premières colonnes pour laisser la quatrième à un libellé « Votre
           devis » aligné sur le panneau du dessous : elle n'avait alors que
@@ -940,7 +918,7 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
             ·{' '}
           </span>
           <span className="text-foreground">
-            {STEPS.find((x) => x.n === step)?.[lang]}
+            {STEPS.find((x) => x.n === step)?.label}
           </span>
         </div>
       </nav>
@@ -1007,20 +985,10 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
               <Button
                 type="button"
                 onClick={() => {
-                  setPlateau(null);
-                  setSlotIds([]);
-                  setSlots({});
-                  setSlotType('hour');
-                  setHours(1);
-                  setCycloMode('halfH');
-                  setPaint(false);
-                  setKwh(0);
-                  setTeam({});
-                  setPp({});
-                  setSelected(null);
-                  goToStep(1, 'manual');
+                  resetSelection();
+                  goToStep(STEP.PLATEAU, 'manual');
                 }}
-                className="outline-none focus-visible:ring-3 focus-visible:ring-ring/50 flex-1 bg-transparent border-l border-border px-5 py-3 md:py-0 cursor-pointer font-mono text-xs tracking-wider uppercase text-foreground whitespace-nowrap leading-normal inline-flex items-center justify-center transition-colors duration-150 hover:bg-background"
+                className="h-auto flex-1 border-l border-border bg-transparent px-5 py-3 tracking-wider leading-normal hover:bg-background md:py-0"
               >
                 ↻ {t('common.reset')}
               </Button>
@@ -1035,7 +1003,7 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
           </div>
         )}
         <div ref={innerScrollRef} className="flex-1 overflow-y-auto">
-          {step === 0 && (
+          {step === STEP.CONFIG && (
             <Step0Configurator
               lang={lang}
               global={configGlobal}
@@ -1047,17 +1015,7 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
               onApply={applyConfig}
               onSkip={skipConfig}
               onReset={() => {
-                setPlateau(null);
-                setSlotIds([]);
-                setSlots({});
-                setSlotType('hour');
-                setHours(1);
-                setCycloMode('halfH');
-                setPaint(false);
-                setKwh(0);
-                setTeam({});
-                setPp({});
-                setSelected(null);
+                resetSelection();
                 setConfigApplied(false);
               }}
             />
@@ -1078,7 +1036,7 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
           {step === 2 && (
             <MultiPlateauStep
               lang={lang}
-              slotIds={slotIds.length ? slotIds : plateau ? [plateau] : []}
+              slotIds={resolveSlotList(slotIds, plateau)}
               slots={slots}
               setSlots={setSlots}
               fallback={{
@@ -1090,11 +1048,7 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
                 setCycloMode,
               }}
               topBanner={(() => {
-                const list = slotIds.length
-                  ? slotIds
-                  : plateau
-                    ? [plateau]
-                    : [];
+                const list = resolveSlotList(slotIds, plateau);
                 const allVisite =
                   list.length > 0 &&
                   list.every((id) => {
@@ -1136,7 +1090,7 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
           {step === 3 && (
             <MultiPlateauStep
               lang={lang}
-              slotIds={slotIds.length ? slotIds : plateau ? [plateau] : []}
+              slotIds={resolveSlotList(slotIds, plateau)}
               slots={slots}
               setSlots={setSlots}
               fallback={{ team, setTeam }}
@@ -1171,7 +1125,7 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
           {step === 4 && (
             <MultiPlateauStep
               lang={lang}
-              slotIds={slotIds.length ? slotIds : plateau ? [plateau] : []}
+              slotIds={resolveSlotList(slotIds, plateau)}
               slots={slots}
               setSlots={setSlots}
               fallback={{ postprod: {}, setPostprod: () => {} }}
@@ -1196,7 +1150,7 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
               )}
             />
           )}
-          {step === 5 && (
+          {step === STEP.CONTACT && (
             <Step7Contact
               lang={lang}
               contact={contact}
@@ -1206,14 +1160,9 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
               errors={contactErrors}
             />
           )}
-          {step === 6 &&
+          {step === STEP.DATE &&
             (() => {
-              const list =
-                slotIds && slotIds.length > 0
-                  ? slotIds
-                  : plateau
-                    ? [plateau]
-                    : [];
+              const list = resolveSlotList(slotIds, plateau);
               if (list.length <= 1) {
                 return (
                   <Step2Date
@@ -1249,36 +1198,8 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
               const stRentalHours = dailyOccupancyHoursFor(st, px);
               const stSelected = st.date || null;
               const stArrival = st.arrivalHour != null ? st.arrivalHour : 10;
-              const sameKeyCount: Record<string, number> = {};
-              list.forEach((xid) => {
-                const xk = slots[xid]?.plateauKey || xid;
-                sameKeyCount[xk] = (sameKeyCount[xk] || 0) + 1;
-              });
-              const seenIdxByKey: Record<string, number> = {};
-              const slotLabel = (xid: string) => {
-                const xk = slots[xid]?.plateauKey || xid;
-                const xpx = BOOK_PLATEAUX.find((x) => x.k === xk);
-                seenIdxByKey[xk] = (seenIdxByKey[xk] || 0) + 1;
-                const n = seenIdxByKey[xk];
-                return sameKeyCount[xk] > 1
-                  ? `${xpx ? xpx[lang] : xk} ${String(n).padStart(2, '0')}`
-                  : xpx
-                    ? xpx[lang]
-                    : xk;
-              };
-              const currentLabel = (() => {
-                const tmpCount: Record<string, number> = {};
-                for (let i = 0; i <= safeIdx; i++) {
-                  const k = slots[list[i]]?.plateauKey || list[i];
-                  tmpCount[k] = (tmpCount[k] || 0) + 1;
-                }
-                const pkCount = tmpCount[pk] || 1;
-                return sameKeyCount[pk] > 1
-                  ? `${px ? px[lang] : pk} ${String(pkCount).padStart(2, '0')}`
-                  : px
-                    ? px[lang]
-                    : pk;
-              })();
+              const slotLabels = buildSlotLabels(list, slots, lang);
+              const currentLabel = slotLabels[safeIdx].label;
               return (
                 <div>
                   <div className="px-5 md:px-6 border-b border-border flex items-center min-h-11 py-3 md:py-0 md:h-11 box-border gap-3 md:gap-4 bg-background flex-wrap sticky top-0 z-10">
@@ -1299,7 +1220,7 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
                             type="button"
                             key={xid}
                             onClick={() => setDateIdx(i)}
-                            title={slotLabel(xid)}
+                            title={slotLabels[i].label}
                             variant="outline"
                             aria-pressed={active}
                             className={cn(
@@ -1361,7 +1282,7 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
         )}
         <BookingHubspotFields
           mode={mode}
-          step={step}
+          omitContact={step === STEP.CONTACT}
           plateau={plateau}
           slotIds={slotIds}
           slots={slots}
@@ -1373,7 +1294,7 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
           total={priceBreakdown.total}
           contact={contact}
         />
-        {step === 0 &&
+        {step === STEP.CONFIG &&
           canNext() &&
           (() => {
             const recs = configSessions.map((s) => ({
@@ -1394,11 +1315,10 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
                   const px =
                     BOOK_PLATEAUX.find((x) => x.k === r.plateau) ||
                     BOOK_PLATEAUX[0];
-                  const pr = PRODUCTS.find((x) => x.k === r.session.product);
                   const productLabel =
                     r.session.projectType === 'cyclorama'
                       ? t('booking.cyclorama')
-                      : pr?.[lang] || '';
+                      : catLabel(t, findEntry(PRODUCTS, r.session.product));
                   const totalHours = r.estimatedHours || r.hours || 0;
                   let dur: string;
                   if (r.onRequest) {
@@ -1457,7 +1377,7 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
               </div>
             );
           })()}
-        {step === 0 && (
+        {step === STEP.CONFIG && (
           <div className="flex items-stretch min-h-11 shrink-0">
             <Button
               type="button"
@@ -1470,7 +1390,7 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
             </Button>
           </div>
         )}
-        {step > 0 && (
+        {step > STEP.CONFIG && (
           <div className="border-t border-border flex flex-col md:flex-row md:items-stretch shrink-0 bg-background md:min-h-11">
             {(() => {
               const idx = STEPS.findIndex((s) => s.n === step);
@@ -1478,13 +1398,8 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
               const prevN = idx > 0 ? STEPS[idx - 1].n : null;
               const nextN =
                 idx > -1 && idx < STEPS.length - 1 ? STEPS[idx + 1].n : null;
-              const dateList =
-                slotIds && slotIds.length > 0
-                  ? slotIds
-                  : plateau
-                    ? [plateau]
-                    : [];
-              const isMultiDate = step === 6 && dateList.length > 1;
+              const dateList = resolveSlotList(slotIds, plateau);
+              const isMultiDate = step === STEP.DATE && dateList.length > 1;
               const safeDateIdx = Math.max(
                 0,
                 Math.min(dateIdx, dateList.length - 1),
@@ -1512,158 +1427,118 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
                 }
                 return false;
               };
-              const backBtnCls =
-                'outline-none focus-visible:ring-3 focus-visible:ring-ring/50 bg-background  cursor-pointer font-mono text-xs tracking-widest uppercase text-foreground px-5 py-3 md:py-0 inline-flex items-center justify-start gap-2 transition-colors duration-150 min-h-11 md:flex-1 md:min-h-0 min-w-0 hover:bg-muted';
-              const navBtnSecondaryCls =
-                'outline-none focus-visible:ring-3 focus-visible:ring-ring/50 bg-background border-t md:border-t-0 md:border-l border-border cursor-pointer font-mono text-xs tracking-widest uppercase text-foreground px-5 py-3 md:py-0 inline-flex items-center justify-center gap-2 transition-colors duration-150 min-h-11 md:min-h-0 flex-1 min-w-0 hover:bg-muted';
-              const navBtnPrimaryCls =
-                'outline-none focus-visible:ring-3 focus-visible:ring-ring/50 bg-primary border-t md:border-t-0 md:border-l border-border cursor-pointer text-primary-foreground font-mono text-xs tracking-widest uppercase px-5 py-3 md:py-0 inline-flex items-center justify-center gap-2 transition-opacity duration-150 min-h-11 md:min-h-0 flex-1 min-w-0 hover:opacity-90';
-              const navBtnOrangeCls =
-                'outline-none focus-visible:ring-3 focus-visible:ring-ring/50 bg-primary border-t md:border-t-0 md:border-l border-border cursor-pointer text-primary-foreground font-mono text-xs tracking-widest uppercase px-5 py-3 md:py-0 inline-flex items-center justify-center gap-2 transition-opacity duration-150 min-h-11 md:min-h-0 flex-1 min-w-0 hover:opacity-90';
               return (
                 <>
                   <Button
                     type="button"
+                    variant="cell"
                     onClick={handleBack}
                     disabled={isFirst && onFirstDateSub}
-                    className={
-                      backBtnCls +
-                      (isFirst && onFirstDateSub
-                        ? ' opacity-30 cursor-not-allowed'
-                        : '')
-                    }
+                    className={FOOTER_BACK}
                   >
                     ← {t('booking.back')}
                   </Button>
                   <div className="flex items-stretch md:flex-none md:w-1/2">
-                    {step < 5 ? (
+                    {step < STEP.CONTACT ? (
                       <Button
                         type="button"
                         onClick={() => {
-                          if (!canNext()) return;
-                          if (step === 0) {
+                          if (step === STEP.CONFIG) {
                             applyConfig();
                           } else if (nextN !== null) {
                             goToStep(nextN);
                           }
                         }}
                         disabled={!canNext()}
-                        className={
-                          navBtnPrimaryCls +
-                          (canNext() ? '' : ' opacity-30 cursor-not-allowed')
-                        }
+                        className={FOOTER_ACTION}
                       >
-                        {step === 0
+                        {step === STEP.CONFIG
                           ? t('booking.continueToBooking')
                           : t('booking.continue')}{' '}
-                        <ArrowRight width="14" height="14" />
+                        <ArrowRight />
                       </Button>
                     ) : p.isCyclo ? (
-                      step === 5 ? (
+                      step === STEP.CONTACT ? (
                         <Button
                           type="button"
                           onClick={() => handleContactNext(nextN)}
-                          className={navBtnPrimaryCls}
+                          className={FOOTER_ACTION}
                         >
-                          {t('booking.continue')}{' '}
-                          <ArrowRight width="14" height="14" />
+                          {t('booking.continue')} <ArrowRight />
                         </Button>
                       ) : isMultiDate && !onLastDateSub ? (
                         <Button
                           type="button"
-                          onClick={() => currentDateValid && handleSubNext()}
+                          onClick={handleSubNext}
                           disabled={!currentDateValid}
-                          className={
-                            navBtnPrimaryCls +
-                            (currentDateValid
-                              ? ''
-                              : ' opacity-30 cursor-not-allowed')
-                          }
+                          className={FOOTER_ACTION}
                         >
-                          {t('booking.validateNextStage')}{' '}
-                          <ArrowRight width="14" height="14" />
+                          {t('booking.validateNextStage')} <ArrowRight />
                         </Button>
                       ) : (
                         <Button
                           type="button"
-                          onClick={() =>
-                            canNext() && !saving && handleSubmit('request')
-                          }
+                          onClick={() => handleSubmit('request')}
                           disabled={!canNext() || saving}
-                          className={
-                            navBtnOrangeCls +
-                            (canNext() && !saving
-                              ? ''
-                              : ' opacity-30 cursor-not-allowed')
-                          }
+                          className={FOOTER_ACTION}
                         >
                           {saving
                             ? t('booking.sending')
                             : t('booking.submitRequest')}{' '}
-                          <ArrowRight width="14" height="14" />
+                          <ArrowRight />
                         </Button>
                       )
                     ) : (
                       <>
+                        {/* Volontairement cliquable même quand le contact est
+                            incomplet : `handleSubmit` renvoie alors sur l'étape
+                            contact pour montrer ce qui manque. Sans ça, le
+                            bouton semblerait ne rien faire. L'atténuation dit
+                            qu'il reste quelque chose à remplir. */}
                         <Button
                           type="button"
-                          onClick={() => !saving && handleSubmit('quote')}
+                          variant="cell"
+                          onClick={() => handleSubmit('quote')}
                           disabled={saving}
                           title={t('booking.noDateHeld')}
-                          className={
-                            navBtnSecondaryCls +
-                            (canQuote() && !saving
-                              ? ''
-                              : ' opacity-30 cursor-not-allowed')
-                          }
+                          className={cn(
+                            FOOTER_ACTION,
+                            !canQuote() && 'opacity-30',
+                          )}
                         >
                           {saving
                             ? t('booking.sending')
                             : t('booking.receiveMyQuote')}{' '}
-                          <ArrowRight width="14" height="14" />
+                          <ArrowRight />
                         </Button>
-                        {step === 5 ? (
+                        {step === STEP.CONTACT ? (
                           <Button
                             type="button"
                             onClick={() => handleContactNext(nextN)}
-                            className={navBtnPrimaryCls}
+                            className={FOOTER_ACTION}
                           >
-                            {t('booking.pickADate')}{' '}
-                            <ArrowRight width="14" height="14" />
+                            {t('booking.pickADate')} <ArrowRight />
                           </Button>
                         ) : isMultiDate && !onLastDateSub ? (
                           <Button
                             type="button"
-                            onClick={() => currentDateValid && handleSubNext()}
+                            onClick={handleSubNext}
                             disabled={!currentDateValid}
-                            className={
-                              navBtnPrimaryCls +
-                              (currentDateValid
-                                ? ''
-                                : ' opacity-30 cursor-not-allowed')
-                            }
+                            className={FOOTER_ACTION}
                           >
-                            {t('booking.validateNextStage')}{' '}
-                            <ArrowRight width="14" height="14" />
+                            {t('booking.validateNextStage')} <ArrowRight />
                           </Button>
                         ) : (
                           <Button
                             type="button"
-                            onClick={() =>
-                              canNext() && !saving && handleSubmit('booking')
-                            }
+                            onClick={() => handleSubmit('booking')}
                             disabled={!canNext() || saving}
-                            className={
-                              navBtnOrangeCls +
-                              (canNext() && !saving
-                                ? ''
-                                : ' opacity-30 cursor-not-allowed')
-                            }
+                            className={FOOTER_ACTION}
                           >
                             {saving
                               ? t('booking.booking')
                               : t('common.bookNow')}{' '}
-                            <ArrowRight width="14" height="14" />
+                            <ArrowRight />
                           </Button>
                         )}
                       </>
@@ -1695,251 +1570,21 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
   );
 };
 
-const formatBookingDate = (d?: AnyProps | null) =>
-  d
-    ? `${d.y}-${String(d.m + 1).padStart(2, '0')}-${String(d.d).padStart(2, '0')}`
-    : '';
-
-// Flattens the whole booking into the HubSpot form field set. Field names must
-// match the internal property names of the HubSpot booking form. Same values the
-// hidden BookingHubspotFields feed to Collected Forms, but sent authoritatively
-// through the Forms API (see src/lib/hubspot-forms.ts).
-const buildBookingHubspotFields = (p: AnyProps): Record<string, string> => {
-  const list: string[] = p.slotIds || [];
-  const slots = p.slots || {};
-  const plateauKeys = Array.from(
-    new Set(list.map((id: string) => slots[id]?.plateauKey || id)),
-  );
-  const slotsHoursTotal = list.reduce((sum: number, id: string) => {
-    const st = slots[id] || {};
-    const px = BOOK_PLATEAUX.find((x) => x.k === (st.plateauKey || id));
-    const h =
-      px && px.isCyclo
-        ? st.cycloMode === 'halfH'
-          ? 5
-          : 10
-        : px && px.isVisite
-          ? 1
-          : st.hours || 0;
-    return sum + h;
-  }, 0);
-  const datesBySlot: Record<string, string> = {};
-  for (const id of list as string[]) {
-    const d = formatBookingDate(slots[id]?.date);
-    if (d) datesBySlot[id] = d;
-  }
-  const c = p.contact || {};
-  return {
-    firstname: c.prenom || '',
-    lastname: c.nom || '',
-    email: c.email || '',
-    phone: c.tel || '',
-    company: c.societe || '',
-    brand: c.marque || '',
-    siren: c.siren || '',
-    address: c.adresseFacturation || '',
-    message: c.autresInfos || '',
-    item_types: (c.typesArticles || []).join(', '),
-    other_item_type: c.autreType || '',
-    quantity_items: c.quantiteArticles || '',
-    views_per_item: c.vuesParArticle || '',
-    cgv_accepted: c.cgvAccepted ? 'true' : 'false',
-    booking_mode: p.mode || '',
-    booking_reference: p.reference || '',
-    project_type: p.projectType || '',
-    urgency: p.urgency || '',
-    plateau: p.plateau || '',
-    plateaus: plateauKeys.join(', '),
-    preferred_date: formatBookingDate(p.selected),
-    per_plateau_dates: JSON.stringify(datesBySlot),
-    arrival_hour: p.arrivalHour != null ? String(p.arrivalHour) : '',
-    rental_hours: String(
-      slotsHoursTotal > 0 ? slotsHoursTotal : (p.rentalHours ?? ''),
-    ),
-    total_ht: String(p.total ?? 0),
-  };
-};
-
-const BookingHubspotFields = ({
-  mode,
-  step,
-  plateau,
-  slotIds,
-  slots,
-  selected,
-  arrivalHour,
-  rentalHours,
-  projectType,
-  urgency,
-  total,
-  contact,
-}: AnyProps) => {
-  const list: string[] = slotIds || [];
-  const plateauKeysList = Array.from(
-    new Set(list.map((id) => (slots || {})[id]?.plateauKey || id)),
-  );
-  const slotsHoursTotal = list.reduce((sum: number, id: string) => {
-    const st = (slots || {})[id] || {};
-    const pk = st.plateauKey || id;
-    const px = BOOK_PLATEAUX.find((x) => x.k === pk);
-    const h =
-      px && px.isCyclo
-        ? st.cycloMode === 'halfH'
-          ? 5
-          : 10
-        : px && px.isVisite
-          ? 1
-          : st.hours || 0;
-    return sum + h;
-  }, 0);
-  const datesBySlot = Object.fromEntries(
-    list
-      .map((id: string) => [
-        id,
-        formatBookingDate(((slots || {})[id] || {}).date),
-      ])
-      .filter(([, d]) => d),
-  );
-  return (
-    <div hidden aria-hidden>
-      <input type="hidden" name="mode" value={mode} readOnly />
-      <input type="hidden" name="plateau" value={plateau || ''} readOnly />
-      <input
-        type="hidden"
-        name="plateaus"
-        value={plateauKeysList.join(',')}
-        readOnly
-      />
-      <input
-        type="hidden"
-        name="preferred_date"
-        value={formatBookingDate(selected)}
-        readOnly
-      />
-      <input
-        type="hidden"
-        name="per_plateau_dates"
-        value={JSON.stringify(datesBySlot)}
-        readOnly
-      />
-      <input
-        type="hidden"
-        name="arrival_hour"
-        value={arrivalHour ?? ''}
-        readOnly
-      />
-      <input
-        type="hidden"
-        name="rental_hours"
-        value={String(
-          slotsHoursTotal > 0 ? slotsHoursTotal : (rentalHours ?? ''),
-        )}
-        readOnly
-      />
-      <input
-        type="hidden"
-        name="project_type"
-        value={projectType || ''}
-        readOnly
-      />
-      <input type="hidden" name="urgency" value={urgency || ''} readOnly />
-      <input
-        type="hidden"
-        name="total_ht"
-        value={String(total ?? 0)}
-        readOnly
-      />
-      <input
-        type="hidden"
-        name="item_types"
-        value={(contact?.typesArticles || []).join(',')}
-        readOnly
-      />
-      {step !== 5 && (
-        <>
-          <input
-            type="hidden"
-            name="firstname"
-            value={contact?.prenom || ''}
-            readOnly
-          />
-          <input
-            type="hidden"
-            name="lastname"
-            value={contact?.nom || ''}
-            readOnly
-          />
-          <input
-            type="hidden"
-            name="email"
-            value={contact?.email || ''}
-            readOnly
-          />
-          <input
-            type="hidden"
-            name="phone"
-            value={contact?.tel || ''}
-            readOnly
-          />
-          <input
-            type="hidden"
-            name="company"
-            value={contact?.societe || ''}
-            readOnly
-          />
-          <input
-            type="hidden"
-            name="brand"
-            value={contact?.marque || ''}
-            readOnly
-          />
-          <input
-            type="hidden"
-            name="siren"
-            value={contact?.siren || ''}
-            readOnly
-          />
-          <input
-            type="hidden"
-            name="address"
-            value={contact?.adresseFacturation || ''}
-            readOnly
-          />
-          <input
-            type="hidden"
-            name="message"
-            value={contact?.autresInfos || ''}
-            readOnly
-          />
-          <input
-            type="hidden"
-            name="other_item_type"
-            value={contact?.autreType || ''}
-            readOnly
-          />
-          <input
-            type="hidden"
-            name="quantity_items"
-            value={contact?.quantiteArticles || ''}
-            readOnly
-          />
-          <input
-            type="hidden"
-            name="views_per_item"
-            value={contact?.vuesParArticle || ''}
-            readOnly
-          />
-          <input
-            type="hidden"
-            name="cgv_accepted"
-            value={contact?.cgvAccepted ? 'true' : 'false'}
-            readOnly
-          />
-        </>
-      )}
-    </div>
-  );
-};
+/**
+ * Champs cachés que HubSpot Collected Forms ramasse au fil de la saisie.
+ * Le jeu de champs vit dans book/hubspot-fields.ts, aux côtés de celui envoyé
+ * à l'API Forms à la soumission : les deux y sont côte à côte, avec la raison
+ * de leurs divergences.
+ */
+const BookingHubspotFields = (
+  props: Parameters<typeof buildCollectedFormFields>[0],
+) => (
+  <div hidden aria-hidden>
+    {Object.entries(buildCollectedFormFields(props)).map(([name, value]) => (
+      <input key={name} type="hidden" name={name} value={value} readOnly />
+    ))}
+  </div>
+);
 
 const StepIntro = ({ n, lang, t, s, compact }: AnyProps) => (
   <div
@@ -1955,116 +1600,6 @@ const StepIntro = ({ n, lang, t, s, compact }: AnyProps) => (
     )}
   </div>
 );
-
-// Les catalogues ci-dessous sont des constantes de module : elles ne peuvent pas
-// appeler useT(). Elles portent donc des clés i18next, résolues ici au rendu.
-const catLabel = (t: TFunction, entry?: AnyProps): string =>
-  entry?.label ? t(entry.label) : '';
-const catDesc = (t: TFunction, entry?: AnyProps): string =>
-  entry?.descKey ? t(entry.descKey) : '';
-
-const PROJECT_TYPES: AnyProps[] = [
-  {
-    k: 'ecom',
-    label: 'booking.eCommerce',
-    descKey: 'booking.packshotsOnModelProductPagesDesc',
-  },
-  {
-    k: 'cyclorama',
-    label: 'booking.cycloramaFreeProduction2',
-    descKey: 'booking.cycloStudioCustomNeedsDesc',
-  },
-];
-
-const PRODUCTS: AnyProps[] = [
-  {
-    k: 'pap',
-    label: 'booking.readyToWear',
-    descKey: 'booking.clothingWornTextileDesc',
-  },
-  {
-    k: 'accessoires',
-    label: 'booking.accessories',
-    descKey: 'booking.shoesLeatherGoodsTextileDesc',
-  },
-  {
-    k: 'eyewear',
-    label: 'booking.eyewear',
-    descKey: 'booking.glassesSunglassesDesc',
-  },
-  {
-    k: 'food',
-    label: 'booking.foodSpirits',
-    descKey: 'booking.drinksGourmetDesc',
-  },
-  {
-    k: 'cosmetique',
-    label: 'booking.cosmetics',
-    descKey: 'booking.skincareFragranceMakeupDesc',
-  },
-  {
-    k: 'bijoux',
-    label: 'booking.jewelry',
-    descKey: 'booking.jewelryWatchesDesc',
-  },
-];
-
-const PAP_METHODS: AnyProps[] = [
-  {
-    k: 'packshot',
-    label: 'booking.packshot',
-    descKey: 'booking.unwornProductShootDesc',
-  },
-  {
-    k: 'onmodel',
-    label: 'booking.onModel',
-    descKey: 'booking.onModelShootDesc',
-  },
-];
-
-const PAP_PACKSHOT_SUBS: AnyProps[] = [
-  {
-    k: 'pique',
-    label: 'booking.pinned',
-    descKey: 'booking.pinnedOnVerticalBoardDesc',
-  },
-  {
-    k: 'ghost',
-    label: 'booking.ghost',
-    descKey: 'booking.invisibleMannequinWornLookDesc',
-  },
-  {
-    k: 'flat',
-    label: 'booking.flat',
-    descKey: 'booking.laidFlatTopViewDesc',
-  },
-];
-
-const ACCESS_SUBS: AnyProps[] = [
-  { k: 'chaussure', label: 'booking.shoes' },
-  {
-    k: 'maroquinerie',
-    label: 'booking.leatherGoods',
-    descKey: 'booking.bagsBeltsSmallLeatherGoodsDesc',
-  },
-  {
-    k: 'textile',
-    label: 'booking.textileAccessories',
-    descKey: 'booking.scarvesHatsGlovesDesc',
-  },
-];
-
-const MEDIA_OPTIONS: AnyProps[] = [
-  { k: 'photo', label: 'booking.photo' },
-  { k: 'video', label: 'booking.video' },
-];
-
-const PACKSHOT_VIEWS: AnyProps[] = [
-  { k: 'face', label: 'booking.front' },
-  { k: 'dos', label: 'booking.back2' },
-  { k: '3/4', label: 'booking.34' },
-  { k: 'detail', label: 'booking.detail' },
-];
 
 // Tuile de configuration. `dark` sur l'état sélectionné inverse les tokens pour
 // toute la tuile : les enfants gardent `text-muted-foreground` et rendent le
@@ -2494,13 +2029,11 @@ const Step0Configurator = ({
             {sessions.map((s, i) => {
               const isActive = i === activeIdx;
               const valid = sessionValid(s);
-              const p = PRODUCTS.find((x) => x.k === s.product);
               const label =
                 s.projectType === 'cyclorama'
                   ? t('booking.cyclorama')
-                  : p
-                    ? p[lang]
-                    : t('booking.toDefine');
+                  : catLabel(t, findEntry(PRODUCTS, s.product)) ||
+                    t('booking.toDefine');
               return (
                 <Button
                   type="button"
@@ -2777,7 +2310,7 @@ const Step0Configurator = ({
                       {String(i + 1).padStart(2, '0')}
                     </span>
                     <span className="text-sm font-normal tracking-tight">
-                      {v[lang]}
+                      {catLabel(t, v)}
                     </span>
                     {on && (
                       <span className="text-primary text-xs mt-auto">●</span>
@@ -2968,46 +2501,38 @@ const MultiPlateauStep = ({
       },
     }));
   };
-  const sameKeyCount: Record<string, number> = {};
-  list.forEach((id) => {
-    const k = slots[id]?.plateauKey || id;
-    sameKeyCount[k] = (sameKeyCount[k] || 0) + 1;
-  });
-  const seenIdxByKey: Record<string, number> = {};
+  const slotLabels = buildSlotLabels(list, slots, lang);
   return (
     <div>
       {topBanner}
-      {list.map((id, idx) => {
-        const st = slots[id] || {};
-        const pk = st.plateauKey || id;
-        const px = BOOK_PLATEAUX.find((x) => x.k === pk);
-        if (!px) return null;
-        seenIdxByKey[pk] = (seenIdxByKey[pk] || 0) + 1;
-        const dupIdx = seenIdxByKey[pk];
-        const label =
-          sameKeyCount[pk] > 1
-            ? `${px[lang]} · ${t('booking.session')} ${String(dupIdx).padStart(2, '0')}`
-            : px[lang];
-        return (
-          <div key={id}>
-            {list.length > 1 && (
-              <div className="px-5 md:px-6 border-b border-border flex items-center min-h-11 py-3 md:py-0 md:h-11 box-border gap-3 bg-background flex-wrap">
-                <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-primary whitespace-nowrap">
-                  {t('booking.stageFallback')}{' '}
-                  {String(idx + 1).padStart(2, '0')}
-                </span>
-                <span className="text-sm font-normal tracking-tight text-foreground">
-                  {label}
-                </span>
-                <span className="font-mono text-xs tracking-wide text-muted-foreground">
-                  {px.desc[lang]}
-                </span>
-              </div>
-            )}
-            {renderOne(px, st, (patch: AnyProps) => setOne(id, patch))}
-          </div>
-        );
-      })}
+      {slotLabels.map(
+        ({ id, plateau: px, name, occurrence, duplicated }, idx) => {
+          const st = slots[id] || {};
+          if (!px) return null;
+          const label = duplicated
+            ? `${name} · ${t('booking.session')} ${String(occurrence).padStart(2, '0')}`
+            : name;
+          return (
+            <div key={id}>
+              {list.length > 1 && (
+                <div className="px-5 md:px-6 border-b border-border flex items-center min-h-11 py-3 md:py-0 md:h-11 box-border gap-3 bg-background flex-wrap">
+                  <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-primary whitespace-nowrap">
+                    {t('booking.stageFallback')}{' '}
+                    {String(idx + 1).padStart(2, '0')}
+                  </span>
+                  <span className="text-sm font-normal tracking-tight text-foreground">
+                    {label}
+                  </span>
+                  <span className="font-mono text-xs tracking-wide text-muted-foreground">
+                    {px.desc[lang]}
+                  </span>
+                </div>
+              )}
+              {renderOne(px, st, (patch: AnyProps) => setOne(id, patch))}
+            </div>
+          );
+        },
+      )}
     </div>
   );
 };
@@ -3955,18 +3480,6 @@ const Step6Postprod = ({
   );
 };
 
-const ARTICLE_TYPES: AnyProps[] = [
-  { k: 'pap', label: 'booking.readyToWear' },
-  { k: 'maroquinerie', label: 'booking.leatherGoods' },
-  { k: 'chaussures', label: 'booking.shoes' },
-  { k: 'accessoires', label: 'booking.accessories' },
-  { k: 'eyewear', label: 'booking.eyewear2' },
-  { k: 'bijoux', label: 'booking.jewelry' },
-  { k: 'cosmetique', label: 'booking.cosmetics' },
-  { k: 'food', label: 'booking.foodSpirits2' },
-  { k: 'autre', label: 'booking.other' },
-];
-
 // Cellule de formulaire du tunnel : le libellé coiffe le champ à l'intérieur
 // de la cellule bento. `data-invalid` porte l'état d'erreur, que `Field` et
 // `FieldError` savent lire — l'anneau rouge et le message sont posés par le
@@ -4122,13 +3635,13 @@ const Step7Contact = ({
                 {t('booking.itemTypes')}
               </span>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1">
-                {ARTICLE_TYPES.map((t) => {
-                  const on = (contact.typesArticles || []).includes(t.k);
+                {ARTICLE_TYPES.map((type) => {
+                  const on = (contact.typesArticles || []).includes(type.k);
                   return (
                     <Button
                       type="button"
-                      key={t.k}
-                      onClick={() => toggleType(t.k)}
+                      key={type.k}
+                      onClick={() => toggleType(type.k)}
                       variant="outline"
                       aria-pressed={on}
                       className={cn(
@@ -4142,7 +3655,7 @@ const Step7Contact = ({
                         {on && <span className="w-0.5 h-0.5 bg-background" />}
                       </span>
                       <span className="overflow-hidden text-ellipsis">
-                        {t[lang]}
+                        {catLabel(t, type)}
                       </span>
                     </Button>
                   );
@@ -4298,12 +3811,6 @@ const SidePanel = ({
   const title = isPreview ? t('booking.estimate') : p[lang];
   const list: string[] = (slotIds || []).filter(Boolean);
   const isMulti = list.length > 1;
-  const sameKeyCount: Record<string, number> = {};
-  list.forEach((id: string) => {
-    const k = (slots || {})[id]?.plateauKey || id;
-    sameKeyCount[k] = (sameKeyCount[k] || 0) + 1;
-  });
-  const seenIdxByKey: Record<string, number> = {};
   return (
     <div className="dark flex min-h-0 flex-col gap-4 overflow-auto bg-background px-5 py-6 text-foreground md:col-start-4 md:row-start-2 md:gap-3.5 md:p-6">
       <div>
@@ -4321,22 +3828,9 @@ const SidePanel = ({
       </div>
       {(() => {
         if (isMulti) {
-          const datedList = list
-            .map((id: string) => {
-              const st = (slots || {})[id] || {};
-              const pk = st.plateauKey || id;
-              const px = BOOK_PLATEAUX.find((x) => x.k === pk);
-              seenIdxByKey[pk] = (seenIdxByKey[pk] || 0) + 1;
-              const n = seenIdxByKey[pk];
-              const label =
-                sameKeyCount[pk] > 1
-                  ? `${px ? px[lang] : pk} ${String(n).padStart(2, '0')}`
-                  : px
-                    ? px[lang]
-                    : pk;
-              return { id, label, d: st.date };
-            })
-            .filter((x: AnyProps) => x.d);
+          const datedList = buildSlotLabels(list, slots || {}, lang)
+            .map(({ id, label }) => ({ id, label, d: (slots || {})[id]?.date }))
+            .filter((x) => x.d);
           if (datedList.length === 0) return null;
           return (
             <div className="pt-3.5 border-t border-border">
