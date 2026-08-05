@@ -1,4 +1,4 @@
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useRouterState } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -9,7 +9,7 @@ import {
 import { Lock, X } from 'lucide-react';
 import { SocialLinksRow } from './ui/social-links-row';
 import { useT } from './i18n/use-t';
-import { MENU_NAV } from './lib/nav';
+import { MENU_NAV, activeNavIn } from './lib/nav';
 import { SCREEN_TO_PATH } from './lib/screens';
 import type { Lang } from './types';
 
@@ -17,6 +17,7 @@ interface NavItemDef {
   label: string;
   href: string;
   disabled?: boolean;
+  current?: boolean;
 }
 
 const NavHeader = () => {
@@ -81,12 +82,16 @@ const NavItemLink = ({ item, index, onClose, navigate }: NavItemLinkProps) => {
         onClose();
         navigate({ to: item.href });
       }}
-      className="outline-none focus-visible:ring-3 focus-visible:ring-ring/50 relative flex min-h-13 cursor-pointer flex-col justify-between gap-1 border-b border-border px-4 py-2.5 no-underline transition-colors hover:bg-muted"
+      // Même repère que dans la bande d'en-tête, et il compte davantage ici :
+      // sous `lg` le tiroir est la seule navigation, donc le seul endroit où
+      // « vous êtes ici » puisse se lire.
+      aria-current={item.current ? 'page' : undefined}
+      className="outline-none focus-visible:ring-3 focus-visible:ring-ring/50 relative flex min-h-13 cursor-pointer flex-col justify-between gap-1 border-b border-border px-4 py-2.5 text-foreground no-underline transition-colors hover:bg-muted aria-[current=page]:text-primary"
     >
       <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
         {String(index + 1).padStart(2, '0')}
       </span>
-      <span className="mt-auto text-base font-light text-foreground">
+      <span className="mt-auto text-base font-light text-current">
         {item.label}
       </span>
     </a>
@@ -166,6 +171,10 @@ interface NavMenuProps {
 const NavMenu = ({ lang, isOpen, onClose, setLang }: NavMenuProps) => {
   const navigate = useNavigate();
   const t = useT();
+  // Même dérivation que la bande d'en-tête, sur la même table de chemins.
+  // `location` et non `resolvedLocation` : cf. le commentaire de __root.tsx.
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const current = activeNavIn(MENU_NAV, pathname);
 
   return (
     <Sheet
@@ -193,6 +202,7 @@ const NavMenu = ({ lang, isOpen, onClose, setLang }: NavMenuProps) => {
                 label: t(entry.labelKey),
                 href: SCREEN_TO_PATH[entry.screen](lang),
                 disabled: entry.disabled,
+                current: entry.id === current,
               }}
               index={index}
               onClose={onClose}
