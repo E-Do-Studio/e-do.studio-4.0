@@ -106,15 +106,22 @@ const NavCell = ({ item, active }: { item: MainNavItem; active: boolean }) => {
   );
 };
 
-// Le filet entre deux cellules du header appartient au conteneur.
+// Le filet entre deux cellules est une gouttière : le conteneur est noir, les
+// cellules peignent leur propre fond, et le `gap-px` laisse voir le noir entre
+// elles.
 //
-// Prudence avec `divide-x` : Tailwind l'émet dans `:where(…)`, donc à
-// spécificité nulle. Il a déjà fait disparaître ces filets en silence — sans
-// rien casser au typecheck ni au build — le jour où une variante posait
-// `border-0`. Le sélecteur ci-dessous compile en `.classe > *:not(:last-child)`,
-// soit 0,2,0 : il ne dépend d'aucune hypothèse sur les variantes.
-const CELL_DIVIDERS =
-  '[&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-border';
+// C'est le seul mécanisme qui puisse s'aligner sur les grilles de page, parce
+// que c'est celui qu'elles emploient toutes. Une bordure mord à l'intérieur de
+// la cellule, une gouttière se pose après : tant que le header dessinait ses
+// filets en `border-right`, celui de la cellule logo tombait sur 239-240 quand
+// celui de la colonne du corps tombait sur 240-241. Un pixel d'écart, sur
+// toutes les pages, à la jonction la plus visible du site.
+//
+// Corollaire : chaque cellule doit peindre son fond. `variant="header"` et
+// `variant="cell"` portent `bg-background`, `variant="default"` porte
+// `bg-primary` ; les cellules de titre et d'annonce le posent en dur. Une
+// cellule qui l'oublierait laisserait passer le noir.
+const CELL_GUTTERS = 'gap-px bg-border';
 
 const LangButton = ({ onLangToggle }: { onLangToggle: () => void }) => {
   const t = useT();
@@ -190,18 +197,15 @@ const PageHeader = ({
   // la coupe était passé à la main — oublié sur les mentions légales et dans
   // tout le tunnel de réservation, qui affichaient cinq cellules quand les
   // autres en affichaient quatre.
+  //
   // Un repère de navigation, et non cinq liens en vrac dans la bannière :
   // `aria-current` ne dit « vous êtes ici » que rapporté à un ensemble de
   // destinations, encore faut-il que l'ensemble soit déclaré. Son libellé le
   // distingue du tiroir, qui est un second repère sur la même page.
-  //
-  // Ce conteneur est une portée de filets de plus, mais à nombre d'enfants
-  // fixe : le dernier est toujours Réserver, et le filet tombe donc toujours
-  // au même endroit. C'est la portée *variable* que ce refacto a supprimée.
   const nav = (
     <nav
       aria-label={t('common.mainNav')}
-      className={cn('flex min-w-0 flex-1 md:flex-initial', CELL_DIVIDERS)}
+      className={cn('flex min-w-0 flex-1 md:flex-initial', CELL_GUTTERS)}
     >
       {MAIN_NAV.map((item) => (
         <NavCell key={item.id} item={item} active={item.id === active} />
@@ -224,14 +228,17 @@ const PageHeader = ({
     // 1025px.
     //
     // Depuis que les cinq destinations sont rendues partout, il n'y a plus rien
-    // à aligner : des enfants identiques dans un flex donnent des filets aux
-    // mêmes abscisses, gratuitement.
+    // à aligner horizontalement : des enfants identiques dans un flex donnent
+    // des filets aux mêmes abscisses, gratuitement. Restait à les dessiner
+    // comme les pages dessinent les leurs — cf. CELL_GUTTERS.
     <header
       className={cn(
         // La hauteur de bande appartient au composant, pas aux appels : elle
         // était redéclarée par chacun d'eux, en trois valeurs différentes.
-        'sticky top-0 z-40 flex h-header min-w-0 bg-background',
-        CELL_DIVIDERS,
+        //
+        // Pas de `bg-background` ici : le fond du conteneur *est* le filet.
+        'sticky top-0 z-40 flex h-header min-w-0',
+        CELL_GUTTERS,
         className,
       )}
     >
@@ -242,7 +249,7 @@ const PageHeader = ({
           // L'alignement sur la première colonne des pages n'a besoin de tenir
           // qu'à partir de `md`, là où ces grilles existent.
           'flex h-full flex-none basis-44 md:basis-logo',
-          CELL_DIVIDERS,
+          CELL_GUTTERS,
         )}
       >
         <Button
