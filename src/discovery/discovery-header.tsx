@@ -3,11 +3,5 @@ import { useT } from '../i18n/use-t';
 
 export const DiscoveryHeader = () => {
   const t = useT();
-  return (
-    <PageHeader
-      title={t('common.discovery')}
-      className="row-start-1"
-      subgrid={false}
-    />
-  );
+  return <PageHeader title={t('common.discovery')} className="row-start-1" />;
 };

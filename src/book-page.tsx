@@ -873,21 +873,12 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
 
   return (
     <div className="animate-in fade-in duration-300 grid w-full gap-px bg-border md:h-full md:overflow-hidden md:grid-cols-[var(--spacing-logo)_minmax(0,1fr)_minmax(0,1fr)_300px] md:grid-rows-[var(--spacing-header)_minmax(0,1fr)]">
-      {/* Unified header spans cols 1-3 — col 4 hosts the dark"Your Quote"
- label aligned with the quote panel below. Within the header subgrid
- (cols 1-3), the title sits in col 2 and the right block in col 3. */}
-      <PageHeader
-        className="col-span-full md:col-start-1 md:col-end-4 md:row-start-1"
-        titleClassName="lg:col-start-2 lg:col-span-1"
-        rightBlockClassName="lg:col-start-3"
-      />
-
-      {/* Desktop col 4 – dark label matching quote panel below */}
-      <div className="dark hidden h-full items-center bg-background px-6 md:col-start-4 md:row-start-1 md:flex">
-        <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground">
-          {t('booking.yourQuote')}
-        </span>
-      </div>
+      {/* Pleine largeur, comme partout ailleurs. La bande s'arrêtait aux trois
+          premières colonnes pour laisser la quatrième à un libellé « Votre
+          devis » aligné sur le panneau du dessous : elle n'avait alors que
+          723px à 1024, sous les 976 que ses cellules demandent. Le libellé
+          descend dans le panneau, qui le porte déjà. */}
+      <PageHeader className="col-span-full md:row-start-1" />
 
       <nav
         aria-label={t('booking.bookingSteps')}
@@ -4316,7 +4307,9 @@ const SidePanel = ({
   return (
     <div className="dark flex min-h-0 flex-col gap-4 overflow-auto bg-background px-5 py-6 text-foreground md:col-start-4 md:row-start-2 md:gap-3.5 md:p-6">
       <div>
-        <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-muted-foreground md:hidden">
+        {/* Plus de `md:hidden` : la cellule d'en-tête qui portait ce libellé
+            au-dessus de `md` a disparu avec la colonne qu'elle occupait. */}
+        <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground">
           {t('booking.yourQuote')}
         </span>
         <h2 className="m-0 mt-2 md:mt-0 text-2xl font-light tracking-tight text-muted-foreground">

@@ -27,16 +27,8 @@ interface PageHeaderProps {
   // Rendered as its own header cell (with a hairline divider) immediately to
   // the right of the title cell. Used on the home page for the CMS announcement.
   titleAside?: ReactNode;
+  /** Placement de la bande dans la grille de la page, rien de plus. */
   className?: string;
-  // md+ subgrid placement overrides. Defaults match the plateau/contact
-  // layout: title spans cols 2-3 (= the wide content area), right block sits
-  // in col 4 (= the narrow descrip-like col). Pages where the body proportions
-  // are inverted (e.g. postprod with samples on the right spanning cols 3-4)
-  // pass their own classes. Set `subgrid={false}` to skip the grid layout
-  // entirely (header stays flex on every breakpoint).
-  titleClassName?: string;
-  rightBlockClassName?: string;
-  subgrid?: boolean;
 }
 
 /**
@@ -99,8 +91,6 @@ const NavCell = ({ item, active }: { item: MainNavItem; active: boolean }) => {
   );
 };
 
-const DEFAULT_TITLE_CLASS = 'lg:col-start-2';
-const DEFAULT_RIGHT_BLOCK_CLASS = 'lg:col-start-3 lg:col-span-2';
 // Le filet entre deux cellules du header appartient au conteneur.
 //
 // Prudence avec `divide-x` : Tailwind l'émet dans `:where(…)`, donc à
@@ -110,8 +100,6 @@ const DEFAULT_RIGHT_BLOCK_CLASS = 'lg:col-start-3 lg:col-span-2';
 // soit 0,2,0 : il ne dépend d'aucune hypothèse sur les variantes.
 const CELL_DIVIDERS =
   '[&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-border';
-
-const RIGHT_BLOCK_BASE_CLASS = `flex min-w-0 ${CELL_DIVIDERS}`;
 
 const LangButton = ({ onLangToggle }: { onLangToggle: () => void }) => {
   const t = useT();
@@ -139,9 +127,6 @@ const PageHeader = ({
   subtitle,
   titleAside,
   className,
-  titleClassName,
-  rightBlockClassName,
-  subgrid = true,
 }: PageHeaderProps) => {
   // Ouvrir le tiroir, rentrer à l'accueil, basculer la langue : les onze
   // appelants construisaient ces trois rappels à l'identique et les passaient en
@@ -150,12 +135,17 @@ const PageHeader = ({
   const onLangToggle = () => setLang(lang === 'fr' ? 'en' : 'fr');
   const active = useActiveNavId();
 
+  // Cette cellule est aussi l'espaceur : c'est son `flex-1` qui pousse la
+  // navigation contre le bord droit, sur toutes les pages et sans que la page
+  // ait à le dire. Elle reste donc rendue même vide.
   const titleCell = (
     <div
       className={cn(
         'hidden min-w-0 items-center justify-start bg-background md:flex md:px-6',
-        titleAside ? 'md:flex-none' : 'flex-1',
-        subgrid && (titleClassName ?? DEFAULT_TITLE_CLASS),
+        // `flex-1` tant que l'annonce est masquée, `flex-none` quand elle
+        // paraît et reprend le rôle d'espaceur : il en faut toujours
+        // exactement un, sinon la navigation cesse d'être poussée à droite.
+        titleAside ? 'flex-1 xl:flex-none' : 'flex-1',
       )}
     >
       {title && (
@@ -189,13 +179,28 @@ const PageHeader = ({
   ));
 
   return (
+    // Une bande de cellules, à plat, sur toutes les pages et à toutes les
+    // largeurs.
+    //
+    // Elle se calait auparavant sur la grille de la page par `grid-cols-subgrid`
+    // — ce qui la désalignait au lieu de l'aligner. Le bloc de droite était
+    // placé dans une piste plus étroite que son contenu, et `justify-end` le
+    // faisait déborder vers la gauche, par-dessus le titre et le logo : 127px
+    // sur les mentions légales, 409px dans le tunnel de réservation, sans que
+    // `scrollWidth` en dise rien. Le subgrid héritait en prime le `gap-px` de
+    // la page, si bien qu'au-dessus de `lg` chaque filet devenait un trait noir
+    // suivi d'un blanc — la même bande n'avait pas le même trait à 1023 et à
+    // 1025px.
+    //
+    // Depuis que les cinq destinations sont rendues partout, il n'y a plus rien
+    // à aligner : des enfants identiques dans un flex donnent des filets aux
+    // mêmes abscisses, gratuitement.
     <header
       className={cn(
         // La hauteur de bande appartient au composant, pas aux appels : elle
         // était redéclarée par chacun d'eux, en trois valeurs différentes.
         'sticky top-0 z-40 flex h-header min-w-0 bg-background',
         CELL_DIVIDERS,
-        subgrid && 'lg:grid lg:grid-cols-subgrid',
         className,
       )}
     >
@@ -205,7 +210,7 @@ const PageHeader = ({
           // laisserait que 79px à la cellule Réserver, qui en demande 132.
           // L'alignement sur la première colonne des pages n'a besoin de tenir
           // qu'à partir de `md`, là où ces grilles existent.
-          'flex h-full flex-none basis-44 md:basis-logo lg:col-start-1',
+          'flex h-full flex-none basis-44 md:basis-logo',
           CELL_DIVIDERS,
         )}
       >
@@ -232,35 +237,19 @@ const PageHeader = ({
 
       {titleCell}
 
+      {/* `xl` et non `md` : mesuré, l'accueil déborde de 127px à 1024 dès qu'il
+          affiche l'annonce à côté des cinq destinations. Le débordement était
+          du genre silencieux — contenu dans la bande, invisible pour le
+          défilement du document. L'annonce attend donc d'avoir la place. */}
       {titleAside && (
-        <div className="hidden min-w-0 flex-1 items-center justify-start overflow-hidden bg-background md:flex md:px-6">
+        <div className="hidden min-w-0 flex-1 items-center justify-start overflow-hidden bg-background px-6 xl:flex">
           {titleAside}
         </div>
       )}
 
-      {subgrid ? (
-        /* Subgrid mode — actions + lang are wrapped in a single right block
-           grid cell whose width matches the body's rightmost column. On mobile
-           the wrapper grows so the orange cell fills the space between the logo
-           and the language button. */
-        <div
-          className={cn(
-            RIGHT_BLOCK_BASE_CLASS,
-            'lg:justify-end flex-1 md:flex-initial',
-            rightBlockClassName ?? DEFAULT_RIGHT_BLOCK_CLASS,
-          )}
-        >
-          {nav}
-          <LangButton onLangToggle={onLangToggle} />
-        </div>
-      ) : (
-        /* Flex mode — actions + lang are wrapped in a single right block.
-           Same mobile-grow behavior. */
-        <div className={cn(RIGHT_BLOCK_BASE_CLASS, 'flex-1 md:flex-initial')}>
-          {nav}
-          <LangButton onLangToggle={onLangToggle} />
-        </div>
-      )}
+      {nav}
+
+      <LangButton onLangToggle={onLangToggle} />
     </header>
   );
 };

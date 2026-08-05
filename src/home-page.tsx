@@ -121,7 +121,6 @@ const HomePage = () => {
           ) : undefined
         }
         className="col-span-2 md:col-start-1 md:col-span-12 md:row-start-1"
-        subgrid={false}
       />
 
       {/* ── Row 2: Social links + clients marquee ── */}
