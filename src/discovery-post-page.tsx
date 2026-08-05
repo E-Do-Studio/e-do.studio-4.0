@@ -12,6 +12,7 @@ import { HoverMarquee } from './ui/hover-marquee';
 import { useT } from './i18n/use-t';
 import { usePageContext } from './lib/page-context';
 import { NotFoundPage } from './not-found-page';
+import { PageHeader } from './ui/page-header';
 
 export const DiscoveryPostPage = () => {
   const t = useT();
@@ -91,8 +92,12 @@ export const DiscoveryPostPage = () => {
 
   return (
     <>
-      <main className="animate-in fade-in duration-300 grid w-full grid-rows-[var(--spacing-header)_minmax(0,1fr)] md:h-full gap-px bg-border overflow-hidden">
-        <div className="row-start-1 flex gap-px bg-border">
+      <main className="animate-in fade-in duration-300 grid w-full grid-rows-[var(--spacing-header)_44px_minmax(0,1fr)] md:h-full gap-px bg-border overflow-hidden">
+        <PageHeader className="row-start-1" />
+
+        {/* Retour au journal et méta de l'article, en rangée 2 — la même forme
+            que l'index Discovery, dont la bande sociale occupe cette rangée. */}
+        <div className="row-start-2 flex gap-px bg-border">
           <Button
             onClick={backToIndex}
             variant="header"
@@ -115,7 +120,7 @@ export const DiscoveryPostPage = () => {
           </div>
         </div>
 
-        <div className="row-start-2 grid min-h-0 grid-cols-1 gap-px bg-border overflow-y-auto md:grid-cols-[1.1fr_1fr] md:overflow-hidden">
+        <div className="row-start-3 grid min-h-0 grid-cols-1 gap-px bg-border overflow-y-auto md:grid-cols-[1.1fr_1fr] md:overflow-hidden">
           <div className="relative min-h-64 bg-foreground md:min-h-0">
             <DiscoveryCoverMedia
               post={post}
