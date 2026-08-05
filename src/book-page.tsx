@@ -1,41 +1,22 @@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useNavigate, useSearch } from '@tanstack/react-router';
 import { ArrowRight, X } from 'lucide-react';
-import {
-  Fragment,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import {
-  confirmationPath,
-  pathForStep,
-  type BookMode,
-} from './book/book-routes';
-import {
-  STEP,
-  canGoNext,
-  resolveSlotList,
-  stepsFor,
-} from './book/booking-steps';
-import type { BookPageProps, ContactState } from './book/booking-types';
+import { Fragment, useEffect, useMemo, useRef } from 'react';
+import { STEP, canGoNext, resolveSlotList } from './book/booking-steps';
+import type { BookPageProps } from './book/booking-types';
 import { PRODUCTS, catLabel, findEntry } from './book/catalog';
-import {
-  saveConfirmation,
-  type ConfirmationMode,
-  type ConfirmationSessionSlot,
-} from './book/confirmation-snapshot';
-import {
-  buildBookingHubspotFields,
-  buildCollectedFormFields,
-} from './book/hubspot-fields';
 import { BookingSidePanel } from './book/booking-side-panel';
 import { MultiPlateauStep } from './book/multi-plateau-step';
+import { buildCollectedFormFields } from './book/hubspot-fields';
 import { buildSlotLabels } from './book/slot-labels';
+import {
+  usePersistBookingDraft,
+  useBookingState,
+} from './book/use-booking-state';
+import { useBookingSteps } from './book/use-booking-steps';
+import { useBookingSubmit } from './book/use-booking-submit';
+import { useConfigSeeding } from './book/use-config-seeding';
 import { StepConfigurator } from './book/steps/step-configurator';
 import { StepContact } from './book/steps/step-contact';
 import { StepDate } from './book/steps/step-date';
@@ -44,55 +25,23 @@ import { StepPlateau } from './book/steps/step-plateau';
 import { StepPostprod } from './book/steps/step-postprod';
 import { StepTeam } from './book/steps/step-team';
 import { useT } from './i18n/use-t';
-import { clearAvailabilityCache } from './lib/availability';
 import type {
   BookPlateau,
-  BookingSession,
-  BookingSessionData,
-  ConfigGlobal,
   DateSelection,
-  PostprodState,
   PriceBreakdown,
   QuoteLabels,
-  Recommendation,
   SlotState,
-  TeamState,
 } from './lib/booking-engine';
 import {
   BOOK_PLATEAUX,
-  buildSessionsData as buildSessionsDataEngine,
-  computePostprodPrice,
-  makeBlankSession,
   computePriceBreakdown,
   dailyOccupancyHoursFor,
-  recommendProjectLevel,
   recommendSession,
   rentalHoursFor,
-  slotIdFor,
 } from './lib/booking-engine';
-import { validateContact, type ContactFormErrors } from './lib/booking-schema';
-import { createBooking } from './lib/bookings';
 import { DAYS, MONTHS } from './lib/format';
-import {
-  HUBSPOT_BOOKING_FORM_ID,
-  submitHubspotForm,
-} from './lib/hubspot-forms';
 import { usePageContext } from './lib/page-context';
-import {
-  clearDraft,
-  loadDraft,
-  useBookingDraftSaver,
-} from './lib/use-booking-draft';
 import { PageHeader } from './ui/page-header';
-
-// CGV consent is deliberately not persisted across a real browser refresh (the
-// user must tick it again), but it MUST survive configurator step navigation:
-// each step is its own route, so BookPage remounts and rehydrates from the
-// draft between steps. This module-scoped flag tells the two apart — a genuine
-// refresh re-evaluates the module (flag back to false), while in-session step
-// nav keeps it. Without this, the box ticked on the contact step is dropped by
-// the date step and the final"Réserver" submit fails its contact validation.
-let cgvConsentGivenThisSession = false;
 
 // Placeholder used until a plateau is picked. Module-scoped so `p` keeps a
 // stable identity across renders — inline, it was a fresh object every render
@@ -107,21 +56,6 @@ const NO_PLATEAU: BookPlateau = {
   fdUnit: 'full',
 };
 
-// Créneau vierge. Le cyclorama n'a pas de `slotType` : sa durée passe par
-// `cycloMode` (cf. rentalHoursFor dans booking-engine).
-const makeSlotState = (plateauKey: string): SlotState => ({
-  plateauKey,
-  slotType: BOOK_PLATEAUX.find((x) => x.k === plateauKey)?.isCyclo
-    ? null
-    : 'hour',
-  hours: 1,
-  cycloMode: 'halfH',
-  paint: false,
-  kwh: 0,
-  team: {},
-  postprod: {},
-});
-
 // Géométrie des actions de bas de tunnel — pleine hauteur de bande, empilées
 // sous `md`. Tout le reste (mono capitales, anneau de focus, curseur, état
 // désactivé) vient des variantes de `Button` : `variant="cell"` pour les
@@ -134,248 +68,65 @@ const FOOTER_BACK =
 const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
   const t = useT();
   const { lang } = usePageContext();
-  const navigate = useNavigate();
-  const today = new Date();
-  const [draft] = useState(() => loadDraft());
-  // Manual mode keeps a single URL (/reserver/manuel) and tracks the current
-  // step in the `?step=N` search param instead of routing per step, so
-  // reloading the page keeps the user on the step they were on. Configurator
-  // mode uses TanStack routes per step and ignores this query parameter.
-  // Non-strict: BookPage also renders on the configurator routes, which
-  // don't declare `step`.
-  const { step: manualStepQuery = null } = useSearch({ strict: false }) as {
-    step?: number;
-  };
-  const setManualStepQuery = (n: number) =>
-    navigate({ to: '.', search: { step: n }, replace: true });
-  const [step, setStep] = useState<number>(() => {
-    if (forceManual && manualStepQuery != null) return manualStepQuery;
-    if (forcedStep != null) return forcedStep;
-    if (draft) return draft.step;
-    return STEP.PLATEAU;
-  });
-  const [configGlobal, setConfigGlobal] = useState<ConfigGlobal>(() =>
-    draft
-      ? (draft.configGlobal as ConfigGlobal)
-      : { projectType: 'ecom', urgency: 'flex', postprod: false },
-  );
-  const [configSessions, setConfigSessions] = useState<BookingSession[]>(() =>
-    draft ? (draft.configSessions as BookingSession[]) : [makeBlankSession()],
-  );
-  const [activeSessionIdx, setActiveSessionIdx] = useState<number>(() =>
-    draft ? draft.activeSessionIdx : 0,
-  );
-  const [configApplied, setConfigApplied] = useState<boolean>(() => {
-    if (forceManual) return false;
-    if (
-      forcedStep != null &&
-      forcedStep !== STEP.CONFIG &&
-      forcedStep !== STEP.PLATEAU
-    ) {
-      return true;
-    }
-    return draft ? draft.configApplied : false;
-  });
-  const [plateau, setPlateau] = useState<string | null>(
-    () => draft?.plateau ?? null,
-  );
-  const [slotIds, setSlotIds] = useState<string[]>(() =>
-    draft ? draft.slotIds : plateau ? [plateau] : [],
-  );
-  const [slots, setSlots] = useState<Record<string, SlotState>>(() => {
-    if (draft) return draft.slots as Record<string, SlotState>;
-    if (!plateau) return {};
-    return { [plateau]: makeSlotState(plateau) };
-  });
-  const togglePlateau = (k: string) => {
-    setSlotIds((prev) => {
-      const isAdding = !prev.includes(k);
-      const next = isAdding ? [...prev, k] : prev.filter((x) => x !== k);
-      setPlateau(next[0] || null);
-      if (isAdding) {
-        setSlots((p) => ({ ...p, [k]: makeSlotState(k) }));
-      } else {
-        setSlots((p) => {
-          const n = { ...p };
-          delete n[k];
-          return n;
-        });
-      }
-      return next;
-    });
-  };
-  // The calendar's displayed month is ephemeral UI state, not user intent — never
-  // restore it from the draft (a stale draft would reopen on a past month). Derive
-  // it from the selected date when it's still in the future, otherwise from today.
-  const initialView = (() => {
-    const sel = draft?.selected;
-    if (
-      sel &&
-      new Date(sel.y, sel.m, 1) >=
-        new Date(today.getFullYear(), today.getMonth(), 1)
-    ) {
-      return { y: sel.y, m: sel.m };
-    }
-    return { y: today.getFullYear(), m: today.getMonth() };
-  })();
-  const [viewY, setViewY] = useState<number>(() => initialView.y);
-  const [viewM, setViewM] = useState<number>(() => initialView.m);
-  const [selected, setSelected] = useState<DateSelection | null>(() =>
-    draft ? draft.selected : null,
-  );
-  const [arrivalHour, setArrivalHour] = useState<number>(() =>
-    draft ? draft.arrivalHour : 10,
-  );
-  const [dateIdx, setDateIdx] = useState<number>(() =>
-    draft ? draft.dateIdx : 0,
-  );
-  const [slotType, setSlotType] = useState<string>(() =>
-    draft ? draft.slotType : 'hour',
-  );
-  const [hours, setHours] = useState<number>(() => (draft ? draft.hours : 1));
-  const [cycloMode, setCycloMode] = useState<string>(() =>
-    draft ? draft.cycloMode : 'halfH',
-  );
-  const [paint, setPaint] = useState<boolean>(() =>
-    draft ? draft.paint : false,
-  );
-  const [kwh, setKwh] = useState<number>(() => (draft ? draft.kwh : 0));
-  const [team, setTeam] = useState<TeamState>(() =>
-    draft ? (draft.team as TeamState) : {},
-  );
-  const [pp, setPp] = useState<Record<string, unknown>>(() =>
-    draft ? draft.pp : {},
-  );
-  const [contact, setContact] = useState<ContactState>(() =>
-    draft
-      ? {
-          ...(draft.contact as unknown as ContactState),
-          cgvAccepted: cgvConsentGivenThisSession,
-        }
-      : {
-          marque: '',
-          societe: '',
-          siren: '',
-          adresseFacturation: '',
-          nom: '',
-          prenom: '',
-          email: '',
-          tel: '',
-          typesArticles: [],
-          quantiteArticles: '',
-          vuesParArticle: '',
-          autresInfos: '',
-          cgvAccepted: false,
-        },
-  );
-  const [contactErrors, setContactErrors] = useState<ContactFormErrors>({});
-  // Keep the session-scoped consent flag in sync with the live checkbox so it
-  // carries across step remounts (see cgvConsentGivenThisSession above).
-  useEffect(() => {
-    cgvConsentGivenThisSession = contact.cgvAccepted;
-  }, [contact.cgvAccepted]);
-  const [saving, setSaving] = useState<boolean>(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
-  const [availRefreshKey, setAvailRefreshKey] = useState(0);
-  const saveDraft = useBookingDraftSaver(() => ({
-    step,
+
+  const state = useBookingState({ forcedStep, forceManual });
+  const {
     configGlobal,
     configSessions,
-    activeSessionIdx,
     configApplied,
     plateau,
     slotIds,
     slots,
-    slotType,
-    hours,
-    cycloMode,
-    paint,
-    kwh,
-    team,
-    pp,
-    contact: contact as unknown as Record<string, unknown>,
-    selected,
-    arrivalHour,
-    dateIdx,
+    setSlots,
     viewY,
+    setViewY,
     viewM,
-  }));
-  useEffect(saveDraft, [
-    step,
-    configGlobal,
-    configSessions,
-    activeSessionIdx,
-    configApplied,
-    plateau,
-    slotIds,
-    slots,
+    setViewM,
+    selected,
+    setSelected,
+    arrivalHour,
+    setArrivalHour,
+    dateIdx,
+    setDateIdx,
     slotType,
     hours,
     cycloMode,
-    paint,
-    kwh,
-    team,
-    pp,
     contact,
-    selected,
-    arrivalHour,
-    dateIdx,
-    viewY,
-    viewM,
-    saveDraft,
-  ]);
-  useEffect(() => {
-    if (forcedStep == null) return;
-    if (step !== forcedStep) setStep(forcedStep);
-  }, [forcedStep]);
-  useEffect(() => {
-    if (forceManual && configApplied) setConfigApplied(false);
-  }, [forceManual]);
-  // Manual mode: sync the URL ?step= ↔ internal step state. The pair of
-  // effects below stops looping once the two sides agree (the equality
-  // guards short-circuit on the second pass).
-  useEffect(() => {
-    if (!forceManual) return;
-    if (manualStepQuery != null && manualStepQuery !== step) {
-      setStep(manualStepQuery);
-    }
-  }, [manualStepQuery, forceManual]);
-  useEffect(() => {
-    if (!forceManual) return;
-    if (step !== manualStepQuery) {
-      setManualStepQuery(step);
-    }
-  }, [step, forceManual]);
-  const goToStep = useCallback(
-    (n: number, modeOverride?: BookMode) => {
-      setStep(n);
-      const nextMode: BookMode =
-        modeOverride ??
-        (forceManual
-          ? 'manual'
-          : configApplied || n === 0
-            ? 'config'
-            : 'manual');
-      const target = pathForStep(lang, nextMode, n);
-      if (
-        typeof window !== 'undefined' &&
-        window.location.pathname !== target
-      ) {
-        navigate({ to: target });
-      }
-    },
-    [lang, configApplied, forceManual, navigate],
-  );
-  const months = MONTHS[lang];
-  const days = DAYS[lang];
+    setContact,
+    today,
+    setConfigGlobal,
+    setConfigSessions,
+    activeSessionIdx,
+    setActiveSessionIdx,
+    setConfigApplied,
+    togglePlateau,
+    resetSelection,
+  } = state;
+
+  const {
+    step,
+    goToStep,
+    mode,
+    steps: STEPS,
+  } = useBookingSteps({
+    draft: state.draft,
+    forcedStep,
+    forceManual,
+    lang,
+    configApplied,
+  });
+  usePersistBookingDraft(state, step);
+
   const p = BOOK_PLATEAUX.find((x) => x.k === plateau) || NO_PLATEAU;
-  // Deux questions distinctes : ce qu'on facture et persiste (rentalHours), et ce
-  // que le calendrier doit trouver de libre sur une seule journée (availabilityHours).
+  // Deux questions distinctes : ce qu'on facture et persiste (rentalHours), et
+  // ce que le calendrier doit trouver de libre sur une seule journée
+  // (availabilityHours).
   const rentalHours = rentalHoursFor({ slotType, hours, cycloMode }, p);
   const availabilityHours = dailyOccupancyHoursFor(
     { slotType, hours, cycloMode },
     p,
   );
+
   const quoteLabels = useMemo<QuoteLabels>(
     () => ({
       fullDayWithHours: (count: number) =>
@@ -406,67 +157,62 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
       }),
     [plateau, slotIds, slots, lang, quoteLabels],
   );
+
+  const contentScrollRef = useRef<HTMLFormElement | null>(null);
+  const innerScrollRef = useRef<HTMLDivElement | null>(null);
+
+  const { applyConfig, skipConfig } = useConfigSeeding({
+    state,
+    step,
+    forceManual,
+    goToStep,
+    t,
+  });
+  const {
+    saving,
+    saveError,
+    setSaveError,
+    availRefreshKey,
+    contactErrors,
+    contactValid,
+    runContactValidation,
+    handleSubmit,
+  } = useBookingSubmit({
+    state,
+    plateau: p,
+    rentalHours,
+    priceBreakdown,
+    goToStep,
+    formRef: contentScrollRef,
+    lang,
+    t,
+  });
+
+  const months = MONTHS[lang];
+  const days = DAYS[lang];
   const calCells = useMemo<(number | null)[]>(() => {
-    const first = new Date(viewY, viewM, 1);
-    const dow = (first.getDay() + 6) % 7;
+    const dow = (new Date(viewY, viewM, 1).getDay() + 6) % 7;
     const ndays = new Date(viewY, viewM + 1, 0).getDate();
-    const arr: (number | null)[] = [];
-    for (let i = 0; i < dow; i++) arr.push(null);
-    for (let d = 1; d <= ndays; d++) arr.push(d);
-    while (arr.length % 7) arr.push(null);
-    return arr;
+    const cells: (number | null)[] = Array(dow).fill(null);
+    for (let d = 1; d <= ndays; d++) cells.push(d);
+    while (cells.length % 7) cells.push(null);
+    return cells;
   }, [viewY, viewM]);
-  const nextMonth = () => {
-    let m = viewM + 1,
-      y = viewY;
-    if (m > 11) {
-      m = 0;
-      y++;
-    }
-    setViewM(m);
-    setViewY(y);
-  };
-  const prevMonth = () => {
-    let m = viewM - 1,
-      y = viewY;
-    if (m < 0) {
-      m = 11;
-      y--;
-    }
-    setViewM(m);
-    setViewY(y);
+  const shiftMonth = (delta: number) => {
+    const d = new Date(viewY, viewM + delta, 1);
+    setViewY(d.getFullYear());
+    setViewM(d.getMonth());
   };
   const isPast = (d: number | null) => {
     if (!d) return true;
-    const dt = new Date(viewY, viewM, d);
-    const t = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    return dt < t;
+    const midnight = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+    );
+    return new Date(viewY, viewM, d) < midnight;
   };
-  // Une seule validation par changement d'état, partagée par la garde de
-  // navigation et par la soumission. `canNext()` est appelé une dizaine de fois
-  // par rendu (rail d'étapes, nav mobile, barre d'actions) : sans mémo, chaque
-  // appel relançait le schéma Zod. Dépend de `p.isCyclo`/`p.isVisite` et non de
-  // `p` — `p` est un objet neuf à chaque rendu quand aucun plateau ne
-  // correspond, ce qui annulerait le mémo.
-  const contactValidation = useMemo(() => {
-    const requireProductFields = !p.isCyclo && !p.isVisite && !configApplied;
-    return validateContact(contact, lang as 'fr' | 'en', {
-      requireProductFields,
-    });
-  }, [p.isCyclo, p.isVisite, configApplied, contact, lang]);
-  const contactValid = () => contactValidation.success;
-  const runContactValidation = useCallback(() => {
-    if (!contactValidation.success) {
-      setContactErrors(contactValidation.errors);
-      return false;
-    }
-    setContactErrors({});
-    return true;
-  }, [contactValidation]);
-  const handleContactNext = (nextN: number | null) => {
-    if (!runContactValidation()) return;
-    if (nextN !== null) goToStep(nextN);
-  };
+
   const canNext = () =>
     canGoNext({
       step,
@@ -475,206 +221,14 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
       plateau,
       slots,
       selected,
-      contactValid: contactValid(),
+      contactValid,
     });
-  const canQuote = () => contactValid();
-  const mode: BookMode =
-    configApplied || step === STEP.CONFIG ? 'config' : 'manual';
-  const STEPS = stepsFor(mode, t);
-  const seedFromConfig = () => {
-    const validRecs: {
-      session: BookingSession;
-      sessionIdx: number;
-      rec: Recommendation;
-    }[] = [];
-    configSessions.forEach((s, idx) => {
-      const valid =
-        s.projectType === 'cyclorama' ||
-        (s.projectType === 'ecom' && s.product && Number(s.quantity) > 0);
-      if (!valid) return;
-      validRecs.push({
-        session: s,
-        sessionIdx: idx,
-        rec: recommendSession(s, configGlobal),
-      });
-    });
-    if (validRecs.length === 0) return null;
-    const sessions = validRecs.map((v) => v.session);
-    const proj = recommendProjectLevel(sessions, configGlobal);
-    setSlots((prev) => {
-      const next: Record<string, SlotState> = {};
-      const prevBySessionIdx = new Map<number, SlotState>();
-      Object.values(prev).forEach((s) => {
-        if (s && s.configSessionIdx != null)
-          prevBySessionIdx.set(s.configSessionIdx, s);
-      });
-      validRecs.forEach(({ session, sessionIdx, rec }) => {
-        const id = slotIdFor(rec.plateau, sessionIdx);
-        const pxInfo = BOOK_PLATEAUX.find((x) => x.k === rec.plateau);
-        const isCyclo = !!(pxInfo && pxInfo.isCyclo);
-        const teamCopy = { ...(proj.team || {}) };
-        if (isCyclo) {
-          delete teamCopy.styliste_op;
-          delete teamCopy.operateur;
-        }
-        const ppPrice = session.postprod ? computePostprodPrice(session) : null;
-        const sessPP: PostprodState = session.postprod
-          ? {
-              enabled: true,
-              video: !!session.postprodVideo,
-              amount: ppPrice ? ppPrice.amount : 0,
-              images: ppPrice ? ppPrice.images : 0,
-              breakdown: ppPrice ? ppPrice.breakdown : [],
-              perView: ppPrice ? !!ppPrice.perView : false,
-            }
-          : {};
-        // Preserve user customizations by session index — survives slotId change
-        // when a session is retargeted to a different plateau.
-        const preserved = prev[id] ?? prevBySessionIdx.get(sessionIdx);
-        // For cyclo plateaus, drop styliste_op/operateur from preserved team
-        // (they don't apply on cyclorama).
-        const preservedTeam = preserved?.team ? { ...preserved.team } : null;
-        if (preservedTeam && isCyclo) {
-          delete preservedTeam.styliste_op;
-          delete preservedTeam.operateur;
-        }
-        next[id] = {
-          plateauKey: rec.plateau,
-          slotType: rec.slotType || 'hour',
-          hours: rec.hours || 1,
-          cycloMode: rec.cycloMode || 'halfH',
-          paint: preserved?.paint ?? false,
-          kwh: preserved?.kwh ?? 0,
-          team: preservedTeam ?? teamCopy,
-          postprod: sessPP,
-          date: preserved?.date ?? null,
-          arrivalHour: preserved?.arrivalHour,
-          configSessionIdx: sessionIdx,
-        };
-      });
-      return next;
-    });
-    const newIds = validRecs.map((v) => slotIdFor(v.rec.plateau, v.sessionIdx));
-    setSlotIds(newIds);
-    const firstRec = validRecs[0].rec;
-    setPlateau(firstRec.plateau);
-    if (firstRec.cycloMode) setCycloMode(firstRec.cycloMode);
-    if (firstRec.slotType) {
-      setSlotType(firstRec.slotType);
-      setHours(firstRec.hours);
-    }
-    setTeam(proj.team);
-    setPp({});
-    return {
-      sessions,
-      recs: validRecs.map((v) => ({ session: v.session, ...v.rec })),
-      proj,
-    };
+  const handleContactNext = (nextN: number | null) => {
+    if (!runContactValidation()) return;
+    if (nextN !== null) goToStep(nextN);
   };
-  const applyConfig = () => {
-    const seeded = seedFromConfig();
-    if (!seeded) return;
-    const { sessions, recs } = seeded;
-    const productLabels = sessions
-      .map((s) => catLabel(t, findEntry(PRODUCTS, s.product)))
-      .filter(Boolean);
-    const totalSKUs = sessions.reduce(
-      (sum, s) => sum + (Number(s.quantity) || 0),
-      0,
-    );
-    const briefLines: string[] = [];
-    if (recs.length > 1) {
-      briefLines.push(t('booking.multiStageProject', { count: recs.length }));
-    }
-    recs.forEach((r, i) => {
-      const px = BOOK_PLATEAUX.find((x) => x.k === r.plateau);
-      const s = r.session;
-      const productLbl =
-        catLabel(t, findEntry(PRODUCTS, s.product)) || s.product;
-      const subLbl = s.submethod ? ` · ${s.submethod}` : '';
-      const mediaLbl = (s.media || []).length
-        ? ` (${(s.media || []).join('+')})`
-        : '';
-      const dur = r.onRequest
-        ? t('common.onRequest')
-        : r.slotType === 'full'
-          ? (() => {
-              const totalH = r.hours || (r.totalDays ? r.totalDays * 8 : 8);
-              const fd = Math.floor(totalH / 8);
-              const ex = totalH - fd * 8;
-              if (ex === 0) return fd > 1 ? `${fd}×8h` : '8h';
-              return `${fd}×8h+${ex}h`;
-            })()
-          : r.slotType === 'half'
-            ? `${r.hours}h (½j)`
-            : `${r.hours}h`;
-      briefLines.push(
-        `\n${t('booking.session')} ${i + 1} — ${productLbl}${subLbl}${mediaLbl} → ${px ? px[lang] : r.plateau} · ${dur}`,
-      );
-      briefLines.push(
-        ` ${t('booking.quantity')} : ${s.quantity} ${t('booking.products')}`,
-      );
-      if (s.views && s.views.length) {
-        briefLines.push(` ${t('booking.views')} : ${s.views.join(', ')}`);
-      } else if (s.viewsCount) {
-        briefLines.push(` ${t('booking.viewsPerProduct')} : ${s.viewsCount}`);
-      }
-      if (s.postprod) {
-        briefLines.push(
-          ` ${t('booking.postProduction')} : ${t('booking.yes')}${s.postprodVideo ? ` + ${t('booking.videoEdit')}` : ''}`,
-        );
-      }
-    });
-    setContact((c) => ({
-      ...c,
-      typesArticles: productLabels,
-      quantiteArticles: String(totalSKUs || ''),
-      vuesParArticle: '',
-      autresInfos: c.autresInfos || '',
-    }));
-    setConfigApplied(true);
-    goToStep(STEP.DURATION, 'config');
-  };
-  // Remet à zéro tout ce que l'utilisateur a choisi côté créneaux — les
-  // coordonnées et les sessions du configurateur ne bougent pas.
-  const resetSelection = () => {
-    setPlateau(null);
-    setSlotIds([]);
-    setSlots({});
-    setSlotType('hour');
-    setHours(1);
-    setCycloMode('halfH');
-    setPaint(false);
-    setKwh(0);
-    setTeam({});
-    setPp({});
-    setSelected(null);
-  };
-  const skipConfig = () => {
-    setConfigApplied(false);
-    setSlotIds([]);
-    setSlots({});
-    setPlateau(null);
-    goToStep(STEP.PLATEAU, 'manual');
-  };
-  useEffect(() => {
-    // Auto-seed slots from configurator state when:
-    // - the user is actively editing on step 0 (live preview), OR
-    // - the user has applied the configurator (configApplied).
-    // In any other situation (manual flow, forced manual), do NOT auto-seed —
-    // would clobber the user's manual selections.
-    if (forceManual) return;
-    if (!configApplied && step !== STEP.CONFIG) return;
-    const hasValid = configSessions.some(
-      (s) =>
-        s.projectType === 'cyclorama' ||
-        (s.projectType === 'ecom' && s.product && Number(s.quantity) > 0),
-    );
-    if (!hasValid) return;
-    seedFromConfig();
-  }, [configSessions, configGlobal, configApplied, step, forceManual]);
-  const contentScrollRef = useRef<HTMLFormElement | null>(null);
-  const innerScrollRef = useRef<HTMLDivElement | null>(null);
+
+  // Chaque étape (et chaque sous-étape de date) rouvre en haut de page.
   useEffect(() => {
     if (contentScrollRef.current) contentScrollRef.current.scrollTop = 0;
     if (innerScrollRef.current) innerScrollRef.current.scrollTop = 0;
@@ -682,153 +236,6 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
   useEffect(() => {
     if (step === STEP.DATE) setDateIdx(0);
   }, [step]);
-
-  const buildSessionsData = useCallback(
-    (): BookingSessionData[] =>
-      buildSessionsDataEngine({
-        slotIds,
-        plateau,
-        slots,
-        configApplied,
-        configSessions,
-        fallbackQuantity: Number(contact.quantiteArticles) || 0,
-        selected,
-        arrivalHour: arrivalHour ?? null,
-      }),
-    [
-      slotIds,
-      plateau,
-      slots,
-      configApplied,
-      configSessions,
-      contact.quantiteArticles,
-      selected,
-      arrivalHour,
-    ],
-  );
-
-  const handleSubmit = useCallback(
-    async (submitMode: 'quote' | 'booking' | 'request') => {
-      if (!runContactValidation()) {
-        // Submit happens from the date step, but contact errors (incl. CGV)
-        // render on the contact step. Route there so the user sees what's
-        // missing instead of the button appearing to do nothing.
-        goToStep(5);
-        return;
-      }
-      contentScrollRef.current?.requestSubmit();
-      setSaving(true);
-      setSaveError(null);
-      try {
-        const sessionsData = buildSessionsData();
-        const firstDate =
-          selected ||
-          (() => {
-            const ids = slotIds ?? [];
-            for (const id of ids) {
-              const st = slots[id];
-              if (st?.date) return st.date;
-            }
-            return null;
-          })();
-        const result = await createBooking({
-          mode: submitMode,
-          contact,
-          projectType: configGlobal.projectType || null,
-          urgency: configGlobal.urgency || null,
-          sessions: sessionsData,
-          quote: { rows: priceBreakdown.rows, total: priceBreakdown.total },
-          preferredDate: firstDate,
-          arrivalHour: arrivalHour ?? null,
-        });
-        // Best-effort HubSpot form submission, from the browser so the visitor's
-        // hubspotutk cookie preserves the contact's Original Source. Never awaited:
-        // a CRM issue must not block the confirmation.
-        void submitHubspotForm(
-          HUBSPOT_BOOKING_FORM_ID,
-          buildBookingHubspotFields({
-            mode: submitMode,
-            reference: result.reference ?? null,
-            contact,
-            projectType: configGlobal.projectType || null,
-            urgency: configGlobal.urgency || null,
-            plateau,
-            slotIds,
-            slots,
-            selected: firstDate,
-            arrivalHour: arrivalHour ?? null,
-            rentalHours,
-            total: priceBreakdown.total,
-          }),
-          { pageName: 'Booking' },
-        );
-        const snapSessions: ConfirmationSessionSlot[] = sessionsData.map(
-          (s) => {
-            const px = BOOK_PLATEAUX.find((x) => x.k === s.plateauKey);
-            const h = s.cycloMode
-              ? s.cycloMode === 'halfH'
-                ? 5
-                : 10
-              : s.hours || 1;
-            return {
-              plateauKey: s.plateauKey,
-              plateauName: {
-                fr: px?.fr ?? s.plateauKey,
-                en: px?.en ?? s.plateauKey,
-              },
-              date: s.date,
-              arrivalHour: s.arrivalHour,
-              hours: h,
-            };
-          },
-        );
-        saveConfirmation({
-          mode: submitMode as ConfirmationMode,
-          savedRef: result.reference ?? null,
-          plateauKey: p.k || null,
-          plateauName: { fr: p.fr, en: p.en },
-          selected: firstDate,
-          arrivalHour: arrivalHour ?? null,
-          rentalHours,
-          slotIds,
-          slots: slots as Record<string, unknown>,
-          sessions: snapSessions,
-          contact: contact as unknown as Record<string, unknown>,
-          total: priceBreakdown.total,
-          rows: priceBreakdown.rows as unknown[],
-          isCyclo: !!p.isCyclo,
-        });
-        clearDraft();
-        navigate({ to: confirmationPath(lang) });
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : '';
-        if (msg.includes('réservé') || msg.includes('already booked')) {
-          clearAvailabilityCache();
-          setAvailRefreshKey((k) => k + 1);
-        }
-        setSaveError(msg || t('booking.saveError'));
-      } finally {
-        setSaving(false);
-      }
-    },
-    [
-      runContactValidation,
-      buildSessionsData,
-      selected,
-      slotIds,
-      slots,
-      contact,
-      configGlobal,
-      priceBreakdown,
-      arrivalHour,
-      lang,
-      p,
-      plateau,
-      rentalHours,
-      navigate,
-      goToStep,
-    ],
-  );
 
   return (
     <div className="grid w-full gap-px bg-border md:h-full md:overflow-hidden md:grid-cols-[var(--spacing-logo)_minmax(0,1fr)_minmax(0,1fr)_300px] md:grid-rows-[var(--spacing-header)_minmax(0,1fr)]">
@@ -951,7 +358,7 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
       <form
         ref={contentScrollRef}
         name="booking"
-        aria-label="Booking"
+        aria-label={t('booking.bookingForm')}
         onSubmit={(e) => e.preventDefault()}
         className="bg-background overflow-auto flex flex-col md:col-start-2 md:col-span-2 md:row-start-2 md:min-h-0"
       >
@@ -1129,8 +536,8 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
                     setArrivalHour={setArrivalHour}
                     rentalHours={availabilityHours}
                     isPast={isPast}
-                    nextMonth={nextMonth}
-                    prevMonth={prevMonth}
+                    nextMonth={() => shiftMonth(1)}
+                    prevMonth={() => shiftMonth(-1)}
                     refreshKey={availRefreshKey}
                   />
                 );
@@ -1203,8 +610,8 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
                     setArrivalHour={(h: number) => setSt({ arrivalHour: h })}
                     rentalHours={stRentalHours}
                     isPast={isPast}
-                    nextMonth={nextMonth}
-                    prevMonth={prevMonth}
+                    nextMonth={() => shiftMonth(1)}
+                    prevMonth={() => shiftMonth(-1)}
                     refreshKey={availRefreshKey}
                   />
                 </div>
@@ -1452,7 +859,7 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
                           title={t('booking.noDateHeld')}
                           className={cn(
                             FOOTER_ACTION,
-                            !canQuote() && 'opacity-30',
+                            !contactValid && 'opacity-30',
                           )}
                         >
                           {saving
