@@ -254,20 +254,28 @@ const PageHeader = ({
       >
         <Button
           variant="header"
+          size="header"
           onClick={openMenu}
           aria-label="Open menu"
           // `lg:hidden` et non `md:hidden` : le burger doit couvrir toute la
           // plage où la bande ne peut pas afficher ses destinations, sinon
           // 768-1023px se retrouve sans burger *et* sans nav — c'était le cas.
-          className="h-full basis-14 flex-none px-0 lg:hidden"
+          //
+          // `w-14` et non `basis-14`, comme sur le bouton de langue :
+          // `flex-none` est le raccourci `flex: 0 0 auto`, qui remet
+          // `flex-basis` à `auto`. Une largeur, elle, y survit.
+          className="w-14 flex-none px-0 lg:hidden"
         >
           <Menu />
         </Button>
         <Button
           variant="header"
+          size="header"
           onClick={() => goto('home')}
           aria-label="E-Do Studio home"
-          className="h-full min-w-0 flex-1 p-2"
+          // `p-2` l'emporte sur le `px-5` de `size="header"` : la carte de
+          // conflits de tailwind-merge va de `p` vers `px`, pas l'inverse.
+          className="min-w-0 flex-1 p-2"
         >
           <Wordmark size={32} />
         </Button>
