@@ -213,7 +213,10 @@ const PageHeader = ({
           variant="header"
           onClick={onMenuClick}
           aria-label="Open menu"
-          className="h-full basis-14 flex-none px-0 md:hidden"
+          // `lg:hidden` et non `md:hidden` : le burger doit couvrir toute la
+          // plage où la bande ne peut pas afficher ses destinations, sinon
+          // 768-1023px se retrouve sans burger *et* sans nav — c'était le cas.
+          className="h-full basis-14 flex-none px-0 lg:hidden"
         >
           <Menu />
         </Button>
@@ -314,7 +317,13 @@ const buildMainNav = ({
       onClick: () => goto(it.screen),
       variant: it.primary ? 'primary' : 'default',
       showArrow: !!it.primary,
-      className: it.primary ? undefined : 'hidden md:flex',
+      // Les destinations attendent `lg`, mesure à l'appui : en français, la
+      // bande complète demande 976px (logo 240, espaceur 49, PLATEAUX 108,
+      // POST-PROD 117, GALERIE 100, NOUS CONTACTER 159, RÉSERVER 132, EN 72).
+      // À 768 il en manquait deux cents, et toutes les pages débordaient —
+      // jusqu'à 471px sur le tunnel de réservation. L'anglais est 84px moins
+      // cher : c'est le français qui contraint.
+      className: it.primary ? undefined : 'hidden lg:flex',
     }));
 };
 

@@ -37,13 +37,13 @@ export const DiscoveryHeader = ({
           id: 'gallery',
           label: t('common.gallery'),
           onClick: () => goto('gallery'),
-          className: 'hidden md:flex',
+          className: 'hidden lg:flex',
         },
         {
           id: 'plateaux',
           label: t('common.stages'),
           onClick: () => goto('plateau-live'),
-          className: 'hidden md:flex',
+          className: 'hidden lg:flex',
         },
         {
           id: 'contact',
