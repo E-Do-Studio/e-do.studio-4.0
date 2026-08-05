@@ -1,13 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Globe } from 'lucide-react';
 import logoFull from '../../brand/logo-full.webp';
-import logoMark from '../../brand/logo-mark.webp';
-import { useT } from '../i18n/use-t';
 
 interface WordmarkProps {
   size?: 32 | 40;
-  variant?: 'full' | 'mark';
 }
 
 const sizeMap: Record<number, string> = {
@@ -15,17 +10,15 @@ const sizeMap: Record<number, string> = {
   40: 'h-10',
 };
 
-// Intrinsic dimensions are required to reserve layout space and avoid CLS.
-const NATURAL: Record<'full' | 'mark', { width: number; height: number }> = {
-  full: { width: 600, height: 228 },
-  mark: { width: 240, height: 240 },
-};
+// Dimensions intrinsèques du fichier : elles réservent la place et évitent le
+// décalage de mise en page au chargement.
+const NATURAL = { width: 600, height: 228 };
 
-const Wordmark = ({ size = 40, variant = 'full' }: WordmarkProps) => {
-  const { width, height } = NATURAL[variant];
+const Wordmark = ({ size = 40 }: WordmarkProps) => {
+  const { width, height } = NATURAL;
   return (
     <img
-      src={variant === 'mark' ? logoMark : logoFull}
+      src={logoFull}
       alt="E-Do Studio"
       width={width}
       height={height}
@@ -34,39 +27,6 @@ const Wordmark = ({ size = 40, variant = 'full' }: WordmarkProps) => {
       style={{ aspectRatio: `${width} / ${height}` }}
       className={`${sizeMap[size] ?? 'h-10'} block w-auto max-w-full shrink-0 object-contain`}
     />
-  );
-};
-
-interface LangSwitchProps {
-  onToggle: () => void;
-}
-
-const LangSwitch = ({ onToggle }: LangSwitchProps) => {
-  const t = useT();
-  return (
-    <Button
-      variant="header"
-      onClick={onToggle}
-      className="h-full flex-col items-center justify-center gap-1 px-0"
-    >
-      <Globe width="14" height="14" />
-      <div className="flex items-center gap-0.5 font-mono text-xs font-medium text-muted-foreground">
-        <span>{t('common.langToggleLabel')}</span>
-        <svg
-          width="10"
-          height="10"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-        >
-          <path d="M5 12h14" />
-          <path d="m12 5 7 7-7 7" />
-        </svg>
-        <span>{t('common.langToggleLabel')}</span>
-      </div>
-    </Button>
   );
 };
 
@@ -141,5 +101,5 @@ const Clock = () => {
   );
 };
 
-export { Wordmark, LangSwitch, Clock };
-export type { WordmarkProps, LangSwitchProps };
+export { Wordmark, Clock };
+export type { WordmarkProps };
