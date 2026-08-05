@@ -68,7 +68,7 @@ const HomePage = () => {
   const t = useT();
   const { lang, goto, siteData } = usePageContext();
   const isDesktop = useIsDesktop();
-  const { machines, contact } = siteData;
+  const { machines } = siteData;
   const { announcement, homeHero } = useLoaderData({ from: '/$lang/' });
   const announcementText = announcement?.[lang]?.trim() ?? '';
   // SHOWREEL cell (small video tile): always video, as it was before EDO-176.
@@ -130,41 +130,11 @@ const HomePage = () => {
             variant: 'primary',
             className: 'md:hidden',
           },
-          ...(contact?.phone
-            ? [
-                {
-                  id: 'phone',
-                  label: contact.phone.replace(/^\+33\s?/, '0'),
-                  href:
-                    contact.phoneHref ||
-                    `tel:${contact.phone.replace(/\s/g, '')}`,
-                  showArrow: false,
-                  className: 'hidden sm:flex',
-                },
-              ]
-            : []),
           {
             id: 'contact',
             label: t('common.contactUs'),
             onClick: () => goto('contact'),
-            className: 'hidden md:flex',
-          },
-          {
-            id: 'legal',
-            label: 'Legal',
-            onClick: () => goto('legal'),
-            showArrow: false,
-            className: 'hidden md:flex',
-          },
-          {
-            id: 'etouch',
-            label: 'Etouch',
-            href: 'https://etouch.e-do.studio',
-            target: '_blank',
-            rel: 'noopener noreferrer',
-            variant: 'dark',
-            showArrow: false,
-            className: 'hidden sm:flex',
+            className: 'hidden lg:flex',
           },
         ]}
       />
