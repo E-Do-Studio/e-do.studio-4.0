@@ -250,7 +250,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
 
   return (
     /* Mobile: single-column stacked, scrollable. Desktop (md+): 4-column bento */
-    <main className="animate-in fade-in duration-300 grid w-full gap-px bg-border md:h-full md:grid-cols-[var(--spacing-logo)_repeat(3,minmax(0,1fr))] md:grid-rows-[var(--spacing-header)_78px_minmax(0,1.58fr)_minmax(0,0.5fr)_minmax(0,0.52fr)] md:overflow-hidden">
+    <main className="grid w-full gap-px bg-border md:h-full md:grid-cols-[var(--spacing-logo)_repeat(3,minmax(0,1fr))] md:grid-rows-[var(--spacing-header)_78px_minmax(0,1.58fr)_minmax(0,0.5fr)_minmax(0,0.52fr)] md:overflow-hidden">
       {/* Unified header — compact right-aligned actions on all breakpoints */}
       <PageHeader className="col-span-full md:row-start-1" />
 
@@ -353,13 +353,13 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
               onClick={() =>
                 goto(m === 'cyclorama' ? 'cyclorama' : 'plateau-' + m)
               }
-              variant="cell"
+              variant="rail"
               size="cell"
               aria-pressed={active}
               // La colonne est `hidden md:flex` : une classe sans préfixe
               // `md:` ne vaudrait qu'en dessous du palier, où l'élément
               // n'existe pas. Seul l'état `md:` a donc un sens ici.
-              className="group flex-none gap-1 border-b border-l-2 border-b-border border-l-transparent px-4 py-3.5 hover:bg-muted aria-pressed:border-l-primary aria-pressed:bg-muted"
+              className="group flex-none gap-1 border-b border-b-border px-4 py-3.5"
             >
               <span className="font-mono text-xs tracking-widest text-muted-foreground group-aria-pressed:text-primary">
                 {String(i + 1).padStart(2, '0')}

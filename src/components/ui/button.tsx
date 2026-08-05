@@ -39,6 +39,20 @@ const buttonVariants = cva(
         // (`text-muted-foreground` devient le gris clair adéquat). `aria-pressed`
         // porte la sémantique.
         cell: "bg-background text-foreground hover:bg-muted",
+        // Cellule d'un rail de sélection : la colonne verticale qui commande le
+        // panneau voisin — plateaux, catégories post-prod, sections légales,
+        // filtres de galerie, étapes du tunnel. Le liseré appartient à la
+        // cellule, pas aux cinq sites d'appel qui le redisaient chacun, en deux
+        // mécanismes et deux épaisseurs.
+        //
+        // `border-l-transparent` n'est pas décoratif : sans couleur explicite,
+        // la bordure prend celle de `@layer base { * { @apply border-border } }`,
+        // c'est-à-dire du noir.
+        //
+        // Pas dans `cell` : elle compte trente appels dont vingt-cinq ne sont
+        // pas des rails — tuiles bento, liens sociaux, barre du lightbox,
+        // cartes d'article. Un liseré les décalerait tous de 2px.
+        rail: "border-l-2 border-l-transparent bg-background text-foreground hover:bg-muted aria-pressed:border-l-primary aria-pressed:bg-muted",
         // `aria-current=page` marque la destination où l'on se trouve déjà.
         // Une couleur, et rien d'autre : ni gras, ni bordure, ni soulignement,
         // qui changeraient la largeur de la cellule — la bande d'en-tête n'a

@@ -185,7 +185,7 @@ const LegalPage = () => {
   ).length;
 
   return (
-    <main className="animate-in fade-in duration-300 grid w-full gap-px bg-border md:grid-cols-[var(--spacing-logo)_repeat(3,minmax(0,1fr))] md:grid-rows-[var(--spacing-header)_minmax(0,1fr)] md:h-full md:overflow-hidden">
+    <main className="grid w-full gap-px bg-border md:grid-cols-[var(--spacing-logo)_repeat(3,minmax(0,1fr))] md:grid-rows-[var(--spacing-header)_minmax(0,1fr)] md:h-full md:overflow-hidden">
       {/* Unified header — compact right-aligned actions on all breakpoints */}
       <PageHeader className="col-span-full md:row-start-1" />
 
@@ -280,10 +280,10 @@ const LegalPage = () => {
             <Button
               key={s.k}
               onClick={() => setSec(s.k)}
-              variant="cell"
+              variant="rail"
               size="cell"
               aria-pressed={isActive}
-              className="group flex-none gap-0.5 border-l-2 border-l-transparent bg-transparent px-4 py-3 aria-pressed:border-l-primary aria-pressed:bg-muted"
+              className="group flex-none gap-0.5 px-4 py-3"
             >
               <span className="font-mono text-xs tracking-widest text-muted-foreground">
                 0{i + 1}

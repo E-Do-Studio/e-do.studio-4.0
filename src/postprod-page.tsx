@@ -352,7 +352,7 @@ const PostprodPage = () => {
 
   return (
     /* Mobile: single-column scrollable. Desktop (md+): sidebar + workspace */
-    <main className="animate-in fade-in duration-300 grid w-full grid-cols-[minmax(0,1fr)] gap-px bg-border md:h-full md:grid-cols-[var(--spacing-logo)_repeat(3,minmax(0,1fr))] md:grid-rows-[var(--spacing-header)_minmax(0,1fr)] md:overflow-hidden">
+    <main className="grid w-full grid-cols-[minmax(0,1fr)] gap-px bg-border md:h-full md:grid-cols-[var(--spacing-logo)_repeat(3,minmax(0,1fr))] md:grid-rows-[var(--spacing-header)_minmax(0,1fr)] md:overflow-hidden">
       {/* Single, stable page h1 — data-independent so it's present at every
  breakpoint and before Strapi resolves. The selected category is an h2. */}
       <h1 className="sr-only">{postprodLabel}</h1>
@@ -467,13 +467,10 @@ const PostprodPage = () => {
             <Button
               key={c.k}
               onClick={() => setType(c.k)}
-              variant="cell"
+              variant="rail"
               size="cell"
               aria-pressed={active}
-              // `border-l-transparent` est nécessaire : sans couleur explicite,
-              // la bordure prend celle de `@layer base { * { border-border } }`,
-              // c'est-à-dire du noir.
-              className="group min-h-18 flex-none gap-1 border-b border-l-2 border-b-border border-l-transparent px-4 py-3 aria-pressed:border-l-primary aria-pressed:bg-muted"
+              className="group min-h-18 flex-none gap-1 border-b border-b-border px-4 py-3"
             >
               <span className="font-mono text-xs tracking-widest text-muted-foreground group-aria-pressed:text-primary">
                 {String(idx + 1).padStart(2, '0')}
