@@ -937,30 +937,29 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
               onClick={() => {
                 if (clickable) goToStep(s.n);
               }}
-              variant="cell"
+              variant="rail"
               aria-pressed={active}
               aria-disabled={!clickable}
               // Le conteneur est `hidden md:flex` : toute classe sans préfixe
               // `md:` ne s'appliquerait qu'en dessous du palier, où l'élément
               // n'existe pas. Le filet entre étapes est porté par tous et
               // retiré au dernier, plutôt que calculé depuis l'index.
-              className={cn(
-                'h-11 flex-none justify-start gap-3.5 border-b border-l-4 border-b-border px-6 text-left',
-                'last:border-b-0',
-                active
-                  ? 'border-l-primary bg-muted'
-                  : 'border-l-transparent bg-transparent',
-                !clickable && 'cursor-not-allowed opacity-35',
-              )}
+              // `aria-disabled` est déjà posé : les classes de l'état
+              // inaccessible le lisent plutôt que de le recalculer en JS.
+              className="group h-11 flex-none justify-start gap-3.5 border-b border-b-border px-6 text-left last:border-b-0 aria-disabled:cursor-not-allowed aria-disabled:opacity-35"
             >
               <span
-                className={`font-mono text-xs tracking-widest ${active ? 'text-primary' : done ? 'text-foreground' : 'text-muted-foreground'} min-w-5.5`}
+                className={cn(
+                  'min-w-5.5 font-mono text-xs tracking-widest group-aria-pressed:text-primary',
+                  // « Franchie » reste un ternaire : c'est de l'arithmétique
+                  // d'index, sans sémantique ARIA à porter. Le liseré et
+                  // l'étape courante, eux, viennent de `aria-pressed`.
+                  done ? 'text-foreground' : 'text-muted-foreground',
+                )}
               >
                 {done ? '✓' : String(i + 1).padStart(2, '0')}
               </span>
-              <span
-                className={`text-sm ${active ? 'font-medium' : 'font-normal'} tracking-tight text-foreground`}
-              >
+              <span className="text-sm tracking-tight text-foreground group-aria-pressed:font-medium">
                 {s.label}
               </span>
             </Button>
