@@ -214,6 +214,24 @@
   --color-chart-1: var(--chart-1);
 }
 
+/* La bande d'en-tête et la colonne du logo sont une seule mesure, pas onze.
+   Chaque page redéclarait la sienne : 52px ici, 54px là, 56px en mobile, et
+   les strips collants supposaient 56 des trois côtés à la fois.
+
+   `--spacing-*` sert les deux syntaxes dont on a besoin : les utilitaires
+   nommés (`h-header`, `top-header`, `basis-logo`) et la valeur arbitraire des
+   gabarits de grille (`grid-rows-[var(--spacing-header)_minmax(0,1fr)]`), qui
+   est la seule façon pour une page de partager la mesure du composant.
+
+   Bloc séparé, et surtout pas `@theme inline` : celui-ci émettrait
+   `height: 3.5rem` au lieu de `height: var(--spacing-header)`, ce qui coupe le
+   lien à l'exécution — le header et les grilles se désynchroniseraient au
+   premier override de la variable. */
+@theme {
+  --spacing-header: 3.5rem; /* 56px */
+  --spacing-logo: 15rem; /* 240px */
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

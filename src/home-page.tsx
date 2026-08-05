@@ -103,7 +103,7 @@ const HomePage = () => {
 
   return (
     /* Mobile: 2-col grid, vertical scroll. Desktop (md+): 12-col bento, fixed viewport */
-    <main className="animate-in fade-in duration-300 grid w-full grid-cols-2 gap-px bg-border md:h-full md:grid-cols-12 md:grid-rows-[54px_44px_84px_1.1fr_1.25fr_84px] md:overflow-hidden">
+    <main className="animate-in fade-in duration-300 grid w-full grid-cols-2 gap-px bg-border md:h-full md:grid-cols-12 md:grid-rows-[var(--spacing-header)_44px_84px_1.1fr_1.25fr_84px] md:overflow-hidden">
       <h1 className="sr-only">E-Do Studio — {t('home.srTitle')}</h1>
 
       {/* ── Row 1: Header ── */}
@@ -121,7 +121,7 @@ const HomePage = () => {
             </span>
           ) : undefined
         }
-        className="col-span-2 h-14 md:col-start-1 md:col-span-12 md:row-start-1 md:h-full"
+        className="col-span-2 md:col-start-1 md:col-span-12 md:row-start-1"
         subgrid={false}
         onMenuClick={openMenu}
         onLogoClick={() => goto('home')}

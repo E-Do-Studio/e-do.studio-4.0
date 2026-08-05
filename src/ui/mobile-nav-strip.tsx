@@ -43,7 +43,7 @@ interface MobileNavStripProps {
   countFor?: (draft: Record<string, string>) => number;
   /** Commit URL state at sheet close / apply. If absent, onSelect is fired live. */
   onApply?: (draft: Record<string, string>) => void;
-  /** Optional anchor offset — defaults to top-14 to sit under the header. */
+  /** Optional anchor offset — defaults to top-header to sit under the header. */
   className?: string;
 }
 
@@ -135,7 +135,7 @@ const MobileNavStrip = ({
     <>
       <div
         className={cn(
-          'sticky top-14 z-30 flex h-14 items-stretch border-b border-border bg-background md:hidden',
+          'sticky top-header z-30 flex h-14 items-stretch border-b border-border bg-background md:hidden',
           className,
         )}
         role="toolbar"

@@ -91,12 +91,12 @@ const ConfirmedView = ({
     'h-11 gap-2 px-6 text-xs tracking-widest hover:scale-105';
 
   return (
-    <div className="grid w-full gap-px bg-border md:h-full md:grid-cols-[240px_minmax(0,1fr)] md:grid-rows-[54px_minmax(0,1fr)] md:overflow-hidden">
+    <div className="grid w-full gap-px bg-border md:h-full md:grid-cols-[var(--spacing-logo)_minmax(0,1fr)] md:grid-rows-[var(--spacing-header)_minmax(0,1fr)] md:overflow-hidden">
       <PageHeader
         lang={lang}
         title={t('booking.title')}
         subtitle={copy.tag}
-        className="col-span-full h-14 md:col-start-1 md:col-span-2 md:row-start-1 md:h-full"
+        className="col-span-full md:col-start-1 md:col-span-2 md:row-start-1"
         subgrid={false}
         onMenuClick={onMenuClick}
         onLogoClick={onLogoClick}
@@ -307,11 +307,11 @@ const BookConfirmation = () => {
 
   if (!snapshot) {
     return (
-      <div className="animate-in fade-in duration-300 grid w-full gap-px bg-border md:h-full md:grid-rows-[54px_minmax(0,1fr)]">
+      <div className="animate-in fade-in duration-300 grid w-full gap-px bg-border md:h-full md:grid-rows-[var(--spacing-header)_minmax(0,1fr)]">
         <PageHeader
           lang={lang}
           title={t('booking.title')}
-          className="col-span-full h-14 md:row-start-1 md:h-full"
+          className="col-span-full md:row-start-1"
           subgrid={false}
           onMenuClick={openMenu}
           onLogoClick={() => goto('home')}

@@ -669,13 +669,13 @@ const GalleryPageV3 = () => {
   };
 
   return (
-    <main className="animate-in fade-in duration-300 grid w-full gap-px bg-border md:h-full md:grid-cols-[240px_80px_repeat(3,minmax(0,1fr))] md:grid-rows-[52px_minmax(0,1fr)] md:overflow-hidden">
+    <main className="animate-in fade-in duration-300 grid w-full gap-px bg-border md:h-full md:grid-cols-[var(--spacing-logo)_80px_repeat(3,minmax(0,1fr))] md:grid-rows-[var(--spacing-header)_minmax(0,1fr)] md:overflow-hidden">
       <h1 className="sr-only">{t('common.gallery')} — E-Do Studio Paris</h1>
 
       <PageHeader
         lang={lang}
         title={t('common.gallery')}
-        className="col-span-full h-14 md:col-span-full md:row-start-1 md:h-full"
+        className="col-span-full md:row-start-1"
         titleClassName="lg:col-start-2 lg:col-span-2"
         rightBlockClassName="lg:col-start-4 lg:col-span-2"
         onMenuClick={openMenu}
@@ -684,7 +684,7 @@ const GalleryPageV3 = () => {
         actions={buildMainNav({ lang, goto, exclude: 'gallery' })}
       />
 
-      <div className="grid grid-cols-1 gap-px bg-border md:col-span-full md:row-start-2 md:min-h-0 md:overflow-hidden md:grid-cols-[240px_80px_repeat(3,minmax(0,1fr))]">
+      <div className="grid grid-cols-1 gap-px bg-border md:col-span-full md:row-start-2 md:min-h-0 md:overflow-hidden md:grid-cols-[var(--spacing-logo)_80px_repeat(3,minmax(0,1fr))]">
         <MobileNavStrip
           triggerLabel={t('mobileNav.filters').toUpperCase()}
           groups={mobileGroups}

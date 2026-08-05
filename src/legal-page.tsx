@@ -185,12 +185,12 @@ const LegalPage = () => {
   ).length;
 
   return (
-    <main className="animate-in fade-in duration-300 grid w-full gap-px bg-border md:grid-cols-[240px_repeat(3,minmax(0,1fr))] md:grid-rows-[54px_minmax(0,1fr)] md:h-full md:overflow-hidden">
+    <main className="animate-in fade-in duration-300 grid w-full gap-px bg-border md:grid-cols-[var(--spacing-logo)_repeat(3,minmax(0,1fr))] md:grid-rows-[var(--spacing-header)_minmax(0,1fr)] md:h-full md:overflow-hidden">
       {/* Unified header — compact right-aligned actions on all breakpoints */}
       <PageHeader
         lang={lang}
         title={t('common.legal')}
-        className="col-span-full h-14 md:col-span-full md:row-start-1 md:h-full"
+        className="col-span-full md:row-start-1"
         onMenuClick={openMenu}
         onLogoClick={() => goto('home')}
         onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
@@ -207,7 +207,7 @@ const LegalPage = () => {
           aria-haspopup="dialog"
           aria-expanded={navSheetOpen}
           aria-controls="legal-nav-sheet"
-          className="sticky top-14 z-30 md:hidden flex gap-4 min-h-14 w-full px-4 py-3 bg-background border-b border-border text-left"
+          className="sticky top-header z-30 md:hidden flex gap-4 min-h-14 w-full px-4 py-3 bg-background border-b border-border text-left"
         >
           <span className="font-mono text-xs tracking-widest text-muted-foreground">
             {currentNumber}

@@ -191,7 +191,9 @@ const PageHeader = ({
   return (
     <header
       className={cn(
-        'sticky top-0 z-40 flex min-w-0 bg-background',
+        // La hauteur de bande appartient au composant, pas aux appels : elle
+        // était redéclarée par chacun d'eux, en trois valeurs différentes.
+        'sticky top-0 z-40 flex h-header min-w-0 bg-background',
         CELL_DIVIDERS,
         subgrid && 'lg:grid lg:grid-cols-subgrid',
         className,
@@ -199,7 +201,11 @@ const PageHeader = ({
     >
       <div
         className={cn(
-          'flex h-full flex-none basis-44 md:basis-60 lg:col-start-1',
+          // `basis-44` en mobile et non `basis-logo` : à 375px, 240 ne
+          // laisserait que 79px à la cellule Réserver, qui en demande 132.
+          // L'alignement sur la première colonne des pages n'a besoin de tenir
+          // qu'à partir de `md`, là où ces grilles existent.
+          'flex h-full flex-none basis-44 md:basis-logo lg:col-start-1',
           CELL_DIVIDERS,
         )}
       >

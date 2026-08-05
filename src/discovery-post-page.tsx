@@ -91,7 +91,7 @@ export const DiscoveryPostPage = () => {
 
   return (
     <>
-      <main className="animate-in fade-in duration-300 grid w-full grid-rows-[52px_minmax(0,1fr)] md:h-full gap-px bg-border overflow-hidden">
+      <main className="animate-in fade-in duration-300 grid w-full grid-rows-[var(--spacing-header)_minmax(0,1fr)] md:h-full gap-px bg-border overflow-hidden">
         <div className="row-start-1 flex gap-px bg-border">
           <Button
             onClick={backToIndex}

@@ -352,7 +352,7 @@ const PostprodPage = () => {
 
   return (
     /* Mobile: single-column scrollable. Desktop (md+): sidebar + workspace */
-    <main className="animate-in fade-in duration-300 grid w-full grid-cols-[minmax(0,1fr)] gap-px bg-border md:h-full md:grid-cols-[240px_repeat(3,minmax(0,1fr))] md:grid-rows-[54px_minmax(0,1fr)] md:overflow-hidden">
+    <main className="animate-in fade-in duration-300 grid w-full grid-cols-[minmax(0,1fr)] gap-px bg-border md:h-full md:grid-cols-[var(--spacing-logo)_repeat(3,minmax(0,1fr))] md:grid-rows-[var(--spacing-header)_minmax(0,1fr)] md:overflow-hidden">
       {/* Single, stable page h1 — data-independent so it's present at every
  breakpoint and before Strapi resolves. The selected category is an h2. */}
       <h1 className="sr-only">{postprodLabel}</h1>
@@ -360,7 +360,7 @@ const PostprodPage = () => {
       <PageHeader
         lang={lang}
         title={postprodLabel}
-        className="col-span-full h-14 md:col-span-full md:row-start-1 md:h-full"
+        className="col-span-full md:row-start-1"
         onMenuClick={openMenu}
         onLogoClick={() => goto('home')}
         onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
@@ -378,7 +378,7 @@ const PostprodPage = () => {
         aria-haspopup="dialog"
         aria-expanded={navSheetOpen}
         aria-controls="postprod-nav-sheet"
-        className="col-span-full sticky top-14 z-30 md:hidden flex gap-4 min-h-14 w-full px-4 py-2.5 bg-background  border-b border-border text-left"
+        className="col-span-full sticky top-header z-30 md:hidden flex gap-4 min-h-14 w-full px-4 py-2.5 bg-background  border-b border-border text-left"
       >
         <span className="font-mono text-xs tracking-widest text-muted-foreground">
           {currentNumber}

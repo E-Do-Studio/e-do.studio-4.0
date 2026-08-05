@@ -872,14 +872,14 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
   );
 
   return (
-    <div className="animate-in fade-in duration-300 grid w-full gap-px bg-border md:h-full md:overflow-hidden md:grid-cols-[240px_minmax(0,1fr)_minmax(0,1fr)_300px] md:grid-rows-[54px_minmax(0,1fr)]">
+    <div className="animate-in fade-in duration-300 grid w-full gap-px bg-border md:h-full md:overflow-hidden md:grid-cols-[var(--spacing-logo)_minmax(0,1fr)_minmax(0,1fr)_300px] md:grid-rows-[var(--spacing-header)_minmax(0,1fr)]">
       {/* Unified header spans cols 1-3 — col 4 hosts the dark"Your Quote"
  label aligned with the quote panel below. Within the header subgrid
  (cols 1-3), the title sits in col 2 and the right block in col 3. */}
       <PageHeader
         lang={lang}
         title={t('booking.title')}
-        className="col-span-full h-14 md:col-start-1 md:col-end-4 md:row-start-1 md:h-full"
+        className="col-span-full md:col-start-1 md:col-end-4 md:row-start-1"
         titleClassName="lg:col-start-2 lg:col-span-1"
         rightBlockClassName="lg:col-start-3"
         onMenuClick={openMenu}
