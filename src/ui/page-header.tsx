@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useRouterState } from '@tanstack/react-router';
+import { useNavigate, useRouterState } from '@tanstack/react-router';
 import { type MainNavItem, MAIN_NAV, activeNavId } from '../lib/nav';
 import { usePageContext } from '../lib/page-context';
+import { SCREEN_TO_PATH } from '../lib/screens';
 import { Wordmark } from './brand';
 import { HoverMarquee } from './hover-marquee';
 import { ArrowRight, Menu } from 'lucide-react';
@@ -61,12 +62,26 @@ const ActiveDot = () => (
 
 const NavCell = ({ item, active }: { item: MainNavItem; active: boolean }) => {
   const t = useT();
-  const { goto } = usePageContext();
+  const navigate = useNavigate();
+  const { lang } = usePageContext();
+  const href = SCREEN_TO_PATH[item.screen](lang);
   return (
     <Button
       variant={item.primary ? 'default' : 'header'}
       size="header"
-      onClick={() => goto(item.screen)}
+      // Un vrai lien, sur le motif du tiroir : ces cellules étaient des
+      // `<button>`, donc les moteurs ne voyaient aucun lien interne depuis
+      // l'en-tête de toutes les pages du site, et le clic-molette, le
+      // Cmd-clic et « copier l'adresse du lien » ne faisaient rien.
+      render={
+        <a
+          href={href}
+          onClick={(e) => {
+            e.preventDefault();
+            navigate({ to: href });
+          }}
+        />
+      }
       // `aria-current` et non `aria-pressed` : ces cellules sont des
       // destinations, pas des bascules — et `aria-pressed` deviendrait
       // franchement invalide le jour où elles seront de vrais liens.
@@ -131,6 +146,7 @@ const PageHeader = ({
   // Ouvrir le tiroir, rentrer à l'accueil, basculer la langue : les onze
   // appelants construisaient ces trois rappels à l'identique et les passaient en
   // props. Ils sont dans le contexte, et le header est rendu dedans partout.
+  const t = useT();
   const { lang, setLang, openMenu, goto } = usePageContext();
   const onLangToggle = () => setLang(lang === 'fr' ? 'en' : 'fr');
   const active = useActiveNavId();
@@ -174,9 +190,24 @@ const PageHeader = ({
   // la coupe était passé à la main — oublié sur les mentions légales et dans
   // tout le tunnel de réservation, qui affichaient cinq cellules quand les
   // autres en affichaient quatre.
-  const nav = MAIN_NAV.map((item) => (
-    <NavCell key={item.id} item={item} active={item.id === active} />
-  ));
+  // Un repère de navigation, et non cinq liens en vrac dans la bannière :
+  // `aria-current` ne dit « vous êtes ici » que rapporté à un ensemble de
+  // destinations, encore faut-il que l'ensemble soit déclaré. Son libellé le
+  // distingue du tiroir, qui est un second repère sur la même page.
+  //
+  // Ce conteneur est une portée de filets de plus, mais à nombre d'enfants
+  // fixe : le dernier est toujours Réserver, et le filet tombe donc toujours
+  // au même endroit. C'est la portée *variable* que ce refacto a supprimée.
+  const nav = (
+    <nav
+      aria-label={t('common.mainNav')}
+      className={cn('flex min-w-0 flex-1 md:flex-initial', CELL_DIVIDERS)}
+    >
+      {MAIN_NAV.map((item) => (
+        <NavCell key={item.id} item={item} active={item.id === active} />
+      ))}
+    </nav>
+  );
 
   return (
     // Une bande de cellules, à plat, sur toutes les pages et à toutes les
