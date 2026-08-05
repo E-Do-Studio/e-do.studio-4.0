@@ -273,7 +273,13 @@
     "yes": "Yes",
     "yesVideo": "Yes + video",
     "youreBooked": "You're booked.",
-    "yourQuote": "Your quote"
+    "yourQuote": "Your quote",
+    "hoursCount_one": "{{count}} hour",
+    "hoursCount_many": "{{count}} hours",
+    "hoursCount_other": "{{count}} hours",
+    "totalExVat": "Total excl. VAT",
+    "vatLine": "VAT 20% · {{amount}} € incl.",
+    "bookingForm": "Booking form"
   },
   "bookPicker": {
     "configuratorDesc": "Build your quote in a few clicks",

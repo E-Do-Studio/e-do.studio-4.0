@@ -273,7 +273,13 @@
     "yes": "Oui",
     "yesVideo": "Oui + vidéo",
     "youreBooked": "C'est réservé.",
-    "yourQuote": "Votre devis"
+    "yourQuote": "Votre devis",
+    "hoursCount_one": "{{count}} heure",
+    "hoursCount_many": "{{count}} heures",
+    "hoursCount_other": "{{count}} heures",
+    "totalExVat": "Total HT",
+    "vatLine": "TVA 20% · {{amount}} € TTC",
+    "bookingForm": "Formulaire de réservation"
   },
   "bookPicker": {
     "configuratorDesc": "Configurez votre devis en quelques clics",
