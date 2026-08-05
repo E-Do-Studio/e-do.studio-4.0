@@ -48,6 +48,19 @@ type LocalizedKey = keyof typeof LOCALIZED;
 /** Chemin complet, préfixe de langue compris. */
 const at = (key: LocalizedKey, lang: Lang) => `/${lang}${LOCALIZED[key][lang]}`;
 
+/**
+ * Les deux slugs d'un chemin traduit, sans préfixe de langue.
+ *
+ * Les routes répondent sous les deux dans les deux langues — `/fr/galerie`,
+ * `/fr/gallery`, `/en/galerie` et `/en/gallery` montent tous la même page (cf.
+ * routes/$lang/galerie.tsx et gallery.tsx). Qui reconnaît une page à partir de
+ * `SCREEN_TO_PATH[screen](lang)`, qui n'en rend qu'un, en rate donc la moitié.
+ */
+export const bothSlugs = (key: LocalizedKey): string[] => [
+  LOCALIZED[key].fr,
+  LOCALIZED[key].en,
+];
+
 // Le plus long d'abord : `/reserver/configurateur/plateau` doit l'emporter sur
 // `/reserver` lors de la recherche de préfixe.
 const BY_LENGTH = Object.values(LOCALIZED).sort(
