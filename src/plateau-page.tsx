@@ -313,13 +313,14 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
                   <Button
                     type="button"
                     onClick={() => navigateToPlateau(m)}
+                    variant="cell"
                     aria-current={active ? 'page' : undefined}
                     // L'état actif inverse la cellule : c'est exactement ce
                     // que fait le scope `dark`. Les enfants n'ont donc plus
                     // besoin de connaître l'état — leurs tokens basculent
                     // d'eux-mêmes.
                     className={cn(
-                      'min-h-14 w-full gap-4 border-b border-border bg-background px-4 py-3 text-left text-foreground',
+                      'min-h-14 w-full gap-4 border-b border-border px-4 py-3 text-left',
                       active && 'dark',
                     )}
                   >

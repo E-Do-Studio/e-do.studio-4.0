@@ -410,36 +410,25 @@ const PostprodPage = () => {
                   <Button
                     type="button"
                     onClick={() => navigateToType(c.k)}
+                    variant="cell"
                     aria-current={active ? 'page' : undefined}
+                    // L'état courant inverse la cellule : c'est exactement ce
+                    // que fait la portée `dark`. Les enfants n'ont donc plus
+                    // besoin de connaître l'état — leurs tokens basculent
+                    // d'eux-mêmes.
                     className={cn(
-                      'w-full flex gap-4 min-h-14 px-4 py-3',
-                      'border-b border-border text-left',
-                      'transition-colors duration-150 ease-out',
-                      active
-                        ? 'bg-foreground text-background'
-                        : 'bg-background text-foreground',
+                      'min-h-14 w-full gap-4 border-b border-border px-4 py-3 text-left',
+                      active && 'dark',
                     )}
                   >
-                    <span
-                      className={cn(
-                        'font-mono text-xs tracking-widest',
-                        active ? 'text-background/70' : 'text-muted-foreground',
-                      )}
-                    >
+                    <span className="font-mono text-xs tracking-widest text-muted-foreground">
                       {num}
                     </span>
                     <span className="flex-1 min-w-0 flex flex-col gap-0.5">
                       <HoverMarquee className="text-base tracking-tight font-medium">
                         {c[lang]}
                       </HoverMarquee>
-                      <HoverMarquee
-                        className={cn(
-                          'font-mono text-xs uppercase tracking-widest',
-                          active
-                            ? 'text-background/70'
-                            : 'text-muted-foreground',
-                        )}
-                      >
+                      <HoverMarquee className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
                         {c.tagline[lang]}
                       </HoverMarquee>
                     </span>

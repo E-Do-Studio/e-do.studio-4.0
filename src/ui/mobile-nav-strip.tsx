@@ -214,11 +214,17 @@ const MobileNavStrip = ({
                     return (
                       <label
                         key={option.k}
+                        // L'état courant inverse la cellule : c'est exactement
+                        // ce que fait la portée `dark`, et elle vaut sur un
+                        // `<label>` comme sur un bouton — c'est la classe qui
+                        // redéfinit les tokens, pas le préfixe `dark:`.
+                        //
+                        // `dimmed` survit en ternaire : il encode la
+                        // disponibilité, pas la sélection. Aucun token ne
+                        // l'exprime.
                         className={cn(
-                          'outline-none focus-visible:ring-3 focus-visible:ring-ring/50 relative flex min-h-11 cursor-pointer select-none items-center gap-3 border-t border-border px-4 py-3 transition-colors duration-150 ease-out',
-                          isActive
-                            ? 'bg-foreground text-background'
-                            : 'bg-background text-foreground hover:bg-muted',
+                          'relative flex min-h-11 cursor-pointer select-none items-center gap-3 border-t border-border bg-background px-4 py-3 text-foreground outline-none transition-colors duration-150 ease-out hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50',
+                          isActive && 'dark',
                           dimmed && !isActive && 'opacity-40',
                         )}
                       >
@@ -232,12 +238,11 @@ const MobileNavStrip = ({
                         />
                         <span
                           aria-hidden
-                          className={cn(
-                            'grid size-4 shrink-0 place-items-center border',
-                            isActive
-                              ? 'border-background bg-background'
-                              : 'border-border bg-background',
-                          )}
+                          // `border-foreground` et non `border-border` : en
+                          // portée sombre ce dernier vaut du blanc à 10%,
+                          // c'est-à-dire invisible. Le marqueur s'inverse donc
+                          // avec sa ligne, comme un radio sélectionné normal.
+                          className="grid size-4 shrink-0 place-items-center border border-foreground bg-background"
                         >
                           {isActive ? (
                             <span className="block size-1.5 bg-foreground" />
@@ -247,14 +252,7 @@ const MobileNavStrip = ({
                           {option.label}
                         </span>
                         {typeof option.count === 'number' ? (
-                          <span
-                            className={cn(
-                              'shrink-0 font-mono text-xs uppercase tracking-widest',
-                              isActive
-                                ? 'text-background'
-                                : 'text-muted-foreground',
-                            )}
-                          >
+                          <span className="shrink-0 font-mono text-xs uppercase tracking-widest text-muted-foreground">
                             {option.count}
                           </span>
                         ) : null}

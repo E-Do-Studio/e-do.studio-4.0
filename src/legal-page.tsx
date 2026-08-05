@@ -235,24 +235,18 @@ const LegalPage = () => {
                   <Button
                     type="button"
                     onClick={() => navigateToSection(s.k)}
+                    variant="cell"
                     aria-current={isActive ? 'page' : undefined}
+                    // L'état courant inverse la cellule : c'est exactement ce
+                    // que fait la portée `dark`. Les enfants n'ont donc plus
+                    // besoin de connaître l'état — leurs tokens basculent
+                    // d'eux-mêmes.
                     className={cn(
-                      'w-full flex gap-4 min-h-14 px-4 py-3',
-                      'border-b border-border text-left',
-                      'transition-colors duration-150 ease-out',
-                      isActive
-                        ? 'bg-foreground text-background'
-                        : 'bg-background text-foreground',
+                      'min-h-14 w-full gap-4 border-b border-border px-4 py-3 text-left',
+                      isActive && 'dark',
                     )}
                   >
-                    <span
-                      className={cn(
-                        'font-mono text-xs tracking-widest',
-                        isActive
-                          ? 'text-background/70'
-                          : 'text-muted-foreground',
-                      )}
-                    >
+                    <span className="font-mono text-xs tracking-widest text-muted-foreground">
                       {num}
                     </span>
                     <HoverMarquee className="text-base tracking-tight font-medium">
