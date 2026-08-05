@@ -60,14 +60,19 @@ const PageHeaderActionButton = ({
   const isPrimary = variant === 'primary';
   const isDark = variant === 'dark';
   const actionClassName = cn(
-    // Le filet entre deux actions vient du conteneur, jamais du bouton.
-    'h-full gap-2 no-underline',
+    // Aucune géométrie ici : `size="header"` porte la hauteur, l'écart et le
+    // padding, et la base du Button porte `font-mono text-xs uppercase
+    // tracking-widest`. Le filet entre deux actions vient du conteneur.
+    //
+    // Ce qui était écrit à la main donnait trois interlettrages côte à côte
+    // dans la même bande — `tracking-wide` sur la cellule orange,
+    // `tracking-wider` sur les destinations, `tracking-widest` sur la langue —
+    // et trois paddings pour un seul rôle. Il n'en reste qu'un de chaque.
+    'no-underline',
     expand ? 'flex-1' : 'flex-none',
-    isPrimary
-      ? 'px-4 text-xs tracking-wide md:px-6'
-      : isDark
-        ? 'dark bg-background px-4 text-xs tracking-widest hover:text-primary md:px-5'
-        : 'px-4 text-xs tracking-wider md:px-5',
+    // La variante sombre n'inverse que des couleurs : l'appelant pose `dark` et
+    // les tokens s'occupent du reste.
+    isDark && 'dark bg-background hover:text-primary',
     className,
   );
   const actionVariant = isPrimary ? 'default' : 'header';
@@ -87,6 +92,7 @@ const PageHeaderActionButton = ({
     return (
       <Button
         variant={actionVariant}
+        size="header"
         render={<a href={href} target={target} rel={rel} />}
         className={actionClassName}
       >
@@ -98,6 +104,7 @@ const PageHeaderActionButton = ({
   return (
     <Button
       variant={actionVariant}
+      size="header"
       onClick={onClick}
       className={actionClassName}
     >
@@ -131,16 +138,18 @@ const LangButton = ({
   return (
     <Button
       variant="header"
+      size="header"
       onClick={onLangToggle}
       // `w-*` et non `basis-*` : `flex-none` est le raccourci `flex: 0 0 auto`,
       // qui remet `flex-basis` à `auto`. La base ne tenait que parce que
       // Tailwind émet `basis-14` après `flex-none` — un ordre sur lequel on ne
       // veut pas parier. Une largeur, elle, n'est pas touchée par le raccourci.
-      className={cn('h-full w-14 flex-none px-0 md:w-18', className)}
+      className={cn('w-14 flex-none px-0 md:w-18', className)}
     >
-      <span className="font-mono text-xs tracking-widest text-foreground">
-        {t('common.langToggleLabel')}
-      </span>
+      {/* Sans enveloppe : la base du Button pose déjà `font-mono text-xs
+          tracking-widest` et la variante `header` pose `text-foreground`. Le
+          span ne faisait que les redire. */}
+      {t('common.langToggleLabel')}
     </Button>
   );
 };
