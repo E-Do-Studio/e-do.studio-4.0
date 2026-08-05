@@ -504,7 +504,7 @@ const TeamMemberRow = ({ member, lang }: TeamMemberRowProps) => (
 
 const ContactPage = () => {
   const t = useT();
-  const { lang, setLang, openMenu, goto, siteData } = usePageContext();
+  const { lang, goto, siteData } = usePageContext();
   const contact = siteData.contact;
   const hours = siteData.studioHours;
   const { teamMembers } = useLoaderData({ from: '/$lang/contact' });
@@ -534,12 +534,8 @@ const ContactPage = () => {
       <h1 className="sr-only">{t('common.contactUs')} — E-Do Studio Paris</h1>
       {/* Unified header — compact right-aligned actions on all breakpoints */}
       <PageHeader
-        lang={lang}
         title={t('common.contactUs')}
         className="col-span-full md:row-start-1"
-        onMenuClick={openMenu}
-        onLogoClick={() => goto('home')}
-        onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
         actions={buildMainNav({ lang, goto, exclude: 'contact' })}
       />
       <ContactFormPanel

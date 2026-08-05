@@ -490,7 +490,7 @@ type GalleryFilters = { cat?: string; plateau?: string };
 
 const GalleryPageV3 = () => {
   const t = useT();
-  const { lang, setLang, openMenu, goto } = usePageContext();
+  const { lang, goto } = usePageContext();
   // Page servie par deux routes (/galerie en FR, /gallery en EN), d'où l'accès
   // non strict aux search params comme aux données du loader.
   const search = useSearch({ strict: false }) as GalleryFilters;
@@ -673,14 +673,10 @@ const GalleryPageV3 = () => {
       <h1 className="sr-only">{t('common.gallery')} — E-Do Studio Paris</h1>
 
       <PageHeader
-        lang={lang}
         title={t('common.gallery')}
         className="col-span-full md:row-start-1"
         titleClassName="lg:col-start-2 lg:col-span-2"
         rightBlockClassName="lg:col-start-4 lg:col-span-2"
-        onMenuClick={openMenu}
-        onLogoClick={() => goto('home')}
-        onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
         actions={buildMainNav({ lang, goto, exclude: 'gallery' })}
       />
 

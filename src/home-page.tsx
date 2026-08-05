@@ -66,7 +66,7 @@ const HOME_FALLBACK_MACHINES: MachineRowItem[] = [
 
 const HomePage = () => {
   const t = useT();
-  const { lang, setLang, openMenu, goto, siteData } = usePageContext();
+  const { lang, goto, siteData } = usePageContext();
   const isDesktop = useIsDesktop();
   const { machines, contact } = siteData;
   const { announcement, homeHero } = useLoaderData({ from: '/$lang/' });
@@ -108,7 +108,6 @@ const HomePage = () => {
 
       {/* ── Row 1: Header ── */}
       <PageHeader
-        lang={lang}
         title={t('home.monSatHours')}
         titleAside={
           announcementText ? (
@@ -123,9 +122,6 @@ const HomePage = () => {
         }
         className="col-span-2 md:col-start-1 md:col-span-12 md:row-start-1"
         subgrid={false}
-        onMenuClick={openMenu}
-        onLogoClick={() => goto('home')}
-        onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
         actions={[
           {
             id: 'book',

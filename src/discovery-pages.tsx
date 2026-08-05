@@ -7,16 +7,11 @@ import { SocialClientsBar } from './social-clients-bar';
 
 const DiscoveryPage = () => {
   const t = useT();
-  const { lang, setLang, openMenu, goto } = usePageContext();
+  const { lang, goto } = usePageContext();
   return (
     <DiscoveryShell>
       <h1 className="sr-only">{t('discoveryPage.srTitle')} — E-Do Studio</h1>
-      <DiscoveryHeader
-        lang={lang}
-        setLang={setLang}
-        openMenu={openMenu}
-        goto={goto}
-      />
+      <DiscoveryHeader />
       <SocialClientsBar className="row-start-2" />
       <DiscoveryBentoGrid lang={lang} goto={goto} />
     </DiscoveryShell>

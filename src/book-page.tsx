@@ -126,7 +126,7 @@ const NO_PLATEAU: BookPlateau = {
 
 const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
   const t = useT();
-  const { lang, setLang, openMenu, goto } = usePageContext();
+  const { lang, goto } = usePageContext();
   const navigate = useNavigate();
   const today = new Date();
   const [draft] = useState(() => loadDraft());
@@ -877,14 +877,10 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
  label aligned with the quote panel below. Within the header subgrid
  (cols 1-3), the title sits in col 2 and the right block in col 3. */}
       <PageHeader
-        lang={lang}
         title={t('booking.title')}
         className="col-span-full md:col-start-1 md:col-end-4 md:row-start-1"
         titleClassName="lg:col-start-2 lg:col-span-1"
         rightBlockClassName="lg:col-start-3"
-        onMenuClick={openMenu}
-        onLogoClick={() => goto('home')}
-        onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
         actions={buildMainNav({ lang, goto })}
       />
 

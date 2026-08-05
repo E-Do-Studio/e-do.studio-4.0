@@ -20,9 +20,6 @@ const fmtTime = (h: number) => `${String(h).padStart(2, '0')}:00`;
 interface ConfirmedViewProps {
   lang: Lang;
   snapshot: ConfirmationSnapshot;
-  onMenuClick: () => void;
-  onLogoClick: () => void;
-  onLangToggle: () => void;
   goto: (screen: string) => void;
   onNewRequest: () => void;
 }
@@ -30,9 +27,6 @@ interface ConfirmedViewProps {
 const ConfirmedView = ({
   lang,
   snapshot,
-  onMenuClick,
-  onLogoClick,
-  onLangToggle,
   goto,
   onNewRequest,
 }: ConfirmedViewProps) => {
@@ -93,14 +87,10 @@ const ConfirmedView = ({
   return (
     <div className="grid w-full gap-px bg-border md:h-full md:grid-cols-[var(--spacing-logo)_minmax(0,1fr)] md:grid-rows-[var(--spacing-header)_minmax(0,1fr)] md:overflow-hidden">
       <PageHeader
-        lang={lang}
         title={t('booking.title')}
         subtitle={copy.tag}
         className="col-span-full md:col-start-1 md:col-span-2 md:row-start-1"
         subgrid={false}
-        onMenuClick={onMenuClick}
-        onLogoClick={onLogoClick}
-        onLangToggle={onLangToggle}
         actions={buildMainNav({ lang, goto })}
       />
       <div className="overflow-auto flex flex-col gap-px bg-border md:col-span-2 md:row-start-2 md:min-h-0">
@@ -286,7 +276,7 @@ const ConfirmedView = ({
 
 const BookConfirmation = () => {
   const t = useT();
-  const { lang, setLang, openMenu, goto } = usePageContext();
+  const { lang, goto } = usePageContext();
   const navigate = useNavigate();
   const [snapshot, setSnapshot] = useState<ConfirmationSnapshot | null>(null);
   const [hydrated, setHydrated] = useState(false);
@@ -309,13 +299,9 @@ const BookConfirmation = () => {
     return (
       <div className="animate-in fade-in duration-300 grid w-full gap-px bg-border md:h-full md:grid-rows-[var(--spacing-header)_minmax(0,1fr)]">
         <PageHeader
-          lang={lang}
           title={t('booking.title')}
           className="col-span-full md:row-start-1"
           subgrid={false}
-          onMenuClick={openMenu}
-          onLogoClick={() => goto('home')}
-          onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
           actions={buildMainNav({ lang, goto })}
         />
         <div className="md:row-start-2 md:overflow-y-auto md:min-h-0 bg-background">
@@ -347,9 +333,6 @@ const BookConfirmation = () => {
     <ConfirmedView
       lang={lang}
       snapshot={snapshot}
-      onMenuClick={openMenu}
-      onLogoClick={() => goto('home')}
-      onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
       goto={goto}
       onNewRequest={onNewRequest}
     />

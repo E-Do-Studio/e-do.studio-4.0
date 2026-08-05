@@ -215,7 +215,7 @@ interface PlateauPageProps {
 
 const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
   const t = useT();
-  const { lang, setLang, openMenu, goto } = usePageContext();
+  const { lang, goto } = usePageContext();
   const [activeIndex, setActiveIndex] = useState(0);
   const [navSheetOpen, setNavSheetOpen] = useState(false);
   if (!plateaux) return null;
@@ -253,12 +253,8 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
     <main className="animate-in fade-in duration-300 grid w-full gap-px bg-border md:h-full md:grid-cols-[var(--spacing-logo)_repeat(3,minmax(0,1fr))] md:grid-rows-[var(--spacing-header)_78px_minmax(0,1.58fr)_minmax(0,0.5fr)_minmax(0,0.52fr)] md:overflow-hidden">
       {/* Unified header — compact right-aligned actions on all breakpoints */}
       <PageHeader
-        lang={lang}
         title={t('common.stages')}
         className="col-span-full md:row-start-1"
-        onMenuClick={openMenu}
-        onLogoClick={() => goto('home')}
-        onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
         actions={buildMainNav({ lang, goto, exclude: 'stages' })}
       />
 

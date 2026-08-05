@@ -152,7 +152,7 @@ const StrapiSectionsRenderer = ({ sections, lang }: SectionRendererProps) => (
 
 const LegalPage = () => {
   const t = useT();
-  const { lang, setLang, openMenu, goto } = usePageContext();
+  const { lang, goto } = usePageContext();
   const { doc } = useSearch({ from: '/$lang/legal' });
   const sec = doc ?? 'mentions';
   const navigate = useNavigate();
@@ -188,12 +188,8 @@ const LegalPage = () => {
     <main className="animate-in fade-in duration-300 grid w-full gap-px bg-border md:grid-cols-[var(--spacing-logo)_repeat(3,minmax(0,1fr))] md:grid-rows-[var(--spacing-header)_minmax(0,1fr)] md:h-full md:overflow-hidden">
       {/* Unified header — compact right-aligned actions on all breakpoints */}
       <PageHeader
-        lang={lang}
         title={t('common.legal')}
         className="col-span-full md:row-start-1"
-        onMenuClick={openMenu}
-        onLogoClick={() => goto('home')}
-        onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
         actions={buildMainNav({ lang, goto })}
       />
 

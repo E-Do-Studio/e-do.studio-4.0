@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import type { Lang } from '../types';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { usePageContext } from '../lib/page-context';
 import { Wordmark } from './brand';
 import { HoverMarquee } from './hover-marquee';
 import { ArrowRight, Menu } from 'lucide-react';
@@ -22,7 +23,6 @@ interface PageHeaderAction {
 }
 
 interface PageHeaderProps {
-  lang: Lang;
   title: ReactNode;
   subtitle?: ReactNode;
   // Rendered as its own header cell (with a hairline divider) immediately to
@@ -39,9 +39,6 @@ interface PageHeaderProps {
   titleClassName?: string;
   rightBlockClassName?: string;
   subgrid?: boolean;
-  onMenuClick: () => void;
-  onLogoClick: () => void;
-  onLangToggle: () => void;
 }
 
 const EMPTY_PAGE_HEADER_ACTIONS: PageHeaderAction[] = [];
@@ -155,7 +152,6 @@ const LangButton = ({
 };
 
 const PageHeader = ({
-  lang,
   title,
   subtitle,
   titleAside,
@@ -164,10 +160,14 @@ const PageHeader = ({
   titleClassName,
   rightBlockClassName,
   subgrid = true,
-  onMenuClick,
-  onLogoClick,
-  onLangToggle,
 }: PageHeaderProps) => {
+  // Ouvrir le tiroir, rentrer à l'accueil, basculer la langue : les onze
+  // appelants construisaient ces trois rappels à l'identique et les passaient en
+  // props. Ils sont dans le contexte, et le header est rendu dedans partout.
+  const { lang, setLang, openMenu, goto } = usePageContext();
+  const onMenuClick = openMenu;
+  const onLogoClick = () => goto('home');
+  const onLangToggle = () => setLang(lang === 'fr' ? 'en' : 'fr');
   const hasMobileAction = actions.some(
     (a) => !(a.className ?? '').split(' ').includes('hidden'),
   );

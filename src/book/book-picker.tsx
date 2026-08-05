@@ -70,7 +70,7 @@ const PickerTile = ({
 
 const BookPicker = () => {
   const t = useT();
-  const { lang, setLang, openMenu, goto, siteData } = usePageContext();
+  const { lang, goto, siteData } = usePageContext();
   const navigate = useNavigate();
   const contact = siteData.contact;
   const hours = siteData.studioHours;
@@ -90,12 +90,8 @@ const BookPicker = () => {
   return (
     <div className="animate-in fade-in duration-300 grid w-full gap-px bg-border md:h-full md:grid-cols-[var(--spacing-logo)_repeat(3,minmax(0,1fr))] md:grid-rows-[var(--spacing-header)_minmax(0,1fr)] md:overflow-hidden">
       <PageHeader
-        lang={lang}
         title={t('booking.title')}
         className="col-span-full md:row-start-1"
-        onMenuClick={openMenu}
-        onLogoClick={() => goto('home')}
-        onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
         actions={buildMainNav({ lang, goto })}
       />
 

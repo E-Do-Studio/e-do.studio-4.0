@@ -275,7 +275,7 @@ function adaptStrapiCats(strapi: StrapiPPCat[]): PPCat[] {
 
 const PostprodPage = () => {
   const t = useT();
-  const { lang, setLang, openMenu, goto } = usePageContext();
+  const { lang, goto } = usePageContext();
   const { postProdTypes } = useLoaderData({ from: '/$lang/post-production' });
   // `adaptStrapiCats` reconstruit tout le tableau (et six échantillons par
   // catégorie) à chaque rendu. Sans mémo, son identité change à chaque passe et
@@ -358,12 +358,8 @@ const PostprodPage = () => {
       <h1 className="sr-only">{postprodLabel}</h1>
 
       <PageHeader
-        lang={lang}
         title={postprodLabel}
         className="col-span-full md:row-start-1"
-        onMenuClick={openMenu}
-        onLogoClick={() => goto('home')}
-        onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
         actions={buildMainNav({ lang, goto, exclude: 'postprod' })}
       />
 

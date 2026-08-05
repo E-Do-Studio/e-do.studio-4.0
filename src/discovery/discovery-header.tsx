@@ -1,30 +1,15 @@
-import type { Lang } from '../types';
 import { PageHeader } from '../ui/page-header';
+import { usePageContext } from '../lib/page-context';
 import { useT } from '../i18n/use-t';
 
-interface DiscoveryHeaderProps {
-  lang: Lang;
-  setLang: (l: Lang) => void;
-  openMenu: () => void;
-  goto: (screen: string) => void;
-}
-
-export const DiscoveryHeader = ({
-  lang,
-  setLang,
-  openMenu,
-  goto,
-}: DiscoveryHeaderProps) => {
+export const DiscoveryHeader = () => {
   const t = useT();
+  const { goto } = usePageContext();
   return (
     <PageHeader
-      lang={lang}
       title={t('common.discovery')}
       className="row-start-1"
       subgrid={false}
-      onMenuClick={openMenu}
-      onLogoClick={() => goto('home')}
-      onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
       actions={[
         {
           id: 'book',
