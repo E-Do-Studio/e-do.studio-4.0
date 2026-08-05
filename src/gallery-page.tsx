@@ -200,11 +200,17 @@ const FilterCell = ({
 }) => (
   <Button
     onClick={onClick}
+    // Sans variante, cette cellule héritait de `variant="default"`, c'est-à-dire
+    // du pavé orange, défait à la main — sauf son `hover:opacity-90`, qui lui
+    // continuait de tirer sur chaque survol. Et sans état ARIA, sa sélection
+    // était muette pour un lecteur d'écran.
+    //
+    // La taille reste celle par défaut : c'est `h-8` qui fixe la ligne à 32px,
+    // pas le `py-2`.
+    variant="rail"
+    aria-pressed={active}
     className={cn(
-      'flex w-full justify-between gap-2  border-b border-l-2 border-b-border px-3.5 py-2 text-left text-sm tracking-tight text-foreground transition-colors',
-      active
-        ? 'border-l-primary bg-muted font-medium'
-        : 'border-l-transparent bg-background hover:bg-muted',
+      'w-full justify-between gap-2 border-b border-b-border px-3.5 py-2 text-left text-sm tracking-tight aria-pressed:font-medium',
       dimmed && 'opacity-30',
     )}
   >
@@ -669,7 +675,7 @@ const GalleryPageV3 = () => {
   };
 
   return (
-    <main className="animate-in fade-in duration-300 grid w-full gap-px bg-border md:h-full md:grid-cols-[var(--spacing-logo)_80px_repeat(3,minmax(0,1fr))] md:grid-rows-[var(--spacing-header)_minmax(0,1fr)] md:overflow-hidden">
+    <main className="grid w-full gap-px bg-border md:h-full md:grid-cols-[var(--spacing-logo)_80px_repeat(3,minmax(0,1fr))] md:grid-rows-[var(--spacing-header)_minmax(0,1fr)] md:overflow-hidden">
       <h1 className="sr-only">{t('common.gallery')} — E-Do Studio Paris</h1>
 
       <PageHeader className="col-span-full md:row-start-1" />
