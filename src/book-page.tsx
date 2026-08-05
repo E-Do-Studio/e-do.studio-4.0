@@ -2380,7 +2380,7 @@ const Step0Configurator = ({
     qList.push({
       key: 'postprod',
       num: 'pp',
-      label: t('nav.postprod'),
+      label: t('common.postProdLong'),
       visible: true,
       answered: true,
       summary: S.postprod
@@ -2872,7 +2872,7 @@ const Step0Configurator = ({
           <>
             <div className="px-5 sm:px-6 border-b border-border flex items-center min-h-11 py-4 sm:py-0 gap-3 box-border">
               <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-primary">
-                {t('nav.postprod')}
+                {t('common.postProdLong')}
               </span>
             </div>
             <div

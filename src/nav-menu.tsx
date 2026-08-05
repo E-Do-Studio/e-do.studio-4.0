@@ -9,21 +9,9 @@ import {
 import { Lock, X } from 'lucide-react';
 import { SocialLinksRow } from './ui/social-links-row';
 import { useT } from './i18n/use-t';
+import { MENU_NAV } from './lib/nav';
 import { SCREEN_TO_PATH } from './lib/screens';
 import type { Lang } from './types';
-
-// Libellés dans les locales, chemins résolus par SCREEN_TO_PATH. L'ancien
-// `nav.items` portait des `href` en dur par langue : une troisième copie de la
-// table d'URLs, à côté de screens.ts et book-routes.ts.
-const NAV_SCREENS = [
-  { screen: 'home', label: 'nav.home' },
-  { screen: 'plateau-live', label: 'nav.stages' },
-  { screen: 'gallery', label: 'nav.gallery' },
-  { screen: 'discovery', label: 'nav.discovery', disabled: true },
-  { screen: 'postprod', label: 'nav.postprod' },
-  { screen: 'contact', label: 'nav.contact' },
-  { screen: 'legal', label: 'nav.legal' },
-] as const;
 
 interface NavItemDef {
   label: string;
@@ -198,13 +186,13 @@ const NavMenu = ({ lang, isOpen, onClose, setLang }: NavMenuProps) => {
           className="flex flex-1 flex-col overflow-y-auto"
           aria-label={t('common.menu')}
         >
-          {NAV_SCREENS.map((entry, index) => (
+          {MENU_NAV.map((entry, index) => (
             <NavItemLink
-              key={entry.screen}
+              key={entry.id}
               item={{
-                label: t(entry.label),
+                label: t(entry.labelKey),
                 href: SCREEN_TO_PATH[entry.screen](lang),
-                disabled: 'disabled' in entry ? entry.disabled : undefined,
+                disabled: entry.disabled,
               }}
               index={index}
               onClose={onClose}
@@ -214,7 +202,7 @@ const NavMenu = ({ lang, isOpen, onClose, setLang }: NavMenuProps) => {
           <NavExternalLink
             href="https://etouch.e-do.studio"
             label="Etouch"
-            index={NAV_SCREENS.length}
+            index={MENU_NAV.length}
           />
           <SocialLinksRow className="mt-auto border-t border-border" />
         </nav>

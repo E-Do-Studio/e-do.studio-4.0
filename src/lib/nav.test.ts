@@ -1,6 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import en from '../i18n/locales/en.json';
-import fr from '../i18n/locales/fr.json';
 import type { Lang } from '../types';
 import { activeNavId, activeNavIn, MAIN_NAV, MENU_NAV } from './nav';
 import { BOOK_PATHS, SCREEN_TO_PATH } from './screens';
@@ -120,27 +118,6 @@ describe('activeNavIn(MENU_NAV)', () => {
   });
 });
 
-describe('libellés', () => {
-  const resolve = (dict: object, key: string): unknown =>
-    key
-      .split('.')
-      .reduce<unknown>(
-        (node, part) =>
-          node && typeof node === 'object'
-            ? (node as Record<string, unknown>)[part]
-            : undefined,
-        dict,
-      );
-
-  const clés = [...MAIN_NAV, ...MENU_NAV].flatMap((it) =>
-    it.menuLabelKey ? [it.labelKey, it.menuLabelKey] : [it.labelKey],
-  );
-
-  // Complément au `satisfies` croisé de i18n/index.ts : celui-ci garantit que
-  // fr.json et en.json ont les mêmes clés, pas que la table en pointe qui
-  // existent. `t()` rend la clé brute quand elle manque, sans rien signaler.
-  it.each([...new Set(clés)])('%s se résout dans les deux langues', (clé) => {
-    expect(typeof resolve(fr, clé)).toBe('string');
-    expect(typeof resolve(en, clé)).toBe('string');
-  });
-});
+// Les libellés ne sont pas testés ici : `labelKey` est typé `ParseKeys`, donc
+// une clé inexistante ne compile pas, et le `satisfies` croisé de
+// i18n/index.ts impose déjà que fr.json et en.json portent les mêmes.

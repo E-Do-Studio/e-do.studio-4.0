@@ -1,3 +1,4 @@
+import type { ParseKeys } from 'i18next';
 import { bothSlugs } from './screens';
 
 // Source de vérité de la navigation : ordre d'affichage, libellés, et le
@@ -13,11 +14,16 @@ import { bothSlugs } from './screens';
 
 export type MainNavId = 'stages' | 'postprod' | 'gallery' | 'contact' | 'book';
 
+// Les clés que `t()` accepte, dérivées de fr.json par l'augmentation de module
+// de i18n/i18next.d.ts. Une clé inexistante devient une erreur de compilation,
+// là où `t()` se contenterait de rendre la clé brute à l'écran.
+type LabelKey = ParseKeys;
+
 interface NavEntry {
   /** Écran cible, résolu par SCREEN_TO_PATH. */
   screen: string;
   /** Libellé de la cellule d'en-tête, contraint en largeur. */
-  labelKey: string;
+  labelKey: LabelKey;
   /**
    * Libellé du tiroir, quand la ligne pleine largeur en supporte un autre.
    * Absent = même libellé que l'en-tête.
@@ -26,7 +32,7 @@ interface NavEntry {
    * header disait « Post-prod » quand le tiroir disait « Post-production », et
    * la page elle-même affichait un troisième littéral écrit en dur.
    */
-  menuLabelKey?: string;
+  menuLabelKey?: LabelKey;
   /**
    * Préfixes de chemin, préfixe de langue retiré, qui allument cette entrée.
    * `''` désigne la racine, et elle seule.
@@ -92,7 +98,7 @@ const mainItem = (id: MainNavId): MainNavItem => {
 };
 
 /** Le libellé long d'une destination, ou son libellé court à défaut. */
-const menuLabel = (id: MainNavId): string => {
+const menuLabel = (id: MainNavId): LabelKey => {
   const it = mainItem(id);
   return it.menuLabelKey ?? it.labelKey;
 };

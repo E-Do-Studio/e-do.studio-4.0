@@ -320,7 +320,7 @@ const PostprodPage = () => {
   );
   const currentNumber = String(currentIndex + 1).padStart(2, '0');
 
-  const postprodLabel = 'Post-production';
+  const postprodLabel = t('common.postProdLong');
   const dark = !!cat?.featured;
   const bgCls = cn('bg-background', dark && 'dark');
   const fgCls = 'text-foreground';
@@ -335,7 +335,7 @@ const PostprodPage = () => {
         <h1 className="sr-only">{postprodLabel}</h1>
         <Empty size="page">
           <EmptyHeader>
-            <EmptyTitle>Post-production</EmptyTitle>
+            <EmptyTitle>{postprodLabel}</EmptyTitle>
             <EmptyDescription>
               {t('postprod.emptyDescription')}
             </EmptyDescription>
@@ -359,7 +359,7 @@ const PostprodPage = () => {
 
       <PageHeader
         lang={lang}
-        title="Post-production"
+        title={postprodLabel}
         className="col-span-full h-14 md:col-span-full md:row-start-1 md:h-full"
         onMenuClick={openMenu}
         onLogoClick={() => goto('home')}
@@ -401,7 +401,7 @@ const PostprodPage = () => {
       <Drawer open={navSheetOpen} onOpenChange={setNavSheetOpen}>
         <DrawerContent id="postprod-nav-sheet">
           <DrawerHeader>
-            <DrawerTitle>Post-production</DrawerTitle>
+            <DrawerTitle>{postprodLabel}</DrawerTitle>
             <DrawerClose
               aria-label={t('common.close')}
               render={<Button variant="ghost" size="icon" />}

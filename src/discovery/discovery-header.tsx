@@ -19,7 +19,7 @@ export const DiscoveryHeader = ({
   return (
     <PageHeader
       lang={lang}
-      title="Discovery"
+      title={t('common.discovery')}
       className="row-start-1"
       subgrid={false}
       onMenuClick={openMenu}
