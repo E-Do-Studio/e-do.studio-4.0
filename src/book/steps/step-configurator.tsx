@@ -5,11 +5,7 @@ import type { ReactNode } from 'react';
 import { useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import { useT } from '../../i18n/use-t';
-import type {
-  BookingSession,
-  ConfigGlobal,
-  Lang,
-} from '../../lib/booking-engine';
+import type { BookingSession } from '../../lib/booking-engine';
 import { isSessionValid, makeBlankSession } from '../../lib/booking-engine';
 import {
   ACCESS_SUBS,
@@ -21,45 +17,31 @@ import {
   PROJECT_TYPES,
   catDesc,
   catLabel,
-  findEntry,
 } from '../catalog';
 import { CfgChoice } from '../shared';
+import { SessionTabs } from './session-tabs';
+import {
+  CASCADES,
+  buildQuestions,
+  isMediaVisible,
+  isPackshotSized,
+  openQuestionKeys,
+} from './configurator-questions';
 
 interface StepConfiguratorProps {
-  lang: Lang;
-  global: ConfigGlobal;
-  setGlobal: Dispatch<SetStateAction<ConfigGlobal>>;
   sessions: BookingSession[];
   setSessions: Dispatch<SetStateAction<BookingSession[]>>;
   activeIdx: number;
   setActiveIdx: (idx: number) => void;
-  onApply: () => void;
   onSkip: () => void;
   onReset: () => void;
 }
 
-interface Question {
-  key: string;
-  num: string;
-  label: string;
-  answered: boolean;
-  summary: string;
-  multi?: boolean;
-}
-
-// Produits pour lesquels la question « média » suit directement le choix du
-// produit, sans passer par une méthode ni un sous-type.
-const DIRECT_MEDIA_PRODUCTS = ['eyewear', 'food', 'cosmetique', 'bijoux'];
-
 const StepConfigurator = ({
-  lang,
-  global,
-  setGlobal,
   sessions,
   setSessions,
   activeIdx,
   setActiveIdx,
-  onApply,
   onSkip,
   onReset,
 }: StepConfiguratorProps) => {
@@ -80,54 +62,7 @@ const StepConfigurator = ({
     );
   };
   const resetFrom = (field: keyof BookingSession, value: unknown) => {
-    const cascades: Record<string, Partial<BookingSession>> = {
-      projectType: {
-        product: null,
-        method: null,
-        submethod: null,
-        media: [],
-        views: [],
-        viewsCount: '',
-        quantity: '',
-        postprod: false,
-        postprodVideo: false,
-      },
-      product: {
-        method: null,
-        submethod: null,
-        media: [],
-        views: [],
-        viewsCount: '',
-        quantity: '',
-        postprod: false,
-        postprodVideo: false,
-      },
-      method: {
-        submethod: null,
-        media: [],
-        views: [],
-        viewsCount: '',
-        quantity: '',
-        postprod: false,
-        postprodVideo: false,
-      },
-      submethod: {
-        media: [],
-        views: [],
-        viewsCount: '',
-        quantity: '',
-        postprod: false,
-        postprodVideo: false,
-      },
-      media: {
-        views: [],
-        viewsCount: '',
-        quantity: '',
-        postprod: false,
-        postprodVideo: false,
-      },
-    };
-    setSession({ [field]: value, ...(cascades[field] || {}) });
+    setSession({ [field]: value, ...(CASCADES[field] || {}) });
     setOpenQ(null);
     setTouchedQs(new Set());
   };
@@ -142,190 +77,19 @@ const StepConfigurator = ({
     setSessions((prev) => prev.filter((_, i) => i !== idx));
     setActiveIdx(Math.max(0, Math.min(activeIdx, sessions.length - 2)));
   };
-  const sessionValid = isSessionValid;
   const S = active;
-  const qList: Question[] = [];
-  qList.push({
-    key: 'projectType',
-    num: '00',
-    label: t('booking.projectType'),
-    answered: !!S.projectType,
-    summary: S.projectType
-      ? catLabel(
-          t,
-          PROJECT_TYPES.find((x) => x.k === S.projectType),
-        ) || ''
-      : '',
-  });
-  if (S.projectType === 'ecom') {
-    qList.push({
-      key: 'product',
-      num: '01',
-      label: t('booking.productType'),
-      answered: !!S.product,
-      summary: S.product
-        ? catLabel(
-            t,
-            PRODUCTS.find((x) => x.k === S.product),
-          ) || ''
-        : '',
-    });
-  }
-  if (S.product === 'pap') {
-    qList.push({
-      key: 'method',
-      num: '02',
-      label: t('booking.method'),
-      answered: !!S.method,
-      summary: S.method
-        ? catLabel(
-            t,
-            PAP_METHODS.find((x) => x.k === S.method),
-          ) || ''
-        : '',
-    });
-  }
-  if (S.product === 'pap' && S.method === 'packshot') {
-    qList.push({
-      key: 'submethod',
-      num: '03',
-      label: t('booking.packshotType'),
-      answered: !!S.submethod,
-      summary: S.submethod
-        ? catLabel(
-            t,
-            PAP_PACKSHOT_SUBS.find((x) => x.k === S.submethod),
-          ) || ''
-        : '',
-    });
-  }
-  if (S.product === 'accessoires') {
-    qList.push({
-      key: 'submethod',
-      num: '02',
-      label: t('booking.accessoryType'),
-      answered: !!S.submethod,
-      summary: S.submethod
-        ? catLabel(
-            t,
-            ACCESS_SUBS.find((x) => x.k === S.submethod),
-          ) || ''
-        : '',
-    });
-  }
-  const mediaVisible =
-    (S.product === 'pap' && S.method === 'onmodel') ||
-    (S.product === 'accessoires' && S.submethod) ||
-    DIRECT_MEDIA_PRODUCTS.includes(S.product ?? '');
-  if (mediaVisible) {
-    const mediaNum =
-      S.product === 'pap' ? '03' : S.product === 'accessoires' ? '03' : '02';
-    qList.push({
-      key: 'media',
-      num: mediaNum,
-      label: t('booking.media'),
-      multi: true,
-      answered: (S.media || []).length > 0,
-      summary: (S.media || [])
-        .map((m) =>
-          catLabel(
-            t,
-            MEDIA_OPTIONS.find((x) => x.k === m),
-          ),
-        )
-        .filter(Boolean)
-        .join(' + '),
-    });
-  }
-  if (S.product === 'pap' && S.method === 'packshot' && S.submethod) {
-    qList.push({
-      key: 'quantity',
-      num: '04',
-      label: t('booking.numberOfProducts'),
-      answered: !!Number(S.quantity),
-      summary: S.quantity ? `${S.quantity} ${t('booking.products')}` : '',
-    });
-  }
-  if (S.product === 'pap' && S.method === 'packshot' && S.submethod) {
-    qList.push({
-      key: 'views',
-      num: '05',
-      label: t('booking.viewsPerProduct'),
-      multi: true,
-      answered: (S.views || []).some((v) => v !== 'detail'),
-      summary: (S.views || [])
-        .map((v) =>
-          catLabel(
-            t,
-            PACKSHOT_VIEWS.find((x) => x.k === v),
-          ),
-        )
-        .filter(Boolean)
-        .join(' + '),
-    });
-  }
-  const qvVisible =
-    (S.product === 'pap' && S.method === 'onmodel' && (S.media || []).length) ||
-    (S.product === 'accessoires' && S.submethod && (S.media || []).length) ||
-    (DIRECT_MEDIA_PRODUCTS.includes(S.product ?? '') && (S.media || []).length);
-  if (qvVisible) {
-    qList.push({
-      key: 'qtyViews',
-      num:
-        S.product === 'pap' ? '04' : S.product === 'accessoires' ? '04' : '03',
-      label: t('booking.productsViews'),
-      answered: !!Number(S.quantity) && !!Number(S.viewsCount),
-      summary:
-        S.quantity && S.viewsCount
-          ? `${S.quantity} ${t('booking.prod')} × ${S.viewsCount} ${t('booking.views2')}`
-          : '',
-    });
-  }
-  const ppVisible = S.projectType === 'ecom' && S.product && sessionValid(S);
-  if (ppVisible) {
-    qList.push({
-      key: 'postprod',
-      num: 'pp',
-      label: t('common.postProdLong'),
-      answered: true,
-      summary: S.postprod
-        ? S.postprodVideo
-          ? t('booking.yesVideo')
-          : t('booking.yes')
-        : t('booking.no'),
-    });
-  }
-  const firstUnansweredIdx = qList.findIndex((q) => !q.answered);
-  const autoOpenKey =
-    firstUnansweredIdx >= 0
-      ? qList[firstUnansweredIdx].key
-      : qList.length
-        ? qList[qList.length - 1].key
-        : null;
-  const currentOpen = openQ !== null ? openQ : autoOpenKey;
-  const currentIdx = qList.findIndex((q) => q.key === currentOpen);
-  const isOpen = (key: string) => {
-    const idx = qList.findIndex((q) => q.key === key);
-    if (idx === currentIdx) return true;
-    if (qList[idx]?.answered && idx === currentIdx - 1) {
-      const nextKey = qList[currentIdx]?.key;
-      if (nextKey && !touchedQs.has(nextKey)) return true;
-    }
-    if (idx === currentIdx + 1) {
-      const curr = qList[currentIdx];
-      if (curr?.answered && touchedQs.has(curr.key)) return true;
-    }
-    return false;
-  };
+  const questions = buildQuestions(S, t);
+  const openKeys = openQuestionKeys(questions, openQ, touchedQs);
+
   const accQ = (qKey: string, children: ReactNode) => {
-    const q = qList.find((x) => x.key === qKey);
+    const q = questions.find((x) => x.key === qKey);
     if (!q) return null;
-    const open = isOpen(qKey);
+    const open = openKeys.has(qKey);
     if (!open && q.answered) {
       return (
         <Button
           type="button"
-          key={qKey + ':collapsed'}
+          key={`${qKey}:collapsed`}
           onClick={() => setOpenQ(qKey)}
           variant="cell"
           size="cell"
@@ -352,7 +116,7 @@ const StepConfigurator = ({
       setOpenQ(qKey);
     };
     return (
-      <div key={qKey + ':open'} onClickCapture={onInteract}>
+      <div key={`${qKey}:open`} onClickCapture={onInteract}>
         {children}
       </div>
     );
@@ -390,80 +154,17 @@ const StepConfigurator = ({
         </div>
       </div>
       {sessions.length > 1 && (
-        <>
-          <div className="px-6 pt-3.5 pb-1 flex items-baseline justify-between gap-4 flex-wrap">
-            <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-primary">
-              {t('booking.productSessions')} — {sessions.length}
-            </span>
-            <Button
-              type="button"
-              onClick={addSession}
-              variant="outline"
-              className="h-8 gap-2 px-3.5 py-2 text-xs tracking-widest"
-            >
-              + {t('booking.addASession')}
-            </Button>
-          </div>
-          <div
-            className="grid bg-background border-t border-b border-border"
-            style={{
-              gridTemplateColumns: `repeat(${sessions.length}, minmax(0,1fr))`,
-              gap: 1,
-            }}
-          >
-            {sessions.map((s, i) => {
-              const isActive = i === activeIdx;
-              const valid = sessionValid(s);
-              const label =
-                s.projectType === 'cyclorama'
-                  ? t('booking.cyclorama')
-                  : catLabel(t, findEntry(PRODUCTS, s.product)) ||
-                    t('booking.toDefine');
-              return (
-                <Button
-                  type="button"
-                  key={i}
-                  onClick={() => {
-                    setActiveIdx(i);
-                    setOpenQ(null);
-                    setTouchedQs(new Set());
-                  }}
-                  className={`${isActive ? 'dark bg-background' : 'bg-background'} text-foreground  px-3.5 py-3 text-left cursor-pointer font-[inherit] flex flex-col gap-1 min-w-0`}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <span
-                      className={`font-mono text-xs tracking-widest ${isActive ? 'text-primary' : 'text-muted-foreground'}`}
-                    >
-                      {t('booking.session')} {String(i + 1).padStart(2, '0')}
-                    </span>
-                    <span
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeSession(i);
-                      }}
-                      className={`text-sm cursor-pointer px-1 leading-none ${isActive ? 'text-muted-foreground' : 'text-muted-foreground'}`}
-                      title={t('booking.remove')}
-                    >
-                      ×
-                    </span>
-                  </div>
-                  <div className="text-sm font-normal tracking-tight">
-                    {label}
-                  </div>
-                  <div
-                    className={`font-mono text-xs tracking-wide text-muted-foreground`}
-                  >
-                    {valid
-                      ? s.projectType === 'cyclorama'
-                        ? t('booking.onRequestLower')
-                        : `${s.quantity} ${t('booking.products')}`
-                      : t('booking.incomplete')}
-                  </div>
-                </Button>
-              );
-            })}
-          </div>
-        </>
+        <SessionTabs
+          sessions={sessions}
+          activeIdx={activeIdx}
+          onSelect={(idx) => {
+            setActiveIdx(idx);
+            setOpenQ(null);
+            setTouchedQs(new Set());
+          }}
+          onAdd={addSession}
+          onRemove={removeSession}
+        />
       )}
       {accQ(
         'projectType',
@@ -580,9 +281,7 @@ const StepConfigurator = ({
             </div>
           </>,
         )}
-      {((S.product === 'pap' && S.method === 'onmodel') ||
-        (S.product === 'accessoires' && S.submethod) ||
-        DIRECT_MEDIA_PRODUCTS.includes(S.product ?? '')) &&
+      {isMediaVisible(S) &&
         accQ(
           'media',
           <>
@@ -626,9 +325,7 @@ const StepConfigurator = ({
             </div>
           </>,
         )}
-      {S.product === 'pap' &&
-        S.method === 'packshot' &&
-        S.submethod &&
+      {isPackshotSized(S) &&
         accQ(
           'quantity',
           <>
@@ -656,9 +353,7 @@ const StepConfigurator = ({
             </div>
           </>,
         )}
-      {S.product === 'pap' &&
-        S.method === 'packshot' &&
-        S.submethod &&
+      {isPackshotSized(S) &&
         accQ(
           'views',
           <>
@@ -706,14 +401,8 @@ const StepConfigurator = ({
             </div>
           </>,
         )}
-      {((S.product === 'pap' &&
-        S.method === 'onmodel' &&
-        (S.media || []).length > 0) ||
-        (S.product === 'accessoires' &&
-          S.submethod &&
-          (S.media || []).length > 0) ||
-        (DIRECT_MEDIA_PRODUCTS.includes(S.product ?? '') &&
-          (S.media || []).length > 0)) &&
+      {isMediaVisible(S) &&
+        (S.media || []).length > 0 &&
         accQ(
           'qtyViews',
           <>
@@ -769,7 +458,7 @@ const StepConfigurator = ({
         )}
       {S.projectType === 'ecom' &&
         S.product &&
-        sessionValid(S) &&
+        isSessionValid(S) &&
         accQ(
           'postprod',
           <>
@@ -841,7 +530,7 @@ const StepConfigurator = ({
           </div>
         </div>
       )}
-      {sessionValid(active) && activeIdx === sessions.length - 1 && (
+      {isSessionValid(active) && activeIdx === sessions.length - 1 && (
         <div className="px-6 py-1.5 flex justify-center items-center bg-background">
           <Button
             type="button"

@@ -89,7 +89,6 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
     contact,
     setContact,
     today,
-    setConfigGlobal,
     setConfigSessions,
     activeSessionIdx,
     setActiveSessionIdx,
@@ -265,14 +264,10 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
         <div ref={innerScrollRef} className="flex-1 overflow-y-auto">
           {step === STEP.CONFIG && (
             <StepConfigurator
-              lang={lang}
-              global={configGlobal}
-              setGlobal={setConfigGlobal}
               sessions={configSessions}
               setSessions={setConfigSessions}
               activeIdx={activeSessionIdx}
               setActiveIdx={setActiveSessionIdx}
-              onApply={applyConfig}
               onSkip={skipConfig}
               onReset={() => {
                 resetSelection();
