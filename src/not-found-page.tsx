@@ -4,6 +4,7 @@ import { SCREEN_TO_PATH } from './lib/screens';
 import type { Lang } from './types';
 import { cn } from '@/lib/utils';
 import { MonoLabel } from './ui/mono-label';
+import { MAIN_ID } from './ui/skip-link';
 import { Button } from '@/components/ui/button';
 
 const COPY = {
@@ -101,7 +102,17 @@ export const NotFoundPage = () => {
   const contactHref = SCREEN_TO_PATH.contact(lang);
 
   return (
+    // `id` et non un `<main>` nu : `SkipLink` est rendu par __root sur TOUTES
+    // les pages, 404 comprise, et cherche `#contenu`. Sans lui, « aller au
+    // contenu » ne faisait rien ici et laissait le focus sur `<body>` — le
+    // même défaut que la confirmation de réservation, dernière occurrence.
+    //
+    // Cette page est la seule sans bande d'en-tête : elle n'est nulle part,
+    // donc elle ne se nomme pas et ne porte pas la navigation du site. C'est
+    // aussi pourquoi elle n'emploie pas `PageShell` — il n'y a pas de bento à
+    // verrouiller, seulement un bloc centré.
     <main
+      id={MAIN_ID}
       role="main"
       className={cn(
         'flex min-h-screen w-full flex-col items-center justify-center gap-6 bg-background px-6 py-16 text-center text-foreground',
