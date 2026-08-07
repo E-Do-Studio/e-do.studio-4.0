@@ -7,7 +7,11 @@ import type { BookPlateau, Lang, PriceBreakdown } from '../lib/booking-engine';
 import { BOOK_PLATEAUX, buildSessionsData } from '../lib/booking-engine';
 import type { ContactFormErrors } from '../lib/booking-schema';
 import { validateContact } from '../lib/booking-schema';
-import { createBooking } from '../lib/bookings';
+import {
+  createBooking,
+  reportBookingFailure,
+  SlotTakenError,
+} from '../lib/bookings';
 import {
   HUBSPOT_BOOKING_FORM_ID,
   submitHubspotForm,
@@ -184,14 +188,40 @@ function useBookingSubmit({
         clearDraft();
         navigate({ to: confirmationPath(lang) });
       } catch (err) {
-        const msg = err instanceof Error ? err.message : '';
+        // Le détail technique part dans la console, et n'atteint jamais
+        // l'écran. « NetworkError when attempting to fetch resource » ou
+        // « create-booking 500 » n'apprennent rien à qui réserve, ne sont pas
+        // dans sa langue, et ne lui disent pas quoi faire. La règle du dépôt
+        // dit qu'une erreur doit être visible et journalisée — pas qu'elle doit
+        // être servie brute.
+        console.error('[booking] échec de la soumission', err);
+
         // Créneau pris entre-temps : le cache d'availability ment, on le vide
         // et on force un rechargement du calendrier.
-        if (msg.includes('réservé') || msg.includes('already booked')) {
+        //
+        // `instanceof` et non une recherche de sous-chaîne : le test portait
+        // sur « réservé » ou « already booked », donc sur la langue du message
+        // d'une exception — il tombait dès que ce message changeait d'un mot.
+        if (err instanceof SlotTakenError) {
           clearAvailabilityCache();
           setAvailRefreshKey((k) => k + 1);
+          setSaveError(t('booking.slotTakenError'));
+        } else {
+          // Un créneau pris entre-temps est le fonctionnement normal de la
+          // contrainte d'exclusion — le client choisit une autre heure et
+          // repart. Tout le reste est un incident, et le studio doit
+          // l'apprendre autrement qu'en attendant un appel.
+          reportBookingFailure({
+            error: err,
+            mode: submitMode,
+            contactName: [contact.prenom, contact.nom]
+              .filter(Boolean)
+              .join(' '),
+            contactEmail: contact.email,
+            contactPhone: contact.tel,
+          });
+          setSaveError(t('booking.saveError'));
         }
-        setSaveError(msg || t('booking.saveError'));
       } finally {
         setSaving(false);
       }

@@ -5,10 +5,11 @@ import { submitContactForm } from './lib/contact';
 import { useT } from './i18n/use-t';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { ArrowRight } from 'lucide-react';
+import { FormCell, FormCellInput, FormCellTextarea } from './ui/form-cell';
+import { SectionIntro } from './ui/section-intro';
+import { StatusBadge } from './ui/status-badge';
+import { CtaCell } from './ui/cta-cell';
 
 export const INITIAL_FORM: ContactFormData = {
   nom: '',
@@ -39,59 +40,102 @@ export const ContactForm = ({
   return (
     <form
       onSubmit={submit}
-      className="grid grid-cols-2 grid-rows-[96px_64px_64px_64px_minmax(0,1fr)_44px] gap-px bg-border md:h-full"
+      // Le rythme de la colonne vient des tokens : le rail de contact, à côté,
+      // aligne ses coutures sur le même module. Les deux mesures étaient écrites
+      // en littéraux ici ET dans le rail, donc elles dérivaient séparément.
+      //
+      // Le PIED est la seule piste qui change de valeur selon le palier, d'où la
+      // variable : au-dessus de `app` les deux colonnes sont côte à côte, et le
+      // rail s'y ferme sur DEUX cellules — le pavé d'itinéraire et la bande
+      // sociale, plus leur couture. Le pavé d'envoi leur fait face d'un seul
+      // tenant, sinon sa couture haute tombe au milieu du pied voisin. Sous le
+      // palier les colonnes sont empilées : il n'y a plus de voisin, le pavé
+      // revient à une bande.
+      className="grid grid-cols-2 grid-rows-[var(--spacing-col-head)_repeat(3,var(--spacing-col-row))_minmax(0,1fr)_var(--form-foot)] gap-px bg-border [--form-foot:var(--spacing-band)] app:h-full app:[--form-foot:calc(2*var(--spacing-band)+1px)]"
     >
-      <div className="col-span-2 flex flex-col justify-center bg-background px-5 py-2.5">
-        <span className="font-mono text-xs uppercase tracking-widest text-primary">
-          {t('contact.writeToUs')}
-        </span>
-        <h1 className="m-0 mt-0.5 text-2xl font-light leading-none tracking-tighter text-foreground">
-          {t('contact.projectVisit')}
-        </h1>
-      </div>
+      {/* `<h2>` et non `<h1>` : la page porte déjà le sien (contact-page).
+          Le formulaire est aussi embarqué dans la galerie et le tunnel, où
+          un second `<h1>` doublonnait à chaque fois.
 
-      <Input
-        variant="bento"
-        required
-        value={form.nom}
-        onChange={(e) => setForm({ ...form, nom: e.target.value })}
-        placeholder={t('contact.name')}
-        className="col-start-1 row-start-2"
+          Plus de sur-titre : « Écrivez-nous » ne disait rien que « Un projet,
+          une visite ? » ne dise déjà, et le `h1` de la page étant `sr-only`,
+          ce titre EST celui de l'écran — au registre `flow`, un cran au-dessus
+          des cellules du rail (`HeadlineCell`, « titre de cellule »), il porte
+          enfin la hiérarchie que le mono orange simulait.
+
+          `px-4 sm:px-3` est la paire de `FormCell` : le titre démarre sur la
+          verticale des libellés de champ qu'il coiffe, pas 8px à leur droite. */}
+      <SectionIntro
+        size="flow"
+        as="h2"
+        title={t('contact.projectVisit')}
+        className="col-span-2 justify-center bg-background px-4 py-2.5 sm:px-3"
       />
-      <Input
-        variant="bento"
-        required
-        type="tel"
-        value={form.telephone}
-        onChange={(e) => setForm({ ...form, telephone: e.target.value })}
-        placeholder={t('contact.phonePlaceholder')}
-        className="col-start-2 row-start-2"
-      />
-      <Input
-        variant="bento"
-        required
-        type="email"
-        value={form.email}
-        onChange={(e) => setForm({ ...form, email: e.target.value })}
-        placeholder="Email*"
-        className="col-span-2 row-start-3"
-      />
-      <Input
-        variant="bento"
-        required
-        value={form.societe}
-        onChange={(e) => setForm({ ...form, societe: e.target.value })}
-        placeholder={t('contact.companyBrand')}
-        className="col-span-2 row-start-4"
-      />
-      <Textarea
-        variant="bento"
-        required
-        value={form.message}
-        onChange={(e) => setForm({ ...form, message: e.target.value })}
-        placeholder={t('contact.yourMessage')}
-        className="col-span-2 row-start-5 min-h-36"
-      />
+
+      <FormCell
+        label={t('contact.name')}
+        className="col-start-1 row-start-2 justify-center"
+      >
+        <FormCellInput
+          name="nom"
+          autoComplete="name"
+          placeholder={t('contact.placeholderName')}
+          value={form.nom}
+          onChange={(nom) => setForm({ ...form, nom })}
+        />
+      </FormCell>
+      <FormCell
+        label={t('contact.phonePlaceholder')}
+        className="col-start-2 row-start-2 justify-center"
+      >
+        <FormCellInput
+          type="tel"
+          name="telephone"
+          autoComplete="tel"
+          inputMode="tel"
+          placeholder={t('contact.placeholderPhone')}
+          value={form.telephone}
+          onChange={(telephone) => setForm({ ...form, telephone })}
+        />
+      </FormCell>
+      <FormCell
+        label="Email*"
+        className="col-span-2 row-start-3 justify-center"
+      >
+        <FormCellInput
+          type="email"
+          name="email"
+          autoComplete="email"
+          inputMode="email"
+          placeholder={t('contact.placeholderEmail')}
+          value={form.email}
+          onChange={(email) => setForm({ ...form, email })}
+        />
+      </FormCell>
+      <FormCell
+        label={t('contact.companyBrand')}
+        className="col-span-2 row-start-4 justify-center"
+      >
+        <FormCellInput
+          name="societe"
+          autoComplete="organization"
+          placeholder={t('contact.placeholderCompany')}
+          value={form.societe}
+          onChange={(societe) => setForm({ ...form, societe })}
+        />
+      </FormCell>
+      <FormCell
+        label={t('contact.yourMessage')}
+        className="col-span-2 row-start-5 justify-start"
+      >
+        <FormCellTextarea
+          name="message"
+          placeholder={t('contact.placeholderMessage')}
+          value={form.message}
+          onChange={(message) => setForm({ ...form, message })}
+          fill
+        />
+      </FormCell>
 
       {sendError && (
         <Alert variant="destructive" className="col-span-2 rounded-none">
@@ -99,19 +143,12 @@ export const ContactForm = ({
         </Alert>
       )}
 
-      <Button
+      <CtaCell
         type="submit"
         disabled={sending}
-        className="col-span-2 row-start-6 h-full gap-3.5 "
-      >
-        {sending ? (
-          t('common.sending')
-        ) : (
-          <>
-            {t('common.send')} <ArrowRight data-icon="inline-end" />
-          </>
-        )}
-      </Button>
+        title={sending ? t('common.sending') : t('common.send')}
+        className="col-span-2 row-start-6"
+      />
     </form>
   );
 };
@@ -129,27 +166,31 @@ export const ContactSuccess = ({
 }: ContactSuccessProps) => {
   const t = useT();
   return (
-    <div className="flex h-full flex-col items-start justify-center gap-4 bg-background px-7 py-8">
-      <span className="font-mono text-xs uppercase tracking-widest text-primary">
-        ✓ {t('contact.messageSent')}
-      </span>
-      <h1 className="m-0 max-w-lg text-3xl font-light leading-tight tracking-tighter text-foreground">
-        {t('contact.thanksSoon')}
-      </h1>
-      <p className="m-0 max-w-md text-sm leading-normal text-muted-foreground">
-        {t('contact.replyTime')}
-      </p>
-      <div className="mt-3 flex flex-wrap gap-2.5">
-        <Button variant="outline" size="lg" onClick={onNewMessage}>
-          {t('contact.newMessage')}
+    // Le sur-titre reste ici, mais en pastille : il porte un ÉTAT, pas une
+    // catégorie décorative — et `<output>` l'annonce comme tel. C'est la forme
+    // que la confirmation de réservation lui donne déjà (`book-confirmation`).
+    // Le `✓` en préfixe disparaît : l'aplat orange est la marque.
+    <SectionIntro
+      size="flow"
+      as="h2"
+      kicker={
+        <StatusBadge render={<output />} size="md" className="self-start">
+          {t('contact.messageSent')}
+        </StatusBadge>
+      }
+      title={t('contact.thanksSoon')}
+      subtitle={t('contact.replyTime')}
+      className="h-full items-start justify-center bg-background px-7 py-8"
+    >
+      <Button variant="outline" size="lg" onClick={onNewMessage}>
+        {t('contact.newMessage')}
+      </Button>
+      {onContinue && (
+        <Button size="lg" onClick={onContinue}>
+          {continueLabel ?? `${t('common.backToGallery')} →`}
         </Button>
-        {onContinue && (
-          <Button size="lg" onClick={onContinue}>
-            {continueLabel ?? `${t('common.backToGallery')} →`}
-          </Button>
-        )}
-      </div>
-    </div>
+      )}
+    </SectionIntro>
   );
 };
 
@@ -187,7 +228,7 @@ export const EmbeddedContactForm = ({
   };
 
   return (
-    <div className={cn('bg-background md:h-full', className)}>
+    <div className={cn('bg-background app:h-full', className)}>
       {!sent ? (
         <ContactForm
           lang={lang}

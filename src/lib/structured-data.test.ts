@@ -138,6 +138,55 @@ describe('buildLocalBusinessSchema', () => {
       buildLocalBusinessSchema({ lang: 'en', contact } as never).inLanguage,
     ).toBe('en-US');
   });
+
+  // Régression silencieuse : le bloc relisait la CHAÎNE D'AFFICHAGE à la regex
+  // puis annonçait `[Monday…Friday]` quelle que soit la donnée. Un studio ouvert
+  // du mardi au samedi déclarait donc à Google des horaires du lundi au vendredi,
+  // et rien dans l'app ne montrait l'erreur.
+  it('déclare les jours que la donnée porte, pas lundi–vendredi', () => {
+    const s = buildLocalBusinessSchema({
+      lang: 'fr',
+      contact,
+      hours: {
+        rows: [
+          {
+            days: ['tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
+            label: { fr: 'mar — sam', en: 'Tue — Sat' },
+            value: { fr: '10:00 — 18:00', en: '10:00 — 18:00' },
+            kind: 'hours',
+            opens: '10:00',
+            closes: '18:00',
+          },
+        ],
+      },
+    } as never);
+    expect(s.openingHoursSpecification).toEqual([
+      {
+        '@type': 'OpeningHoursSpecification',
+        dayOfWeek: ['Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+        opens: '10:00',
+        closes: '18:00',
+      },
+    ]);
+  });
+
+  it('ne déclare pas les jours fermés ou sur rendez-vous', () => {
+    const s = buildLocalBusinessSchema({
+      lang: 'fr',
+      contact,
+      hours: {
+        rows: [
+          {
+            days: ['saturday', 'sunday'],
+            label: { fr: 'sam — dim', en: 'Sat — Sun' },
+            value: { fr: 'Sur rendez-vous', en: 'By appointment' },
+            kind: 'status',
+          },
+        ],
+      },
+    } as never);
+    expect(s.openingHoursSpecification).toBeUndefined();
+  });
 });
 
 describe('buildPageBreadcrumb', () => {

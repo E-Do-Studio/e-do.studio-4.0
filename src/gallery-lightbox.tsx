@@ -175,8 +175,29 @@ export const GalleryLightbox = ({
   // thème mais la photo. Le scope `dark` porté par la barre fait résoudre les
   // tokens vers la palette sombre — même rendu qu'un blanc écrit en dur, mais
   // tokenisé.
+  //
+  // `variant="ghost"` est indispensable et manquait : sans lui les trois
+  // boutons tombaient sur `default`, donc `bg-primary`. Trois pavés orange
+  // posés sur la photo, dont deux à `opacity-30` quand ils sont désactivés —
+  // soit deux carrés bruns et un orange vif, là où le `hover:bg-foreground/15`
+  // écrit juste en dessous suppose un fond transparent au repos.
+  //
+  // La cible tactile passe par `icon-touch` (44px, la règle du dépôt) et se
+  // resserre à 32 au pointeur. À `icon-sm`, les trois boutons faisaient 28px de
+  // côté sur une barre qui est la SEULE façon de zoomer au doigt : le pincement
+  // n'est pas implémenté.
+  //
+  // `opacity-40` et non 30 pour l'état désactivé : à l'ouverture, deux des trois
+  // boutons le sont (on ne dézoome pas depuis 100 %, on ne réinitialise pas une
+  // vue déjà initiale). À 30 % ils disparaissaient et la barre s'ouvrait sur ce
+  // qui ressemblait à un contrôle cassé.
+  // Les icônes portent leur taille en classe, pas via la prop `size` de lucide :
+  // la base du bouton ne dimensionne que les `svg` SANS classe de taille
+  // (`:not([class*='size-'])`), donc la déclarer ici évite d'avoir deux règles
+  // qui se disputent le même glyphe.
   const zoomBtn =
-    'text-foreground hover:bg-foreground/15 disabled:opacity-30 disabled:hover:bg-transparent';
+    'size-tap md:size-8 text-foreground hover:bg-foreground/15 disabled:opacity-40 disabled:hover:bg-transparent';
+  const zoomIcon = 'size-5 md:size-4';
 
   const canReset = scale !== MIN_SCALE || tx !== 0 || ty !== 0;
 
@@ -273,18 +294,34 @@ export const GalleryLightbox = ({
               ) : null}
             </div>
 
+            {/* `select-none` : la surface au-dessus zoome au clic, et deux
+                clics rapprochés près de la barre surlignaient le « 100 % » en
+                bleu système. */}
             {zoomable && (
-              <div className="dark absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 border border-border bg-background/35 px-1.5 py-1 backdrop-blur-md">
+              // `bg-background/35` rendait la lisibilité de la barre dépendante
+              // de la photo : sur un fond clair, le noir à 35 % donnait un gris
+              // moyen sur lequel le `text-muted-foreground` du pourcentage
+              // tombait à ~1,2:1 — illisible — et les boutons désactivés
+              // disparaissaient. À 85 %, la barre est une surface à elle seule,
+              // le flou d'arrière-plan reste visible, et le contraste ne dépend
+              // plus de ce qu'il y a derrière. L'ombre remplace le filet dans
+              // son rôle de détachement : le filet, lui, reste pour la structure.
+              <div className="dark absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 select-none items-center gap-1 border border-border bg-background/85 px-1.5 py-1 shadow-lg backdrop-blur-md">
                 <Button
                   type="button"
                   onClick={zoomOut}
                   disabled={scale <= MIN_SCALE}
                   aria-label={t('common.zoomOut')}
+                  variant="ghost"
+                  size="icon-sm"
                   className={zoomBtn}
                 >
-                  <Minus size={16} strokeWidth={1.5} />
+                  <Minus strokeWidth={1.5} className={zoomIcon} />
                 </Button>
-                <span className="min-w-11 text-center font-mono text-xs tracking-widest tabular-nums text-muted-foreground">
+                {/* Le pourcentage est la valeur que le contrôle affiche, pas son
+                    intitulé : il se lit en `foreground`. En `muted-foreground`
+                    il était l'élément le moins lisible de la barre. */}
+                <span className="min-w-11 text-center font-mono text-xs tracking-widest tabular-nums text-foreground">
                   {Math.round(scale * 100)}%
                 </span>
                 <Button
@@ -292,19 +329,29 @@ export const GalleryLightbox = ({
                   onClick={zoomIn}
                   disabled={scale >= MAX_SCALE}
                   aria-label={t('common.zoomIn')}
+                  variant="ghost"
+                  size="icon-sm"
                   className={zoomBtn}
                 >
-                  <Plus size={16} strokeWidth={1.5} />
+                  <Plus strokeWidth={1.5} className={zoomIcon} />
                 </Button>
-                <span className="mx-1 h-4 w-px bg-muted" aria-hidden="true" />
+                {/* `bg-muted` sous la portée `dark` vaut un gris sombre : un
+                    trait presque noir sur une barre déjà sombre. `border` est
+                    le token du filet, ici du blanc à 10 %. */}
+                <span
+                  className="mx-1 h-5 w-px bg-border md:h-4"
+                  aria-hidden="true"
+                />
                 <Button
                   type="button"
                   onClick={zoomReset}
                   disabled={!canReset}
                   aria-label={t('common.resetZoom')}
+                  variant="ghost"
+                  size="icon-sm"
                   className={zoomBtn}
                 >
-                  <RotateCcw size={16} strokeWidth={1.5} />
+                  <RotateCcw strokeWidth={1.5} className={zoomIcon} />
                 </Button>
               </div>
             )}

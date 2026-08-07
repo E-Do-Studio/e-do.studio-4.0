@@ -1,18 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useLoaderData, useParams } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-} from '@/components/ui/drawer';
 import { CarouselNav } from './ui/carousel-nav';
-import { HoverMarquee } from './ui/hover-marquee';
-import { ArrowRight, ChevronsUpDown, Pause, Play, X } from 'lucide-react';
-import { PageHeader } from './ui/page-header';
+import { Rail, RailCell } from './ui/rail-cell';
+import { SelectionDrawer } from './ui/selection-drawer';
+import { ordinal } from './lib/format';
+import { Pause, Play } from 'lucide-react';
+import { MonoLabel } from './ui/mono-label';
+import { SectionIntro } from './ui/section-intro';
+import { PageShell } from './ui/page-shell';
+import { MAIN_ID } from './ui/skip-link';
 import { ResponsiveImage } from './ui/responsive-image';
+import { MediaFrame } from './ui/media-frame';
 import { cn } from '@/lib/utils';
 import { VideoLoop } from './ui/video-loop';
 import { usePageContext } from './lib/page-context';
@@ -20,6 +19,8 @@ import type { PlateauSpec } from './lib/strapi';
 import { useT } from './i18n/use-t';
 import type { Lang } from './types';
 import type { MediaItem } from './lib/strapi';
+import { CtaCell } from './ui/cta-cell';
+import { KeyValueList, KeyValueRow } from './ui/key-value-row';
 
 interface CoverCarouselProps {
   items: MediaItem[];
@@ -72,14 +73,23 @@ const Cover = ({
   // en dur. Le reste (curseur, centrage, anneau de focus, transition) vient
   // déjà de la base de `Button`.
   const ctrlBtn =
-    'dark absolute z-10 border border-foreground/20 bg-background/35 text-foreground backdrop-blur-md hover:bg-background/50 active:scale-[0.96] opacity-100 md:opacity-0 md:scale-95 md:group-hover:opacity-100 md:group-hover:scale-100 md:group-focus-within:opacity-100 md:group-focus-within:scale-100';
+    'dark absolute z-10 border border-foreground/20 bg-background/35 text-foreground backdrop-blur-md hover:bg-background/50 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100';
 
   return (
-    <div
-      className={cn(
-        'group relative overflow-hidden bg-background aspect-[4/3] md:aspect-auto md:min-h-0',
-        className,
-      )}
+    // La couverture remplit sa cellule, comme toutes les cellules du bento :
+    // 4/3 sous le palier, la rangée de grille au dessus. Son ratio suit donc la
+    // fenêtre — c'est la contrepartie du remplissage bord à bord, et elle est
+    // acceptable ici : une seule photo, jamais réduite à une tranche, et
+    // `fit` bascule en `contain` pour les sources qui ne supportent pas d'être
+    // recadrées (voir le seuil plus haut).
+    //
+    // `tone="background"` : le seul cadre du site dont le vide reste visible
+    // une fois l'image chargée — ce fond est celui de la page, pas le gris de
+    // chargement.
+    <MediaFrame
+      ratio="photo"
+      tone="background"
+      className={cn('group app:aspect-auto app:min-h-0', className)}
       role={hasMultiple ? 'group' : undefined}
       aria-roledescription={hasMultiple ? 'carousel' : undefined}
       aria-label={hasMultiple ? t('common.imageCarousel') : undefined}
@@ -100,10 +110,7 @@ const Cover = ({
           alt={item.alt[lang] || `${plateauName} — ${index + 1}`}
           sizes="(min-width: 768px) 60vw, 100vw"
           priority
-          className={cn(
-            'absolute inset-0 h-full w-full',
-            fit === 'contain' ? 'object-contain' : 'object-cover',
-          )}
+          fit={fit}
         />
       )}
 
@@ -132,7 +139,7 @@ const Cover = ({
           </span>
         </>
       )}
-    </div>
+    </MediaFrame>
   );
 };
 
@@ -167,22 +174,30 @@ const ThumbStrip = ({
   const tileSizes = `(min-width: 768px) ${Math.ceil(60 / items.length)}vw, ${Math.ceil(100 / items.length)}vw`;
 
   return (
-    <div className={cn('relative h-16 md:h-full', className)}>
+    <div className={cn('relative h-16 app:h-full', className)}>
       <div className="flex h-full gap-px bg-border overflow-hidden">
         {items.map((item, i) => {
           const isActive = i === activeIndex;
           return (
-            <Button
+            // La tuile prend la hauteur de la bande, pas un ratio : c'est la
+            // bande qui est mesurée, et les n tuiles s'y partagent la largeur.
+            <MediaFrame
               key={`${item.url}-${i}`}
-              type="button"
-              onClick={() => onSelect(i)}
-              aria-label={`${item.alt[lang] || plateauName} — ${i + 1} / ${items.length}`}
-              aria-current={isActive ? 'true' : undefined}
+              ratio="fill"
+              tone="background"
               className={cn(
-                'group relative h-full overflow-hidden bg-background p-0 opacity-60 transition-opacity',
+                'group p-0 opacity-60 transition-opacity',
                 'hover:opacity-100 aria-[current=true]:opacity-100',
               )}
               style={{ flexBasis: tileBasis }}
+              render={
+                <Button
+                  type="button"
+                  onClick={() => onSelect(i)}
+                  aria-label={`${item.alt[lang] || plateauName} — ${i + 1} / ${items.length}`}
+                  aria-current={isActive ? 'true' : undefined}
+                />
+              }
             >
               {item.kind === 'video' ? (
                 <VideoLoop
@@ -197,10 +212,9 @@ const ThumbStrip = ({
                   src={item.previewUrl ?? item.url}
                   alt={item.alt[lang] || `${plateauName} — ${i + 1}`}
                   sizes={tileSizes}
-                  className="absolute inset-0 h-full w-full object-cover"
                 />
               )}
-            </Button>
+            </MediaFrame>
           );
         })}
       </div>
@@ -217,7 +231,6 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
   const t = useT();
   const { lang, goto } = usePageContext();
   const [activeIndex, setActiveIndex] = useState(0);
-  const [navSheetOpen, setNavSheetOpen] = useState(false);
   if (!plateaux) return null;
   const p = plateaux[slug] || plateaux.cyclorama;
   if (!p) return null;
@@ -232,290 +245,215 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
   const goNext = () => setActiveIndex((i) => i + 1);
 
   // Mobile navigation between plateaux: a sticky row at the top of the page
-  // shows the currently selected plateau (number · name · tagline · arrow);
+  // shows the currently selected plateau (number, name, tagline, arrow);
   // tapping it opens a Drawer listing all plateaux. Tapping a row in the
   // sheet navigates immediately and closes the sheet.
   const navigateToPlateau = (key: string) => {
     if (key === slug) {
-      setNavSheetOpen(false);
       return;
     }
-    setNavSheetOpen(false);
     goto(key === 'cyclorama' ? 'cyclorama' : `plateau-${key}`);
   };
-  const currentNumber = String(Math.max(0, order.indexOf(slug)) + 1).padStart(
-    2,
-    '0',
-  );
 
   return (
-    /* Mobile: single-column stacked, scrollable. Desktop (md+): 4-column bento */
-    <main className="grid w-full gap-px bg-border md:h-full md:grid-cols-[var(--spacing-logo)_repeat(3,minmax(0,1fr))] md:grid-rows-[var(--spacing-header)_78px_minmax(0,1.58fr)_minmax(0,0.5fr)_minmax(0,0.52fr)] md:overflow-hidden">
-      {/* Unified header — compact right-aligned actions on all breakpoints */}
-      <PageHeader className="col-span-full md:row-start-1" />
+    /* Mobile: single-column stacked, scrollable. Desktop (app+): 4-column bento */
+    /* `<main class="contents">` : voir home-page — la grille impose l'en-tête
+       et le contenu comme frères, le landmark ne doit pas englober le premier. */
+    <PageShell className="app:grid-cols-[var(--spacing-logo)_repeat(3,minmax(0,1fr))] app:grid-rows-[var(--spacing-header)_78px_minmax(0,1.58fr)_minmax(0,0.5fr)_minmax(0,0.52fr)]">
+      <main id={MAIN_ID} className="contents">
+        {/* `SelectionDrawer` rend les mêmes `RailCell` que la colonne desktop.
+            Le commentaire d'origine reconnaissait ici copier le gabarit de
+            `MobileNavStrip` — la copie est remplacée par le composant. */}
+        <SelectionDrawer
+          title={t('common.stages')}
+          items={order
+            .filter((m) => plateaux[m])
+            .map((m) => ({
+              key: m,
+              label: plateaux[m].name,
+              sub: plateaux[m].tagline[lang],
+            }))}
+          activeKey={slug}
+          onSelect={navigateToPlateau}
+          closeLabel={t('common.close')}
+        />
 
-      {/* Mobile navigation: same sticky strip gabarit as MobileNavStrip
- (gallery filters) — h-14 wrapper with min-h-11 trigger button. Tap
- opens a Drawer listing all plateaux. */}
-      <div
-        className="sticky top-header z-30 flex h-14 items-stretch border-b border-border bg-background md:hidden"
-        role="toolbar"
-        aria-label={t('common.stages')}
-      >
-        <Button
-          type="button"
-          onClick={() => setNavSheetOpen(true)}
-          aria-haspopup="dialog"
-          aria-expanded={navSheetOpen}
-          aria-controls="plateau-nav-sheet"
-          variant="cell"
-          size="cell"
-          className="min-h-11 w-full flex-row items-center gap-2 bg-transparent px-4"
-        >
-          <span className="font-mono text-xs uppercase tracking-widest text-foreground">
-            {currentNumber}
-          </span>
-          <HoverMarquee className="text-base tracking-tight font-medium text-foreground">
-            {p.name}
-          </HoverMarquee>
-          <span className="ml-auto flex shrink-0 items-center gap-2">
-            <HoverMarquee className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-              {p.tagline[lang]}
-            </HoverMarquee>
-            <ChevronsUpDown
-              width="16"
-              height="16"
-              className="shrink-0 text-foreground"
-            />
-          </span>
-        </Button>
-      </div>
+        {/* Desktop sidebar: vertical list, hidden on mobile (replaced by inline pill nav). */}
+        <Rail className="hidden app:col-start-1 app:row-start-2 app:row-span-4 app:flex app:overflow-x-hidden">
+          {order.map((m, i) => {
+            const cfg = plateaux[m];
+            if (!cfg) return null;
+            return (
+              <RailCell
+                key={m}
+                number={ordinal(i)}
+                label={cfg.name}
+                sub={cfg.tagline[lang]}
+                density="tall"
+                active={m === slug}
+                onSelect={() =>
+                  goto(m === 'cyclorama' ? 'cyclorama' : 'plateau-' + m)
+                }
+              />
+            );
+          })}
+        </Rail>
 
-      <Drawer open={navSheetOpen} onOpenChange={setNavSheetOpen}>
-        <DrawerContent id="plateau-nav-sheet">
-          <DrawerHeader>
-            <DrawerTitle>{t('common.stages')}</DrawerTitle>
-            <DrawerClose
-              aria-label={t('common.close')}
-              render={<Button variant="ghost" size="icon" />}
-            >
-              <X />
-            </DrawerClose>
-          </DrawerHeader>
-          <ul className="m-0 flex list-none flex-col overflow-y-auto p-0">
-            {order.map((m, i) => {
-              const cfg = plateaux[m];
-              if (!cfg) return null;
-              const active = m === slug;
-              const num = String(i + 1).padStart(2, '0');
-              return (
-                <li key={m}>
-                  <Button
-                    type="button"
-                    onClick={() => navigateToPlateau(m)}
-                    variant="cell"
-                    aria-current={active ? 'page' : undefined}
-                    // L'état actif inverse la cellule : c'est exactement ce
-                    // que fait le scope `dark`. Les enfants n'ont donc plus
-                    // besoin de connaître l'état — leurs tokens basculent
-                    // d'eux-mêmes.
-                    className={cn(
-                      'min-h-14 w-full gap-4 border-b border-border px-4 py-3 text-left',
-                      active && 'dark',
-                    )}
-                  >
-                    <span className="font-mono text-xs tracking-widest text-muted-foreground">
-                      {num}
-                    </span>
-                    <HoverMarquee className="text-base tracking-tight font-medium">
-                      {cfg.name}
-                    </HoverMarquee>
-                    <HoverMarquee className="ml-auto font-mono text-xs uppercase tracking-widest text-muted-foreground">
-                      {cfg.tagline[lang]}
-                    </HoverMarquee>
-                    <ArrowRight />
-                  </Button>
-                </li>
-              );
-            })}
-          </ul>
-        </DrawerContent>
-      </Drawer>
-
-      {/* Desktop sidebar: vertical list, hidden on mobile (replaced by inline pill nav). */}
-      <div className="hidden bg-background md:col-start-1 md:row-start-2 md:row-span-4 md:flex md:flex-col md:overflow-x-hidden md:overflow-y-auto">
-        {order.map((m, i) => {
-          const cfg = plateaux[m];
-          if (!cfg) return null;
-          const active = m === slug;
-          return (
-            <Button
-              key={m}
-              onClick={() =>
-                goto(m === 'cyclorama' ? 'cyclorama' : 'plateau-' + m)
-              }
-              variant="rail"
-              size="cell"
-              aria-pressed={active}
-              // La colonne est `hidden md:flex` : une classe sans préfixe
-              // `md:` ne vaudrait qu'en dessous du palier, où l'élément
-              // n'existe pas. Seul l'état `md:` a donc un sens ici.
-              className="group flex-none gap-1 border-b border-b-border px-4 py-3.5"
-            >
-              <span className="font-mono text-xs tracking-widest text-muted-foreground group-aria-pressed:text-primary">
-                {String(i + 1).padStart(2, '0')}
-              </span>
-              <span className="whitespace-nowrap text-base font-normal tracking-tight text-muted-foreground group-aria-pressed:font-medium group-aria-pressed:text-foreground">
-                {cfg.name}
-              </span>
-              <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground hidden md:block">
-                {cfg.tagline[lang]}
-              </span>
-            </Button>
-          );
-        })}
-      </div>
-
-      {/* Cover — current media item with prev/next arrows overlaid inside the
+        {/* Cover — current media item with prev/next arrows overlaid inside the
  image. The cover and the thumbnail strip below share `activeIndex`,
  so navigating either control keeps both in sync. */}
-      {coverItems.length > 0 && (
-        <Cover
-          items={coverItems}
-          lang={lang}
-          plateauName={p.name}
-          index={safeIndex}
-          onPrev={goPrev}
-          onNext={goNext}
-          className="md:col-start-2 md:col-span-2 md:row-start-2 md:row-span-2 md:min-h-0"
-        />
-      )}
+        {coverItems.length > 0 && (
+          <Cover
+            items={coverItems}
+            lang={lang}
+            plateauName={p.name}
+            index={safeIndex}
+            onPrev={goPrev}
+            onNext={goNext}
+            className="app:col-start-2 app:col-span-2 app:row-start-2 app:row-span-2 app:min-h-0"
+          />
+        )}
 
-      {/* Thumbnail strip — every media item visible at once (1/n width each),
+        {/* Thumbnail strip — every media item visible at once (1/n width each),
  no scroll, no arrows. Clicking a tile sets it as the cover. */}
-      {coverItems.length > 0 && (
-        <ThumbStrip
-          items={coverItems}
-          lang={lang}
-          plateauName={p.name}
-          activeIndex={safeIndex}
-          onSelect={setActiveIndex}
-          className="md:col-start-2 md:col-span-2 md:row-start-4 md:min-h-0"
-        />
-      )}
+        {coverItems.length > 0 && (
+          <ThumbStrip
+            items={coverItems}
+            lang={lang}
+            plateauName={p.name}
+            activeIndex={safeIndex}
+            onSelect={setActiveIndex}
+            className="app:col-start-2 app:col-span-2 app:row-start-4 app:min-h-0"
+          />
+        )}
 
-      {/* Name + tagline. Hidden on mobile because the sticky picker trigger
+        {/* Name + tagline. Hidden on mobile because the sticky picker trigger
  above already shows the plateau name + tagline — repeating them as a
  large hero right under the trigger felt duplicated. The trigger acts
  as the mobile heading; the desktop layout still surfaces this block
  in the right-hand column. The h1 below stays in the DOM on mobile
  via sr-only so screen readers always have a page heading. */}
-      <h1 className="sr-only md:hidden">{p.name}</h1>
-      <div className="hidden bg-background py-3.5 px-4 md:col-start-4 md:row-start-2 md:flex md:flex-col md:justify-between md:gap-1">
-        <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-          {p.tagline[lang]}
-        </span>
-        <h1 className="text-2xl font-light m-0 tracking-tighter leading-none">
-          {p.name}
-        </h1>
-      </div>
+        <h1 className="sr-only app:hidden">{p.name}</h1>
 
-      {/* Specifications */}
-      <div className="bg-background p-3 px-4 flex flex-col gap-1.5 md:col-start-4 md:row-start-3">
-        <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-          {t('plateau.specs')}
-        </span>
-        <div className="flex flex-col flex-1 min-h-0">
-          {p.specs.map((s) => (
-            <div
-              key={s.k.fr}
-              className="flex items-baseline justify-between gap-3 border-b border-border py-1 text-xs last:border-b-0"
-            >
-              <span className="text-muted-foreground shrink-0">
-                {s.k[lang]}
-              </span>
-              <span className="text-foreground font-mono tracking-widest text-xs text-right whitespace-pre-line overflow-hidden line-clamp-2 leading-snug">
-                {(s.v[lang] || '').split(' · ').join(' ')}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
+        {/* `px-4 py-3.5` par-dessus le `px-pad-cell py-4` de la variante : les
+            trois cellules qui suivent dans cette colonne sont en `px-4`, et un
+            titre en retrait de 20 quand son voisin l'est de 16 se voit à la
+            jonction. C'est la colonne entière qui s'écarte du canon, pas cette
+            cellule-ci — la remettre seule d'aplomb la désalignerait. */}
+        <SectionIntro
+          size="xs"
+          kicker={p.tagline[lang]}
+          kickerTone="muted"
+          title={p.name}
+          className="hidden bg-background px-4 py-3.5 app:col-start-4 app:row-start-2 app:flex app:justify-between"
+        />
 
-      {/* Rates */}
-      <div className="bg-background px-4 pt-2.5 pb-3 flex flex-col gap-1 md:col-start-4 md:row-start-4">
-        <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-          {t('plateau.rates')}
-        </span>
-        <div className="flex flex-col flex-1 min-h-0">
-          {p.rates.map((r) => (
-            <div
-              key={r.k.fr}
-              className="flex items-baseline justify-between border-b border-border py-1 text-xs last:border-b-0"
-            >
-              <span className="text-muted-foreground">{r.k[lang]}</span>
-              <span className="text-foreground font-mono tracking-widest text-xs">
-                {typeof r.v === 'string' ? r.v : r.v[lang]}
-              </span>
-            </div>
-          ))}
-        </div>
-        {p.ratesNote && (
-          <div className="font-mono text-xs tracking-widest text-muted-foreground leading-normal mt-0.5 break-words">
-            {p.ratesNote[lang]}
-          </div>
-        )}
-      </div>
-
-      {/* Description + Uses */}
-      <div className="bg-background p-4 flex justify-between items-start gap-6 md:col-start-2 md:col-span-2 md:row-start-5">
-        <div className="flex-1 flex flex-col gap-1.5 min-w-0">
-          <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-            {t('common.description')}
-          </span>
-          <p className="m-0 text-xs text-foreground leading-normal max-w-2xl">
-            {p.desc[lang]}
-          </p>
-        </div>
-        <div className="flex-none w-40 flex flex-col gap-1.5">
-          <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-            {t('plateau.uses')}
-          </span>
-          <ul className="list-none m-0 p-0 flex flex-col gap-0.5">
-            {p.uses.map((a) => (
-              <li
-                key={a.fr}
-                className="text-xs text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis"
-              >
-                · {a[lang]}
-              </li>
+        {/* Specifications */}
+        {/* Plus de retrait horizontal ici : c'est la ligne qui le porte, sinon
+            son filet s'arrête à 16px des deux bords de la cellule. La colonne
+            entière étant à 16, la liste demande `pad="tight"`. */}
+        <div className="bg-background py-3 flex flex-col gap-1.5 app:col-start-4 app:row-start-3">
+          <KeyValueList
+            pad="tight"
+            heading={t('plateau.specs')}
+            className="min-h-0 flex-1"
+          >
+            {p.specs.map((s) => (
+              <KeyValueRow
+                key={s.k.fr}
+                density="tight"
+                label={s.k[lang]}
+                value={
+                  <span className="line-clamp-2 whitespace-pre-line">
+                    {(s.v[lang] || '').split(' · ').join(' ')}
+                  </span>
+                }
+              />
             ))}
-          </ul>
+          </KeyValueList>
         </div>
-      </div>
 
-      {/* Book CTA */}
-      <Button
-        onClick={() => {
-          try {
-            localStorage.setItem('', slug);
-          } catch (e) {}
-          goto('book');
-        }}
-        size="cell"
-        className="min-h-20 justify-between  md:col-start-4 md:row-start-5"
-      >
-        <span className="font-mono text-xs uppercase tracking-widest text-primary-foreground/80">
-          06 · {t('common.bookNow')}
-        </span>
-        <div className="flex w-full items-end justify-between text-primary-foreground">
-          <span className="text-2xl font-medium tracking-tight">
-            {t('common.bookThisStage')}
-          </span>
-          <ArrowRight data-icon="inline-end" />
+        {/* Rates */}
+        <div className="bg-background pt-2.5 pb-3 flex flex-col gap-1 app:col-start-4 app:row-start-4">
+          <KeyValueList
+            pad="tight"
+            heading={t('plateau.rates')}
+            className="min-h-0 flex-1"
+          >
+            {p.rates.map((r) => (
+              <KeyValueRow
+                key={r.k.fr}
+                density="tight"
+                numeric
+                label={r.k[lang]}
+                value={typeof r.v === 'string' ? r.v : r.v[lang]}
+              />
+            ))}
+          </KeyValueList>
+          {p.ratesNote && (
+            // Le champ vient du CMS, où la rédaction sépare ses mentions par un
+            // « · ». On ne peut pas le lui interdire côté Strapi : on découpe à
+            // l'affichage, et c'est la gouttière qui sépare — même règle que
+            // pour le code (voir CLAUDE.md, « Never chain words with · »).
+            //
+            // `px-pad-tight` reprend le palier que la liste au-dessus demande
+            // par son nom : cette mention est hors de la liste, elle ne peut pas
+            // hériter de `--kv-pad`. Le token, lui, est le même.
+            <div className="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 break-words px-pad-tight font-mono text-xs leading-normal tracking-widest text-muted-foreground">
+              {p.ratesNote[lang]
+                .split('·')
+                .map((part) => part.trim())
+                .filter(Boolean)
+                .map((part) => (
+                  <span key={part}>{part}</span>
+                ))}
+            </div>
+          )}
         </div>
-      </Button>
-    </main>
+
+        {/* Description + Uses */}
+        <div className="bg-background p-4 flex justify-between items-start gap-6 app:col-start-2 app:col-span-2 app:row-start-5">
+          <div className="flex-1 flex flex-col gap-1.5 min-w-0">
+            <MonoLabel tone="muted">{t('common.description')}</MonoLabel>
+            <p className="m-0 text-xs text-foreground leading-normal max-w-2xl">
+              {p.desc[lang]}
+            </p>
+          </div>
+          <div className="flex-none w-40 flex flex-col gap-1.5">
+            <MonoLabel tone="muted">{t('plateau.uses')}</MonoLabel>
+            <ul className="list-none m-0 p-0 flex flex-col gap-0.5">
+              {p.uses.map((a) => (
+                <li
+                  key={a.fr}
+                  className="text-xs text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis"
+                >
+                  {a[lang]}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Book CTA */}
+        <CtaCell
+          size="cta"
+          kicker={
+            <>
+              <span>06</span>
+              <span>{t('common.bookNow')}</span>
+            </>
+          }
+          title={t('common.bookThisStage')}
+          onClick={() => {
+            try {
+              localStorage.setItem('', slug);
+            } catch {}
+            goto('book');
+          }}
+          className="app:col-start-4 app:row-start-5"
+        />
+      </main>
+    </PageShell>
   );
 };
 

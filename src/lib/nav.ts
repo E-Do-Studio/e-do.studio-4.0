@@ -41,9 +41,22 @@ interface NavEntry {
 }
 
 export interface MainNavItem extends NavEntry {
-  id: MainNavId;
   /** La cellule orange. Une seule, en fin de bande. */
   primary?: boolean;
+  /**
+   * Rendue dès `md`, quand la bande n'a pas encore la place des cinq.
+   *
+   * Trois crans de visibilité, pas deux : `primary` partout, `compact` à partir
+   * de 768, le reste à partir de `app` (1024). Entre les deux la bande avait
+   * jusqu'à 577px de vide, portant quatorze caractères de mono gris — le mou
+   * d'une cellule élastique qui n'avait rien à absorber d'autre.
+   *
+   * Deux, et pas trois : PLATEAUX 107 + POST-PROD 116 + RÉSERVER 131 font 354,
+   * qui avec le logo 240 et la langue 72 laissent 95px au milieu à 768 et 350px
+   * à 1023. GALERIE en coûte 99 de plus, et à 768 il n'y en a pas 99.
+   */
+  compact?: boolean;
+  id: MainNavId;
 }
 
 export interface MenuNavItem extends NavEntry {
@@ -56,6 +69,7 @@ export const MAIN_NAV: readonly MainNavItem[] = [
     id: 'stages',
     screen: 'plateau-live',
     labelKey: 'common.stages',
+    compact: true,
     // Les cinq écrans plateau sont une seule destination. Un préfixe les couvre
     // tous, là où énumérer SCREEN_TO_PATH en oublierait un au prochain ajout.
     match: ['/plateau', '/cyclorama'],
@@ -65,6 +79,7 @@ export const MAIN_NAV: readonly MainNavItem[] = [
     screen: 'postprod',
     labelKey: 'common.postProd',
     menuLabelKey: 'common.postProdLong',
+    compact: true,
     match: ['/post-production'],
   },
   {
@@ -167,3 +182,32 @@ export const activeNavIn = <T extends NavEntry & { id: string }>(
 /** La destination de la bande d'en-tête que `pathname` allume, ou `null`. */
 export const activeNavId = (pathname: string): MainNavId | null =>
   activeNavIn(MAIN_NAV, pathname);
+
+/**
+ * Le nom de la page que `pathname` désigne, ou `null` hors des chemins connus.
+ *
+ * Dérivé, et non passé : chaque page l'écrivait à la main dans la cellule
+ * éditoriale de la bande, et il a dérivé — « Post-prod » dans l'en-tête,
+ * « Post-production » dans le tiroir, un troisième littéral en dur dans la page.
+ * C'est la même dérive que `menuLabelKey` a réglée pour le tiroir, réglée de la
+ * même façon : une seule table, lue deux fois.
+ *
+ * Le tiroir d'abord — il porte l'accueil, Discovery et les mentions légales, que
+ * la bande ne connaît pas — puis la bande, seule à porter la réservation. Et le
+ * libellé long : la cellule n'a pas la contrainte de largeur qui a fait abréger
+ * « Post-production » dans la navigation.
+ *
+ * L'accueil est la seule exception, et c'est le sigle qui la fait : il est posé
+ * juste à gauche de la cellule et dit déjà où l'on est. « Accueil » à côté de
+ * « E-DO STUDIO » ne nomme pas une page, il remplit une case — et sur cette
+ * page-là, la cellule voisine a mieux à dire (annonce, horaires). Le tiroir, lui,
+ * garde son entrée : la liste des destinations ne peut pas en sauter une.
+ */
+export const pageLabelKey = (pathname: string): LabelKey | null => {
+  const menuId = activeNavIn(MENU_NAV, pathname);
+  if (menuId === 'home') return null;
+  const menu = MENU_NAV.find((it) => it.id === menuId);
+  if (menu) return menu.labelKey;
+  const main = MAIN_NAV.find((it) => it.id === activeNavId(pathname));
+  return main ? (main.menuLabelKey ?? main.labelKey) : null;
+};

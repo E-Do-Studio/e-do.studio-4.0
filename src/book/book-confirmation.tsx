@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from '@tanstack/react-router';
 import { usePageContext } from '../lib/page-context';
 import { SCREEN_TO_PATH } from '../lib/screens';
 import { ArrowRight } from 'lucide-react';
-import { PageHeader } from '../ui/page-header';
+import { PageShell } from '../ui/page-shell';
+import { MAIN_ID } from '../ui/skip-link';
 import { clearDraft } from '../lib/use-booking-draft';
 import { useT } from '../i18n/use-t';
 import {
@@ -14,8 +15,12 @@ import {
 } from './confirmation-snapshot';
 import type { Lang } from '../types';
 import { MONTHS, bcp47, fmtEUR } from '../lib/format';
-
-const fmtTime = (h: number) => `${String(h).padStart(2, '0')}:00`;
+import { SectionIntro } from '../ui/section-intro';
+import { QuoteTable } from '../ui/quote-table';
+import { KeyValueList, KeyValueRow } from '../ui/key-value-row';
+import { MonoLabel } from '../ui/mono-label';
+import { hourLabel } from '@/lib/format';
+import { StatusBadge } from '@/ui/status-badge';
 
 interface ConfirmedViewProps {
   lang: Lang;
@@ -81,177 +86,204 @@ const ConfirmedView = ({
 
   const navBtnCls =
     'h-auto gap-2 bg-transparent p-0 text-xs tracking-widest hover:bg-transparent hover:text-primary';
-  const navBtnOrangeCls =
-    'h-11 gap-2 px-6 text-xs tracking-widest hover:scale-105';
+  const navBtnOrangeCls = 'h-11 gap-2 px-6 text-xs tracking-widest';
+
+  // La page arrive après un `navigate()`, focus sur `<body>`. Le porter sur le
+  // titre place le lecteur d'écran à l'endroit qui annonce l'issue.
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    titleRef.current?.focus();
+  }, []);
 
   return (
-    <div className="grid w-full gap-px bg-border md:h-full md:grid-cols-[var(--spacing-logo)_minmax(0,1fr)] md:grid-rows-[var(--spacing-header)_minmax(0,1fr)] md:overflow-hidden">
-      <PageHeader
-        title={copy.tag}
-        className="col-span-full md:col-start-1 md:col-span-2 md:row-start-1"
-      />
-      <div className="overflow-auto flex flex-col gap-px bg-border md:col-span-2 md:row-start-2 md:min-h-0">
-        <div className="grid gap-px bg-border grid-cols-1 md:grid-cols-[1.6fr_1fr]">
-          <div className="bg-background pt-6 md:pt-7 px-5 md:px-12 pb-6 flex flex-col gap-2.5 min-h-44">
-            <div className="font-mono text-xs uppercase tracking-widest text-primary-foreground inline-flex items-center gap-2.5 py-1.5 px-3 bg-primary self-start">
-              ● {copy.status}
-            </div>
-            <h1 className="m-0 text-5xl font-light tracking-tighter leading-none text-balance">
-              {copy.title}
-            </h1>
-            <p className="m-0 text-sm text-muted-foreground leading-normal max-w-xl text-pretty">
-              {copy.body}
-            </p>
-          </div>
-          <div className="bg-background px-5 md:px-6 py-5 md:py-6 flex flex-col justify-between gap-3.5 min-h-44">
-            <div className="flex flex-col gap-3.5">
-              <div>
-                <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-1">
-                  {t('booking.reference')}
-                </div>
-                <div className="font-mono text-base tracking-widest text-foreground">
-                  {ref}
-                </div>
-              </div>
-              <div>
-                <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-1">
-                  {t('booking.issued')}
-                </div>
-                <div className="font-mono text-xs text-foreground">
-                  {/* `hour12: false` : en-US passerait en 02:30 PM alors que
- les créneaux de la même page sont en 24 h (fmtTime). */}
-                  {new Date().toLocaleDateString(bcp47(lang), {
-                    day: '2-digit',
-                    month: 'short',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: false,
-                  })}
-                </div>
-              </div>
-            </div>
-            <div>
-              <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-1">
-                {t('booking.contactLabel')}
-              </div>
-              <div className="text-sm font-medium tracking-tight">
-                {[contact.prenom, contact.nom].filter(Boolean).join(' ') || '—'}
-              </div>
-              <div className="text-xs text-muted-foreground">
-                {contact.email || '—'}
-              </div>
-            </div>
+    <PageShell className="app:grid-cols-[var(--spacing-logo)_minmax(0,1fr)] app:grid-rows-[var(--spacing-header)_minmax(0,1fr)]">
+      {/* Un vrai `<main>` et non un `<div>` : la page n'en avait aucun, donc le
+          lien d'évitement de skip-link.tsx ne trouvait pas sa cible et laissait
+          le focus sur `<body>`. C'est le dernier écran du parcours de
+          conversion, celui qu'on atteint au clavier après un formulaire. */}
+      <main
+        id={MAIN_ID}
+        className="overflow-auto flex flex-col gap-px bg-border app:col-span-2 app:row-start-2 app:min-h-0"
+      >
+        <div className="grid gap-px bg-border grid-cols-1 app:grid-cols-[1.6fr_1fr]">
+          {/* Après la soumission, `navigate()` amène sur un document neuf, focus
+              sur `<body>` : rien ne disait que la réservation avait abouti.
+              `role="status"` annonce l'issue, et `titleRef` donne le focus au
+              titre pour que la lecture reprenne au bon endroit. */}
+          {/* `flow` : la cellule porte déjà son retrait. `gap-2.5` par-dessus le
+              `gap-3` de la variante — c'est l'écart d'origine, et le sur-titre
+              est ici une pastille, plus haute qu'une ligne de mono. */}
+          <SectionIntro
+            size="flow"
+            kicker={
+              <StatusBadge
+                render={<output />}
+                size="md"
+                className="gap-2.5 self-start"
+              >
+                {copy.status}
+              </StatusBadge>
+            }
+            title={copy.title}
+            titleRef={titleRef}
+            subtitle={copy.body}
+            className="min-h-44 gap-2.5 bg-background px-5 pt-6 pb-6 md:px-12 md:pt-7"
+          />
+          {/* Deux `<dl>` et non un seul avec un `<div>` de groupement au
+              milieu : `<dl>` n'accepte comme enfants que `<dt>`, `<dd>` et des
+              `<div>` qui les portent directement. Un div qui n'enveloppe que
+              d'autres divs y est invalide. */}
+          <div className="flex min-h-44 flex-col justify-between gap-3.5 bg-background px-5 py-5 md:px-6 md:py-6">
+            <KeyValueList className="gap-3.5">
+              <KeyValueRow
+                orientation="stacked"
+                label={t('booking.reference')}
+                value={
+                  <span className="font-mono text-base tracking-widest">
+                    {ref}
+                  </span>
+                }
+              />
+              <KeyValueRow
+                orientation="stacked"
+                density="tight"
+                label={t('booking.issued')}
+                value={
+                  <span className="font-mono">
+                    {/* `hour12: false` : en-US passerait en 02:30 PM alors que
+                        les créneaux de la même page sont en 24 h (hourLabel). */}
+                    {new Date().toLocaleDateString(bcp47(lang), {
+                      day: '2-digit',
+                      month: 'short',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: false,
+                    })}
+                  </span>
+                }
+              />
+            </KeyValueList>
+            <KeyValueList>
+              <KeyValueRow
+                orientation="stacked"
+                label={t('booking.contactLabel')}
+                className="gap-0.5"
+                value={
+                  <>
+                    <span className="block tracking-tight">
+                      {[contact.prenom, contact.nom].filter(Boolean).join(' ')}
+                    </span>
+                    {contact.email && (
+                      <span className="block text-xs text-muted-foreground">
+                        {contact.email}
+                      </span>
+                    )}
+                  </>
+                }
+              />
+            </KeyValueList>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-border">
-          <div className="bg-background px-5 py-3">
-            <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-1">
-              {t('booking.stage')}
-            </div>
-            <div className="text-base font-medium tracking-tight">
-              {plateauLabel}
-            </div>
-          </div>
-          <div className="bg-background px-5 py-3">
-            <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-1">
-              {isMultiPlateau ? t('booking.dates') : t('booking.date')}
-            </div>
-            {snapshot.sessions && snapshot.sessions.length > 1 ? (
-              <ul className="flex flex-col gap-1 list-none p-0 m-0">
-                {snapshot.sessions.map((s, i) => (
-                  <li
-                    key={`${s.plateauKey}-${i}`}
-                    className="text-sm font-medium tracking-tight"
-                  >
-                    <span className="text-muted-foreground">
-                      {s.plateauName[lang]}
-                    </span>
-                    {' · '}
-                    {s.date
-                      ? `${s.date.d} ${months[s.date.m]} ${s.date.y}`
-                      : snapshot.mode === 'quote'
-                        ? t('booking.notSet')
-                        : '—'}
-                    {s.arrivalHour != null && (
-                      <>
-                        {' '}
-                        · {fmtTime(s.arrivalHour)}–
-                        {fmtTime(s.arrivalHour + s.hours)}
-                      </>
+        <KeyValueList className="grid grid-cols-2 gap-px bg-border app:grid-cols-4">
+          <KeyValueRow
+            orientation="stacked"
+            label={t('booking.stage')}
+            className="bg-background px-5 py-3 text-base"
+            value={<span className="tracking-tight">{plateauLabel}</span>}
+          />
+          <KeyValueRow
+            orientation="stacked"
+            label={isMultiPlateau ? t('booking.dates') : t('booking.date')}
+            className="bg-background px-5 py-3"
+            value={
+              snapshot.sessions && snapshot.sessions.length > 1 ? (
+                <ul className="flex flex-col gap-1 list-none p-0 m-0">
+                  {snapshot.sessions.map((s, i) => (
+                    <li
+                      key={`${s.plateauKey}-${i}`}
+                      className="flex flex-wrap items-baseline gap-x-2.5 text-sm tracking-tight"
+                    >
+                      <span className="text-muted-foreground">
+                        {s.plateauName[lang]}
+                      </span>
+                      <span>
+                        {s.date
+                          ? `${s.date.d} ${months[s.date.m]} ${s.date.y}`
+                          : t('booking.notSet')}
+                      </span>
+                      {s.arrivalHour != null && (
+                        <span>
+                          {hourLabel(s.arrivalHour)}–
+                          {hourLabel(s.arrivalHour + s.hours)}
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : snapshot.selected ? (
+                <div className="flex flex-wrap items-baseline gap-x-2.5 text-base tracking-tight">
+                  <span>
+                    {snapshot.selected.d} {months[snapshot.selected.m]}{' '}
+                    {snapshot.selected.y}
+                  </span>
+                  <span>
+                    {hourLabel(snapshot.arrivalHour ?? 10)}–
+                    {hourLabel(
+                      (snapshot.arrivalHour ?? 10) +
+                        (snapshot.rentalHours || 0),
                     )}
-                  </li>
-                ))}
-              </ul>
-            ) : snapshot.selected ? (
-              <div className="text-base font-medium tracking-tight">
-                {snapshot.selected.d} {months[snapshot.selected.m]}{' '}
-                {snapshot.selected.y} · {fmtTime(snapshot.arrivalHour ?? 10)}–
-                {fmtTime(
-                  (snapshot.arrivalHour ?? 10) + (snapshot.rentalHours || 0),
-                )}
-              </div>
-            ) : (
-              <div className="text-base font-medium tracking-tight text-muted-foreground">
-                {snapshot.mode === 'quote' ? t('booking.notSet') : '—'}
-              </div>
-            )}
-          </div>
-          <div className="bg-background px-5 py-3">
-            <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-1">
-              {t('booking.company')}
-            </div>
-            <div className="text-sm font-medium tracking-tight">
-              {contact.societe || '—'}
-            </div>
-          </div>
-          <div className="bg-background px-5 py-3">
-            <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-1">
-              SIREN
-            </div>
-            <div className="font-mono text-xs tracking-widest">
-              {contact.siren || '—'}
-            </div>
-          </div>
-        </div>
+                  </span>
+                </div>
+              ) : (
+                <span className="block text-base tracking-tight text-muted-foreground">
+                  {t('booking.notSet')}
+                </span>
+              )
+            }
+          />
+          {contact.societe && (
+            <KeyValueRow
+              orientation="stacked"
+              label={t('booking.company')}
+              className="bg-background px-5 py-3"
+              value={<span className="tracking-tight">{contact.societe}</span>}
+            />
+          )}
+          {contact.siren && (
+            <KeyValueRow
+              orientation="stacked"
+              density="tight"
+              label="SIREN"
+              className="bg-background px-5 py-3"
+              value={
+                <span className="font-mono tracking-widest">
+                  {contact.siren}
+                </span>
+              }
+            />
+          )}
+        </KeyValueList>
 
         <div className="bg-background px-5 md:px-12 py-4.5 pb-5 flex-1">
-          <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-2.5">
+          <MonoLabel tone="muted" className="mb-2.5 block">
             {t('booking.quoteBreakdown')}
-          </div>
-          <div className="flex flex-col">
-            {(
+          </MonoLabel>
+          <QuoteTable
+            variant="page"
+            rows={(
               snapshot.rows as { lbl: string; amt: number; onReq?: boolean }[]
-            ).map((r, i, arr) => (
-              <div
-                key={i}
-                className={`flex flex-col py-1.5 gap-0.5 ${i === arr.length - 1 ? '' : 'border-b border-b-border'}`}
-              >
-                <div className="flex justify-between items-baseline text-xs">
-                  <span className="tracking-tight text-foreground">
-                    {r.lbl}
-                  </span>
-                  <span className="font-mono tabular-nums text-foreground">
-                    {r.onReq
-                      ? t('booking.onRequestLower')
-                      : `${fmtEUR(r.amt, lang)} €`}
-                  </span>
-                </div>
-              </div>
-            ))}
-            <div className="flex justify-between items-baseline mt-3 pt-2.5 border-t-2 border-t-foreground">
-              <span className="font-mono text-xs uppercase tracking-widest">
-                Total HT*
-              </span>
-              <span className="text-3xl font-light tracking-tighter tabular-nums">
-                {fmtEUR(snapshot.total, lang)} €
-              </span>
-            </div>
-            <div className="font-mono text-xs text-muted-foreground mt-2.5 tracking-widest leading-relaxed pt-2 border-t border-t-border">
-              {t('booking.quoteDisclaimer')}
-            </div>
-          </div>
+            ).map((r) => ({
+              label: r.lbl,
+              value: r.onReq
+                ? t('booking.onRequestLower')
+                : `${fmtEUR(r.amt, lang)} €`,
+            }))}
+            totalLabel={t('booking.totalExVat')}
+            total={`${fmtEUR(snapshot.total, lang)} €`}
+            disclaimer={t('booking.quoteDisclaimer')}
+          />
         </div>
 
         <div className="grid grid-cols-2 gap-px bg-border">
@@ -266,8 +298,8 @@ const ConfirmedView = ({
             </Button>
           </div>
         </div>
-      </div>
-    </div>
+      </main>
+    </PageShell>
   );
 };
 
@@ -294,30 +326,29 @@ const BookConfirmation = () => {
 
   if (!snapshot) {
     return (
-      <div className="animate-in fade-in duration-300 grid w-full gap-px bg-border md:h-full md:grid-rows-[var(--spacing-header)_minmax(0,1fr)]">
-        <PageHeader className="col-span-full md:row-start-1" />
-        <div className="md:row-start-2 md:overflow-y-auto md:min-h-0 bg-background">
-          <div className="px-5 py-10 md:px-12 md:py-14">
-            <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-              {t('bookPicker.confirmationMissingTitle')}
-            </span>
-            <h1 className="m-0 mt-4 text-5xl font-light tracking-tighter leading-none text-balance text-foreground">
-              {t('common.bookNow')}
-            </h1>
-            <p className="m-0 mt-4 max-w-2xl text-sm text-muted-foreground leading-normal text-pretty">
-              {t('bookPicker.confirmationMissingBody')}
-            </p>
+      <PageShell className="app:grid-rows-[var(--spacing-header)_minmax(0,1fr)]">
+        <main
+          id={MAIN_ID}
+          className="app:row-start-2 app:overflow-y-auto app:min-h-0 bg-background"
+        >
+          <SectionIntro
+            kicker={t('bookPicker.confirmationMissingTitle')}
+            kickerTone="muted"
+            title={t('common.bookNow')}
+            subtitle={t('bookPicker.confirmationMissingBody')}
+          >
             <Button
               type="button"
+              size="touch"
               onClick={() => navigate({ to: SCREEN_TO_PATH.book(lang) })}
-              className="mt-8 h-11 gap-2 px-6"
+              className="gap-2 px-6"
             >
               {t('bookPicker.resumeBooking')}{' '}
               <ArrowRight data-icon="inline-end" />
             </Button>
-          </div>
-        </div>
-      </div>
+          </SectionIntro>
+        </main>
+      </PageShell>
     );
   }
 

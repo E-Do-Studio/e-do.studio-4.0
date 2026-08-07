@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import logoFull from '../../brand/logo-full.webp';
+import { MonoLabel } from './mono-label';
 
 interface WordmarkProps {
   size?: 32 | 40;
@@ -91,12 +92,12 @@ const Clock = () => {
         />
         <circle cx="50" cy="50" r="2.5" fill="currentColor" />
       </svg>
-      <span className="mt-0.5 font-mono text-[10px] text-muted-foreground tabular-nums">
+      <span className="mt-0.5 font-mono text-xs text-muted-foreground tabular-nums">
         {String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}
       </span>
-      <span className="mt-px font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+      <MonoLabel tone="muted" className="mt-px">
         Paris
-      </span>
+      </MonoLabel>
     </div>
   );
 };

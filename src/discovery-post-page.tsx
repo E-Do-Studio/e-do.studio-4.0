@@ -1,18 +1,21 @@
-import { ArrowRight } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useLoaderData, useNavigate } from '@tanstack/react-router';
 import { renderMarkdown } from './lib/render-markdown';
 import { DiscoveryCoverMedia } from './discovery/discovery-cover';
-import { SplitArticleCard } from './discovery/tiles';
+import { ArticleTeaserCell } from './discovery/article-teaser-cell';
 import { GalleryLightbox } from './gallery-lightbox';
 import type { GalleryMedia } from './lib/strapi';
-import { ArticleMeta } from './discovery/shared';
+import { MonoLabel } from './ui/mono-label';
+import { Separator } from '@/components/ui/separator';
 import { HoverMarquee } from './ui/hover-marquee';
 import { useT } from './i18n/use-t';
 import { usePageContext } from './lib/page-context';
 import { NotFoundPage } from './not-found-page';
-import { PageHeader } from './ui/page-header';
+import { PageShell } from './ui/page-shell';
+import { SectionIntro } from './ui/section-intro';
+import { MAIN_ID } from './ui/skip-link';
 
 export const DiscoveryPostPage = () => {
   const t = useT();
@@ -92,75 +95,92 @@ export const DiscoveryPostPage = () => {
 
   return (
     <>
-      <main className="grid w-full grid-rows-[var(--spacing-header)_44px_minmax(0,1fr)] md:h-full gap-px bg-border overflow-hidden">
-        <PageHeader className="row-start-1" />
-
-        {/* Retour au journal et méta de l'article, en rangée 2 — la même forme
+      {/* `<main class="contents">` : voir home-page. */}
+      {/* Le gabarit de rangées n'est pas gardé par `app:` — l'article garde le
+          même rythme à toutes les largeurs, bande d'en-tête, bande de retour,
+          puis le corps. Le verrou de défilement, lui, l'est : cette page était
+          la seule du site à poser `overflow-hidden` sans palier, donc à couper
+          son propre article sur mobile au lieu de le laisser défiler. */}
+      <PageShell className="grid-rows-[var(--spacing-header)_var(--spacing-band)_minmax(0,1fr)]">
+        <main id={MAIN_ID} className="contents">
+          {/* Retour au journal et méta de l'article, en rangée 2 — la même forme
             que l'index Discovery, dont la bande sociale occupe cette rangée. */}
-        <div className="row-start-2 flex gap-px bg-border">
-          <Button
-            onClick={backToIndex}
-            variant="header"
-            // Sans `size`, cette cellule héritait `h-8` de `size="default"` et
-            // flottait dans sa rangée de 44px, laissant passer 12px du filet
-            // noir sous elle. Ses `gap-2.5 px-4 md:px-6` l'emportent toujours.
-            size="header"
-            className="flex-none gap-2.5 px-4 md:px-6"
-          >
-            <span className="inline-block rotate-180">
-              <ArrowRight data-icon="inline-end" />
-            </span>
-            <span className="font-mono text-xs uppercase tracking-widest text-foreground hidden sm:inline">
-              {t('discoveryPage.backToJournal')}
-            </span>
-          </Button>
-          <div className="flex min-w-0 flex-1 items-center gap-3.5 bg-background px-4 md:px-6">
-            <span className="font-mono text-xs uppercase tracking-widest text-primary">
-              {post.tag[lang]}
-            </span>
-            <HoverMarquee className="font-mono text-xs tracking-widest text-muted-foreground">
-              {post.read} · {post.author} · {post.date[lang]}
-            </HoverMarquee>
+          <div className="row-start-2 flex gap-px bg-border">
+            <Button
+              onClick={backToIndex}
+              variant="header"
+              // Sans `size`, cette cellule héritait `h-8` de `size="default"` et
+              // flottait dans sa rangée de `--spacing-band`, laissant passer 12px
+              // du filet noir sous elle. Ses `gap-2.5 px-4 md:px-6` l'emportent
+              // toujours.
+              size="header"
+              className="flex-none gap-2.5 px-4 md:px-6"
+            >
+              <ArrowLeft />
+              <MonoLabel className="hidden sm:inline">
+                {t('discoveryPage.backToJournal')}
+              </MonoLabel>
+            </Button>
+            <div className="flex min-w-0 flex-1 items-center gap-3.5 bg-background px-4 md:px-6">
+              <MonoLabel tone="primary">{post.tag[lang]}</MonoLabel>
+              {/* Sans l'auteur : `strapi.ts` le pose en dur à « Studio » pour
+                  tous les articles, ce n'est pas un champ que la rédaction
+                  renseigne. Une valeur constante n'apprend rien. Elle reste
+                  dans le JSON-LD, où schema.org attend un auteur. */}
+              {/* Deux valeurs, deux cellules de la rangée : c'est le `gap-3.5`
+                  du parent qui les sépare. `HoverMarquee` ne peut pas s'en
+                  charger — il pose ses enfants dans une piste interne et
+                  mesure `scrollWidth - clientWidth` sur un `whitespace-nowrap`,
+                  qu'un `flex` sur son enveloppe fausserait. */}
+              <MonoLabel tone="muted">{post.read}</MonoLabel>
+              <HoverMarquee className="font-mono text-xs tracking-widest text-muted-foreground">
+                {post.date[lang]}
+              </HoverMarquee>
+            </div>
           </div>
-        </div>
 
-        <div className="row-start-3 grid min-h-0 grid-cols-1 gap-px bg-border overflow-y-auto md:grid-cols-[1.1fr_1fr] md:overflow-hidden">
-          <div className="relative min-h-64 bg-foreground md:min-h-0">
-            <DiscoveryCoverMedia
-              post={post}
-              lang={lang}
-              sizes="(min-width: 768px) 55vw, 100vw"
-              priority
-              controls
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-          </div>
-          <article className="flex min-h-0 flex-col gap-5 overflow-y-auto bg-background px-6 py-8 md:px-12 md:py-10">
-            <ArticleMeta post={post} lang={lang} />
-            <h1 className="m-0 text-balance text-5xl font-light leading-none tracking-tighter text-foreground">
-              {post.title[lang]}
-            </h1>
-            {post.sub[lang] && (
-              <p className="m-0 text-pretty text-base font-normal leading-relaxed text-foreground">
-                {post.sub[lang]}
-              </p>
-            )}
-            {bodyHtml && (
-              <div
-                ref={bodyRef}
-                onClick={onBodyClick}
-                onKeyDown={onBodyKeyDown}
-                className="prose prose-sm m-0 max-w-none text-foreground [&_a]:text-primary [&_a]:underline [&_blockquote]:border-l-2 [&_blockquote]:border-border [&_blockquote]:pl-4 [&_blockquote]:italic [&_h2]:mt-6 [&_h2]:text-lg [&_h2]:font-medium [&_h3]:mt-4 [&_h3]:text-base [&_h3]:font-medium [&_hr]:my-6 [&_hr]:border-border [&_figure]:my-4 [&_figure_img]:block [&_figure_img]:w-full [&_figure_img]:cursor-zoom-in [&_figure_img:focus-visible]:[outline:1.5px_solid_var(--ring)] [&_figure_img:focus-visible]:[outline-offset:2px] [&_figure_video]:block [&_figure_video]:w-full [&_figure_video]:h-auto [&_figcaption]:mt-1.5 [&_figcaption]:text-xs [&_figcaption]:leading-snug [&_figcaption]:text-muted-foreground [&_li]:ml-4 [&_p]:leading-relaxed [&_ul]:my-2 [&_ul]:list-disc"
-                dangerouslySetInnerHTML={{ __html: bodyHtml }}
+          <div className="row-start-3 grid min-h-0 grid-cols-1 gap-px bg-border overflow-y-auto app:grid-cols-[1.1fr_1fr] app:overflow-hidden">
+            <div className="relative min-h-64 bg-foreground app:min-h-0">
+              <DiscoveryCoverMedia
+                post={post}
+                lang={lang}
+                sizes="(min-width: 768px) 55vw, 100vw"
+                priority
+                controls
+                className="absolute inset-0 h-full w-full object-cover"
               />
-            )}
-            {nextPost && (
-              <aside className="mt-auto flex flex-col gap-2.5 border-t border-border pt-6">
-                <span className="font-mono text-xs uppercase tracking-widest text-primary">
-                  {t('discoveryPage.nextArticle')}
-                </span>
-                <div className="border border-border">
-                  <SplitArticleCard
+            </div>
+            {/* Ni méta en tête ni signature en pied : la bande de la rangée 2
+                porte déjà la catégorie, la durée, l'auteur et la date, et elle
+                reste à l'écran pendant que l'article défile dans sa cellule.
+                Les répéter ne renseignait personne. */}
+            <article className="flex min-h-0 flex-col gap-5 overflow-y-auto bg-background px-6 py-8 md:px-12 md:py-10">
+              {/* `flow` : la cellule de l'article porte déjà son retrait, celui
+                  de `lg` s'y ajouterait. Le chapô reste hors du composant — ce
+                  n'en est pas un, c'est le chapeau de l'article, qui se lit au
+                  corps du texte et non en gris réduit. */}
+              <SectionIntro size="flow" title={post.title[lang]} />
+              {post.sub[lang] && (
+                <p className="m-0 text-pretty text-base font-normal leading-relaxed text-foreground">
+                  {post.sub[lang]}
+                </p>
+              )}
+              {bodyHtml && (
+                <div
+                  ref={bodyRef}
+                  onClick={onBodyClick}
+                  onKeyDown={onBodyKeyDown}
+                  className="article-prose prose prose-sm m-0 max-w-none text-foreground"
+                  dangerouslySetInnerHTML={{ __html: bodyHtml }}
+                />
+              )}
+              {nextPost && (
+                <aside className="mt-auto flex flex-col gap-2.5">
+                  <Separator className="mb-3.5" />
+                  <MonoLabel tone="primary">
+                    {t('discoveryPage.nextArticle')}
+                  </MonoLabel>
+                  <ArticleTeaserCell
                     post={nextPost}
                     lang={lang}
                     onOpen={() =>
@@ -170,24 +190,22 @@ export const DiscoveryPostPage = () => {
                       })
                     }
                   />
-                </div>
-              </aside>
-            )}
-            <footer className="flex flex-col gap-4 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
-              <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-                {post.author} · {post.date[lang]}
-              </span>
-              <Button
-                onClick={backToIndex}
-                variant="cell"
-                className="dark h-10 bg-background px-6 hover:text-primary"
-              >
-                {t('discoveryPage.close')}
-              </Button>
-            </footer>
-          </article>
-        </div>
-      </main>
+                </aside>
+              )}
+              <Separator className="mt-2" />
+              <footer className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-end">
+                <Button
+                  onClick={backToIndex}
+                  variant="cell"
+                  className="dark h-10 bg-background px-6 hover:text-primary"
+                >
+                  {t('discoveryPage.close')}
+                </Button>
+              </footer>
+            </article>
+          </div>
+        </main>
+      </PageShell>
       {lightbox && lightbox.media.length > 0 && (
         <GalleryLightbox
           project={{

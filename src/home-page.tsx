@@ -3,19 +3,26 @@ import { Button } from '@/components/ui/button';
 import { useLoaderData } from '@tanstack/react-router';
 import { ArrowRight, Lock } from 'lucide-react';
 import { lazy, Suspense } from 'react';
-import { Trans } from 'react-i18next';
 import { useT } from './i18n/use-t';
 import { usePageContext } from './lib/page-context';
 import { SocialClientsBar } from './social-clients-bar';
 import type { Bilingual } from './types';
 import { fetchPriority } from './ui/fetch-priority';
-import { HoverMarquee } from './ui/hover-marquee';
 import { ImageCrossfade } from './ui/image-crossfade';
 import { MobileAssistantFab } from './ui/mobile-assistant-fab';
-import { PageHeader } from './ui/page-header';
+import { PageShell } from './ui/page-shell';
 import { ResponsiveImage } from './ui/responsive-image';
+import { SectionIntro } from './ui/section-intro';
+import { MAIN_ID } from './ui/skip-link';
 import { useIsDesktop } from './ui/use-is-desktop';
 import { VideoLoop } from './ui/video-loop';
+import { ordinal } from './lib/format';
+import { HoverMarquee } from './ui/hover-marquee';
+import { MonoLabel, monoLabelVariants } from './ui/mono-label';
+import { SelectTile } from './ui/select-tile';
+import { SCREEN_TO_PATH } from './lib/screens';
+import { cn } from '@/lib/utils';
+import { CtaCell } from './ui/cta-cell';
 
 const AssistantChat = lazy(() => import('./assistant-chat'));
 
@@ -102,275 +109,285 @@ const HomePage = () => {
     : HOME_FALLBACK_MACHINES;
 
   return (
-    /* Mobile: 2-col grid, vertical scroll. Desktop (md+): 12-col bento, fixed viewport */
-    <main className="animate-in fade-in duration-300 grid w-full grid-cols-2 gap-px bg-border md:h-full md:grid-cols-12 md:grid-rows-[var(--spacing-header)_44px_84px_1.1fr_1.25fr_84px] md:overflow-hidden">
-      <h1 className="sr-only">E-Do Studio — {t('home.srTitle')}</h1>
-
-      {/* ── Row 1: Header ── */}
-      <PageHeader
-        title={t('home.monSatHours')}
-        titleAside={
-          announcementText ? (
-            <span className="flex min-w-0 items-center gap-2 font-mono text-base font-medium text-foreground">
-              <span
-                aria-hidden
-                className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
-              />
-              <span className="truncate uppercase">{announcementText}</span>
-            </span>
-          ) : undefined
-        }
-        className="col-span-2 md:col-start-1 md:col-span-12 md:row-start-1"
-      />
-
-      {/* ── Row 2: Social links + clients marquee ── */}
-      <SocialClientsBar className="col-span-2 md:col-start-1 md:col-end-13 md:row-start-2" />
-
-      {/* ── Rows 3-4 left: E-commerce section ── */}
-      <div className="col-span-2 min-h-72 flex flex-col overflow-hidden bg-background md:col-start-1 md:col-end-7 md:row-start-3 md:row-end-5 md:min-h-0">
-        <div className="flex flex-shrink-0 flex-col gap-4 px-5 pt-6 pb-5 md:flex-1 md:min-h-0 md:px-7 md:pt-5 md:pb-4">
-          {/* Une seule clé par phrase, le fragment stylé étant balisé dans la
- traduction : découper la phrase en deux clés figeait l'ordre des
- mots et la ponctuation finale. */}
-          <h2 className="m-0 text-balance text-[clamp(1.5rem,2.2vw,2rem)] font-light tracking-tighter leading-tight text-foreground">
-            <Trans
-              i18nKey="home.studioHeadline"
-              components={{ accent: <span className="italic text-primary" /> }}
+    /* Sous `app` : grille à 2 colonnes qui défile. À partir d'`app` : bento à 12
+       colonnes, viewport verrouillé. */
+    /* La grille bento impose que l'en-tête et le contenu soient frères dans le
+       même conteneur : le `<header>` se retrouvait donc DANS le `<main>`, où il
+       perd son rôle `banner` et où « aller au contenu » atterrit avant la
+       navigation. `<main class="contents">` rétablit les deux repères sans
+       introduire de boîte — les cellules restent des enfants directs de la
+       grille. */
+    /* ── Rangée 1 : la bande, rendue par la coquille ──
+       L'accueil ne se nomme pas — le sigle est à sa gauche et le dit déjà —,
+       donc les horaires occupent la cellule du nom. Courts, ils y tiennent ;
+       l'annonce du CMS, plus longue, attend `xl` et sa propre cellule. Les deux
+       se masquent d'elles-mêmes là où leur cellule est trop étroite, c'est la
+       bande qui s'en charge. */
+    <PageShell
+      className="grid-cols-2 app:grid-cols-12 app:grid-rows-[var(--spacing-header)_var(--spacing-band)_var(--spacing-cta)_1.1fr_1.25fr_var(--spacing-cta)]"
+      note={
+        <HoverMarquee>
+          <MonoLabel tone="muted">{t('home.monSatHours')}</MonoLabel>
+        </HoverMarquee>
+      }
+      aside={
+        announcementText ? (
+          <span className="flex min-w-0 items-center gap-2 font-mono text-base font-bold text-foreground">
+            <span
+              aria-hidden
+              className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
             />
-          </h2>
-          <p className="m-0 text-pretty font-mono text-sm leading-relaxed text-muted-foreground">
-            <Trans
-              i18nKey="home.studioSubtitle"
-              components={{ strong: <span className="text-foreground" /> }}
-            />
-          </p>
-        </div>
+            {/* HoverMarquee et non `truncate` : le texte vient du CMS et peut
+                  dépasser sa cellule. L'ellipse dit seulement qu'on cache ;
+                  le déroulé au survol donne à lire. */}
+            <HoverMarquee className="uppercase">
+              {announcementText}
+            </HoverMarquee>
+          </span>
+        ) : undefined
+      }
+    >
+      <main id={MAIN_ID} className="contents">
+        <h1 className="sr-only">E-Do Studio — {t('home.srTitle')}</h1>
 
-        {/* Les filets entre tuiles sont la gouttière de la grille, pas des
+        {/* ── Row 2: Social links + clients marquee ── */}
+        <SocialClientsBar className="col-span-2 app:col-start-1 app:col-end-13 app:row-start-2" />
+
+        {/* ── Bande haute gauche : e-commerce ── */}
+        <div className="col-span-2 min-h-72 flex flex-col overflow-hidden bg-background app:col-start-1 app:col-end-7 app:row-start-3 app:row-end-5 app:min-h-0">
+          {/* Deux chaînes nues, plus de `<Trans>` : les balises `<accent>`
+                  et `<strong>` qu'elles portaient n'existaient que pour un mot
+                  en italique orange et une phrase coupée en deux gris. L'orange
+                  de ce site est celui d'une action — le CTA « Réserver », la
+                  pastille d'annonce — et n'a jamais désigné un mot pour
+                  l'emphase ailleurs. Les mots sont inchangés, le traitement
+                  décoratif est parti.
+
+                  `SectionIntro` et non un `<h2>` dessiné ici : cette cellule
+                  était la seule de la page à écrire sa propre typographie de
+                  titre, et elle en avait dérivé — un `clamp()`, le seul du
+                  dépôt, qui rendait à 31.68px entre deux crans de l'échelle, et
+                  un chapô en monospace de casse mixte, seule phrase courante en
+                  chasse fixe du site. */}
+          {/* `flex-1` : sans lui personne n'absorbe la hauteur restante de la
+              cellule, et elle s'accumule SOUS la rangée de tuiles — mesuré, 305px
+              de blanc à 1600×900. C'est ce que le commentaire ci-dessous décrit
+              déjà (« le bloc de texte au-dessus absorbe ce qui reste ») ; il
+              manquait la classe qui le fait. */}
+          <SectionIntro
+            size="sm"
+            as="h2"
+            title={t('home.studioHeadline')}
+            subtitle={t('home.studioSubtitle')}
+            className="flex-1 app:min-h-0"
+          />
+
+          {/* Les filets entre tuiles sont la gouttière de la grille, pas des
             bordures posées sur chaque tuile : plus de calcul de bordure selon
             l'index, et plus de doublon là où le parent dessine déjà un filet.
             Seul le trait supérieur, qui sépare cette rangée du bloc de texte,
             appartient à la grille elle-même. */}
-        <div className="flex min-h-0 flex-1 overflow-hidden md:max-h-full md:w-full md:flex-none md:aspect-[4/1]">
-          <div className="grid flex-1 grid-cols-2 content-end gap-px border-t border-border bg-border md:grid-cols-4 md:content-stretch">
-            {ecomMachines.map((m, i) => (
-              <div key={m.slug} className="flex bg-background">
-                <Button
-                  variant="cell"
-                  size="cell"
-                  onClick={() => goto('plateau-' + m.slug)}
-                  className="group aspect-[4/3] h-full w-full justify-between px-3 py-3 md:aspect-auto md:px-4 md:py-4"
-                >
-                  <div className="flex w-full items-center justify-between">
-                    <span className="font-mono text-xs tracking-widest text-muted-foreground">
-                      {String(i + 1).padStart(2, '0')}
-                    </span>
-                    <ArrowRight
-                      data-icon="inline-end"
-                      className="transition-all duration-200 ease-out group-hover:translate-x-1 group-hover:text-foreground"
-                    />
-                  </div>
-                  <div className="w-full min-w-0 transition-transform duration-200 ease-out group-hover:-translate-y-0.5">
-                    <HoverMarquee className="text-base font-medium leading-tight tracking-tight text-foreground">
-                      {m[lang].t}
-                    </HoverMarquee>
-                    <HoverMarquee className="font-mono text-xs uppercase tracking-widest text-muted-foreground mt-1 transition-colors duration-200 group-hover:text-foreground">
-                      {m[lang].sub}
-                    </HoverMarquee>
-                  </div>
-                </Button>
-              </div>
-            ))}
+          {/* `@container/machines` et non le viewport : cette rangée vit dans
+              une sous-colonne de 6/12, dont la largeur n'a aucun rapport fixe
+              avec la fenêtre. Réglée sur `md:grid-cols-4`, elle passait à
+              quatre de front dès 768px — soit 96px par tuile, dans lesquels
+              « Horizontal » et « Packshot à plat » ne rentrent pas. Elle
+              mesure maintenant ce qui la contient, comme les grilles du
+              tunnel.
+
+              Plus d'`aspect-[4/1]` non plus : le ratio imposait une hauteur
+              plus courte que le plancher des tuiles, et le dépassement partait
+              en `overflow-hidden` — sur le titre, que `mt-auto` pousse en bas.
+              La rangée prend la hauteur de ses tuiles, et c'est le bloc de
+              texte au-dessus qui absorbe ce qui reste : une bande basse, pas
+              quatre grands pavés.
+
+              `@lg/machines` (512px de conteneur) et non `md` : à quatre de
+              front il faut 128px par tuile. Le point d'arrêt du viewport en
+              donnait 96 dans cette sous-colonne. */}
+          <div className="@container/machines flex min-h-0 w-full flex-none overflow-hidden app:max-h-full">
+            <div className="grid flex-1 grid-cols-2 gap-px border-t border-border bg-border @lg/machines:grid-cols-4">
+              {ecomMachines.map((m, i) => (
+                <div key={m.slug} className="flex bg-background">
+                  {/* `SelectTile` et non un `Button` redessiné : c'est la même
+                      tuile que le tunnel, au numéro, à la flèche et au titre
+                      près. La copie qui vivait ici avait perdu le `font-sans`
+                      de `size="cell"` — tous ces titres rendaient en monospace.
+
+                      `justify-between` pousse le titre en bas de la tuile : le
+                      numéro et la flèche coiffent, le nom repose au pied.
+
+                      Plus de retrait ni de ratio passés d'ici : la page posait
+                      `px-3 md:px-4`, deux valeurs plus petites que le canon de
+                      20px que la tuile porte elle-même — et `--tile-pad`
+                      restait à 20, donc un `footer` y aurait tracé son filet au
+                      mauvais retrait. La géométrie appartient au composant. */}
+                  <SelectTile
+                    size="md"
+                    number={ordinal(i)}
+                    title={m[lang].t}
+                    sub={m[lang].sub}
+                    href={SCREEN_TO_PATH['plateau-' + m.slug]?.(lang)}
+                    onSelect={() => goto('plateau-' + m.slug)}
+                    className="h-full w-full"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* ── Rows 3-4 right: Gallery hero ── */}
-      <Button
-        onClick={() => goto('gallery')}
-        aria-label={t('common.gallery')}
-        variant="cell"
-        size="cell"
-        className="dark group relative col-span-2 aspect-[6/5] items-stretch justify-end overflow-hidden bg-background hover:brightness-75 hover:bg-background md:col-start-7 md:col-end-13 md:row-start-3 md:row-end-5 md:aspect-auto"
-      >
-        {galleryUseCrossfade ? (
-          <ImageCrossfade
-            images={heroPosters.map((p, i) => ({
-              url: p.url,
-              alt: p.alt || `${t('common.gallery')} — ${i + 1}`,
-            }))}
-            priority
-          />
-        ) : galleryHasCmsPosters ? (
-          <ResponsiveImage
-            src={heroPosters[0].url}
-            alt={heroPosters[0].alt || t('common.gallery')}
-            sizes="(min-width: 768px) 50vw, 100vw"
-            priority
-            className="pointer-events-none absolute inset-0 h-full w-full object-cover"
-          />
-        ) : (
-          <picture>
-            <source srcSet="/gallery-hero.avif" type="image/avif" />
-            <source srcSet="/gallery-hero.webp" type="image/webp" />
-            <img
-              src="/gallery-hero.jpg"
-              alt=""
-              width={1280}
-              height={986}
-              {...fetchPriority(true)}
-              decoding="async"
-              className="pointer-events-none absolute inset-0 h-full w-full object-cover"
-            />
-          </picture>
-        )}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.25)_0%,rgba(0,0,0,0)_30%,rgba(0,0,0,0)_55%,rgba(0,0,0,.65)_100%)]"
-        />
-        <div className="relative flex-1" />
-        <div className="relative flex w-full items-end justify-between gap-4">
-          <div className="min-w-0">
-            <div className="text-5xl font-light tracking-tighter leading-none text-foreground transition-transform duration-300 group-hover:scale-105">
-              {t('common.gallery')}
-            </div>
-          </div>
-          <div className="flex-shrink-0">
-            <ArrowRight
-              data-icon="inline-end"
-              className="transition-transform duration-200 ease-out group-hover:translate-x-1.5 group-hover:scale-110"
-            />
-          </div>
-        </div>
-      </Button>
-
-      {/*
-       * Mobile JSX order below mirrors the requested mobile stack:
-       * Post-production + Cyclorama (50/50) → Video → Book CTA → Discovery (full-width).
-       * Desktop positions are pinned by md:col-start-* / md:row-start-* so JSX order
-       * doesn't affect the bento layout above the md breakpoint.
-       */}
-
-      {/* ── Rows 5-6 middle (desktop) / mobile row A left: Cyclorama ── */}
-      <Button
-        onClick={() => goto('cyclorama')}
-        variant="cell"
-        size="cell"
-        className="group col-span-1 h-36 justify-between md:col-span-3 md:col-start-4 md:col-end-7 md:row-start-5 md:row-end-7 md:h-auto md:min-h-0"
-      >
-        <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-          Espace
-        </span>
-        <div className="flex items-end justify-between gap-3">
-          <div className="min-w-0">
-            <div className="whitespace-nowrap text-3xl font-light tracking-tighter leading-none text-foreground">
-              Cyclorama
-            </div>
-            <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground mt-1.5">
-              {t('home.freeProductionPhotovideo')}
-            </div>
-          </div>
-          <div className="flex flex-shrink-0 items-center justify-center">
-            <ArrowRight
-              data-icon="inline-end"
-              className="transition-transform duration-200 ease-out group-hover:translate-x-1.5"
-            />
-          </div>
-        </div>
-      </Button>
-
-      {/* ── Bande cols 7-10 : CTA Réserver au-dessus de Post-production ──
- `contents` sous md : les deux tuiles retombent dans la grille mobile à
- 2 colonnes, où le CTA est masqué et Post-production est une cellule
- ordinaire — l'ordre d'empilement mobile reste donc celui du DOM.
- À partir de md, la bande devient une grille de deux rangées et c'est sa
- gouttière qui trace le filet entre les deux. Auparavant les deux tuiles
- déclaraient la même aire de grille et le partage était simulé par un
- `mt-[85px]`, ce qui interdisait tout filet. */}
-      <div className="contents md:col-start-7 md:col-end-10 md:row-start-5 md:row-end-7 md:grid md:grid-rows-[84px_minmax(0,1fr)] md:gap-px md:bg-border">
-        {/* Le CTA vit dans l'en-tête sur mobile (action principale), d'où le
- `hidden md:flex` ici. */}
-        <Button
-          onClick={() => goto('book')}
-          size="cell"
-          className="group hidden justify-between  md:flex"
-        >
-          <span className="font-mono text-xs uppercase tracking-widest text-primary-foreground/75">
-            {t('home.requestQuoteOr')}
-          </span>
-          <div className="flex items-end justify-between gap-2.5">
-            <div className="min-w-0 text-3xl font-light tracking-tighter leading-none">
-              {t('common.book')}
-            </div>
-            <ArrowRight
-              data-icon="inline-end"
-              className="transition-transform duration-200 ease-out group-hover:translate-x-1.5"
-            />
-          </div>
-        </Button>
-
-        <Button
-          onClick={() => goto('postprod')}
-          variant="cell"
-          size="cell"
-          className="group col-span-1 h-36 justify-between md:h-auto"
-        >
-          <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-            Service
-          </span>
-          <div className="flex items-end justify-between gap-2.5">
-            <div className="min-w-0">
-              <div className="whitespace-nowrap text-3xl font-light tracking-tighter leading-none text-foreground">
-                Post-production
-              </div>
-              <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground mt-1.5">
-                {t('home.retouchPhotoVideo')}
-              </div>
-            </div>
-            <ArrowRight
-              data-icon="inline-end"
-              className="transition-transform duration-200 ease-out group-hover:translate-x-1.5"
-            />
-          </div>
-        </Button>
-      </div>
-
-      {/* ── Row 5 left (desktop) / mobile row B: Video / showreel ──
- Mobile uses a 5:4 aspect ratio so the showreel renders at a similar
- relative size to its desktop tile (~360×284 on a 1440×900 viewport),
- instead of being shrunk to a short banner. md+ reverts to the grid
- row sizing via aspect-auto. */}
-      <div className="dark col-span-2 aspect-[5/4] flex overflow-hidden bg-background md:col-span-3 md:col-start-1 md:col-end-4 md:row-start-5 md:aspect-auto md:min-h-0">
+        {/* ── Bande haute droite : pavé galerie ── */}
         <Button
           onClick={() => goto('gallery')}
           aria-label={t('common.gallery')}
-          className="group relative flex h-full w-full overflow-hidden  bg-foreground p-0 text-left duration-150 hover:brightness-75"
+          variant="cell"
+          size="cell"
+          // `md:aspect-[2/1]` : dans la pile, la cellule court sur toute la
+          // largeur. Le 6/5 du téléphone y donnait 833px de haut à 1000px de
+          // large — une image qui remplit l'écran à elle seule. Le ratio
+          // s'aplatit quand la largeur double, et disparaît quand la grille
+          // reprend la main.
+          className="dark group relative col-span-2 aspect-[6/5] items-stretch justify-end overflow-hidden bg-background hover:bg-background md:aspect-[2/1] app:col-start-7 app:col-end-13 app:row-start-3 app:row-end-5 app:aspect-auto"
         >
-          {heroShowStaticPicture ? (
+          {galleryUseCrossfade ? (
+            <ImageCrossfade
+              images={heroPosters.map((p, i) => ({
+                url: p.url,
+                alt: p.alt || `${t('common.gallery')} — ${i + 1}`,
+              }))}
+              priority
+            />
+          ) : galleryHasCmsPosters ? (
+            <ResponsiveImage
+              src={heroPosters[0].url}
+              alt={heroPosters[0].alt || t('common.gallery')}
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              priority
+              className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+            />
+          ) : (
             <picture>
-              <source srcSet="/showreel-preview.avif" type="image/avif" />
-              <source srcSet="/showreel-preview.webp" type="image/webp" />
+              <source srcSet="/gallery-hero.avif" type="image/avif" />
+              <source srcSet="/gallery-hero.webp" type="image/webp" />
               <img
-                src="/showreel-preview.webp"
+                src="/gallery-hero.jpg"
                 alt=""
+                width={1280}
+                height={986}
                 {...fetchPriority(true)}
                 decoding="async"
                 className="pointer-events-none absolute inset-0 h-full w-full object-cover"
               />
             </picture>
-          ) : null}
-          {heroVideo && (
-            <VideoLoop
-              src={heroVideo}
-              poster={heroVideoPoster}
-              className="absolute inset-0 h-full w-full"
-            />
           )}
-          <div className="absolute inset-0 bg-home-media-gradient" />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.25)_0%,rgba(0,0,0,0)_30%,rgba(0,0,0,0)_55%,rgba(0,0,0,.65)_100%)]"
+          />
+          <div className="relative flex-1" />
+          <div className="relative flex w-full items-end justify-between gap-4">
+            <div className="min-w-0">
+              <div className="text-5xl font-light tracking-tighter leading-none text-foreground">
+                {t('common.gallery')}
+              </div>
+            </div>
+            <div className="flex-shrink-0">
+              {/* Le titre pèse `text-5xl` : la flèche de 16px de la base y
+                  disparaissait. Elle prend la mesure du pavé d'action. */}
+              <ArrowRight className="size-6" />
+            </div>
+          </div>
         </Button>
-      </div>
 
-      {/* ── Row 6 left: Discovery CTA (Coming soon) ──
+        {/* L'ordre du JSX ci-dessous est celui de la pile : Post-production +
+            Cyclorama (50/50) → showreel → CTA Réserver → Discovery pleine
+            largeur. Les positions du bento sont épinglées par `app:col-start-*`
+            / `app:row-start-*`, l'ordre du DOM n'y change donc rien. */}
+
+        {/* ── Rows 5-6 middle (desktop) / mobile row A left: Cyclorama ── */}
+        <CtaCell
+          tone="surface"
+          size="cta"
+          kicker="Espace"
+          title="Cyclorama"
+          subtitle={t('home.freeProductionPhotovideo')}
+          href={SCREEN_TO_PATH.cyclorama(lang)}
+          onClick={() => goto('cyclorama')}
+          className="col-span-1 app:col-span-3 app:col-start-4 app:col-end-7 app:row-start-5 app:row-end-7"
+        />
+
+        {/* ── Bande cols 7-10 : CTA Réserver au-dessus de Post-production ──
+ `contents` sous le palier : les deux tuiles retombent dans la grille
+ empilée à 2 colonnes, où le CTA est masqué et Post-production est une
+ cellule ordinaire — l'ordre d'empilement reste donc celui du DOM.
+ À partir d'`app`, la bande devient une grille de deux rangées et c'est sa
+ gouttière qui trace le filet entre les deux. Auparavant les deux tuiles
+ déclaraient la même aire de grille et le partage était simulé par un
+ `mt-[85px]`, ce qui interdisait tout filet.
+
+ La première rangée vaut `--spacing-cta` et non 84 en littéral : c'est la
+ même mesure, et elle était écrite deux fois. */}
+        <div className="contents app:col-start-7 app:col-end-10 app:row-start-5 app:row-end-7 app:grid app:grid-rows-[var(--spacing-cta)_minmax(0,1fr)] app:gap-px app:bg-border">
+          {/* Le CTA vit dans l'en-tête sous le palier (action principale), d'où
+ le `hidden app:flex` ici. */}
+          <CtaCell
+            size="cta"
+            kicker={t('home.requestQuoteOr')}
+            title={t('common.book')}
+            onClick={() => goto('book')}
+            className="hidden app:flex"
+          />
+
+          <CtaCell
+            tone="surface"
+            size="cta"
+            kicker="Service"
+            title="Post-production"
+            subtitle={t('home.retouchPhotoVideo')}
+            href={SCREEN_TO_PATH.postprod(lang)}
+            onClick={() => goto('postprod')}
+            className="col-span-1"
+          />
+        </div>
+
+        {/* ── Rangée 5 gauche (bento) / rangée B empilée : showreel ──
+ Le 5:4 donne au showreel une taille relative comparable à celle de sa
+ tuile du bento (~360×284 sur 1440×900) au lieu d'une bande écrasée.
+ `md:aspect-[16/9]` : au-delà de 768 la cellule court sur toute la
+ largeur, et le 5:4 y aurait donné 800px de haut pour 1000 de large.
+ À partir d'`app`, c'est le gabarit de rangée qui reprend la main. */}
+        <div className="dark col-span-2 aspect-[5/4] flex overflow-hidden bg-background md:aspect-[16/9] app:col-span-3 app:col-start-1 app:col-end-4 app:row-start-5 app:aspect-auto app:min-h-0">
+          <Button
+            onClick={() => goto('gallery')}
+            aria-label={t('common.gallery')}
+            className="group relative flex h-full w-full overflow-hidden  bg-foreground p-0 text-left"
+          >
+            {heroShowStaticPicture ? (
+              <picture>
+                <source srcSet="/showreel-preview.avif" type="image/avif" />
+                <source srcSet="/showreel-preview.webp" type="image/webp" />
+                <img
+                  src="/showreel-preview.webp"
+                  alt=""
+                  {...fetchPriority(true)}
+                  decoding="async"
+                  className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+                />
+              </picture>
+            ) : null}
+            {heroVideo && (
+              <VideoLoop
+                src={heroVideo}
+                poster={heroVideoPoster}
+                className="absolute inset-0 h-full w-full"
+              />
+            )}
+            <div className="absolute inset-0 bg-home-media-gradient" />
+          </Button>
+        </div>
+
+        {/* ── Rangée 6 gauche : Discovery (bientôt disponible) ──
  `variant="cell"` porte déjà `bg-background text-foreground` ; le scope
  `dark` les fait basculer sur la palette sombre. La tuile réécrivait ces
  classes à la main par-dessus la variante `default`, c'est-à-dire qu'elle
@@ -381,98 +398,93 @@ const HomePage = () => {
  Cette tuile est une bande horizontale et non une cellule empilée : sa
  géométrie reste au site d'appel, contrairement à ses voisines en
  `size="cell"`. */}
-      <Button
-        type="button"
-        disabled
-        aria-disabled="true"
-        tabIndex={-1}
-        variant="cell"
-        className="pointer-events-none cursor-not-allowed group relative col-span-2 h-20 flex justify-between gap-3 px-4 py-3 text-left dark md:col-span-3 md:col-start-1 md:col-end-4 md:row-start-6 md:h-21"
-      >
-        <svg
-          viewBox="0 0 200 84"
-          preserveAspectRatio="none"
-          className="absolute inset-0 h-full w-full opacity-20"
+        <Button
+          type="button"
+          disabled
+          aria-disabled="true"
+          tabIndex={-1}
+          variant="cell"
+          className="pointer-events-none cursor-not-allowed group relative col-span-2 h-20 flex justify-between gap-3 px-4 py-3 text-left dark app:col-span-3 app:col-start-1 app:col-end-4 app:row-start-6 app:h-21"
         >
-          {[...Array(7)].map((_, i) => (
-            <line
-              key={'h' + i}
-              x1="0"
-              y1={i * 14}
-              x2="200"
-              y2={i * 14}
-              stroke="currentColor"
-              strokeWidth="0.3"
-            />
-          ))}
-          {[...Array(14)].map((_, i) => (
-            <line
-              key={'v' + i}
-              x1={i * 14}
-              y1="0"
-              x2={i * 14}
-              y2="84"
-              stroke="currentColor"
-              strokeWidth="0.3"
-            />
-          ))}
-        </svg>
-        <div className="relative flex min-w-0 flex-col gap-1">
-          <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-            Discovery
-          </span>
-          {/* `truncate` : la base de `Button` pose `whitespace-nowrap`, que la
+          <svg
+            viewBox="0 0 200 84"
+            preserveAspectRatio="none"
+            className="absolute inset-0 h-full w-full opacity-20"
+          >
+            {[...Array(7)].map((_, i) => (
+              <line
+                key={'h' + i}
+                x1="0"
+                y1={i * 14}
+                x2="200"
+                y2={i * 14}
+                stroke="currentColor"
+                strokeWidth="0.3"
+              />
+            ))}
+            {[...Array(14)].map((_, i) => (
+              <line
+                key={'v' + i}
+                x1={i * 14}
+                y1="0"
+                x2={i * 14}
+                y2="84"
+                stroke="currentColor"
+                strokeWidth="0.3"
+              />
+            ))}
+          </svg>
+          <div className="relative flex min-w-0 flex-col gap-1">
+            <MonoLabel tone="muted">Discovery</MonoLabel>
+            {/* `truncate` : la base de `Button` pose `whitespace-nowrap`, que la
               taille `cell` neutralise — mais cette tuile est une bande
               horizontale et ne l'utilise pas. Sans troncature, le titre ne
               peut ni se replier ni se couper, et passe sous le badge. */}
-          <div className="truncate text-xl font-normal tracking-tight leading-tight text-muted-foreground">
-            {t('home.tellMeMore')}
+            <div className="truncate text-xl font-normal tracking-tight leading-tight text-muted-foreground">
+              {t('home.tellMeMore')}
+            </div>
           </div>
-        </div>
-        <div className="relative flex flex-shrink-0 items-center gap-2">
-          <Badge
-            variant="secondary"
-            className="hidden font-mono uppercase tracking-widest sm:inline-flex"
-          >
-            <Lock data-icon="inline-start" />
-            {t('home.comingSoon')}
-          </Badge>
-          <Badge variant="secondary" className="sm:hidden" aria-hidden="true">
-            <Lock />
-          </Badge>
-        </div>
-      </Button>
+          <div className="relative flex flex-shrink-0 items-center gap-2">
+            <Badge
+              variant="secondary"
+              className={cn(monoLabelVariants(), 'hidden sm:inline-flex')}
+            >
+              <Lock data-icon="inline-start" />
+              {t('home.comingSoon')}
+            </Badge>
+            <Badge variant="secondary" className="sm:hidden" aria-hidden="true">
+              <Lock />
+            </Badge>
+          </div>
+        </Button>
 
-      {/* ── Rows 5-6 far right: Assistant chat (desktop only; mobile uses FAB) ──
- Mounted only above md so phones never download the chat chunk
- (and its Supabase dependency) for an offscreen widget. */}
-      {isDesktop ? (
-        <Suspense
-          fallback={
-            <div
-              aria-hidden
-              className="hidden bg-background md:flex md:col-start-10 md:col-end-13 md:row-start-5 md:row-end-7 md:min-h-0"
-            />
-          }
-        >
-          <AssistantChat
-            lang={lang}
-            className="hidden md:flex md:col-start-10 md:col-end-13 md:row-start-5 md:row-end-7 md:min-h-0"
-          />
-        </Suspense>
-      ) : (
-        <div
-          aria-hidden
-          className="hidden bg-background md:flex md:col-start-10 md:col-end-13 md:row-start-5 md:row-end-7 md:min-h-0"
-        />
-      )}
+        {/* ── Rangées 5-6 extrême droite : l'assistant. Sous le palier, c'est le
+ bouton flottant qui le porte — `MobileAssistantFab`, qui disparaît
+ exactement ici. Il n'est monté qu'au-dessus du palier pour que les
+ téléphones ne téléchargent jamais le module de chat (et sa dépendance
+ Supabase) pour un widget hors écran.
 
-      {/* ── Mobile chat FAB + sheet ──
+ UNE cellule, et le chat dedans. Le placement était écrit trois fois —
+ le repli de Suspense, le composant, le substitut hors palier — et
+ trois copies d'une même aire de grille finissent par diverger. La
+ cellule reste peinte quoi qu'il arrive : c'est elle qui tient l'aire,
+ sans quoi les voisines s'étalent dessus pendant le chargement. */}
+        <div className="hidden bg-background app:flex app:col-start-10 app:col-end-13 app:row-start-5 app:row-end-7 app:min-h-0">
+          {isDesktop && (
+            <Suspense fallback={null}>
+              <AssistantChat lang={lang} />
+            </Suspense>
+          )}
+        </div>
+
+        {/* ── Mobile chat FAB + sheet ──
  Discreet 40px floating button that opens a full-screen sheet on
  mobile. Desktop keeps the in-grid AssistantChat. Logic lives in
  MobileAssistantFab so the discovery page can reuse the same UX. */}
+      </main>
+
       <MobileAssistantFab lang={lang} />
-    </main>
+    </PageShell>
   );
 };
 

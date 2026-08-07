@@ -95,48 +95,134 @@ describe('selectStudioHours', () => {
     ...over,
   });
 
-  it('résume une plage identique sur les jours ouvrés', () => {
+  const semaine = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+
+  it('groupe les jours consécutifs de même horaire en une rangée', () => {
+    const h = selectStudioHours(
+      settings({ openingHours: semaine.map((d) => jour(d)) }),
+    );
+    expect(h.rows).toHaveLength(2);
+    expect(h.rows[0].label.fr).toBe('lun — ven');
+    expect(h.rows[0].value.fr).toBe('10:00 — 18:00');
+    expect(h.rows[0].kind).toBe('hours');
+    // Samedi et dimanche absents de la donnée : fermés, et regroupés.
+    expect(h.rows[1].label.fr).toBe('sam — dim');
+    expect(h.rows[1].value.fr).toBe('Fermé');
+    expect(h.rows[1].kind).toBe('status');
+  });
+
+  // Le défaut que cette forme corrige : le libellé était écrit en dur.
+  it('dérive le libellé de la donnée, sans supposer lundi–vendredi', () => {
+    const h = selectStudioHours(
+      settings({
+        openingHours: [
+          jour('monday', { closed: true }),
+          ...['tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].map(
+            (d) => jour(d),
+          ),
+          jour('sunday', { closed: true }),
+        ],
+      }),
+    );
+    expect(h.rows.map((r) => [r.label.fr, r.value.fr])).toEqual([
+      ['lun', 'Fermé'],
+      ['mar — sam', '10:00 — 18:00'],
+      ['dim', 'Fermé'],
+    ]);
+  });
+
+  it('ne fusionne pas deux groupes de même horaire qui ne se suivent pas', () => {
     const h = selectStudioHours(
       settings({
         openingHours: [
           jour('monday'),
           jour('tuesday'),
-          jour('wednesday'),
+          jour('wednesday', { closed: true }),
           jour('thursday'),
           jour('friday'),
         ],
       }),
     );
-    expect(h.weekday.fr).toBe('10:00 — 18:00');
+    expect(h.rows.map((r) => r.label.fr)).toEqual([
+      'lun — mar',
+      'mer',
+      'jeu — ven',
+      'sam — dim',
+    ]);
   });
 
-  it('annonce « Fermé » quand aucun jour n’est ouvert', () => {
-    const h = selectStudioHours(
-      settings({ openingHours: [jour('saturday', { closed: true })] }),
-    );
-    expect(h.weekend.fr).toBe('Fermé');
-    expect(h.weekend.en).toBe('Closed');
-  });
-
-  it('annonce « Sur rendez-vous » quand le week-end l’exige', () => {
+  it('distingue un statut d’une plage', () => {
     const h = selectStudioHours(
       settings({
         openingHours: [
+          ...semaine.map((d) => jour(d)),
           jour('saturday', { byAppointment: true }),
           jour('sunday', { byAppointment: true }),
         ],
       }),
     );
-    expect(h.weekend.fr).toBe('Sur rendez-vous');
-    expect(h.weekend.en).toBe('By appointment');
+    const weekend = h.rows[h.rows.length - 1];
+    expect(weekend.label.fr).toBe('sam — dim');
+    expect(weekend.value.fr).toBe('Sur rendez-vous');
+    expect(weekend.value.en).toBe('By appointment');
+    expect(weekend.kind).toBe('status');
+    expect(weekend.opens).toBeUndefined();
   });
 
-  it('retombe sur les champs texte hérités sans openingHours', () => {
+  it('expose des bornes normalisées pour le JSON-LD', () => {
     const h = selectStudioHours(
-      settings({ hours: '10 h – 18 h' }, { hours: '10am – 6pm' }),
+      settings({ openingHours: [jour('monday', { opensAt: '09:30:00.000' })] }),
     );
-    expect(h.weekday.fr).toContain('10');
-    expect(h.weekday.en).toContain('10am');
+    expect(h.rows[0].days).toEqual(['monday']);
+    expect(h.rows[0].opens).toBe('09:30');
+    expect(h.rows[0].closes).toBe('18:00');
+  });
+
+  // La forme héritée porte son libellé dans la phrase : « Lun–Ven 10:00–18:00 ».
+  // C'est ce préfixe qu'on lit, au lieu de le jeter pour imprimer « Lun — Ven ».
+  it('lit le préfixe de jour de la phrase héritée au lieu de le supposer', () => {
+    const h = selectStudioHours(
+      settings(
+        { hours: 'Mar–Sam 10:00–18:00' },
+        { hours: 'Tue–Sat 10:00–18:00' },
+      ),
+    );
+    expect(h.rows).toHaveLength(1);
+    expect(h.rows[0].label.fr).toBe('Mar — Sam');
+    expect(h.rows[0].label.en).toBe('Tue — Sat');
+    expect(h.rows[0].value.fr).toBe('10:00–18:00');
+    expect(h.rows[0].kind).toBe('hours');
+    // Les jours servent le JSON-LD : mardi à samedi, pas lundi à vendredi.
+    expect(h.rows[0].days).toEqual([
+      'tuesday',
+      'wednesday',
+      'thursday',
+      'friday',
+      'saturday',
+    ]);
+    expect(h.rows[0].opens).toBe('10:00');
+    expect(h.rows[0].closes).toBe('18:00');
+  });
+
+  it('classe « sur demande » comme un statut, sans bornes', () => {
+    const h = selectStudioHours(
+      settings({ weekendHours: 'Sam–Dim sur demande' }),
+    );
+    expect(h.rows[0].label.fr).toBe('Sam — Dim');
+    expect(h.rows[0].value.fr).toBe('sur demande');
+    expect(h.rows[0].kind).toBe('status');
+    expect(h.rows[0].opens).toBeUndefined();
+  });
+
+  it('rend la phrase entière quand le préfixe ne nomme pas un jour', () => {
+    const h = selectStudioHours(settings({ hours: 'Ouvert en continu' }));
+    expect(h.rows).toHaveLength(1);
+    expect(h.rows[0].label.fr).toBe('');
+    expect(h.rows[0].value.fr).toBe('Ouvert en continu');
+  });
+
+  it('ne renvoie aucune rangée quand rien n’est renseigné', () => {
+    expect(selectStudioHours(settings({})).rows).toEqual([]);
   });
 });
 

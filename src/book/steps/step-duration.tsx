@@ -1,6 +1,11 @@
 import { useT } from '../../i18n/use-t';
 import type { BookPlateau } from '../../lib/booking-engine';
-import { BentoSlotTile, StepIntro, StepperBtn } from '../shared';
+import { StepHeading } from '@/ui/step-heading';
+import { Price } from '@/ui/price';
+import { SelectTile } from '@/ui/select-tile';
+import { Stepper } from '@/ui/stepper';
+import { ordinal } from '@/lib/format';
+import { MonoLabel } from '@/ui/mono-label';
 
 interface StepDurationProps {
   plateau: BookPlateau;
@@ -21,13 +26,19 @@ const DurationRow = ({
   hint: string;
   children: React.ReactNode;
 }) => (
-  <div className="grid grid-cols-1 gap-px bg-background border-b border-border w-full">
-    <div className="bg-background px-5 md:px-12 py-5 flex items-center justify-between gap-5 flex-wrap">
-      <div className="flex flex-col gap-1 min-w-0">
-        <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground">
-          {label}
-        </span>
-        <span className="font-mono text-xs tracking-wide text-muted-foreground leading-normal">
+  // `border-t` et non `border-b` : le filet appartient à ce qui COMMENCE, pas à
+  // ce qui finit. Porté par le bas de la grille de tuiles, il n'existait qu'en
+  // dessous d'elle — et se doublait avec le `border-t` de la barre d'actions
+  // dès que la ligne devenait le dernier élément de l'étape.
+  <div className="grid w-full grid-cols-1 gap-px border-t border-border bg-background">
+    <div className="flex flex-wrap items-center justify-between gap-5 bg-background px-pad-cell py-5">
+      <div className="flex min-w-0 flex-col gap-1">
+        <MonoLabel tone="muted">{label}</MonoLabel>
+        {/* L'explication était un second `MonoLabel` : même corps, même
+            couleur, même casse que l'intitulé qu'elle explique — rien ne les
+            distinguait, et soixante caractères en capitales espacées ne se
+            lisent pas. C'est une phrase, elle garde sa casse. */}
+        <span className="text-pretty text-xs leading-normal text-muted-foreground">
           {hint}
         </span>
       </div>
@@ -49,34 +60,39 @@ const StepDuration = ({
 
   if (p.isCyclo) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-border w-full auto-rows-[minmax(180px,auto)]">
-        <BentoSlotTile
-          idx={1}
-          on={cycloMode === 'halfH'}
-          onClick={() => setCycloMode('halfH')}
-          label={t('booking.halfDay')}
+      // Une colonne ou trois, jamais deux : il y a toujours exactement trois
+      // tuiles, et une grille à deux colonnes laisserait la quatrième cellule
+      // vide — le `bg-border` du conteneur, du noir pur, y transparaîtrait.
+      <div className="grid w-full flex-1 auto-rows-fr grid-cols-1 gap-px bg-border @xl:grid-cols-3">
+        <SelectTile
+          size="md"
+          number={ordinal(0)}
+          title={t('booking.halfDay')}
           sub={t('booking.hoursCount', { count: 5 })}
           desc={t('booking.HourBlockPerfectFor')}
-          price={`${p.rates.halfH} €`}
+          price={<Price size="lg" value={`${p.rates.halfH} €`} />}
+          selected={cycloMode === 'halfH'}
+          onSelect={() => setCycloMode('halfH')}
         />
-        <BentoSlotTile
-          idx={2}
-          on={cycloMode === 'fullH'}
-          onClick={() => setCycloMode('fullH')}
-          label={t('booking.fullDay')}
+        <SelectTile
+          size="md"
+          number={ordinal(1)}
+          title={t('booking.fullDay')}
           sub={t('booking.hoursCount', { count: 10 })}
           desc={t('booking.HourBlockECommerce')}
-          price={`${p.rates.fullH} €`}
+          price={<Price size="lg" value={`${p.rates.fullH} €`} />}
+          selected={cycloMode === 'fullH'}
+          onSelect={() => setCycloMode('fullH')}
         />
-        <BentoSlotTile
-          idx={3}
-          on={cycloMode === 'editorial'}
-          onClick={() => setCycloMode('editorial')}
-          label={t('booking.editorial')}
+        <SelectTile
+          size="md"
+          number={ordinal(2)}
+          title={t('booking.editorial')}
           sub={t('booking.hoursCount', { count: 10 })}
           desc={t('booking.reducedRateForPressPersonal')}
-          price={t('common.onRequest')}
-          hint={t('booking.pressPersonal')}
+          price={<MonoLabel tone="muted">{t('common.onRequest')}</MonoLabel>}
+          selected={cycloMode === 'editorial'}
+          onSelect={() => setCycloMode('editorial')}
         />
       </div>
     );
@@ -85,21 +101,18 @@ const StepDuration = ({
   if (p.isVisite) {
     return (
       <div>
-        <div className="px-5 md:px-12">
-          <StepIntro
-            num="02"
+        <div className="px-pad-cell">
+          <StepHeading
+            number="02"
             title={t('booking.studioVisit')}
             subtitle={t('booking.studioVisitIsFreeAnd')}
+            className="py-3 pb-2.5"
           />
         </div>
-        <div className="grid grid-cols-1 gap-px bg-background border-t border-b border-border w-full">
-          <div className="bg-background px-5 md:px-12 py-6 md:py-8 flex flex-wrap items-baseline gap-3 md:gap-5">
-            <span className="text-5xl font-light tracking-tighter leading-none">
-              0 €
-            </span>
-            <span className="font-mono text-xs tracking-widest uppercase text-muted-foreground">
-              {t('booking.freeByAppointment')}
-            </span>
+        <div className="grid grid-cols-1 gap-px bg-background border-t border-border w-full">
+          <div className="bg-background px-pad-cell py-6 md:py-8 flex flex-wrap items-baseline gap-3 md:gap-5">
+            <Price size="2xl" value="0 €" />
+            <MonoLabel tone="muted">{t('booking.freeByAppointment')}</MonoLabel>
           </div>
         </div>
       </div>
@@ -169,73 +182,95 @@ const StepDuration = ({
     });
   };
 
+  const hoursLabel =
+    slotType === 'hour'
+      ? t('booking.numberOfHours')
+      : t('booking.hoursHalfDay');
+
   return (
-    <div>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-border w-full auto-rows-[minmax(180px,auto)]">
-        <BentoSlotTile
-          idx={1}
-          on={slotType === 'hour'}
-          onClick={() => {
+    // `flex-col` + `flex-1` sur la grille : quand ce bloc est le dernier de
+    // la liste, `MultiPlateauStep` lui donne la hauteur restante et la grille
+    // la consomme, au lieu de laisser du blanc sous elle.
+    <div className="flex flex-1 flex-col">
+      <div className="grid w-full flex-1 auto-rows-fr grid-cols-1 gap-px bg-border @xl:grid-cols-3">
+        <SelectTile
+          size="md"
+          number={ordinal(0)}
+          title={t('booking.hourly2')}
+          sub={t('booking.To3Hours')}
+          desc={t('booking.idealForATestOr')}
+          price={<Price size="lg" value={`${p.rates.hour} €/h`} />}
+          selected={slotType === 'hour'}
+          onSelect={() => {
             setSlotType('hour');
             setHours(1);
           }}
-          label={t('booking.hourly2')}
-          sub={t('booking.To3Hours')}
-          desc={t('booking.idealForATestOr')}
-          price={`${p.rates.hour} €/h`}
         />
-        <BentoSlotTile
-          idx={2}
-          on={slotType === 'half'}
-          onClick={() => {
+        <SelectTile
+          size="md"
+          number={ordinal(1)}
+          title={t('booking.halfDay')}
+          sub={t('booking.To7Hours')}
+          desc={t('booking.HourBlockProRata')}
+          price={<Price size="lg" value={`${p.rates.half} €`} />}
+          selected={slotType === 'half'}
+          onSelect={() => {
             setSlotType('half');
             setHours(4);
           }}
-          label={t('booking.halfDay')}
-          sub={t('booking.To7Hours')}
-          desc={t('booking.HourBlockProRata')}
-          price={`${p.rates.half} €`}
         />
-        <BentoSlotTile
-          idx={3}
-          on={slotType === 'full'}
-          onClick={() => {
+        <SelectTile
+          size="md"
+          number={ordinal(2)}
+          title={t('booking.fullDay')}
+          sub={t('booking.Hours')}
+          desc={t('booking.fullDayBestRate')}
+          price={<Price size="lg" value={`${p.rates.full} €`} />}
+          selected={slotType === 'full'}
+          onSelect={() => {
             setSlotType('full');
             setHours(8);
           }}
-          label={t('booking.fullDay')}
-          sub={t('booking.Hours')}
-          desc={t('booking.fullDayBestRate')}
-          price={`${p.rates.full} €`}
         />
       </div>
       {(slotType === 'hour' || slotType === 'half') && (
         <DurationRow
-          label={
-            slotType === 'hour'
-              ? t('booking.numberOfHours')
-              : t('booking.hoursHalfDay')
-          }
+          label={hoursLabel}
           hint={
             slotType === 'hour'
               ? t('booking.from4hSwitchesToHalf')
               : t('booking.proRataHint', { price: p.rates.half })
           }
         >
-          <StepperBtn onClick={decrementBelowFullDay}>−</StepperBtn>
-          <span className="text-3xl font-light tracking-tight min-w-10 text-center">
-            {hours}
-          </span>
-          <StepperBtn onClick={incrementBelowFullDay}>+</StepperBtn>
+          {/* `${hours}h` et non `hours` : franchir 8h fait passer le compteur à
+              la ligne « journée » ci-dessous, qui affichait déjà l'unité. Le
+              même geste sur le même contrôle faisait donc apparaître un « h »
+              venu de nulle part entre 7 et 8, et la valeur changeait de largeur
+              avec lui. L'unité est constante des deux côtés du seuil — et elle
+              porte du sens sur la ligne « Durée totale », dont l'intitulé, lui,
+              ne dit pas des heures.
+
+              `min-w-16` des deux côtés pour la même raison : c'est ce qui tient
+              les boutons en place, et deux largeurs différentes les décalaient
+              au passage du seuil. */}
+          <Stepper
+            label={hoursLabel}
+            value={`${hours}h`}
+            valueClassName="min-w-16"
+            onDecrement={decrementBelowFullDay}
+            onIncrement={incrementBelowFullDay}
+          />
         </DurationRow>
       )}
       {slotType === 'full' && (
         <DurationRow label={t('booking.totalDuration')} hint={fullDayTotal()}>
-          <StepperBtn onClick={decrementFullDay}>−</StepperBtn>
-          <span className="text-3xl font-light tracking-tight min-w-16 text-center">
-            {hours}h
-          </span>
-          <StepperBtn onClick={() => setHours(hours + 1)}>+</StepperBtn>
+          <Stepper
+            label={t('booking.totalDuration')}
+            value={`${hours}h`}
+            valueClassName="min-w-16"
+            onDecrement={decrementFullDay}
+            onIncrement={() => setHours(hours + 1)}
+          />
         </DurationRow>
       )}
     </div>

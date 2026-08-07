@@ -53,6 +53,27 @@ export const DAYS: Record<Lang, string[]> = {
   en: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
 };
 
+// Le numéro d'index sur deux chiffres — « 01 », « 02 » — qui coiffe chaque
+// cellule de rail, chaque tuile et chaque étape du tunnel. Il était écrit
+// `String(i + 1).padStart(2, '0')` sur quarante et un sites.
+//
+// Ce n'est pas qu'une question de répétition : `legal-page.tsx` écrivait la
+// version courte, `` `0${i + 1}` ``, à deux lignes d'un `padStart` correct dans
+// le même fichier. Elle affiche « 010 » au dixième document. Le sommaire
+// juridique n'en compte que quatre aujourd'hui, ce qui explique que personne ne
+// l'ait vu — le bug attend le cinquième document ajouté au CMS.
+//
+// Prend l'index et non le rang : les sites d'appel itèrent sur des tableaux.
+export const ordinal = (index: number): string =>
+  String(index + 1).padStart(2, '0');
+
+// L'heure pleine des créneaux : `9` → « 09:00 ». Même motif `padStart`, même
+// dispersion (`availability.ts`, `slot-labels.ts`, `step-date.tsx`), mais un
+// rôle distinct de `ordinal` — un numéro d'ordre et une heure n'ont aucune
+// raison de partager un helper, seulement une écriture.
+export const hourLabel = (hour: number): string =>
+  `${String(hour).padStart(2, '0')}:00`;
+
 // Montants sans symbole : les sites d'appel concatènent « € » eux-mêmes.
 // Tronque plutôt qu'il n'arrondit — un prix affiché ne doit jamais dépasser le
 // prix facturé. `booking-engine.ts` porte une copie de cette fonction, qu'il ne

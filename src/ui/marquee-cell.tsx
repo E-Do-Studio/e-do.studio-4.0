@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { BRANDS } from '../lib/brands';
+import { usePrefersReducedMotion } from './use-media-query';
 
 interface MarqueeCellProps {
   items?: string[];
@@ -15,6 +16,10 @@ const MarqueeCell = ({
   const list = items ?? BRANDS;
   const trackRef = useRef<HTMLDivElement>(null);
   const [duration, setDuration] = useState(40);
+  // Le seul mouvement perpétuel du site, au-dessus de la ligne de flottaison
+  // de l'accueil. `HoverMarquee` respectait déjà la préférence ; ce défilement
+  // continu, non — et c'est celui qui ne s'arrête jamais.
+  const reducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
     const track = trackRef.current;
@@ -39,7 +44,11 @@ const MarqueeCell = ({
       <div
         ref={trackRef}
         className="inline-flex whitespace-nowrap pl-5"
-        style={{ animation: `mq ${duration}s linear infinite` }}
+        style={
+          reducedMotion
+            ? undefined
+            : { animation: `mq ${duration}s linear infinite` }
+        }
       >
         {[...list, ...list].map((x, i) => (
           <span

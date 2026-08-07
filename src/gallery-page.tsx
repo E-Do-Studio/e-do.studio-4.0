@@ -18,20 +18,24 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from '@/components/ui/empty';
+import { Rail, RailCell, RailHeader } from './ui/rail-cell';
 import { HoverMarquee } from './ui/hover-marquee';
 import {
   PLATEAU_LABELS,
   plateauLabel as displayPlateau,
 } from './lib/plateau-labels';
 import { MobileNavStrip } from './ui/mobile-nav-strip';
-import { PageHeader } from './ui/page-header';
+import { PageShell } from './ui/page-shell';
+import { MAIN_ID } from './ui/skip-link';
 import { ResponsiveImage } from './ui/responsive-image';
+import { MediaFrame } from './ui/media-frame';
 import { VideoLoop } from './ui/video-loop';
 import { usePrefersReducedMotion } from './ui/use-media-query';
 import type { StripGroup } from './ui/mobile-nav-strip';
 import { cn } from '@/lib/utils';
 import { useT } from './i18n/use-t';
 import { GalleryLightbox } from './gallery-lightbox';
+import { MonoLabel, monoLabelVariants } from './ui/mono-label';
 
 const PLATEAU_TO_SCREEN: Record<string, string> = {
   cyclorama: 'cyclorama',
@@ -114,24 +118,26 @@ const GalleryFilters = ({
   const hasFilters = cat !== 'all' || plateau !== 'all';
 
   return (
-    <aside className="flex flex-col bg-background">
-      <FilterHeader label={t('galleryPage.categories')} />
-      <FilterCell
+    <Rail>
+      <RailHeader label={t('galleryPage.categories')} />
+      <RailCell
+        density="compact"
         label={t('common.all')}
         active={cat === 'all'}
-        onClick={() => setCat('all')}
+        onSelect={() => setCat('all')}
       />
       {categories.map((category) => {
         const dimmed =
           plateau !== 'all' &&
           !(plateauToCats[plateau] ?? []).includes(category.k);
         return (
-          <FilterCell
+          <RailCell
+            density="compact"
             key={category.k}
             label={category[lang]}
             active={cat === category.k}
             dimmed={dimmed}
-            onClick={() => {
+            onSelect={() => {
               if (dimmed) setPlateau('all');
               setCat(category.k);
             }}
@@ -139,22 +145,24 @@ const GalleryFilters = ({
         );
       })}
 
-      <FilterHeader label={t('common.stages')} />
-      <FilterCell
+      <RailHeader label={t('common.stages')} />
+      <RailCell
+        density="compact"
         label={t('common.all')}
         active={plateau === 'all'}
-        onClick={() => setPlateau('all')}
+        onSelect={() => setPlateau('all')}
       />
       {plateauOptions.map((option) => {
         const dimmed =
           cat !== 'all' && !(catToPlateaux[cat] ?? []).includes(option.k);
         return (
-          <FilterCell
+          <RailCell
+            density="compact"
             key={option.k}
             label={option.label}
             active={plateau === option.k}
             dimmed={dimmed}
-            onClick={() => {
+            onSelect={() => {
               if (dimmed) setCat('all');
               setPlateau(option.k);
             }}
@@ -175,50 +183,9 @@ const GalleryFilters = ({
           ↺ {t('common.reset')}
         </Button>
       )}
-    </aside>
+    </Rail>
   );
 };
-
-const FilterHeader = ({ label }: { label: string }) => (
-  <div className="flex shrink-0 items-center border-b border-border bg-background px-3.5 pb-1 pt-2">
-    <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-      {label}
-    </span>
-  </div>
-);
-
-const FilterCell = ({
-  label,
-  active,
-  onClick,
-  dimmed,
-}: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-  dimmed?: boolean;
-}) => (
-  <Button
-    onClick={onClick}
-    // Sans variante, cette cellule héritait de `variant="default"`, c'est-à-dire
-    // du pavé orange, défait à la main — sauf son `hover:opacity-90`, qui lui
-    // continuait de tirer sur chaque survol. Et sans état ARIA, sa sélection
-    // était muette pour un lecteur d'écran.
-    //
-    // La taille reste celle par défaut : c'est `h-8` qui fixe la ligne à 32px,
-    // pas le `py-2`.
-    variant="rail"
-    aria-pressed={active}
-    className={cn(
-      'w-full justify-between gap-2 border-b border-b-border px-3.5 py-2 text-left text-sm tracking-tight aria-pressed:font-medium',
-      dimmed && 'opacity-30',
-    )}
-  >
-    <span className="overflow-hidden text-ellipsis whitespace-nowrap">
-      {label}
-    </span>
-  </Button>
-);
 
 interface GalleryContentProps {
   lang: Lang;
@@ -237,7 +204,7 @@ const GalleryContent = ({
 }: GalleryContentProps) => {
   const t = useT();
   return (
-    <div className="min-h-0 overflow-y-auto bg-background gap-px bg-border md:col-start-2 md:col-span-4">
+    <div className="min-h-0 overflow-y-auto bg-background gap-px bg-border app:col-start-2 app:col-span-3">
       <div className="flex flex-col [&>*:not(:last-child)]:border-b [&>*:not(:last-child)]:border-border">
         {loaded && filtered.length === 0 ? (
           <Empty>
@@ -283,10 +250,23 @@ const ProjectRow = ({
   const plateauLabel = displayPlateau(project.plateau);
   const ariaLabel = `${project.brand} — ${plateauLabel}`;
   return (
-    <div
+    // La galerie n'était qu'un mur de boutons frères : un seul titre pour tout
+    // le document, et 225 cellules sans structure au-dessus d'elles. Un titre
+    // par projet rend la page parcourable de marque en marque. Il est en
+    // `sr-only` parce que le nom est déjà là, à la verticale, dans la cellule
+    // de gauche — c'est le repère qui manquait, pas le texte.
+    <section
+      aria-labelledby={`project-${project.id}`}
+      // La colonne du nom passe à 80px dès `md` et non au palier : au-dessus du
+      // palier elle DOIT valoir 80 pour s'aligner sur la deuxième piste de la
+      // grille de page, mais en dessous rien ne l'y oblige — et 48px laissaient
+      // « LIVE » tronqué en « LI… » sur toute la bande tablette.
       className="group grid grid-cols-[48px_repeat(3,minmax(0,1fr))] md:grid-cols-[80px_repeat(3,minmax(0,1fr))] [&>*:not(:last-child)]:border-r [&>*:not(:last-child)]:border-border"
       style={style}
     >
+      <h2 id={`project-${project.id}`} className="sr-only">
+        {ariaLabel}
+      </h2>
       <ProjectLabel
         project={project}
         lang={lang}
@@ -302,7 +282,7 @@ const ProjectRow = ({
           onOpen={() => onOpenLightbox(project.id, imageIndex)}
         />
       ))}
-    </div>
+    </section>
   );
 };
 
@@ -319,20 +299,28 @@ const ProjectLabel = ({
 }) => {
   const plateauLabel = displayPlateau(project.plateau);
   const className =
-    'outline-none focus-visible:ring-3 focus-visible:ring-ring/50 relative flex cursor-pointer flex-col items-center justify-between overflow-hidden  bg-background px-2 py-2 md:px-2.5 md:py-3.5 text-left font-sans no-underline text-inherit';
+    'outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-foreground relative flex cursor-pointer flex-col items-center justify-between overflow-hidden  bg-background px-2 py-2 md:px-2.5 md:py-3.5 text-left font-sans no-underline text-inherit';
   const content = (
     <>
-      <HoverMarquee className="font-mono text-xs uppercase tracking-widest text-muted-foreground max-w-full self-start transition-colors group-hover:text-primary">
+      <HoverMarquee
+        className={cn(
+          monoLabelVariants({ tone: 'muted' }),
+          'max-w-full self-start transition-colors group-hover:text-primary',
+        )}
+      >
         {plateauLabel}
       </HoverMarquee>
+      {/* Retrait et corps suivent la colonne, donc `md` comme elle : posés au
+          palier, ils auraient laissé du `text-xs` dans une colonne déjà large
+          de 80. */}
       <div className="flex min-h-0 min-w-0 flex-1 items-center justify-center overflow-hidden py-1 md:py-2 [writing-mode:vertical-rl] rotate-180">
-        <span className="block max-h-full overflow-hidden text-ellipsis whitespace-nowrap text-xs md:text-2xl font-medium leading-[1.4] tracking-tight text-foreground">
+        <span className="block max-h-full overflow-hidden text-ellipsis whitespace-nowrap text-xs md:text-2xl leading-snug tracking-tight text-foreground">
           {project.brand}
         </span>
       </div>
-      <span className="self-start font-mono text-xs tracking-widest text-muted-foreground">
+      <MonoLabel tone="muted" className="self-start">
         {project.year}
-      </span>
+      </MonoLabel>
     </>
   );
   if (to) {
@@ -358,11 +346,9 @@ const ProjectImage = ({
   ariaLabel: string;
   onOpen: () => void;
 }) => {
+  const t = useT();
   const reducedMotion = usePrefersReducedMotion();
   const item = project.media[imageIndex];
-
-  const wrapperClass =
-    'relative block aspect-[4/5] overflow-hidden bg-background no-underline text-inherit';
 
   let inner: ReactNode;
   if (!item) {
@@ -404,32 +390,47 @@ const ProjectImage = ({
       />
     );
   } else {
-    const altText = item.alt || `${project.brand} — ${imageIndex + 1}`;
+    // `alt=""` : le bouton qui l'enveloppe porte déjà le nom. Un alt en plus
+    // faisait annoncer la même chose deux fois, et « COPERNI — 2 » n'est de
+    // toute façon pas une description, c'est un numéro d'ordre.
     inner = (
       <ResponsiveImage
         src={item.previewUrl ?? item.url}
-        alt={altText}
-        sizes="33vw"
-        className="absolute inset-0 h-full w-full object-cover pointer-events-none"
+        alt=""
+        // La rangée d'un projet vaut trois colonnes souples, la colonne du logo
+        // et celle du numéro déduites : une vignette mesure le quart de
+        // l'écran, pas le tiers que ce `sizes` annonçait.
+        sizes="(min-width: 768px) 25vw, 30vw"
+        className="pointer-events-none"
       />
     );
   }
 
   if (item) {
     return (
-      <Button
-        type="button"
-        onClick={onOpen}
-        aria-label={ariaLabel}
-        variant="cell"
-        size="cell"
-        className={cn(wrapperClass, 'p-0')}
+      <MediaFrame
+        className="p-0"
+        render={
+          <Button
+            type="button"
+            onClick={onOpen}
+            // Les trois vignettes d'un projet portaient le même nom — « MARQUE
+            // — Plateau » — donc trois boutons indistinguables à la suite. Le
+            // verbe dit ce que fait le bouton, l'index dit laquelle des trois.
+            aria-label={t('galleryPage.enlargeImage', {
+              name: ariaLabel,
+              index: imageIndex + 1,
+            })}
+            variant="cell"
+            size="cell"
+          />
+        }
       >
         {inner}
-      </Button>
+      </MediaFrame>
     );
   }
-  return <div className={wrapperClass}>{inner}</div>;
+  return <MediaFrame>{inner}</MediaFrame>;
 };
 
 const ProjectCoverFallback = ({
@@ -675,64 +676,76 @@ const GalleryPageV3 = () => {
   };
 
   return (
-    <main className="grid w-full gap-px bg-border md:h-full md:grid-cols-[var(--spacing-logo)_80px_repeat(3,minmax(0,1fr))] md:grid-rows-[var(--spacing-header)_minmax(0,1fr)] md:overflow-hidden">
-      <h1 className="sr-only">{t('common.gallery')} — E-Do Studio Paris</h1>
+    /* `<main class="contents">` : la grille bento exige que l'en-tête et le
+       contenu soient frères, le `<header>` se retrouvait donc dans le `<main>`
+       où il perd son rôle `banner`. Sans boîte, le placement des cellules ne
+       bouge pas. */
+    /* Pas de `app:grid-cols` sur la coquille : ses deux seules cellules sont la
+       bande d'en-tête et la grille ci-dessous, toutes deux en `col-span-full`.
+       Le gabarit y était recopié de la sous-grille sans que rien ne s'y place. */
+    <PageShell className="app:grid-rows-[var(--spacing-header)_minmax(0,1fr)]">
+      <main id={MAIN_ID} className="contents">
+        <h1 className="sr-only">{t('common.gallery')} — E-Do Studio Paris</h1>
 
-      <PageHeader className="col-span-full md:row-start-1" />
-
-      <div className="grid grid-cols-1 gap-px bg-border md:col-span-full md:row-start-2 md:min-h-0 md:overflow-hidden md:grid-cols-[var(--spacing-logo)_80px_repeat(3,minmax(0,1fr))]">
-        <MobileNavStrip
-          triggerLabel={t('mobileNav.filters').toUpperCase()}
-          groups={mobileGroups}
-          hasActive={hasActiveFilters}
-          activeCount={activeFilterCount}
-          summary={filterSummary}
-          ariaLabel={t('galleryPage.filterAriaLabel')}
-          lang={lang}
-          countFor={mobileCountFor}
-          onApply={applyMobileFilters}
-        />
-        <div className="hidden bg-background md:block md:overflow-y-auto">
-          <GalleryFilters
+        {/* Quatre pistes et non cinq. La deuxième valait 80px et personne ne s'y
+            plaçait seul : le contenu l'enjambait avec les trois autres, ce qui
+            lui donnait exactement la même largeur qu'en son absence. La piste de
+            80px qui compte est celle de `ProjectRow`, à l'intérieur — c'est là
+            que le nom vertical de la marque se pose. */}
+        <div className="grid grid-cols-1 gap-px bg-border app:col-span-full app:row-start-2 app:min-h-0 app:overflow-hidden app:grid-cols-[var(--spacing-logo)_repeat(3,minmax(0,1fr))]">
+          <MobileNavStrip
+            triggerLabel={t('mobileNav.filters').toUpperCase()}
+            groups={mobileGroups}
+            hasActive={hasActiveFilters}
+            activeCount={activeFilterCount}
+            summary={filterSummary}
+            ariaLabel={t('galleryPage.filterAriaLabel')}
             lang={lang}
-            cat={cat}
-            plateau={plateau}
-            setCat={setCat}
-            setPlateau={setPlateau}
-            categories={categories}
-            plateauOptions={plateauOptions}
-            catToPlateaux={catToPlateaux}
-            plateauToCats={plateauToCats}
+            countFor={mobileCountFor}
+            onApply={applyMobileFilters}
+          />
+          <div className="hidden bg-background app:block app:overflow-y-auto">
+            <GalleryFilters
+              lang={lang}
+              cat={cat}
+              plateau={plateau}
+              setCat={setCat}
+              setPlateau={setPlateau}
+              categories={categories}
+              plateauOptions={plateauOptions}
+              catToPlateaux={catToPlateaux}
+              plateauToCats={plateauToCats}
+            />
+          </div>
+          <GalleryContent
+            lang={lang}
+            filtered={filtered}
+            loaded={loaderData.projects !== null}
+            resetFilters={resetFilters}
+            onOpenLightbox={(projectId, imageIndex) =>
+              setLightbox({ projectId, imageIndex })
+            }
           />
         </div>
-        <GalleryContent
-          lang={lang}
-          filtered={filtered}
-          loaded={loaderData.projects !== null}
-          resetFilters={resetFilters}
-          onOpenLightbox={(projectId, imageIndex) =>
-            setLightbox({ projectId, imageIndex })
-          }
-        />
-      </div>
 
-      {lightboxProject && lightbox && (
-        <GalleryLightbox
-          project={lightboxProject}
-          initialIndex={lightbox.imageIndex}
-          lang={lang}
-          onClose={() => setLightbox(null)}
-          onBook={() => {
-            setLightbox(null);
-            goto('book');
-          }}
-          onContact={() => {
-            setLightbox(null);
-            goto('contact');
-          }}
-        />
-      )}
-    </main>
+        {lightboxProject && lightbox && (
+          <GalleryLightbox
+            project={lightboxProject}
+            initialIndex={lightbox.imageIndex}
+            lang={lang}
+            onClose={() => setLightbox(null)}
+            onBook={() => {
+              setLightbox(null);
+              goto('book');
+            }}
+            onContact={() => {
+              setLightbox(null);
+              goto('contact');
+            }}
+          />
+        )}
+      </main>
+    </PageShell>
   );
 };
 

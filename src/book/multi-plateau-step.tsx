@@ -3,6 +3,9 @@ import type { Dispatch, ReactNode, SetStateAction } from 'react';
 import { useT } from '../i18n/use-t';
 import type { BookPlateau, Lang, SlotState } from '../lib/booking-engine';
 import { buildSlotLabels } from './slot-labels';
+import { ordinal } from '@/lib/format';
+import { MonoLabel } from '../ui/mono-label';
+import { StepBand } from '../ui/step-band';
 
 interface MultiPlateauStepProps {
   lang: Lang;
@@ -51,37 +54,60 @@ const MultiPlateauStep = ({
   };
 
   return (
-    <div>
+    // `min-h-full` + `flex-col`, et `last:flex-1` sur le dernier plateau : la
+    // zone de contenu est plus haute que la liste, et le reste tombait en blanc
+    // sous le dernier bloc. C'est lui qui le récupère — même mécanisme qu'à
+    // l'étape Plateau, où une seule grille occupe toute la hauteur.
+    <div className="flex min-h-full flex-col">
       {topBanner}
-      {buildSlotLabels(slotIds, slots, lang).map(
-        ({ id, plateau, name, occurrence, duplicated }, idx) => {
-          if (!plateau) return null;
-          const label = duplicated
-            ? `${name} · ${t('booking.session')} ${String(occurrence).padStart(2, '0')}`
-            : name;
-          return (
-            <div key={id}>
-              {slotIds.length > 1 && (
-                <div className="px-5 md:px-6 border-b border-border flex items-center min-h-11 py-3 md:py-0 md:h-11 box-border gap-3 bg-background flex-wrap">
-                  <span className="font-mono text-xs font-normal uppercase tracking-widest text-primary whitespace-nowrap">
-                    {t('booking.stageFallback')}{' '}
-                    {String(idx + 1).padStart(2, '0')}
-                  </span>
-                  <span className="text-sm font-normal tracking-tight text-foreground">
-                    {label}
-                  </span>
-                  <span className="font-mono text-xs tracking-wide text-muted-foreground">
-                    {plateau.desc[lang]}
-                  </span>
-                </div>
-              )}
-              {renderOne(plateau, slots[id] || {}, (patch) =>
-                patchSlot(id, patch),
-              )}
-            </div>
-          );
-        },
-      )}
+      {/* `divide-y` : le filet entre deux plateaux appartient à CE conteneur,
+          qui seul sait qu'il y a un plateau suivant. Chaque étape le posait
+          elle-même en `border-b` sur son dernier bloc — un filet qui existait
+          donc aussi sous le DERNIER plateau, où il se doublait avec le
+          `border-t` de la barre d'actions. `divide-y` ne coud qu'entre deux
+          enfants, jamais aux extrémités. */}
+      <div className="flex flex-1 flex-col divide-y divide-border">
+        {buildSlotLabels(slotIds, slots, lang).map(
+          ({ id, plateau, name, occurrence, duplicated }) => {
+            if (!plateau) return null;
+            // Le rang ne rentre plus dans le titre : « Eclipse Session 01 » et
+            // « Eclipse Session 02 » répétaient deux mots sur trois d'un bloc au
+            // suivant, pour une seule information distinctive.
+            const rank = duplicated ? ordinal(occurrence - 1) : undefined;
+            return (
+              <div key={id} className="flex flex-col last:flex-1">
+                {/* Le nom du plateau EST le titre de sa section. Il tenait sur
+                  la même ligne que son numéro et sa description, tous les trois
+                  au même poids — la seule chose qui distinguait un bloc du
+                  suivant était la plus petite de son propre bloc.
+                  
+                  Pas de numéro d'ordre : le rail de gauche et le stepper mobile
+                  numérotent déjà les étapes, et ces sections-ci se suivent dans
+                  l'ordre où l'on a choisi les plateaux. Le nom suffit à les
+                  distinguer. */}
+                {slotIds.length > 1 && (
+                  <StepBand>
+                    <h2 className="m-0 text-base font-normal tracking-tight">
+                      {name}
+                    </h2>
+                    {rank && (
+                      <MonoLabel tone="muted" className="tabular-nums">
+                        {rank}
+                      </MonoLabel>
+                    )}
+                    <span className="min-w-0 truncate text-sm text-muted-foreground">
+                      {plateau.desc[lang]}
+                    </span>
+                  </StepBand>
+                )}
+                {renderOne(plateau, slots[id] || {}, (patch) =>
+                  patchSlot(id, patch),
+                )}
+              </div>
+            );
+          },
+        )}
+      </div>
     </div>
   );
 };

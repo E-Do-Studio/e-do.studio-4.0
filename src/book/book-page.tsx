@@ -45,15 +45,23 @@ import {
 } from '../lib/booking-engine';
 import { DAYS, MONTHS } from '../lib/format';
 import { usePageContext } from '../lib/page-context';
-import { PageHeader } from '../ui/page-header';
+import { PageShell } from '../ui/page-shell';
+import { MAIN_ID } from '../ui/skip-link';
+import { StepHeading } from '@/ui/step-heading';
+import { ordinal } from '@/lib/format';
+import { MonoLabel } from '@/ui/mono-label';
+import { StepBand } from '@/ui/step-band';
 
 // Placeholder used until a plateau is picked. Module-scoped so `p` keeps a
 // stable identity across renders — inline, it was a fresh object every render
 // and every hook depending on `p` (notably `handleSubmit`) re-created itself.
 const NO_PLATEAU: BookPlateau = {
   k: '',
-  fr: '—',
-  en: '—',
+  // Pas de nom, et surtout pas un tiret : cet objet existe pour donner une
+  // identité stable aux hooks, pas pour s'afficher. S'il apparaît à l'écran,
+  // c'est un trou à corriger — un tiret le maquillerait en valeur connue.
+  fr: '',
+  en: '',
   desc: { fr: '', en: '' },
   rates: { hour: 0, half: 0, full: 0 },
   hdUnit: 'half',
@@ -154,6 +162,7 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
 
   const contentScrollRef = useRef<HTMLFormElement | null>(null);
   const innerScrollRef = useRef<HTMLDivElement | null>(null);
+  const stepHeadingRef = useRef<HTMLHeadingElement | null>(null);
 
   const { applyConfig, skipConfig } = useConfigSeeding({
     state,
@@ -225,355 +234,418 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
   const progress = stepProgress(STEPS, step, canNext());
 
   // Chaque étape (et chaque sous-étape de date) rouvre en haut de page.
+  //
+  // Le défilement seul ne suffisait pas : au clic sur « Continuer », tout le
+  // contenu est remplacé mais le focus reste sur le bouton du pied, dont le
+  // libellé ne change pas toujours. Rien n'indiquait le changement d'étape.
+  // Le focus part sur le titre de l'étape, et la région live l'annonce.
   useEffect(() => {
     if (contentScrollRef.current) contentScrollRef.current.scrollTop = 0;
     if (innerScrollRef.current) innerScrollRef.current.scrollTop = 0;
+    stepHeadingRef.current?.focus();
   }, [step, dateIdx]);
   useEffect(() => {
     if (step === STEP.DATE) setDateIdx(0);
   }, [step]);
 
   return (
-    <div className="grid w-full gap-px bg-border md:h-full md:overflow-hidden md:grid-cols-[var(--spacing-logo)_minmax(0,1fr)_minmax(0,1fr)_300px] md:grid-rows-[var(--spacing-header)_minmax(0,1fr)]">
-      {/* Pleine largeur, comme partout ailleurs. La bande s'arrêtait aux trois
-          premières colonnes pour laisser la quatrième à un libellé « Votre
-          devis » aligné sur le panneau du dessous : elle n'avait alors que
-          723px à 1024, sous les 976 que ses cellules demandent. Le libellé
-          descend dans le panneau, qui le porte déjà. */}
-      <PageHeader className="col-span-full md:row-start-1" />
+    // Le tunnel montait en deux temps : coquille à deux colonnes à `md`, puis
+    // panneau de devis en quatrième colonne à `lg`. Le second palier existait
+    // pour se protéger du premier — posés ensemble à 768, les 300px du panneau
+    // prenaient 39 % de la fenêtre et la colonne de contenu tombait à 388px,
+    // soit MOINS large qu'à 640 où elle occupait tout.
+    //
+    // Les deux se rejoignent sur `app` : c'est la place pour deux colonnes ET
+    // un panneau qui était la vraie condition, et elle n'existait jamais à 768.
+    // Sous le palier, le tunnel est une colonne qui défile — ce que la coquille
+    // à deux colonnes n'a jamais réussi à être dans cette largeur.
+    // La bande d'en-tête est pleine largeur, comme partout ailleurs — c'est la
+    // coquille qui la pose. Elle s'arrêtait ici aux trois premières colonnes
+    // pour laisser la quatrième à un libellé « Votre devis » aligné sur le
+    // panneau du dessous : elle n'avait alors que 723px à 1024, sous les 976
+    // que ses cellules demandent. Le libellé descend dans le panneau.
+    <PageShell className="app:grid-rows-[var(--spacing-header)_minmax(0,1fr)] app:grid-cols-[var(--spacing-logo)_minmax(0,1fr)_minmax(0,1fr)_300px]">
+      {/* Le tunnel n'avait ni `<main>` ni `<h1>` : le seul titre du document
+          était le `<h2>` du panneau devis, vide tant que rien n'est choisi.
+          Le parcours de conversion était donc le seul du site sans repère de
+          structure. `contents` pour ne pas casser la grille. */}
+      <main id={MAIN_ID} className="contents">
+        <h1 className="sr-only">
+          {t('booking.bookingForm')} — E-Do Studio Paris
+        </h1>
+        {/* Titre d'étape porteur du focus. Volontairement sans `aria-live` :
+          déplacer le focus le fait déjà lire, une région live en plus le
+          ferait annoncer deux fois. */}
+        <h2 ref={stepHeadingRef} tabIndex={-1} className="sr-only outline-none">
+          {t('booking.stepOf', {
+            current: (progress.find((s) => s.active)?.index ?? 0) + 1,
+            total: progress.length,
+            label: progress.find((s) => s.active)?.label ?? '',
+          })}
+        </h2>
 
-      <BookingStepperMobile progress={progress} goToStep={goToStep} />
-      <BookingStepperRail progress={progress} goToStep={goToStep} />
+        <BookingStepperMobile progress={progress} goToStep={goToStep} />
+        <BookingStepperRail progress={progress} goToStep={goToStep} />
 
-      <form
-        ref={contentScrollRef}
-        name="booking"
-        aria-label={t('booking.bookingForm')}
-        onSubmit={(e) => e.preventDefault()}
-        className="bg-background overflow-auto flex flex-col md:col-start-2 md:col-span-2 md:row-start-2 md:min-h-0"
-      >
-        {mode === 'manual' && (
-          <BookingModeBanner
-            onReset={() => {
-              resetSelection();
-              goToStep(STEP.PLATEAU, 'manual');
-            }}
-            onConfigurator={() => goToStep(STEP.CONFIG, 'config')}
-          />
-        )}
-        <div ref={innerScrollRef} className="flex-1 overflow-y-auto">
-          {step === STEP.CONFIG && (
-            <StepConfigurator
-              sessions={configSessions}
-              setSessions={setConfigSessions}
-              activeIdx={activeSessionIdx}
-              setActiveIdx={setActiveSessionIdx}
-              onSkip={skipConfig}
+        <form
+          ref={contentScrollRef}
+          name="booking"
+          aria-label={t('booking.bookingForm')}
+          onSubmit={(e) => e.preventDefault()}
+          // `overflow-y-auto` et non `overflow-auto` : ce dernier autorise le
+          // défilement HORIZONTAL, qui n'a aucun sens dans un tunnel en colonne
+          // — il masque une partie de la grille au lieu de la faire tenir. Si
+          // quelque chose déborde encore, c'est ce quelque chose qu'il faut
+          // corriger, pas la fenêtre qu'il faut élargir.
+          // `@container/tunnel` : c'est CETTE colonne que les grilles internes
+          // doivent mesurer, pas la fenêtre. Les deux divergent dès que le
+          // panneau de devis entre en scène.
+          className="@container/tunnel flex flex-col overflow-y-auto bg-background app:col-start-2 app:col-span-2 app:row-start-2 app:min-h-0"
+        >
+          {mode === 'manual' && (
+            <BookingModeBanner
+              hint={t('booking.manualHint')}
+              switchLabel={t('booking.configurator')}
+              direction="back"
               onReset={() => {
                 resetSelection();
-                setConfigApplied(false);
+                goToStep(STEP.PLATEAU, 'manual');
               }}
+              onSwitch={() => goToStep(STEP.CONFIG, 'config')}
             />
           )}
-          {step === STEP.PLATEAU && (
-            <StepPlateau
-              lang={lang}
-              selected={slotIds}
-              togglePlateau={togglePlateau}
-            />
-          )}
-          {step === STEP.DURATION && (
-            <MultiPlateauStep
-              lang={lang}
-              slotIds={resolveSlotList(slotIds, plateau)}
-              slots={slots}
-              setSlots={setSlots}
-              topBanner={(() => {
+          <div ref={innerScrollRef} className="flex-1 overflow-y-auto">
+            {step === STEP.CONFIG && (
+              <StepConfigurator
+                sessions={configSessions}
+                setSessions={setConfigSessions}
+                activeIdx={activeSessionIdx}
+                setActiveIdx={setActiveSessionIdx}
+                onSkip={skipConfig}
+                onReset={() => {
+                  resetSelection();
+                  setConfigApplied(false);
+                }}
+              />
+            )}
+            {step === STEP.PLATEAU && (
+              <StepPlateau
+                lang={lang}
+                selected={slotIds}
+                togglePlateau={togglePlateau}
+              />
+            )}
+            {step === STEP.DURATION && (
+              <MultiPlateauStep
+                lang={lang}
+                slotIds={resolveSlotList(slotIds, plateau)}
+                slots={slots}
+                setSlots={setSlots}
+                topBanner={(() => {
+                  const list = resolveSlotList(slotIds, plateau);
+                  const allVisite =
+                    list.length > 0 &&
+                    list.every((id) => {
+                      const pk = slots[id]?.plateauKey || id;
+                      return BOOK_PLATEAUX.find((x) => x.k === pk)?.isVisite;
+                    });
+                  if (allVisite) return null;
+                  return (
+                    <StepBand sticky>
+                      <StepHeading
+                        number="02"
+                        title={t('booking.rentalDuration')}
+                      />
+                      <span className="font-mono text-xs tracking-wide text-muted-foreground">
+                        {list.length > 1
+                          ? t('booking.chooseDurationEach')
+                          : t('booking.chooseDurationSingle')}
+                      </span>
+                    </StepBand>
+                  );
+                })()}
+                renderOne={(px, st, setSt) => (
+                  <StepDuration
+                    plateau={px}
+                    slotType={st.slotType || 'hour'}
+                    setSlotType={(v) => setSt({ slotType: v })}
+                    hours={st.hours || 1}
+                    setHours={(v) => setSt({ hours: v })}
+                    cycloMode={st.cycloMode || 'halfH'}
+                    setCycloMode={(v) => setSt({ cycloMode: v })}
+                  />
+                )}
+              />
+            )}
+            {step === STEP.TEAM && (
+              <MultiPlateauStep
+                lang={lang}
+                slotIds={resolveSlotList(slotIds, plateau)}
+                slots={slots}
+                setSlots={setSlots}
+                topBanner={
+                  <StepBand sticky>
+                    <StepHeading
+                      number="03"
+                      title={t('booking.teamOptional')}
+                    />
+                  </StepBand>
+                }
+                renderOne={(px, st, setSt) => (
+                  <StepTeam
+                    lang={lang}
+                    plateau={px}
+                    team={st.team || {}}
+                    configSessions={configSessions}
+                    setTeam={(updater) =>
+                      setSt({
+                        team:
+                          typeof updater === 'function'
+                            ? updater(st.team || {})
+                            : updater,
+                      })
+                    }
+                  />
+                )}
+              />
+            )}
+            {step === STEP.POSTPROD && (
+              <MultiPlateauStep
+                lang={lang}
+                slotIds={resolveSlotList(slotIds, plateau)}
+                slots={slots}
+                setSlots={setSlots}
+                topBanner={
+                  <StepBand sticky>
+                    <StepHeading
+                      number="04"
+                      title={t('booking.postProdOptional')}
+                    />
+                  </StepBand>
+                }
+                renderOne={(px, st, setSt) => (
+                  <StepPostprod
+                    plateauKey={px.k}
+                    postprod={st.postprod || {}}
+                    setPostprod={(v) => setSt({ postprod: v })}
+                  />
+                )}
+              />
+            )}
+            {step === STEP.CONTACT && (
+              <StepContact
+                lang={lang}
+                contact={contact}
+                setContact={setContact}
+                plateau={p}
+                configMode={configApplied}
+                errors={contactErrors}
+              />
+            )}
+            {step === STEP.DATE &&
+              (() => {
                 const list = resolveSlotList(slotIds, plateau);
-                const allVisite =
-                  list.length > 0 &&
-                  list.every((id) => {
-                    const pk = slots[id]?.plateauKey || id;
-                    return BOOK_PLATEAUX.find((x) => x.k === pk)?.isVisite;
-                  });
-                if (allVisite) return null;
+                if (list.length <= 1) {
+                  return (
+                    <StepDate
+                      plateau={p}
+                      viewY={viewY}
+                      viewM={viewM}
+                      months={months}
+                      days={days}
+                      calCells={calCells}
+                      selected={selected}
+                      setSelected={setSelected}
+                      arrivalHour={arrivalHour}
+                      setArrivalHour={setArrivalHour}
+                      rentalHours={availabilityHours}
+                      isPast={isPast}
+                      nextMonth={() => shiftMonth(1)}
+                      prevMonth={() => shiftMonth(-1)}
+                      refreshKey={availRefreshKey}
+                    />
+                  );
+                }
+                const safeIdx = Math.max(0, Math.min(dateIdx, list.length - 1));
+                const id = list[safeIdx];
+                const st = slots[id] || {};
+                const pk = st.plateauKey || id;
+                const px = BOOK_PLATEAUX.find((x) => x.k === pk);
+                const setSt = (patch: SlotState) =>
+                  setSlots((prev) => ({
+                    ...prev,
+                    [id]: { ...(prev[id] || {}), plateauKey: pk, ...patch },
+                  }));
+                const stRentalHours = dailyOccupancyHoursFor(st, px);
+                const stSelected = st.date || null;
+                const stArrival = st.arrivalHour != null ? st.arrivalHour : 10;
+                const slotLabels = buildSlotLabels(list, slots, lang);
+                const currentLabel = slotLabels[safeIdx].label;
                 return (
-                  <div className="px-5 md:px-6 border-b border-border flex items-center min-h-11 py-3 md:py-0 md:h-11 box-border gap-3 bg-background flex-wrap sticky top-0 z-10">
-                    <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-primary whitespace-nowrap">
-                      02 · {t('booking.rentalDuration')}
-                    </span>
-                    <span className="font-mono text-xs tracking-wide text-muted-foreground">
-                      {list.length > 1
-                        ? t('booking.chooseDurationEach')
-                        : t('booking.chooseDurationSingle')}
-                    </span>
-                  </div>
+                  <>
+                    {/* La bande est PASSÉE à l'étape, pas posée autour :
+                        l'ordre de lecture va du titre d'étape au plateau
+                        concerné, pas l'inverse. */}
+                    <StepDate
+                      contextBanner={
+                        <StepBand sticky className="md:gap-4">
+                          {/* « Plateau 01 / 02 » se lisait comme une date, et
+                              disait le rang que les pastilles à droite montrent
+                              déjà — avec le total, et en permettant d'y aller.
+                              Ne reste que le libellé, en gris : l'orange est
+                              l'accent d'ACTION du site, pas celui d'un contexte. */}
+                          <MonoLabel tone="muted" className="whitespace-nowrap">
+                            {t('booking.stageFallback')}
+                          </MonoLabel>
+                          <span className="text-sm font-normal tracking-tight text-foreground">
+                            {currentLabel}
+                          </span>
+                          <div className="flex gap-1.5 flex-wrap w-full md:w-auto md:ml-auto">
+                            {list.map((xid, i) => {
+                              const has = slots[xid] && slots[xid].date;
+                              const active = i === safeIdx;
+                              return (
+                                <Button
+                                  type="button"
+                                  key={xid}
+                                  onClick={() => setDateIdx(i)}
+                                  title={slotLabels[i].label}
+                                  variant="outline"
+                                  aria-pressed={active}
+                                  // Une pastille dit deux choses : où l'on est
+                                  // (l'inversion, comme partout dans le site) et si
+                                  // la date est posée (le ✓). L'aplat orange les
+                                  // confondait — une pastille orange pouvait
+                                  // signifier « en cours » ou « fait » selon
+                                  // l'ordre du ternaire.
+                                  className={cn(
+                                    'h-auto min-w-7 px-2.5 py-1 text-xs tracking-wider',
+                                    active &&
+                                      'dark border-foreground bg-background',
+                                  )}
+                                >
+                                  {ordinal(i)}
+                                  {has ? ' ✓' : ''}
+                                </Button>
+                              );
+                            })}
+                          </div>
+                        </StepBand>
+                      }
+                      plateau={px}
+                      viewY={viewY}
+                      viewM={viewM}
+                      months={months}
+                      days={days}
+                      calCells={calCells}
+                      selected={stSelected}
+                      setSelected={(d: DateSelection) =>
+                        setSt({ date: d, arrivalHour: st.arrivalHour ?? 10 })
+                      }
+                      arrivalHour={stArrival}
+                      setArrivalHour={(h: number) => setSt({ arrivalHour: h })}
+                      rentalHours={stRentalHours}
+                      isPast={isPast}
+                      nextMonth={() => shiftMonth(1)}
+                      prevMonth={() => shiftMonth(-1)}
+                      refreshKey={availRefreshKey}
+                    />
+                  </>
                 );
               })()}
-              renderOne={(px, st, setSt) => (
-                <StepDuration
-                  plateau={px}
-                  slotType={st.slotType || 'hour'}
-                  setSlotType={(v) => setSt({ slotType: v })}
-                  hours={st.hours || 1}
-                  setHours={(v) => setSt({ hours: v })}
-                  cycloMode={st.cycloMode || 'halfH'}
-                  setCycloMode={(v) => setSt({ cycloMode: v })}
-                />
-              )}
-            />
-          )}
-          {step === STEP.TEAM && (
-            <MultiPlateauStep
-              lang={lang}
-              slotIds={resolveSlotList(slotIds, plateau)}
-              slots={slots}
-              setSlots={setSlots}
-              topBanner={
-                <div className="px-5 md:px-6 border-b border-border flex items-center min-h-11 py-3 md:py-0 md:h-11 box-border gap-3 bg-background flex-wrap sticky top-0 z-10">
-                  <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-primary whitespace-nowrap">
-                    03 · {t('booking.teamOptional')}
-                  </span>
-                </div>
-              }
-              renderOne={(px, st, setSt) => (
-                <StepTeam
-                  lang={lang}
-                  plateau={px}
-                  team={st.team || {}}
-                  configSessions={configSessions}
-                  setTeam={(updater) =>
-                    setSt({
-                      team:
-                        typeof updater === 'function'
-                          ? updater(st.team || {})
-                          : updater,
-                    })
-                  }
-                />
-              )}
-            />
-          )}
-          {step === STEP.POSTPROD && (
-            <MultiPlateauStep
-              lang={lang}
-              slotIds={resolveSlotList(slotIds, plateau)}
-              slots={slots}
-              setSlots={setSlots}
-              topBanner={
-                <div className="px-5 md:px-6 border-b border-border flex items-center min-h-11 py-3 md:py-0 md:h-11 box-border gap-3 bg-background flex-wrap sticky top-0 z-10">
-                  <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-primary whitespace-nowrap">
-                    04 · {t('booking.postProdOptional')}
-                  </span>
-                </div>
-              }
-              renderOne={(px, st, setSt) => (
-                <StepPostprod
-                  plateauKey={px.k}
-                  postprod={st.postprod || {}}
-                  setPostprod={(v) => setSt({ postprod: v })}
-                />
-              )}
-            />
-          )}
-          {step === STEP.CONTACT && (
-            <StepContact
-              lang={lang}
-              contact={contact}
-              setContact={setContact}
-              plateau={p}
-              configMode={configApplied}
-              errors={contactErrors}
-            />
-          )}
-          {step === STEP.DATE &&
-            (() => {
-              const list = resolveSlotList(slotIds, plateau);
-              if (list.length <= 1) {
-                return (
-                  <StepDate
-                    plateau={p}
-                    viewY={viewY}
-                    viewM={viewM}
-                    months={months}
-                    days={days}
-                    calCells={calCells}
-                    selected={selected}
-                    setSelected={setSelected}
-                    arrivalHour={arrivalHour}
-                    setArrivalHour={setArrivalHour}
-                    rentalHours={availabilityHours}
-                    isPast={isPast}
-                    nextMonth={() => shiftMonth(1)}
-                    prevMonth={() => shiftMonth(-1)}
-                    refreshKey={availRefreshKey}
-                  />
-                );
-              }
-              const safeIdx = Math.max(0, Math.min(dateIdx, list.length - 1));
-              const id = list[safeIdx];
-              const st = slots[id] || {};
-              const pk = st.plateauKey || id;
-              const px = BOOK_PLATEAUX.find((x) => x.k === pk);
-              const setSt = (patch: SlotState) =>
-                setSlots((prev) => ({
-                  ...prev,
-                  [id]: { ...(prev[id] || {}), plateauKey: pk, ...patch },
-                }));
-              const stRentalHours = dailyOccupancyHoursFor(st, px);
-              const stSelected = st.date || null;
-              const stArrival = st.arrivalHour != null ? st.arrivalHour : 10;
-              const slotLabels = buildSlotLabels(list, slots, lang);
-              const currentLabel = slotLabels[safeIdx].label;
-              return (
-                <div>
-                  <div className="px-5 md:px-6 border-b border-border flex items-center min-h-11 py-3 md:py-0 md:h-11 box-border gap-3 md:gap-4 bg-background flex-wrap sticky top-0 z-10">
-                    <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-primary whitespace-nowrap">
-                      {t('booking.stageFallback')}{' '}
-                      {String(safeIdx + 1).padStart(2, '0')} /{' '}
-                      {String(list.length).padStart(2, '0')}
-                    </span>
-                    <span className="text-sm font-normal tracking-tight text-foreground">
-                      {currentLabel}
-                    </span>
-                    <div className="flex gap-1.5 flex-wrap w-full md:w-auto md:ml-auto">
-                      {list.map((xid, i) => {
-                        const has = slots[xid] && slots[xid].date;
-                        const active = i === safeIdx;
-                        return (
-                          <Button
-                            type="button"
-                            key={xid}
-                            onClick={() => setDateIdx(i)}
-                            title={slotLabels[i].label}
-                            variant="outline"
-                            aria-pressed={active}
-                            className={cn(
-                              'h-auto min-w-7 px-2.5 py-1 text-xs tracking-wider',
-                              active
-                                ? 'dark border-foreground bg-background'
-                                : has &&
-                                    'border-primary bg-primary text-primary-foreground',
-                            )}
-                          >
-                            {String(i + 1).padStart(2, '0')}
-                            {has ? ' ✓' : ''}
-                          </Button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  <StepDate
-                    plateau={px}
-                    viewY={viewY}
-                    viewM={viewM}
-                    months={months}
-                    days={days}
-                    calCells={calCells}
-                    selected={stSelected}
-                    setSelected={(d: DateSelection) =>
-                      setSt({ date: d, arrivalHour: st.arrivalHour ?? 10 })
-                    }
-                    arrivalHour={stArrival}
-                    setArrivalHour={(h: number) => setSt({ arrivalHour: h })}
-                    rentalHours={stRentalHours}
-                    isPast={isPast}
-                    nextMonth={() => shiftMonth(1)}
-                    prevMonth={() => shiftMonth(-1)}
-                    refreshKey={availRefreshKey}
-                  />
-                </div>
-              );
-            })()}
-        </div>
+          </div>
 
-        {saveError && (
-          <Alert
-            variant="destructive"
-            className="shrink-0 items-center justify-between rounded-none border-x-0 border-b-0 px-12 py-3"
-          >
-            <AlertDescription>{saveError}</AlertDescription>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={() => setSaveError(null)}
-              aria-label={t('common.close')}
-              className="text-destructive"
+          {saveError && (
+            <Alert
+              variant="destructive"
+              // `flex` surcharge le `grid` de la primitive : posé dessus,
+              // `justify-between` n'alignait rien et le bouton de fermeture
+              // passait à la ligne sous le message.
+              className="flex shrink-0 items-center justify-between gap-4 rounded-none border-x-0 border-b-0 px-pad-cell py-3"
             >
-              <X />
-            </Button>
-          </Alert>
-        )}
-        <BookingHubspotFields
-          mode={mode}
-          omitContact={step === STEP.CONTACT}
-          plateau={plateau}
+              <AlertDescription>{saveError}</AlertDescription>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => setSaveError(null)}
+                aria-label={t('common.close')}
+                className="text-destructive"
+              >
+                <X />
+              </Button>
+            </Alert>
+          )}
+          <BookingHubspotFields
+            mode={mode}
+            omitContact={step === STEP.CONTACT}
+            plateau={plateau}
+            slotIds={slotIds}
+            slots={slots}
+            selected={selected}
+            arrivalHour={arrivalHour}
+            rentalHours={rentalHours}
+            projectType={configGlobal.projectType}
+            urgency={configGlobal.urgency}
+            total={priceBreakdown.total}
+            contact={contact}
+          />
+          {step === STEP.CONFIG && canNext() && (
+            <ConfigRecap
+              lang={lang}
+              sessions={configSessions}
+              global={configGlobal}
+            />
+          )}
+          {step === STEP.CONFIG && (
+            <div className="flex items-stretch min-h-11 shrink-0">
+              <Button
+                type="button"
+                onClick={applyConfig}
+                disabled={!canNext()}
+                className="h-auto min-w-0 flex-1 gap-2 px-5 py-3 text-xs tracking-widest md:py-0"
+              >
+                {t('booking.continueToBooking')}{' '}
+                <ArrowRight width="14" height="14" />
+              </Button>
+            </div>
+          )}
+          {step > STEP.CONFIG && (
+            <BookingFooterNav
+              step={step}
+              steps={STEPS}
+              dateSlots={resolveSlotList(slotIds, plateau).map((id) => ({
+                id,
+                hasDate: !!slots[id]?.date,
+              }))}
+              dateIdx={dateIdx}
+              setDateIdx={setDateIdx}
+              canNext={canNext()}
+              contactValid={contactValid}
+              saving={saving}
+              isCyclo={!!p.isCyclo}
+              goToStep={goToStep}
+              onContactNext={handleContactNext}
+              onSubmit={handleSubmit}
+            />
+          )}
+        </form>
+
+        <BookingSidePanel
+          lang={lang}
+          plateau={p}
+          selected={selected}
+          months={months}
+          slotType={slotType}
+          hours={hours}
+          cycloMode={cycloMode}
+          rows={priceBreakdown.rows}
+          total={priceBreakdown.total}
+          isPreview={!!priceBreakdown.isPreview}
           slotIds={slotIds}
           slots={slots}
-          selected={selected}
-          arrivalHour={arrivalHour}
-          rentalHours={rentalHours}
-          projectType={configGlobal.projectType}
-          urgency={configGlobal.urgency}
-          total={priceBreakdown.total}
-          contact={contact}
         />
-        {step === STEP.CONFIG && canNext() && (
-          <ConfigRecap
-            lang={lang}
-            sessions={configSessions}
-            global={configGlobal}
-          />
-        )}
-        {step === STEP.CONFIG && (
-          <div className="flex items-stretch min-h-11 shrink-0">
-            <Button
-              type="button"
-              onClick={applyConfig}
-              disabled={!canNext()}
-              className="h-auto min-w-0 flex-1 gap-2 px-5 py-3 text-xs tracking-widest md:py-0"
-            >
-              {t('booking.continueToBooking')}{' '}
-              <ArrowRight width="14" height="14" />
-            </Button>
-          </div>
-        )}
-        {step > STEP.CONFIG && (
-          <BookingFooterNav
-            step={step}
-            steps={STEPS}
-            dateSlots={resolveSlotList(slotIds, plateau).map((id) => ({
-              id,
-              hasDate: !!slots[id]?.date,
-            }))}
-            dateIdx={dateIdx}
-            setDateIdx={setDateIdx}
-            canNext={canNext()}
-            contactValid={contactValid}
-            saving={saving}
-            isCyclo={!!p.isCyclo}
-            goToStep={goToStep}
-            onContactNext={handleContactNext}
-            onSubmit={handleSubmit}
-          />
-        )}
-      </form>
-
-      <BookingSidePanel
-        lang={lang}
-        plateau={p}
-        selected={selected}
-        months={months}
-        slotType={slotType}
-        hours={hours}
-        cycloMode={cycloMode}
-        rows={priceBreakdown.rows}
-        total={priceBreakdown.total}
-        isPreview={!!priceBreakdown.isPreview}
-        slotIds={slotIds}
-        slots={slots}
-      />
-    </div>
+      </main>
+    </PageShell>
   );
 };
 

@@ -9,12 +9,15 @@ import { cn } from"@/lib/utils"
 // placeholder tient lieu de libellé (mono capitales, effacé au focus). Elle
 // remplace la classe CSS `.` et les wrappers maison
 // `ContactInput` / `BentoInput`.
-const inputVariants = cva("w-full min-w-0 transition-colors outline-none placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
+const inputVariants = cva("w-full min-w-0 transition-colors placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
  {
  variants: {
  variant: {
- default:"h-8 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:bg-input/50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm",
- bento:"h-full border-0 bg-background px-5 font-sans text-base font-light tracking-tight text-foreground placeholder:font-mono placeholder:text-xs placeholder:font-normal placeholder:uppercase placeholder:tracking-widest placeholder:opacity-100 focus:bg-muted focus:placeholder:opacity-0 aria-invalid:text-destructive aria-invalid:placeholder:text-destructive",
+ default:"h-8 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-bold file:text-foreground focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-foreground disabled:bg-input/50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm",
+ // `focus:bg-muted` seul ne suffit pas comme repère de focus : blanc → #f5f5f5
+ // ne fait que 1.04:1, invisible. Le tracé intérieur est le même que sur les
+ // boutons, et il ne peut pas être rogné par la cellule bento voisine.
+ bento:"h-full border-0 bg-background px-5 font-sans text-base tracking-tight text-foreground placeholder:font-mono placeholder:text-xs placeholder:font-normal placeholder:uppercase placeholder:tracking-widest placeholder:opacity-100 focus:bg-muted focus:placeholder:opacity-0 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-foreground aria-invalid:text-destructive aria-invalid:placeholder:text-destructive",
  },
  },
  defaultVariants: {

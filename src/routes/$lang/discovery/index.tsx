@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { DiscoveryVariants } from '../../../discovery-pages';
+import { DiscoveryPage } from '../../../discovery-pages';
 import { settle } from '../../../lib/route-data';
 import {
   fetchDiscoveryCategories,
@@ -38,5 +38,5 @@ export const Route = createFileRoute('/$lang/discovery/')({
     ]);
     return { posts, categories };
   },
-  component: DiscoveryVariants,
+  component: DiscoveryPage,
 });

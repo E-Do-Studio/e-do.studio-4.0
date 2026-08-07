@@ -1,16 +1,16 @@
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import type { ReactNode } from 'react';
 import { Trans } from 'react-i18next';
 import { useT } from '../../i18n/use-t';
 import type { BookPlateau, Lang } from '../../lib/booking-engine';
 import type { ContactFormErrors } from '../../lib/booking-schema';
 import type { ContactState } from '../booking-types';
 import { ARTICLE_TYPES, catLabel } from '../catalog';
-import { BentoField, BentoInput } from '../shared';
+import { FormCell, FormCellInput, FormCellTextarea } from '@/ui/form-cell';
+import { StepHeading } from '@/ui/step-heading';
+import { StepBand } from '@/ui/step-band';
 
 interface StepContactProps {
   lang: Lang;
@@ -21,33 +21,6 @@ interface StepContactProps {
   configMode: boolean;
   errors?: ContactFormErrors;
 }
-
-const LABEL_CLS =
-  'font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground';
-
-/** Cellule bento large, hors du `Field` de shadcn (contenu non-input). */
-const WideCell = ({
-  label,
-  error,
-  children,
-}: {
-  label: string;
-  error?: string;
-  children: ReactNode;
-}) => (
-  <div
-    className={cn(
-      'bg-background px-3 py-1.5 col-span-1 sm:col-span-2 flex flex-col gap-1 min-h-11',
-      error && 'ring-1 ring-inset ring-destructive',
-    )}
-  >
-    <span className={LABEL_CLS}>{label}</span>
-    {children}
-    {error && (
-      <span className="text-destructive text-xs leading-tight">{error}</span>
-    )}
-  </div>
-);
 
 const StepContact = ({
   lang,
@@ -71,98 +44,108 @@ const StepContact = ({
 
   return (
     <div>
-      <div className="px-5 md:px-6 border-b border-border flex items-center min-h-11 py-3 md:py-0 md:h-11 box-border gap-3 bg-background flex-wrap sticky top-0 z-10">
-        <span className="font-mono text-xs font-normal uppercase tracking-widest text-primary whitespace-nowrap">
-          05 · {t('assistant.contactFormTitle')}
-        </span>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-border">
-        <div className="col-span-1 sm:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-px bg-border">
-          <BentoField label={t('booking.brand')}>
-            <BentoInput
+      <StepBand sticky>
+        <StepHeading number="05" title={t('assistant.contactFormTitle')} />
+      </StepBand>
+      <div className="grid grid-cols-1 @sm:grid-cols-2 gap-px bg-border">
+        <div className="col-span-1 @sm:col-span-2 grid grid-cols-1 @md:grid-cols-2 @2xl:grid-cols-3 gap-px bg-border">
+          <FormCell label={t('booking.brand')}>
+            <FormCellInput
               name="brand"
               value={contact.marque}
               onChange={(v) => patch({ marque: v })}
-              placeholder="—"
+              placeholder={t('contact.placeholderBrand')}
             />
-          </BentoField>
-          <BentoField label={t('booking.company2')} error={errors.societe}>
-            <BentoInput
+          </FormCell>
+          <FormCell label={t('booking.company2')} error={errors.societe}>
+            <FormCellInput
               name="company"
               autoComplete="organization"
               value={contact.societe}
               onChange={(v) => patch({ societe: v })}
-              placeholder="—"
+              placeholder={t('contact.placeholderCompany')}
             />
-          </BentoField>
-          <BentoField label="SIREN *" error={errors.siren}>
-            <BentoInput
+          </FormCell>
+          {/* SIREN traverse la rangée tant que la grille est à DEUX colonnes.
+              Ces trois champs y laissaient une quatrième cellule vide, et la
+              gouttière de ce conteneur est un fond noir : le trou se voyait
+              comme un rectangle plein, pas comme du blanc.
+              À trois colonnes le compte tombe juste et la cellule reprend sa
+              largeur. */}
+          <FormCell
+            label="SIREN *"
+            error={errors.siren}
+            className="@md:col-span-2 @2xl:col-span-1"
+          >
+            <FormCellInput
               name="siren"
               inputMode="numeric"
               value={contact.siren}
               onChange={(v) => patch({ siren: v })}
-              placeholder="—"
+              placeholder={t('contact.placeholderSiren')}
             />
-          </BentoField>
+          </FormCell>
         </div>
-        <BentoField
+        <FormCell
           label={t('booking.billingAddress')}
           span="1 / -1"
           error={errors.adresseFacturation}
         >
-          <BentoInput
+          <FormCellInput
             name="address"
             autoComplete="street-address"
             value={contact.adresseFacturation}
             onChange={(v) => patch({ adresseFacturation: v })}
-            placeholder="—"
+            placeholder={t('contact.placeholderAddress')}
           />
-        </BentoField>
-        <BentoField label={t('booking.lastName')} error={errors.nom}>
-          <BentoInput
+        </FormCell>
+        <FormCell label={t('booking.lastName')} error={errors.nom}>
+          <FormCellInput
             name="lastname"
             autoComplete="family-name"
             value={contact.nom}
             onChange={(v) => patch({ nom: v })}
-            placeholder="—"
+            placeholder={t('contact.placeholderLastName')}
           />
-        </BentoField>
-        <BentoField label={t('booking.firstName')} error={errors.prenom}>
-          <BentoInput
+        </FormCell>
+        <FormCell label={t('booking.firstName')} error={errors.prenom}>
+          <FormCellInput
             name="firstname"
             autoComplete="given-name"
             value={contact.prenom}
             onChange={(v) => patch({ prenom: v })}
-            placeholder="—"
+            placeholder={t('contact.placeholderFirstName')}
           />
-        </BentoField>
-        <BentoField label="Email *" error={errors.email}>
-          <BentoInput
+        </FormCell>
+        <FormCell label="Email *" error={errors.email}>
+          <FormCellInput
             name="email"
             autoComplete="email"
             value={contact.email}
             type="email"
             onChange={(v) => patch({ email: v })}
-            placeholder="—"
+            placeholder={t('contact.placeholderEmail')}
           />
-        </BentoField>
-        <BentoField label={t('booking.phone')} error={errors.tel}>
-          <BentoInput
+        </FormCell>
+        <FormCell label={t('booking.phone')} error={errors.tel}>
+          <FormCellInput
             name="phone"
             autoComplete="tel"
             value={contact.tel}
             type="tel"
             onChange={(v) => patch({ tel: v })}
-            placeholder="—"
+            placeholder={t('contact.placeholderPhone')}
           />
-        </BentoField>
+        </FormCell>
         {showProductFields && (
           <>
-            <WideCell
+            <FormCell
+              as="group"
               label={t('booking.itemTypes')}
               error={errors.typesArticles}
+              className="col-span-1 @sm:col-span-2"
             >
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1">
+              <div className="grid grid-cols-2 @md:grid-cols-3 @2xl:grid-cols-5 gap-1">
                 {ARTICLE_TYPES.map((type) => {
                   const on = (contact.typesArticles || []).includes(type.k);
                   return (
@@ -177,17 +160,12 @@ const StepContact = ({
                         on && 'dark border-foreground bg-background',
                       )}
                     >
-                      <span
-                        aria-hidden
-                        className={cn(
-                          'w-2 h-2 border inline-flex items-center justify-center shrink-0',
-                          on
-                            ? 'border-white bg-primary'
-                            : 'border-muted-foreground bg-transparent',
-                        )}
-                      >
-                        {on && <span className="w-0.5 h-0.5 bg-background" />}
-                      </span>
+                      {/* Plus de puce dessinée. La pastille s'inverse déjà
+                          quand elle est choisie — un carré de 8px qui se
+                          remplit en plus, c'est un second signal pour une seule
+                          information. Il portait par-dessus `border-white` sous
+                          portée `dark`, là où `border-primary-foreground` est le
+                          token. */}
                       <span className="overflow-hidden text-ellipsis">
                         {catLabel(t, type)}
                       </span>
@@ -204,58 +182,71 @@ const StepContact = ({
                   className="mt-0.5 h-auto w-full rounded-none border-b border-b-border bg-transparent px-0 py-1 font-sans text-xs tracking-tight focus-visible:ring-0"
                 />
               )}
-            </WideCell>
-            <BentoField
+            </FormCell>
+            <FormCell
               label={t('booking.qtyItemsSkus')}
               error={errors.quantiteArticles}
             >
-              <BentoInput
+              <FormCellInput
                 name="quantity_items"
                 value={contact.quantiteArticles}
                 type="number"
                 onChange={(v) => patch({ quantiteArticles: v })}
-                placeholder="—"
+                placeholder="12"
               />
-            </BentoField>
-            <BentoField
+            </FormCell>
+            <FormCell
               label={t('booking.viewsItem')}
               error={errors.vuesParArticle}
             >
-              <BentoInput
+              <FormCellInput
                 name="views_per_item"
                 value={contact.vuesParArticle}
                 type="number"
                 onChange={(v) => patch({ vuesParArticle: v })}
-                placeholder="—"
+                placeholder="3"
               />
-            </BentoField>
+            </FormCell>
           </>
         )}
-        <div className="bg-background px-3 py-1.5 col-span-1 sm:col-span-2 flex flex-col gap-0.5 min-h-11">
-          <span className={LABEL_CLS}>{t('booking.otherInformation')}</span>
-          <Textarea
+        <FormCell
+          label={t('booking.otherInformation')}
+          className="col-span-1 @sm:col-span-2"
+        >
+          <FormCellTextarea
             name="message"
             value={contact.autresInfos || ''}
-            onChange={(e) => patch({ autresInfos: e.target.value })}
+            onChange={(autresInfos) => patch({ autresInfos })}
             placeholder={t('booking.constraintsInspirationsReferencesOptional')}
-            className="box-border min-h-7 w-full resize-y rounded-none bg-transparent p-0 font-sans text-xs focus-visible:ring-0"
           />
-        </div>
-        <label
-          className={cn(
-            'col-span-1 sm:col-span-2 bg-background px-3 py-1.5 flex flex-col gap-0.5 cursor-pointer min-h-11',
-            errors.cgvAccepted && 'ring-1 ring-inset ring-destructive',
-          )}
+        </FormCell>
+        <FormCell
+          as="group"
+          label="CGV *"
+          error={errors.cgvAccepted}
+          className="col-span-1 @sm:col-span-2"
         >
-          <span className={LABEL_CLS}>CGV *</span>
-          <div className="flex items-center gap-2">
+          {/* Un `<label>` et la case du design system telle quelle. Le
+              `size-3.5` posé ici l'enfermait dans 14px alors que son icône en
+              mesure 14 : une quatrième géométrie de case, à côté des 16px de
+              l'étape équipe et du reste du site. Et c'était un `<div>` : la
+              phrase ne cochait rien.
+
+              `items-start` parce que la phrase passe à deux lignes dès le
+              mobile — une case centrée sur le bloc ne désigne alors aucune des
+              deux ; `mt-px` la recentre sur la première ligne, le décalage que
+              `field.tsx` applique déjà à toute case dans un champ horizontal. */}
+          <label className="flex cursor-pointer items-start gap-2 text-sm leading-snug">
             <Checkbox
               name="cgv_accepted"
               checked={contact.cgvAccepted}
               onCheckedChange={(next: boolean) => patch({ cgvAccepted: next })}
-              className="size-3.5 shrink-0"
+              className="mt-px"
             />
-            <span className="text-xs leading-snug text-foreground">
+            {/* Le `<span>` tient la phrase ensemble : `<Trans>` rend trois
+                nœuds frères (texte, lien, texte) que le flex du label
+                poserait sinon côte à côte comme trois éléments. */}
+            <span>
               {/* Le lien vit dans la traduction : sa position dans la phrase
                   n'est pas la même d'une langue à l'autre. */}
               <Trans
@@ -273,13 +264,8 @@ const StepContact = ({
                 }}
               />
             </span>
-          </div>
-          {errors.cgvAccepted && (
-            <span className="text-destructive text-xs leading-tight">
-              {errors.cgvAccepted}
-            </span>
-          )}
-        </label>
+          </label>
+        </FormCell>
       </div>
     </div>
   );

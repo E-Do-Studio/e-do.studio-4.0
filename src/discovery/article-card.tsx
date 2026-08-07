@@ -1,8 +1,9 @@
+import { ArrowRight } from 'lucide-react';
 import type { DiscoveryPost, Lang } from '../types';
 import { Button } from '@/components/ui/button';
 import { DiscoveryCoverMedia } from './discovery-cover';
 import { hasCover } from './cover';
-import { CellBadge } from './shared';
+import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import {
   Empty,
@@ -10,25 +11,29 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from '@/components/ui/empty';
-import { cellBase, labelBase } from './styles';
+import { MonoLabel } from '../ui/mono-label';
 import { useT } from '../i18n/use-t';
 
 interface ArticleCardProps {
   post: DiscoveryPost;
   lang: Lang;
-  onOpen?: () => void;
-  headline?: boolean;
+  onOpen: () => void;
   className?: string;
-  badge?: number;
 }
 
+// L'article à la une : la plus grande cellule de la page, et la seule carte
+// d'article de l'index — le reste passe par la liste.
+//
+// Le filet sous la cover est un `Separator` et non la gouttière de la grille :
+// il sépare deux zones À L'INTÉRIEUR d'une cellule, quand la gouttière ne vaut
+// qu'ENTRE cellules. Un enfant peignant son fond masquerait par ailleurs le
+// `hover:bg-muted` que `variant="cell"` pose sur la cellule entière — un filet
+// de 1px, lui, ne masque rien.
 export const ArticleCard = ({
   post,
   lang,
   onOpen,
-  headline = false,
   className,
-  badge,
 }: ArticleCardProps) => {
   const t = useT();
   const cover = hasCover(post);
@@ -38,94 +43,71 @@ export const ArticleCard = ({
       size="cell"
       onClick={onOpen}
       className={cn(
-        cellBase,
-        'group order-1 grid min-h-80 p-0 transition-opacity hover:opacity-90 lg:min-h-0',
-        cover
-          ? headline
-            ? 'grid-rows-[1fr_96px] lg:grid-rows-[1fr_84px]'
-            : 'grid-rows-[1fr_auto]'
-          : 'grid-rows-1',
+        // `grid-cols-1` n'est pas décoratif, c'est la correction du défaut qui
+        // rendait cette carte de travers : `size="cell"` pose `justify-start`,
+        // et une piste `auto` ne s'étire à la largeur du conteneur QUE si
+        // `justify-content` vaut `normal` ou `stretch`. Sans colonne déclarée,
+        // la grille se réduisait donc au max-content du titre — la cover, en
+        // `absolute inset-0`, remplissait fidèlement une colonne de 288px au
+        // milieu d'une cellule de 800, et laissait le reste en aplat.
+        'group grid grid-cols-1 min-h-96 gap-0 p-0 app:min-h-0',
+        cover ? 'grid-rows-[minmax(0,1fr)_auto_auto]' : 'grid-rows-1',
         className,
       )}
     >
-      {badge != null && <CellBadge n={badge} />}
       {cover && (
-        <div className="relative min-h-0 border-b border-border">
-          <DiscoveryCoverMedia
-            post={post}
-            lang={lang}
-            sizes={
-              headline
-                ? '(min-width: 1024px) 50vw, 100vw'
-                : '(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw'
-            }
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-        </div>
+        <>
+          <div className="relative min-h-0">
+            <DiscoveryCoverMedia
+              post={post}
+              lang={lang}
+              sizes="(min-width: 768px) 50vw, 100vw"
+              priority
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          </div>
+          <Separator />
+        </>
       )}
 
       <div
         className={cn(
-          'flex min-w-0 origin-left flex-col overflow-hidden transition-transform duration-200 ease-out group-hover:scale-105',
+          'flex min-w-0 flex-col gap-2 overflow-hidden px-5 py-4',
           !cover && 'justify-center',
-          headline ? 'gap-1 px-4.5 pb-3 pt-2.5' : 'gap-1 px-4.5 pb-4 pt-3.5',
         )}
       >
-        <h3
-          className={cn(
-            'm-0 line-clamp-2 text-balance text-foreground',
-            headline
-              ? 'line-clamp-3 text-xl font-light leading-snug tracking-tight'
-              : 'text-base font-normal leading-snug tracking-tight',
-          )}
-        >
+        <h2 className="m-0 line-clamp-3 text-balance text-2xl font-light leading-snug tracking-tight text-foreground">
           {post.title[lang]}
-        </h3>
-        {headline && (
-          <span className="font-mono text-xs uppercase tracking-widest text-foreground mt-1 inline-flex items-center gap-2">
-            {t('discoveryPage.readArticle')} <span className="text-sm">→</span>
-          </span>
-        )}
+        </h2>
+        <MonoLabel className="inline-flex items-center gap-2">
+          {t('discoveryPage.readArticle')}
+          <ArrowRight data-icon="inline-end" />
+        </MonoLabel>
       </div>
     </Button>
   );
 };
 
 interface ArticleEmptyCardProps {
-  lang: Lang;
-  headline?: boolean;
   className?: string;
-  badge?: number;
 }
 
-export const ArticleEmptyCard = ({
-  lang,
-  headline = false,
-  className,
-  badge,
-}: ArticleEmptyCardProps) => {
+export const ArticleEmptyCard = ({ className }: ArticleEmptyCardProps) => {
   const t = useT();
   return (
     <section
       aria-label={t('discoveryPage.noFeaturedPost')}
       className={cn(
-        cellBase,
-        'order-1 grid min-h-80 grid-rows-[1fr_auto] bg-background lg:min-h-0',
-        headline && 'lg:grid-rows-[1fr_84px]',
+        'grid min-h-96 min-w-0 grid-rows-[minmax(0,1fr)_auto_auto] overflow-hidden bg-background app:min-h-0',
         className,
       )}
     >
-      {badge != null && <CellBadge n={badge} />}
-      <div className="relative min-h-0 border-b border-border bg-muted">
-        <span
-          className={cn(
-            labelBase,
-            'absolute left-cell top-3 text-muted-foreground',
-          )}
-        >
+      <div className="relative min-h-0 bg-muted">
+        <MonoLabel tone="muted" className="absolute left-5 top-5">
           {t('discoveryPage.noFeaturedPost')}
-        </span>
+        </MonoLabel>
       </div>
+      <Separator />
       <Empty size="compact">
         <EmptyHeader>
           <EmptyTitle>{t('discoveryPage.noPosts')}</EmptyTitle>

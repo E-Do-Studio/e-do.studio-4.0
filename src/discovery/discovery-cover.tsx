@@ -1,6 +1,7 @@
 import type { DiscoveryPost, Lang } from '../types';
 import { ResponsiveImage } from '../ui/responsive-image';
 import { VideoLoop } from '../ui/video-loop';
+import { hasCover } from './cover';
 
 interface DiscoveryCoverMediaProps {
   post: DiscoveryPost;
@@ -8,7 +9,6 @@ interface DiscoveryCoverMediaProps {
   className: string;
   sizes: string;
   priority?: boolean;
-  seedOffset?: number;
   // Render a video cover with native controls (pause + timeline) instead of the
   // silent autoplay loop. Used where the cover is a focal media, not decoration.
   controls?: boolean;
@@ -24,14 +24,17 @@ export const DiscoveryCoverMedia = ({
   priority,
   controls = false,
 }: DiscoveryCoverMediaProps) => {
-  if (!post.coverUrl) {
+  // Même garde que `hasCover`, pour les appelants qui rendent la cover sans
+  // avoir replié leur mise en page — un HEIC ne doit produire aucun `<img>`.
+  const src = post.coverUrl;
+  if (!src || !hasCover(post)) {
     return null;
   }
   if (post.coverMime?.startsWith('video/')) {
     if (controls) {
       return (
         <video
-          src={post.coverUrl}
+          src={src}
           controls
           playsInline
           preload="metadata"
@@ -40,13 +43,11 @@ export const DiscoveryCoverMedia = ({
         />
       );
     }
-    return (
-      <VideoLoop src={post.coverUrl} className={className} objectFit="cover" />
-    );
+    return <VideoLoop src={src} className={className} objectFit="cover" />;
   }
   return (
     <ResponsiveImage
-      src={post.coverUrl}
+      src={src}
       alt={post.title[lang]}
       sizes={sizes}
       priority={priority}

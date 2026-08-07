@@ -18,7 +18,8 @@ import {
   catDesc,
   catLabel,
 } from '../catalog';
-import { CfgChoice } from '../shared';
+import { SelectTile } from '@/ui/select-tile';
+import { ordinal } from '@/lib/format';
 import { SessionTabs } from './session-tabs';
 import {
   CASCADES,
@@ -27,6 +28,10 @@ import {
   isPackshotSized,
   openQuestionKeys,
 } from './configurator-questions';
+import { StepHeading } from '@/ui/step-heading';
+import { MonoLabel } from '@/ui/mono-label';
+import { BookingModeBanner } from '../booking-mode-banner';
+import { FormCell, FormCellInput } from '@/ui/form-cell';
 
 interface StepConfiguratorProps {
   sessions: BookingSession[];
@@ -93,20 +98,15 @@ const StepConfigurator = ({
           onClick={() => setOpenQ(qKey)}
           variant="cell"
           size="cell"
-          className="min-h-11 w-full flex-row items-center gap-3 border-b border-b-foreground px-5 py-3 md:gap-3.5 md:px-6 md:py-0"
+          className="min-h-11 w-full flex-row items-center gap-3 border-b border-b-foreground px-pad-cell py-3 md:gap-3.5 md:py-0"
         >
-          <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-primary shrink-0 w-7">
-            {q.num}
+          <StepHeading tone="muted" number={q.num} title={q.label} />
+          <span className="min-w-0 flex-1 text-balance text-right font-mono text-xs tracking-tight text-foreground">
+            {q.summary}
           </span>
-          <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-muted-foreground shrink-0">
-            {q.label}
-          </span>
-          <span className="flex-1 min-w-0 font-mono text-xs tracking-tight text-foreground text-right text-balance">
-            {q.summary || '—'}
-          </span>
-          <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-muted-foreground shrink-0">
+          <MonoLabel tone="muted" className="shrink-0">
             {t('booking.edit')}
-          </span>
+          </MonoLabel>
         </Button>
       );
     }
@@ -123,36 +123,20 @@ const StepConfigurator = ({
   };
   return (
     <div className="min-w-0 overflow-y-auto h-full">
-      <div className="flex flex-col md:flex-row md:items-stretch md:min-h-11 bg-muted box-border sticky top-0 z-10 border-b border-border">
-        <span className="font-mono text-xs tracking-wider uppercase text-muted-foreground px-5 py-3 md:py-0 md:self-center md:pl-5 md:pr-3 flex-1 min-w-0 leading-relaxed">
-          {t('booking.ourConfiguratorGuidesYouOr')}
-          <span className="text-primary font-semibold">
-            {t('booking.pickManually')}
-          </span>
-        </span>
-        <div className="flex items-stretch border-t border-border md:border-t-0 md:flex-none md:w-1/2">
-          <Button
-            type="button"
-            onClick={() => {
-              setSessions([makeBlankSession()]);
-              setActiveIdx(0);
-              setOpenQ(null);
-              setTouchedQs(new Set());
-              if (onReset) onReset();
-            }}
-            className="flex-1 bg-transparent border-l border-border px-5 py-3 md:py-0 cursor-pointer font-mono text-xs tracking-wider uppercase text-foreground whitespace-nowrap leading-normal inline-flex items-center justify-center transition-colors duration-150 hover:bg-background"
-          >
-            ↻ {t('mobileNav.reset')}
-          </Button>
-          <Button
-            type="button"
-            onClick={onSkip}
-            className="h-auto flex-1 border-l border-border px-5 py-3 text-xs font-semibold tracking-wider md:py-0"
-          >
-            {t('booking.chooseManually')} →
-          </Button>
-        </div>
-      </div>
+      <BookingModeBanner
+        hint={t('booking.ourConfiguratorGuidesYouOr')}
+        switchLabel={t('booking.chooseManually')}
+        direction="forward"
+        className="sticky top-0 z-10"
+        onReset={() => {
+          setSessions([makeBlankSession()]);
+          setActiveIdx(0);
+          setOpenQ(null);
+          setTouchedQs(new Set());
+          if (onReset) onReset();
+        }}
+        onSwitch={onSkip}
+      />
       {sessions.length > 1 && (
         <SessionTabs
           sessions={sessions}
@@ -169,20 +153,18 @@ const StepConfigurator = ({
       {accQ(
         'projectType',
         <>
-          <div className="px-5 sm:px-6 border-b border-border flex items-center min-h-11 py-4 sm:py-0 gap-3 box-border">
-            <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-primary">
-              00 · {t('booking.projectType')}
-            </span>
+          <div className="px-pad-cell border-b border-border flex items-center min-h-11 py-4 sm:py-0 gap-3 box-border">
+            <StepHeading number="00" title={t('booking.projectType')} />
           </div>
-          <div className="grid grid-cols-2 gap-px bg-border border-b border-border">
+          <div className="grid grid-cols-1 @sm:grid-cols-2 gap-px bg-border border-b border-border">
             {PROJECT_TYPES.map((pt, i) => (
-              <CfgChoice
+              <SelectTile
                 key={pt.k}
-                idx={i + 1}
-                on={S.projectType === pt.k}
-                onClick={() => resetFrom('projectType', pt.k)}
-                label={catLabel(t, pt)}
+                number={ordinal(i)}
+                title={catLabel(t, pt)}
                 desc={catDesc(t, pt)}
+                selected={S.projectType === pt.k}
+                onSelect={() => resetFrom('projectType', pt.k)}
               />
             ))}
           </div>
@@ -192,20 +174,18 @@ const StepConfigurator = ({
         accQ(
           'product',
           <>
-            <div className="px-5 sm:px-6 border-b border-border flex items-center min-h-11 py-4 sm:py-0 gap-3 box-border">
-              <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-primary">
-                01 · {t('booking.productType')}
-              </span>
+            <div className="px-pad-cell border-b border-border flex items-center min-h-11 py-4 sm:py-0 gap-3 box-border">
+              <StepHeading number="01" title={t('booking.productType')} />
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-px bg-border border-b border-border">
+            <div className="grid grid-cols-1 @sm:grid-cols-2 @2xl:grid-cols-3 gap-px bg-border border-b border-border">
               {PRODUCTS.map((p, i) => (
-                <CfgChoice
+                <SelectTile
                   key={p.k}
-                  idx={i + 1}
-                  on={S.product === p.k}
-                  onClick={() => resetFrom('product', p.k)}
-                  label={catLabel(t, p)}
+                  number={ordinal(i)}
+                  title={catLabel(t, p)}
                   desc={catDesc(t, p)}
+                  selected={S.product === p.k}
+                  onSelect={() => resetFrom('product', p.k)}
                 />
               ))}
             </div>
@@ -215,20 +195,18 @@ const StepConfigurator = ({
         accQ(
           'method',
           <>
-            <div className="px-5 sm:px-6 border-b border-border flex items-center min-h-11 py-4 sm:py-0 gap-3 box-border">
-              <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-primary">
-                02 · {t('booking.method')}
-              </span>
+            <div className="px-pad-cell border-b border-border flex items-center min-h-11 py-4 sm:py-0 gap-3 box-border">
+              <StepHeading number="02" title={t('booking.method')} />
             </div>
-            <div className="grid grid-cols-2 gap-px bg-border border-b border-border">
+            <div className="grid grid-cols-1 @sm:grid-cols-2 gap-px bg-border border-b border-border">
               {PAP_METHODS.map((m, i) => (
-                <CfgChoice
+                <SelectTile
                   key={m.k}
-                  idx={i + 1}
-                  on={S.method === m.k}
-                  onClick={() => resetFrom('method', m.k)}
-                  label={catLabel(t, m)}
+                  number={ordinal(i)}
+                  title={catLabel(t, m)}
                   desc={catDesc(t, m)}
+                  selected={S.method === m.k}
+                  onSelect={() => resetFrom('method', m.k)}
                 />
               ))}
             </div>
@@ -239,20 +217,18 @@ const StepConfigurator = ({
         accQ(
           'submethod',
           <>
-            <div className="px-5 sm:px-6 border-b border-border flex items-center min-h-11 py-4 sm:py-0 gap-3 box-border">
-              <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-primary">
-                03 · {t('booking.packshotType')}
-              </span>
+            <div className="px-pad-cell border-b border-border flex items-center min-h-11 py-4 sm:py-0 gap-3 box-border">
+              <StepHeading number="03" title={t('booking.packshotType')} />
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-px bg-border border-b border-border">
+            <div className="grid grid-cols-1 @xl:grid-cols-3 gap-px bg-border border-b border-border">
               {PAP_PACKSHOT_SUBS.map((sub, i) => (
-                <CfgChoice
+                <SelectTile
                   key={sub.k}
-                  idx={i + 1}
-                  on={S.submethod === sub.k}
-                  onClick={() => resetFrom('submethod', sub.k)}
-                  label={catLabel(t, sub)}
+                  number={ordinal(i)}
+                  title={catLabel(t, sub)}
                   desc={catDesc(t, sub)}
+                  selected={S.submethod === sub.k}
+                  onSelect={() => resetFrom('submethod', sub.k)}
                 />
               ))}
             </div>
@@ -262,20 +238,18 @@ const StepConfigurator = ({
         accQ(
           'submethod',
           <>
-            <div className="px-5 sm:px-6 border-b border-border flex items-center min-h-11 py-4 sm:py-0 gap-3 box-border">
-              <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-primary">
-                02 · {t('booking.accessoryType')}
-              </span>
+            <div className="px-pad-cell border-b border-border flex items-center min-h-11 py-4 sm:py-0 gap-3 box-border">
+              <StepHeading number="02" title={t('booking.accessoryType')} />
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-px bg-border border-b border-border">
+            <div className="grid grid-cols-1 @xl:grid-cols-3 gap-px bg-border border-b border-border">
               {ACCESS_SUBS.map((sub, i) => (
-                <CfgChoice
+                <SelectTile
                   key={sub.k}
-                  idx={i + 1}
-                  on={S.submethod === sub.k}
-                  onClick={() => resetFrom('submethod', sub.k)}
-                  label={catLabel(t, sub)}
+                  number={ordinal(i)}
+                  title={catLabel(t, sub)}
                   desc={catDesc(t, sub)}
+                  selected={S.submethod === sub.k}
+                  onSelect={() => resetFrom('submethod', sub.k)}
                 />
               ))}
             </div>
@@ -285,15 +259,15 @@ const StepConfigurator = ({
         accQ(
           'media',
           <>
-            <div className="px-5 sm:px-6 border-b border-border flex items-center min-h-11 py-4 sm:py-0 gap-3 box-border flex-wrap">
-              <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-primary">
-                {S.product === 'pap'
-                  ? '03'
-                  : S.product === 'accessoires'
+            <div className="px-pad-cell border-b border-border flex items-center min-h-11 py-4 sm:py-0 gap-3 box-border flex-wrap">
+              <StepHeading
+                number={
+                  S.product === 'pap' || S.product === 'accessoires'
                     ? '03'
-                    : '02'}{' '}
-                · {t('booking.media')}
-              </span>
+                    : '02'
+                }
+                title={t('booking.media')}
+              />
               <span className="font-mono text-xs tracking-wide text-muted-foreground ml-3">
                 {t('booking.oneOrBoth')}
               </span>
@@ -307,18 +281,18 @@ const StepConfigurator = ({
                     : [];
                 const on = cur.includes(m.k);
                 return (
-                  <CfgChoice
+                  <SelectTile
                     key={m.k}
-                    idx={i + 1}
-                    on={on}
-                    onClick={() => {
+                    number={ordinal(i)}
+                    title={catLabel(t, m)}
+                    desc={catDesc(t, m)}
+                    selected={on}
+                    onSelect={() => {
                       const next = on
                         ? cur.filter((x) => x !== m.k)
                         : [...cur, m.k];
                       setSession({ media: next });
                     }}
-                    label={catLabel(t, m)}
-                    desc={catDesc(t, m)}
                   />
                 );
               })}
@@ -329,22 +303,23 @@ const StepConfigurator = ({
         accQ(
           'quantity',
           <>
-            <div className="px-5 sm:px-6 border-b border-border flex items-center min-h-11 py-4 sm:py-0 gap-3 box-border">
-              <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-primary">
-                04 · {t('booking.numberOfProducts')}
-              </span>
+            <div className="px-pad-cell border-b border-border flex items-center min-h-11 py-4 sm:py-0 gap-3 box-border">
+              <StepHeading number="04" title={t('booking.numberOfProducts')} />
             </div>
             <div className="grid grid-cols-1 gap-px bg-border border-b border-border">
-              <div className="bg-background px-4 sm:px-3 py-4 sm:py-2.5 flex flex-col gap-2 min-w-0">
+              <div className="bg-background px-pad-cell py-4 sm:py-2.5 flex flex-col gap-2 min-w-0">
                 <div className="flex items-center gap-1.5 max-w-xs min-w-0">
+                  {/* Le seul repère est l'intitulé de section, dans un div
+                      voisin : le champ n'a que `aria-label` pour se nommer. */}
                   <Input
+                    aria-label={t('booking.numberOfProducts')}
                     value={S.quantity}
                     onChange={(e) =>
                       setSession({
                         quantity: e.target.value.replace(/\D/g, ''),
                       })
                     }
-                    placeholder="—"
+                    placeholder="12"
                     inputMode="numeric"
                     className="h-auto min-w-0 flex-1 rounded-none border-border bg-background px-3.5 py-2.5 text-center font-mono text-base tracking-tight"
                   />
@@ -357,10 +332,8 @@ const StepConfigurator = ({
         accQ(
           'views',
           <>
-            <div className="px-5 sm:px-6 border-b border-border flex items-center min-h-11 py-4 sm:py-0 gap-3 box-border flex-wrap">
-              <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-primary">
-                05 · {t('booking.viewsPerProduct')}
-              </span>
+            <div className="px-pad-cell border-b border-border flex items-center min-h-11 py-4 sm:py-0 gap-3 box-border flex-wrap">
+              <StepHeading number="05" title={t('booking.viewsPerProduct')} />
               <span className="font-mono text-xs tracking-wide text-muted-foreground ml-3">
                 {t('booking.multiSelect')}
               </span>
@@ -371,10 +344,13 @@ const StepConfigurator = ({
               ).map((v, i) => {
                 const on = (S.views || []).includes(v.k);
                 return (
-                  <Button
-                    type="button"
+                  <SelectTile
                     key={v.k}
-                    onClick={() => {
+                    size="sm"
+                    number={ordinal(i)}
+                    title={catLabel(t, v)}
+                    selected={on}
+                    onSelect={() => {
                       const cur = S.views || [];
                       setSession({
                         views: cur.includes(v.k)
@@ -382,20 +358,7 @@ const StepConfigurator = ({
                           : [...cur, v.k],
                       });
                     }}
-                    className={`${on ? 'dark bg-background' : 'bg-background'} text-foreground  px-4 sm:px-3 py-4 sm:py-2.5 text-left cursor-pointer font-[inherit] flex flex-col gap-1.5 min-h-22 sm:min-h-18 min-w-0`}
-                  >
-                    <span
-                      className={`font-mono text-xs tracking-widest uppercase text-muted-foreground`}
-                    >
-                      {String(i + 1).padStart(2, '0')}
-                    </span>
-                    <span className="text-sm font-normal tracking-tight">
-                      {catLabel(t, v)}
-                    </span>
-                    {on && (
-                      <span className="text-primary text-xs mt-auto">●</span>
-                    )}
-                  </Button>
+                  />
                 );
               })}
             </div>
@@ -406,53 +369,43 @@ const StepConfigurator = ({
         accQ(
           'qtyViews',
           <>
-            <div className="px-5 sm:px-6 border-b border-border flex items-center min-h-11 py-4 sm:py-0 gap-3 box-border">
-              <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-primary">
-                {S.product === 'pap'
-                  ? '04'
-                  : S.product === 'accessoires'
+            <div className="px-pad-cell border-b border-border flex items-center min-h-11 py-4 sm:py-0 gap-3 box-border">
+              <StepHeading
+                number={
+                  S.product === 'pap' || S.product === 'accessoires'
                     ? '04'
-                    : '03'}{' '}
-                · {t('booking.productsViews')}
-              </span>
+                    : '03'
+                }
+                title={t('booking.productsViews')}
+              />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-border border-b border-border">
-              <div className="bg-background px-4 sm:px-3 py-4 sm:py-2.5 flex flex-col gap-2 min-w-0">
-                <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-muted-foreground">
-                  {t('booking.numberOfProducts')}
-                </span>
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <Input
-                    value={S.quantity}
-                    onChange={(e) =>
-                      setSession({
-                        quantity: e.target.value.replace(/\D/g, ''),
-                      })
-                    }
-                    placeholder="—"
-                    inputMode="numeric"
-                    className="flex-1 min-w-0 w-full bg-background border border-border outline-none px-3.5 py-2.5 font-mono text-base tracking-tight text-foreground text-center"
-                  />
-                </div>
-              </div>
-              <div className="bg-background px-4 sm:px-3 py-4 sm:py-2.5 flex flex-col gap-2 min-w-0">
-                <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-muted-foreground">
-                  {t('booking.viewsPerProduct')}
-                </span>
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <Input
-                    value={S.viewsCount}
-                    onChange={(e) =>
-                      setSession({
-                        viewsCount: e.target.value.replace(/\D/g, ''),
-                      })
-                    }
-                    placeholder="—"
-                    inputMode="numeric"
-                    className="flex-1 min-w-0 w-full bg-background border border-border outline-none px-3.5 py-2.5 font-mono text-base tracking-tight text-foreground text-center"
-                  />
-                </div>
-              </div>
+            <div className="grid grid-cols-1 @sm:grid-cols-2 gap-px bg-border border-b border-border">
+              <FormCell label={t('booking.numberOfProducts')} className="gap-2">
+                <FormCellInput
+                  value={S.quantity}
+                  onChange={(v) =>
+                    setSession({ quantity: v.replace(/\D/g, '') })
+                  }
+                  placeholder="12"
+                  inputMode="numeric"
+                  // Bordure propre : `FormCell` ne neutralise que les
+                  // décorations d'ÉTAT de ses contrôles, pas leur cadre. Un
+                  // chiffre centré dans un rectangle, c'est ce qui distingue
+                  // une saisie de quantité d'une ligne de texte.
+                  className="w-full min-w-0 flex-1 border border-border bg-background px-3.5 py-2.5 text-center font-mono text-base tracking-tight"
+                />
+              </FormCell>
+              <FormCell label={t('booking.viewsPerProduct')} className="gap-2">
+                <FormCellInput
+                  value={S.viewsCount}
+                  onChange={(v) =>
+                    setSession({ viewsCount: v.replace(/\D/g, '') })
+                  }
+                  placeholder="3"
+                  inputMode="numeric"
+                  className="w-full min-w-0 flex-1 border border-border bg-background px-3.5 py-2.5 text-center font-mono text-base tracking-tight"
+                />
+              </FormCell>
             </div>
           </>,
         )}
@@ -462,10 +415,8 @@ const StepConfigurator = ({
         accQ(
           'postprod',
           <>
-            <div className="px-5 sm:px-6 border-b border-border flex items-center min-h-11 py-4 sm:py-0 gap-3 box-border">
-              <span className="font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground text-primary">
-                {t('common.postProdLong')}
-              </span>
+            <div className="px-pad-cell border-b border-border flex items-center min-h-11 py-4 sm:py-0 gap-3 box-border">
+              <MonoLabel tone="primary">{t('common.postProdLong')}</MonoLabel>
             </div>
             <div
               className="grid gap-px bg-border border-b border-border"
@@ -476,9 +427,9 @@ const StepConfigurator = ({
                     : '1fr',
               }}
             >
-              <div className="bg-background px-4 sm:px-3.5 py-4 sm:py-2.5 flex items-center justify-between gap-3">
+              <div className="bg-background px-pad-cell.5 py-4 sm:py-2.5 flex items-center justify-between gap-3">
                 <div>
-                  <div className="text-sm font-medium tracking-tight">
+                  <div className="text-sm tracking-tight">
                     {t('booking.postProductionByEDo')}
                   </div>
                   <div
@@ -487,7 +438,11 @@ const StepConfigurator = ({
                     {t('booking.estimatedPriceShownAdjustedAfter')}
                   </div>
                 </div>
+                {/* Le titre est un `<div>` voisin : sans `aria-label`,
+                    l'interrupteur s'annonce « switch, non coché », sans dire
+                    de quoi. */}
                 <Switch
+                  aria-label={t('booking.postProductionByEDo')}
                   checked={!!S.postprod}
                   onCheckedChange={() =>
                     setSession({
@@ -498,9 +453,9 @@ const StepConfigurator = ({
                 />
               </div>
               {(S.media || []).includes('video') && S.postprod && (
-                <div className="bg-background px-4 sm:px-3.5 py-4 sm:py-2.5 flex items-center justify-between gap-3">
+                <div className="bg-background px-pad-cell.5 py-4 sm:py-2.5 flex items-center justify-between gap-3">
                   <div>
-                    <div className="text-sm font-medium tracking-tight">
+                    <div className="text-sm tracking-tight">
                       {t('booking.videoEditing2')}
                     </div>
                     <div
@@ -510,6 +465,7 @@ const StepConfigurator = ({
                     </div>
                   </div>
                   <Switch
+                    aria-label={t('booking.videoEditing2')}
                     checked={!!S.postprodVideo}
                     onCheckedChange={() =>
                       setSession({ postprodVideo: !S.postprodVideo })
@@ -531,7 +487,7 @@ const StepConfigurator = ({
         </div>
       )}
       {isSessionValid(active) && activeIdx === sessions.length - 1 && (
-        <div className="px-6 py-1.5 flex justify-center items-center bg-background">
+        <div className="px-pad-cell py-1.5 flex justify-center items-center bg-background">
           <Button
             type="button"
             onClick={addSession}

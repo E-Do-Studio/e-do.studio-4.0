@@ -8,6 +8,7 @@ import type {
 import { getT } from '../i18n';
 import type { BlockNode } from './render-blocks';
 import { getPreviewState } from './preview-mode';
+import { ordinal } from './format';
 
 const STRAPI_URL = import.meta.env.VITE_STRAPI_URL || 'https://cms.e-do.studio';
 const STRAPI_TOKEN = import.meta.env.VITE_STRAPI_TOKEN || '';
@@ -817,7 +818,7 @@ export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
     const noteEn = mEn.pricingDescription ?? noteFr;
     const ratesNote = noteFr ? { fr: noteFr, en: noteEn ?? noteFr } : undefined;
     result[mFr.slug] = {
-      num: String(i + 1).padStart(2, '0'),
+      num: ordinal(i),
       name: mFr.title,
       slug: mFr.slug,
       tagline: { fr: mFr.subtitle, en: mEn.subtitle },
@@ -913,7 +914,15 @@ export async function fetchPostProdTypes(): Promise<PPCat[]> {
           if (!url) return null;
           return { kind: 'video', url, mime: m.mime, alt };
         }
-        const url = resolveStrapiMediaUrl(m);
+        // L'ORIGINAL, comme pour la galerie (`mapGalleryProjects`), et non le
+        // dérivé `medium` : cette URL alimente le visionneur, qui l'affiche
+        // dans un cadre de 720px et laisse zoomer jusqu'à 400 %. À 750px de
+        // large, l'image y était étirée et floue dès l'ouverture.
+        //
+        // La grille, elle, n'y perd rien : `ResponsiveImage` retrouve le radical
+        // du fichier et resynthétise le srcset thumbnail/small/medium/large —
+        // elle sert donc le même `large_` qu'avant, jamais l'original.
+        const url = resolveRawMediaUrl(m);
         if (!url) return null;
         return { kind: 'image', url, alt };
       })
@@ -1235,19 +1244,78 @@ export async function fetchContact(): Promise<ContactInfo> {
   return selectContact(await fetchSiteSettings());
 }
 
-export interface StudioHours {
-  weekday: Bilingual;
-  weekend: Bilingual;
+/**
+ * Une rangée d'horaires, telle qu'elle s'affiche.
+ *
+ * Les jours sont GROUPÉS depuis la donnée, et le libellé en est dérivé. C'est
+ * tout l'objet de cette forme : la version précédente écrasait les sept jours
+ * dans deux paquets fixes (lundi-vendredi, samedi-dimanche) et la page imprimait
+ * deux libellés écrits en dur. Un studio fermé le lundi, ou ouvert du mardi au
+ * samedi, s'affichait donc « LUN — VEN » — le libellé affirmait un intervalle
+ * que personne n'avait vérifié. Pire, `stripLeadingDayPrefix` retirait le
+ * préfixe de jour que la rédaction avait tapé côté CMS pour laisser la place à
+ * cette affirmation : la vérité était détruite pour imprimer l'hypothèse.
+ */
+export interface StudioHoursRow {
+  /** Les jours réellement couverts, pour le JSON-LD. */
+  days: DayOfWeek[];
+  /** « Lun — Ven », « Sam », dérivé de `days`. Vide sur la forme héritée. */
+  label: Bilingual;
+  /** « 10:00 — 18:00 », ou le libellé du statut. */
+  value: Bilingual;
+  /**
+   * Une plage horaire n'est pas un statut. « Sur demande » et « Fermé » sont
+   * l'ABSENCE d'horaire, et les afficher au même poids qu'une plage — même
+   * taille, même tonalité, un filet entre les deux comme s'ils étaient
+   * comparables — était le défaut visible de cette cellule.
+   */
+  kind: 'hours' | 'status';
+  /** Bornes normalisées, pour que le JSON-LD n'ait pas à relire l'affichage. */
+  opens?: string;
+  closes?: string;
 }
 
-const WEEKDAYS: DayOfWeek[] = [
+export interface StudioHours {
+  rows: StudioHoursRow[];
+}
+
+const DAY_ORDER: DayOfWeek[] = [
   'monday',
   'tuesday',
   'wednesday',
   'thursday',
   'friday',
+  'saturday',
+  'sunday',
 ];
-const WEEKEND: DayOfWeek[] = ['saturday', 'sunday'];
+
+// Le 1er janvier 2024 est un lundi : sept dates fixes suffisent à obtenir les
+// noms de jours dans les deux langues via `Intl`, sans ajouter quatorze clés
+// i18n ni dépendre de l'horloge.
+const DAY_REFERENCE_DATE: Record<DayOfWeek, string> = {
+  monday: '2024-01-01',
+  tuesday: '2024-01-02',
+  wednesday: '2024-01-03',
+  thursday: '2024-01-04',
+  friday: '2024-01-05',
+  saturday: '2024-01-06',
+  sunday: '2024-01-07',
+};
+
+function dayName(day: DayOfWeek, lang: 'fr' | 'en'): string {
+  const name = new Intl.DateTimeFormat(lang === 'fr' ? 'fr-FR' : 'en-GB', {
+    weekday: 'short',
+    timeZone: 'UTC',
+  }).format(new Date(`${DAY_REFERENCE_DATE[day]}T12:00:00Z`));
+  // `fr` rend « lun. » : le point est du bruit sous les capitales du libellé.
+  return name.replace(/\.$/, '');
+}
+
+function groupLabel(days: DayOfWeek[], lang: 'fr' | 'en'): string {
+  if (days.length === 0) return '';
+  if (days.length === 1) return dayName(days[0], lang);
+  return `${dayName(days[0], lang)} — ${dayName(days[days.length - 1], lang)}`;
+}
 
 function trimTime(t?: string | null): string {
   if (!t) return '';
@@ -1255,79 +1323,166 @@ function trimTime(t?: string | null): string {
   return m ? `${m[1]}:${m[2]}` : String(t);
 }
 
-// Strapi sometimes stores the legacy `hours` / `weekendHours` strings with a
-// day prefix baked in (e.g. "Lun-Ven 10:00-18:00", "Sam-Dim sur demande"). The
-// rail already prints the day range as the row label, so trim that prefix so
-// the value column doesn't echo it back.
-function stripLeadingDayPrefix(value: string): string {
-  if (!value) return value;
-  return value
-    .replace(
-      /^([A-Za-zéèêàâîïôûç]{2,})\s*[-–—]\s*([A-Za-zéèêàâîïôûç]{2,})\s+/i,
-      '',
-    )
-    .trim();
+/** Ce qui distingue deux rangées : deux jours de même signature se regroupent. */
+function daySignature(row: StrapiOpeningHour | undefined): string {
+  if (!row || row.closed) return 'closed';
+  if (row.byAppointment) return 'appointment';
+  const opens = trimTime(row.opensAt);
+  const closes = trimTime(row.closesAt);
+  return opens && closes ? `${opens}-${closes}` : 'request';
 }
 
-function summarizeRange(
-  rows: StrapiOpeningHour[],
-  days: DayOfWeek[],
+function signatureValue(
+  signature: string,
   lang: 'fr' | 'en',
-): string {
-  const matching = rows.filter((r) => days.includes(r.dayOfWeek));
-  const open = matching.filter((r) => !r.closed);
-  if (open.length === 0) {
-    return getT(lang)('contact.closed');
-  }
-  const byAppointment = open.every((r) => r.byAppointment);
-  if (byAppointment) {
-    return getT(lang)('contact.byAppointment');
-  }
-  // Take the first row's range; if everyone matches, that's the canonical display.
-  // If they differ, fall back to a multi-line summary (caller should switch to legacy).
-  const first = open[0];
-  const allSame = open.every(
-    (r) =>
-      trimTime(r.opensAt) === trimTime(first.opensAt) &&
-      trimTime(r.closesAt) === trimTime(first.closesAt),
-  );
-  const opens = trimTime(first.opensAt);
-  const closes = trimTime(first.closesAt);
-  if (!opens || !closes) {
-    return getT(lang)('common.onRequest');
-  }
-  if (!allSame) {
-    return open
-      .map((r) => `${trimTime(r.opensAt)} — ${trimTime(r.closesAt)}`)
-      .join(' · ');
-  }
-  return `${opens} — ${closes}`;
+): { value: string; kind: 'hours' | 'status' } {
+  if (signature === 'closed')
+    return { value: getT(lang)('contact.closed'), kind: 'status' };
+  if (signature === 'appointment')
+    return { value: getT(lang)('contact.byAppointment'), kind: 'status' };
+  if (signature === 'request')
+    return { value: getT(lang)('common.onRequest'), kind: 'status' };
+  const [opens, closes] = signature.split('-');
+  return { value: `${opens} — ${closes}`, kind: 'hours' };
+}
+
+// Les trois premières lettres suffisent à nommer un jour dans les deux langues,
+// et aucune ne collisionne. Sert à LIRE le préfixe que la rédaction a écrit dans
+// les champs texte hérités — « Lun–Ven », « Mar–Sam », « Mon–Fri ».
+const DAY_TOKENS: Record<string, DayOfWeek> = {
+  lun: 'monday',
+  mar: 'tuesday',
+  mer: 'wednesday',
+  jeu: 'thursday',
+  ven: 'friday',
+  sam: 'saturday',
+  dim: 'sunday',
+  mon: 'monday',
+  tue: 'tuesday',
+  wed: 'wednesday',
+  thu: 'thursday',
+  fri: 'friday',
+  sat: 'saturday',
+  sun: 'sunday',
+};
+
+const LEGACY_PREFIX =
+  /^([A-Za-zÀ-ÿ]{3,})(?:\s*[-–—]\s*([A-Za-zÀ-ÿ]{3,}))?[\s:,]+(.+)$/;
+const TIME_RANGE =
+  /(\d{1,2})\s*[:h]\s*(\d{2})?\s*[-–—]\s*(\d{1,2})\s*[:h]\s*(\d{2})?/;
+
+interface ParsedLegacySentence {
+  days: DayOfWeek[];
+  label: string;
+  value: string;
+  kind: 'hours' | 'status';
+  opens?: string;
+  closes?: string;
+}
+
+/**
+ * Découpe « Lun–Ven 10:00–18:00 » en son libellé et sa valeur.
+ *
+ * Rend `null` quand le préfixe ne nomme pas un jour : la phrase se rend alors
+ * entière plutôt que d'être coupée au hasard.
+ */
+function parseLegacySentence(sentence: string): ParsedLegacySentence | null {
+  const m = sentence.match(LEGACY_PREFIX);
+  if (!m) return null;
+  const first = DAY_TOKENS[m[1].slice(0, 3).toLowerCase()];
+  if (!first) return null;
+  const last = m[2] ? DAY_TOKENS[m[2].slice(0, 3).toLowerCase()] : first;
+  if (m[2] && !last) return null;
+  const from = DAY_ORDER.indexOf(first);
+  const to = DAY_ORDER.indexOf(last ?? first);
+  if (from < 0 || to < from) return null;
+
+  const value = m[3].trim();
+  const label = m[2] ? `${m[1]} — ${m[2]}` : m[1];
+  const time = value.match(TIME_RANGE);
+  const pad = (h: string) => h.padStart(2, '0');
+  return {
+    days: DAY_ORDER.slice(from, to + 1),
+    label,
+    value,
+    // « sur demande » n'est pas une plage : sans bornes lisibles, c'est un statut,
+    // et il ne se déclare pas au JSON-LD.
+    kind: time ? 'hours' : 'status',
+    opens: time ? `${pad(time[1])}:${time[2] ?? '00'}` : undefined,
+    closes: time ? `${pad(time[3])}:${time[4] ?? '00'}` : undefined,
+  };
 }
 
 export function selectStudioHours({ fr, en }: SiteSettings): StudioHours {
-  const rowsFr = fr.openingHours ?? [];
-  if (rowsFr.length > 0) {
-    return {
-      weekday: {
-        fr: summarizeRange(rowsFr, WEEKDAYS, 'fr'),
-        en: summarizeRange(rowsFr, WEEKDAYS, 'en'),
-      },
-      weekend: {
-        fr: summarizeRange(rowsFr, WEEKEND, 'fr'),
-        en: summarizeRange(rowsFr, WEEKEND, 'en'),
-      },
-    };
+  const dayRows = fr.openingHours ?? [];
+  if (dayRows.length > 0) {
+    const byDay = new Map(dayRows.map((r) => [r.dayOfWeek, r]));
+    const rows: StudioHoursRow[] = [];
+    let previousSignature: string | null = null;
+    for (const day of DAY_ORDER) {
+      const signature = daySignature(byDay.get(day));
+      // Jours CONSÉCUTIFS de même signature : une seule rangée. Deux jours qui
+      // partagent un horaire sans se suivre en font deux, et c'est correct —
+      // « Lun — Mer » et « Ven » ne se disent pas « Lun — Ven ».
+      if (signature === previousSignature) {
+        rows[rows.length - 1].days.push(day);
+        continue;
+      }
+      previousSignature = signature;
+      const valueFr = signatureValue(signature, 'fr');
+      const valueEn = signatureValue(signature, 'en');
+      const bounds = valueFr.kind === 'hours' ? signature.split('-') : [];
+      rows.push({
+        days: [day],
+        label: { fr: '', en: '' },
+        value: { fr: valueFr.value, en: valueEn.value },
+        kind: valueFr.kind,
+        opens: bounds[0],
+        closes: bounds[1],
+      });
+    }
+    for (const row of rows) {
+      row.label = {
+        fr: groupLabel(row.days, 'fr'),
+        en: groupLabel(row.days, 'en'),
+      };
+    }
+    return { rows };
   }
-  const weekdayFr = stripLeadingDayPrefix(fr.hours ?? '');
-  const weekdayEn = stripLeadingDayPrefix(en?.hours ?? fr.hours ?? '');
-  const weekendFr = stripLeadingDayPrefix(fr.weekendHours ?? '');
-  const weekendEn = stripLeadingDayPrefix(
-    en?.weekendHours ?? fr.weekendHours ?? '',
-  );
-  return {
-    weekday: { fr: weekdayFr, en: weekdayEn },
-    weekend: { fr: weekendFr, en: weekendEn },
+
+  // Forme héritée : deux chaînes libres du genre « Lun–Ven 10:00–18:00 ». Le
+  // préfixe de jour EST le libellé que la rédaction a choisi — on le lit, on ne
+  // le jette plus pour le remplacer par une hypothèse. Quand il ne se lit pas,
+  // la phrase se rend entière, sans libellé en face, parce qu'on n'a rien de vrai
+  // à y mettre.
+  const legacy: StudioHoursRow[] = [];
+  const push = (frValue?: string, enValue?: string) => {
+    const sentenceFr = (frValue ?? '').trim();
+    if (!sentenceFr) return;
+    const sentenceEn = (enValue ?? frValue ?? '').trim();
+    const parsedFr = parseLegacySentence(sentenceFr);
+    const parsedEn = parseLegacySentence(sentenceEn);
+    if (!parsedFr) {
+      legacy.push({
+        days: [],
+        label: { fr: '', en: '' },
+        value: { fr: sentenceFr, en: sentenceEn },
+        kind: 'hours',
+      });
+      return;
+    }
+    legacy.push({
+      days: parsedFr.days,
+      label: { fr: parsedFr.label, en: parsedEn?.label || parsedFr.label },
+      value: { fr: parsedFr.value, en: parsedEn?.value || parsedFr.value },
+      kind: parsedFr.kind,
+      opens: parsedFr.opens,
+      closes: parsedFr.closes,
+    });
   };
+  push(fr.hours, en?.hours ?? fr.hours);
+  push(fr.weekendHours, en?.weekendHours ?? fr.weekendHours);
+  return { rows: legacy };
 }
 
 export async function fetchStudioHours(): Promise<StudioHours> {

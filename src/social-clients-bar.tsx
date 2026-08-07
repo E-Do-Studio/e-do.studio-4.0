@@ -35,12 +35,12 @@ const SocialClientsBar = ({ className }: SocialClientsBarProps) => {
         // Le gabarit suit la présence du numéro : une troisième piste vide
         // laisserait quand même son filet de séparation au bord de la bande.
         phone
-          ? 'md:grid-cols-[minmax(0,1fr)_2fr_auto]'
-          : 'md:grid-cols-[minmax(0,1fr)_2fr]',
+          ? 'app:grid-cols-[minmax(0,1fr)_2fr_auto]'
+          : 'app:grid-cols-[minmax(0,1fr)_2fr]',
         className,
       )}
     >
-      <SocialLinksRow layout="row" className="h-12 md:h-11" />
+      <SocialLinksRow layout="row" className="h-12 app:h-11" />
       <div className="flex h-11 min-w-0 items-center overflow-hidden bg-background">
         <MarqueeCell size={20} />
       </div>
@@ -50,7 +50,7 @@ const SocialClientsBar = ({ className }: SocialClientsBarProps) => {
           render={<a href={phoneHref} />}
           // `order-first` en mobile : empilé, un numéro de téléphone se compose
           // d'un pouce, il passe donc avant le bandeau de marques.
-          className="order-first h-11 flex-row items-center justify-center gap-2 px-4 font-mono text-xs tracking-widest whitespace-nowrap no-underline md:order-none"
+          className="order-first h-11 flex-row items-center justify-center gap-2 px-4 font-mono text-xs tracking-widest whitespace-nowrap no-underline app:order-none"
         >
           <Phone />
           {phone.replace(/^\+33\s?/, '0')}

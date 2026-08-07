@@ -11,7 +11,10 @@ import { SocialLinksRow } from './ui/social-links-row';
 import { useT } from './i18n/use-t';
 import { MENU_NAV, activeNavIn } from './lib/nav';
 import { SCREEN_TO_PATH } from './lib/screens';
+import { useRoutePreload } from './lib/use-route-preload';
 import type { Lang } from './types';
+import { ordinal } from './lib/format';
+import { MonoLabel } from './ui/mono-label';
 
 interface NavItemDef {
   label: string;
@@ -52,6 +55,9 @@ interface NavItemLinkProps {
 
 const NavItemLink = ({ item, index, onClose, navigate }: NavItemLinkProps) => {
   const t = useT();
+  // Avant le `if` : un hook ne se saute pas. La destination désactivée n'a de
+  // toute façon rien à précharger, et le hook ne fait rien sans survol.
+  const preload = useRoutePreload(item.href);
   if (item.disabled) {
     return (
       <div
@@ -60,15 +66,13 @@ const NavItemLink = ({ item, index, onClose, navigate }: NavItemLinkProps) => {
         className="relative flex min-h-13 cursor-not-allowed flex-col justify-between gap-1 border-b border-border px-4 py-2.5"
       >
         <div className="flex items-center justify-between gap-2">
-          <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground leading-none">
-            {String(index + 1).padStart(2, '0')}
-          </span>
-          <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground inline-flex items-center gap-1 leading-none">
+          <MonoLabel tone="muted">{ordinal(index)}</MonoLabel>
+          <MonoLabel tone="muted" className="inline-flex items-center gap-1">
             <Lock width="9" height="9" aria-hidden="true" />
             {t('home.comingSoon')}
-          </span>
+          </MonoLabel>
         </div>
-        <span className="mt-auto text-base font-light text-muted-foreground">
+        <span className="mt-auto text-base text-muted-foreground">
           {item.label}
         </span>
       </div>
@@ -82,18 +86,18 @@ const NavItemLink = ({ item, index, onClose, navigate }: NavItemLinkProps) => {
         onClose();
         navigate({ to: item.href });
       }}
+      // Le loader part au survol. Sous `lg` le tiroir est la seule navigation,
+      // c'est donc ici que le gain compte le plus — au toucher il n'y a pas de
+      // survol, mais `onFocus` couvre le clavier.
+      {...preload}
       // Même repère que dans la bande d'en-tête, et il compte davantage ici :
       // sous `lg` le tiroir est la seule navigation, donc le seul endroit où
       // « vous êtes ici » puisse se lire.
       aria-current={item.current ? 'page' : undefined}
-      className="outline-none focus-visible:ring-3 focus-visible:ring-ring/50 relative flex min-h-13 cursor-pointer flex-col justify-between gap-1 border-b border-border px-4 py-2.5 text-foreground no-underline transition-colors hover:bg-muted aria-[current=page]:text-primary"
+      className="outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-foreground relative flex min-h-13 cursor-pointer flex-col justify-between gap-1 border-b border-border px-4 py-2.5 text-foreground no-underline transition-colors hover:bg-muted aria-[current=page]:text-primary"
     >
-      <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-        {String(index + 1).padStart(2, '0')}
-      </span>
-      <span className="mt-auto text-base font-light text-current">
-        {item.label}
-      </span>
+      <MonoLabel tone="muted">{ordinal(index)}</MonoLabel>
+      <span className="mt-auto text-base text-current">{item.label}</span>
     </a>
   );
 };
@@ -109,12 +113,10 @@ const NavExternalLink = ({ href, label, index }: NavExternalLinkProps) => (
     href={href}
     target="_blank"
     rel="noopener noreferrer"
-    className="outline-none focus-visible:ring-3 focus-visible:ring-ring/50 relative flex min-h-13 cursor-pointer flex-col justify-between gap-1 border-b border-border px-4 py-2.5 no-underline transition-colors hover:bg-muted"
+    className="outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-foreground relative flex min-h-13 cursor-pointer flex-col justify-between gap-1 border-b border-border px-4 py-2.5 no-underline transition-colors hover:bg-muted"
   >
-    <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-      {String(index + 1).padStart(2, '0')}
-    </span>
-    <span className="mt-auto flex items-baseline gap-1.5 text-base font-light text-foreground">
+    <MonoLabel tone="muted">{ordinal(index)}</MonoLabel>
+    <span className="mt-auto flex items-baseline gap-1.5 text-base text-foreground">
       {label}
       <span
         aria-hidden="true"
@@ -136,6 +138,7 @@ interface NavFooterProps {
 const NavFooter = ({ lang, setLang, onClose, navigate }: NavFooterProps) => {
   const t = useT();
   const bookingHref = SCREEN_TO_PATH.book(lang);
+  const preload = useRoutePreload(bookingHref);
 
   return (
     <div className="grid grid-cols-[auto_minmax(0,1fr)] border-t border-border">
@@ -147,13 +150,13 @@ const NavFooter = ({ lang, setLang, onClose, navigate }: NavFooterProps) => {
         {t('common.langToggleLabel')}
       </Button>
       <Button
-        render={<a href={bookingHref} />}
+        render={<a href={bookingHref} {...preload} />}
         onClick={(e: React.MouseEvent) => {
           e.preventDefault();
           onClose();
           navigate({ to: bookingHref });
         }}
-        className="h-12  no-underline"
+        className="h-12 no-underline"
       >
         {t('common.bookNow')}
       </Button>

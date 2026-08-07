@@ -57,13 +57,18 @@ export function useMediaQuery(query: string): boolean {
 }
 
 /**
- * Vrai à partir du point de rupture `md` de Tailwind.
+ * Vrai à partir du palier `app` — là où la grille bento plein écran s'applique.
+ *
+ * Doit valoir exactement `--breakpoint-app` (`styles.css`) : c'est le pendant JS
+ * de la variante `app:`, et un composant monté d'un côté du seuil alors que sa
+ * cellule est peinte de l'autre laisse un trou. Le seuil vivait à 768px quand
+ * les grilles basculaient là ; il les suit.
  *
  * Sert notamment à ne pas monter l'assistant (React.lazy) pendant le rendu
  * serveur : celui-ci n'étant pas streamé, il ne peut pas résoudre une frontière
  * Suspense et lèverait une erreur d'hydratation (React #419).
  */
-export const useIsDesktop = () => useMediaQuery('(min-width: 768px)');
+export const useIsDesktop = () => useMediaQuery('(min-width: 1024px)');
 
 /** Vrai quand le visiteur a demandé à réduire les animations. */
 export const usePrefersReducedMotion = () =>

@@ -43,6 +43,7 @@ import {
 import { NavMenu } from '../nav-menu';
 import { NotFoundPage } from '../not-found-page';
 import { PreviewBanner } from '../preview-banner';
+import { SkipLink } from '../ui/skip-link';
 import type { Lang } from '../types';
 import appCss from '../styles.css?url';
 
@@ -99,8 +100,27 @@ function gtmBootstrap(id: string): string {
 }
 
 // Évite un reflow piloté par le swap de police sur le premier rendu.
+//
+// Le verrou `height:100%;overflow:hidden` est un choix desktop : les grilles
+// bento se dimensionnent en `app:h-full`, donc la chaîne de hauteur doit
+// remonter jusqu'à <html>. Sous le palier il n'y a plus de grille plein écran et
+// la page doit défiler normalement — d'où la levée du verrou. `100dvh` et non
+// `100%` pour suivre le viewport dynamique iOS (la barre d'URL qui se replie
+// laissait sinon une bande fantôme), et fond noir pour que la zone sous la
+// dernière cellule se fonde dans les filets de la grille au lieu de flasher
+// blanc.
+//
+// La media query vit ici et non dans styles.css : les deux règles ont la même
+// spécificité et sont hors `@layer`, or HeadContent émet ce <style> APRÈS le
+// <link> de la feuille. Une levée écrite dans styles.css perdrait la cascade.
+//
+// 1023px est `--breakpoint-app` (1024) moins un, RECOPIÉ et non référencé : une
+// media query ne peut pas lire une custom property. C'est le seul endroit du
+// dépôt où le palier existe en littéral — il doit bouger avec le token, sans
+// quoi la bande sous le palier garde le verrou et se retrouve rognée.
 const CRITICAL_CSS =
-  'html,body,#root{margin:0;padding:0;height:100%;background:#fff;font-family:var(--font-sans);color:#141414;overflow:hidden}';
+  'html,body,#root{margin:0;padding:0;height:100%;background:#fff;font-family:var(--font-sans);color:#141414;overflow:hidden}' +
+  '@media(max-width:1023px){html,body,#root{height:auto;min-height:100dvh;overflow:visible}body{background:#000}}';
 
 // Doit précéder le premier fetch Strapi côté client pour qu'il voie le drapeau
 // preview. Côté Node, getPreviewState() retombe toujours sur « inactif » — le
@@ -214,6 +234,8 @@ function LangLayout() {
               directement dans PageContext. */}
           <I18nextProvider i18n={getI18n(lang)}>
             <PageContext.Provider value={pageContext}>
+              {/* Premier focusable du document, avant l'en-tête collant. */}
+              <SkipLink />
               <Outlet />
               <NavMenu
                 lang={lang}

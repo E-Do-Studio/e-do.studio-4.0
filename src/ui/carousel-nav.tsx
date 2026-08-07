@@ -15,11 +15,11 @@ interface CarouselNavProps {
 // `mix-blend-difference` : le résultat est l'inverse exact du média qui passe
 // derrière, quel qu'il soit. Le remplacer par un token changerait le calcul.
 //
-// Centrage par `inset-y-0 my-auto` et non par `-translate-y-1/2` : la base
-// pose `active:translate-y-px`, qui écraserait la translation au moment du
-// clic et ferait sauter la flèche d'une demi-hauteur.
+// Centrage par `inset-y-0 my-auto` et non par `-translate-y-1/2` : aucun
+// transform ne subsiste sur ces boutons, mieux vaut ne pas en réintroduire un
+// que la moindre classe utilitaire viendrait écraser.
 const navBtn =
-  'absolute inset-y-0 z-10 my-auto text-white mix-blend-difference active:scale-95';
+  'absolute inset-y-0 z-10 my-auto text-white mix-blend-difference';
 
 const CarouselNav = ({ onPrev, onNext }: CarouselNavProps) => {
   const t = useT();
@@ -30,7 +30,7 @@ const CarouselNav = ({ onPrev, onNext }: CarouselNavProps) => {
         aria-label={t('common.prevImage')}
         variant="ghost"
         size="icon-lg"
-        className={cn(navBtn, 'left-3 md:hover:-translate-x-[3px]')}
+        className={cn(navBtn, 'left-3')}
       >
         {/* Sans classe `size-*`, la base contraint l'icône à `size-4` par CSS,
             ce qui l'emporte sur les attributs `width` et `height`. */}
@@ -41,7 +41,7 @@ const CarouselNav = ({ onPrev, onNext }: CarouselNavProps) => {
         aria-label={t('common.nextImage')}
         variant="ghost"
         size="icon-lg"
-        className={cn(navBtn, 'right-3 md:hover:translate-x-[3px]')}
+        className={cn(navBtn, 'right-3')}
       >
         <ArrowRight />
       </Button>

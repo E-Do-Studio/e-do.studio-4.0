@@ -11,3 +11,4 @@ bun.lock
 .playwright-mcp/
 /*.png
 supabase/.temp/
+.tanstack/

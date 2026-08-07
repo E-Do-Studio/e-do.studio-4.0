@@ -57,11 +57,34 @@ interface CalendarSyncAlertPayload {
   bookingId: string;
 }
 
+// Une soumission de réservation qui n'aboutit pas côté navigateur. Il n'y a
+// alors AUCUNE ligne en base — donc pas de `bookingId` à joindre, et rien que
+// le studio puisse retrouver après coup.
+//
+// C'est le seul incident du tunnel qui ne laissait aucune trace : l'erreur
+// s'affichait au client, un `console.error` partait dans SA console, et
+// personne au studio n'en savait rien. `create-booking` a pu rester
+// indisponible sans que quiconque l'apprenne.
+interface BookingFailureAlertPayload {
+  type: "booking_failure_alert";
+  /** Le message technique de l'exception, tel quel — c'est lui qu'on diagnostique. */
+  error: string;
+  /** L'étape et le mode au moment de l'échec, pour situer. */
+  mode: string;
+  /** De quoi rappeler le client, s'il a laissé ses coordonnées. */
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  /** L'URL exacte où ça a cassé. */
+  pageUrl?: string;
+}
+
 type EmailPayload =
   | BookingEmailPayload
   | ContactEmailPayload
   | BookingStatusChangePayload
-  | CalendarSyncAlertPayload;
+  | CalendarSyncAlertPayload
+  | BookingFailureAlertPayload;
 
 interface ResendAttachment {
   filename: string;
@@ -175,6 +198,8 @@ Deno.serve(async (req: Request) => {
       await handleBookingStatusChangeEmail(resendKey, fromEmail, payload);
     } else if (payload.type === "calendar_sync_alert") {
       await handleCalendarSyncAlert(resendKey, fromEmail, payload.bookingId);
+    } else if (payload.type === "booking_failure_alert") {
+      await handleBookingFailureAlert(resendKey, fromEmail, payload);
     } else {
       return new Response(JSON.stringify({ error: "Unknown email type" }), {
         status: 400,
@@ -239,6 +264,43 @@ async function handleCalendarSyncAlert(
     fromEmail,
     STUDIO_EMAIL,
     `⚠️ Échec synchro calendrier — ${booking.reference}`,
+    html,
+  );
+}
+
+// Aucun accès à la base ici : il n'y a rien à lire, la réservation n'existe
+// pas. Tout ce qu'on sait vient du navigateur qui a échoué.
+async function handleBookingFailureAlert(
+  resendKey: string,
+  fromEmail: string,
+  payload: BookingFailureAlertPayload,
+): Promise<void> {
+  const esc = (v: unknown) =>
+    String(v ?? "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]!));
+
+  const contact = [payload.contactName, payload.contactEmail, payload.contactPhone]
+    .filter(Boolean)
+    .map(esc)
+    .join(" — ");
+
+  const html = `
+    <div style="font-family:system-ui,sans-serif;font-size:14px;line-height:1.5;color:#111">
+      <p><strong>⚠️ Une réservation n'a pas pu être enregistrée.</strong></p>
+      <p>Le tunnel a rendu une erreur au client : aucune ligne n'a été créée en
+      base. Si cette alerte se répète, le tunnel est probablement hors service.</p>
+      <table cellpadding="4" style="border-collapse:collapse">
+        <tr><td><strong>Erreur</strong></td><td>${esc(payload.error)}</td></tr>
+        <tr><td><strong>Mode</strong></td><td>${esc(payload.mode)}</td></tr>
+        <tr><td><strong>Page</strong></td><td>${esc(payload.pageUrl)}</td></tr>
+      </table>
+      ${contact ? `<p><strong>Le client à rappeler :</strong> ${contact}</p>` : "<p>Le client n'avait pas encore laissé ses coordonnées.</p>"}
+    </div>`;
+
+  await sendResendEmail(
+    resendKey,
+    fromEmail,
+    STUDIO_EMAIL,
+    "⚠️ Échec de réservation dans le tunnel",
     html,
   );
 }

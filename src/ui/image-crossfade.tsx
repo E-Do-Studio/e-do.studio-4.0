@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
-import { buildStrapiSrcset, getStrapiLargeUrl } from '../lib/strapi';
 import { cn } from '@/lib/utils';
 import { usePrefersReducedMotion } from './use-media-query';
-import { fetchPriority } from './fetch-priority';
+import { ResponsiveImage } from './responsive-image';
 
 interface ImageCrossfadeSlide {
   url: string;
@@ -44,18 +43,12 @@ const ImageCrossfade = ({
   if (count === 1) {
     const only = images[0];
     return (
-      <img
-        src={getStrapiLargeUrl(only.url) ?? only.url}
-        srcSet={buildStrapiSrcset(only.url)}
-        sizes="100vw"
+      <ResponsiveImage
+        src={only.url}
         alt={only.alt}
-        {...fetchPriority(priority)}
-        loading={priority ? 'eager' : 'lazy'}
-        decoding="async"
-        className={cn(
-          'pointer-events-none absolute inset-0 h-full w-full object-cover',
-          className,
-        )}
+        sizes="100vw"
+        priority={priority}
+        className={cn('pointer-events-none', className)}
       />
     );
   }
@@ -69,23 +62,28 @@ const ImageCrossfade = ({
         const isFirst = i === 0;
         const active = i === index;
         return (
-          <img
+          // L'opacité de diapositive vit sur l'enveloppe, pas sur l'image.
+          // Posée en style inline sur l'`<img>`, elle l'emporterait sur le
+          // `img[data-loading]` du fondu de chargement (`styles.css`) : la
+          // diapositive active apparaîtrait avant d'être peinte, texte alt
+          // compris. Deux fondus, deux éléments.
+          <div
             key={`${i}-${img.url}`}
-            src={getStrapiLargeUrl(img.url) ?? img.url}
-            srcSet={buildStrapiSrcset(img.url)}
-            sizes="100vw"
-            alt={active ? img.alt : ''}
-            {...fetchPriority(priority && isFirst)}
-            loading={isFirst ? 'eager' : 'lazy'}
-            decoding="async"
             aria-hidden={!active}
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0"
             style={{
               opacity: active ? 1 : 0,
               transition: `opacity ${fadeMs}ms var(--ease-in-out)`,
               willChange: 'opacity',
             }}
-          />
+          >
+            <ResponsiveImage
+              src={img.url}
+              alt={active ? img.alt : ''}
+              sizes="100vw"
+              priority={priority && isFirst}
+            />
+          </div>
         );
       })}
     </div>

@@ -42,35 +42,41 @@ function compact<T extends Record<string, unknown>>(node: T): T {
 
 // ─── Opening hours mapping ──────────────────────────────────────────────────
 
-function parseHourRange(s?: string): { opens: string; closes: string } | null {
-  if (!s) return null;
-  const m = s.match(/(\d{1,2}):(\d{2})\s*[—–-]\s*(\d{1,2}):(\d{2})/);
-  if (!m) return null;
-  const pad = (h: string) => (h.length === 1 ? `0${h}` : h);
-  return { opens: `${pad(m[1])}:${m[2]}`, closes: `${pad(m[3])}:${m[4]}` };
-}
+// Une rangée d'horaires porte déjà ses jours et ses bornes normalisées : ce
+// bloc les lit, il ne les redevine plus.
+//
+// La version précédente relisait la CHAÎNE D'AFFICHAGE à la regex, puis
+// affirmait `dayOfWeek: [Monday…Friday]` quelle que soit la donnée. Un studio
+// ouvert du mardi au samedi déclarait donc à Google des horaires du lundi au
+// vendredi — le même postulat que celui du rail, mais envoyé au moteur de
+// recherche, où personne ne le voit se tromper.
+const JSONLD_DAY: Record<string, string> = {
+  monday: 'Monday',
+  tuesday: 'Tuesday',
+  wednesday: 'Wednesday',
+  thursday: 'Thursday',
+  friday: 'Friday',
+  saturday: 'Saturday',
+  sunday: 'Sunday',
+};
 
 function buildOpeningHoursSpec(
   hours?: StudioHours | null,
 ): JsonLdNode[] | undefined {
   if (!hours) return undefined;
   const out: JsonLdNode[] = [];
-  const weekday = parseHourRange(hours.weekday?.fr);
-  if (weekday) {
+  for (const row of hours.rows) {
+    // Seule une plage se déclare. Un jour fermé ou sur rendez-vous n'a pas
+    // d'`opens`/`closes`, et un `OpeningHoursSpecification` sans bornes ne dit
+    // rien de plus que son absence.
+    if (row.kind !== 'hours' || !row.opens || !row.closes) continue;
+    const dayOfWeek = row.days.map((d) => JSONLD_DAY[d]).filter(Boolean);
+    if (dayOfWeek.length === 0) continue;
     out.push({
       '@type': 'OpeningHoursSpecification',
-      dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-      opens: weekday.opens,
-      closes: weekday.closes,
-    });
-  }
-  const weekend = parseHourRange(hours.weekend?.fr);
-  if (weekend) {
-    out.push({
-      '@type': 'OpeningHoursSpecification',
-      dayOfWeek: ['Saturday', 'Sunday'],
-      opens: weekend.opens,
-      closes: weekend.closes,
+      dayOfWeek,
+      opens: row.opens,
+      closes: row.closes,
     });
   }
   return out.length > 0 ? out : undefined;

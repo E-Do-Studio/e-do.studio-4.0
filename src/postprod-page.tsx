@@ -1,12 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearch } from '@tanstack/react-router';
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-} from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
@@ -16,15 +9,26 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from '@/components/ui/empty';
-import { HoverMarquee } from './ui/hover-marquee';
-import { ArrowRight, ChevronsUpDown, X } from 'lucide-react';
-import { PageHeader } from './ui/page-header';
+import { Rail, RailCell } from './ui/rail-cell';
+import { SelectionDrawer } from './ui/selection-drawer';
+import { ordinal } from './lib/format';
+import { PageShell } from './ui/page-shell';
+import { MAIN_ID } from './ui/skip-link';
 import { ResponsiveImage } from './ui/responsive-image';
+import { MediaFrame } from './ui/media-frame';
+import { GalleryLightbox } from './gallery-lightbox';
 import { useLoaderData } from '@tanstack/react-router';
-import type { PPCat as StrapiPPCat, PPSample } from './lib/strapi';
+import type {
+  GalleryMedia,
+  PPCat as StrapiPPCat,
+  PPSample,
+} from './lib/strapi';
 import type { Bilingual } from './types';
 import { usePageContext } from './lib/page-context';
 import { useT } from './i18n/use-t';
+import { StatusBadge } from './ui/status-badge';
+import { CtaCell } from './ui/cta-cell';
+import { Price } from './ui/price';
 
 interface PPPrice {
   amount?: string;
@@ -49,7 +53,6 @@ interface PPCat {
   features: Bilingual<string[]>;
   formats: string[];
   samples: SampleSlot[];
-  brands: string[];
   featured?: boolean;
 }
 
@@ -94,18 +97,20 @@ const PALETTES: Record<string, PaletteColors> = {
 
 interface SampleImageProps {
   sample: SampleSlot;
-  label?: string;
   medium: string;
+  /** Vrai pour la première rangée : en desktop la mosaïque occupe le tiers
+   *  droit du premier écran, et ses six vignettes étaient toutes `lazy`. */
+  priority?: boolean;
 }
 
 const SampleVideo = ({
   src,
   mime,
-  label,
+  alt,
 }: {
   src: string;
   mime: string;
-  label?: string;
+  alt?: string;
 }) => {
   const ref = useRef<HTMLVideoElement>(null);
   useEffect(() => {
@@ -117,65 +122,49 @@ const SampleVideo = ({
     el.play().catch(() => {});
   }, [src]);
   return (
-    <div className="relative w-full h-full overflow-hidden bg-muted">
-      <video
-        ref={ref}
-        src={src}
-        autoPlay
-        loop
-        muted
-        playsInline
-        preload="metadata"
-        disablePictureInPicture
-        aria-label={label ?? ''}
-        className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
-      >
-        <source src={src} type={mime} />
-      </video>
-      {label && (
-        <span className="dark font-mono text-xs uppercase tracking-widest absolute bottom-1.5 left-2 opacity-50 text-foreground">
-          {label}
-        </span>
-      )}
-    </div>
+    <video
+      ref={ref}
+      src={src}
+      autoPlay
+      loop
+      muted
+      playsInline
+      preload="metadata"
+      disablePictureInPicture
+      aria-label={alt ?? ''}
+      className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
+    >
+      <source src={src} type={mime} />
+    </video>
   );
 };
 
-const SampleImage = ({ sample, label, medium }: SampleImageProps) => {
+// Le contenu d'une vignette, sans sa boîte : c'est `MediaFrame` qui la pose,
+// avec son ratio et son fond de réserve. Les trois branches se posaient
+// auparavant chacune leur `relative w-full h-full overflow-hidden`, et deux
+// d'entre elles seulement leur `bg-muted`.
+const SampleImage = ({ sample, medium, priority }: SampleImageProps) => {
   if (sample.kind === 'video') {
-    return (
-      <SampleVideo
-        src={sample.url}
-        mime={sample.mime}
-        label={sample.alt || label}
-      />
-    );
+    return <SampleVideo src={sample.url} mime={sample.mime} alt={sample.alt} />;
   }
   if (sample.kind === 'image') {
     return (
-      <div className="relative w-full h-full overflow-hidden bg-muted">
-        <ResponsiveImage
-          src={sample.url}
-          alt={sample.alt || label || ''}
-          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        {label && (
-          <span className="dark font-mono text-xs uppercase tracking-widest absolute bottom-1.5 left-2 opacity-50 text-foreground">
-            {label}
-          </span>
-        )}
-      </div>
+      <ResponsiveImage
+        src={sample.url}
+        alt={sample.alt ?? ''}
+        // La mosaïque occupe deux des trois colonnes souples du shell et se
+        // divise en trois : une vignette vaut environ le quart de l'écran en
+        // desktop, le tiers en mobile.
+        sizes="(min-width: 1024px) 22vw, 33vw"
+        priority={priority}
+      />
     );
   }
   const seed = sample.seed;
   const p = PALETTES[seed] || PALETTES['mono-a'];
   const hash = [...seed].reduce((a, c) => a + c.charCodeAt(0), 0) % 5;
   return (
-    <div
-      className="relative w-full h-full overflow-hidden"
-      style={{ background: p.bg }}
-    >
+    <div className="absolute inset-0" style={{ background: p.bg }}>
       <svg
         viewBox="0 0 300 400"
         preserveAspectRatio="xMidYMid slice"
@@ -214,18 +203,13 @@ const SampleImage = ({ sample, label, medium }: SampleImageProps) => {
       </svg>
       <div className="absolute inset-0 pointer-events-none bg-postprod-pattern" />
       {medium === 'video' && (
-        <div className="dark absolute top-2 right-2 flex items-center gap-1 bg-background/55 px-1.5 py-0.5 font-mono text-xs tracking-widest text-foreground">
-          <span className="inline-block w-0 h-0 border-l-4 border-l-foreground border-t-3 border-t-transparent border-b-3 border-b-transparent" />
-          VIDEO
-        </div>
-      )}
-      {label && (
-        <span
-          className="font-mono text-xs uppercase tracking-widest absolute bottom-1.5 left-2 opacity-50"
-          style={{ color: p.a }}
+        <StatusBadge
+          tone="overlay"
+          className="dark absolute top-2 right-2 gap-1"
         >
-          {label}
-        </span>
+          <span className="inline-block h-0 w-0 border-b-3 border-l-4 border-t-3 border-b-transparent border-l-foreground border-t-transparent" />
+          VIDEO
+        </StatusBadge>
       )}
     </div>
   );
@@ -269,7 +253,6 @@ function adaptStrapiCats(strapi: StrapiPPCat[]): PPCat[] {
     features: c.features,
     formats: c.formats ?? [],
     samples: fillSamples(c.samples ?? []),
-    brands: c.brands ?? [],
   }));
 }
 
@@ -309,23 +292,17 @@ const PostprodPage = () => {
     setFilters(!next || next === defaultK ? null : next);
   };
 
-  const [navSheetOpen, setNavSheetOpen] = useState(false);
   const navigateToType = (nextK: string) => {
-    setNavSheetOpen(false);
     if (nextK !== k) setType(nextK);
   };
-  const currentIndex = Math.max(
-    0,
-    cats.findIndex((c) => c.k === k),
-  );
-  const currentNumber = String(currentIndex + 1).padStart(2, '0');
+
+  // Index dans `media` ci-dessous, pas dans la grille : les deux coïncident
+  // tant que `fillSamples` place les médias réels en tête, ce qu'il fait.
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const postprodLabel = t('common.postProdLong');
   const dark = !!cat?.featured;
   const bgCls = cn('bg-background', dark && 'dark');
-  const fgCls = 'text-foreground';
-  const mutedCls = 'text-muted-foreground';
-  const lineCls = 'border-border';
 
   if (!cat) {
     // Le h1 reste dans l'arbre même sans catégorie, pour qu'il y en ait
@@ -350,243 +327,281 @@ const PostprodPage = () => {
     );
   }
 
+  // Le visionneur de la galerie prend un projet ; on lui en fabrique un depuis
+  // la catégorie courante, comme le fait déjà la page d'article. Seuls les
+  // médias réels y entrent : les placeholders sont des SVG générés, il n'y a
+  // rien à voir en grand.
+  const media: GalleryMedia[] = cat.samples
+    .slice(0, 6)
+    .filter((s): s is PPSample => s.kind !== 'placeholder')
+    .map((s) =>
+      s.kind === 'video'
+        ? { kind: 'video', url: s.url, alt: s.alt, mime: s.mime }
+        : { kind: 'image', url: s.url, alt: s.alt },
+    );
+
   return (
-    /* Mobile: single-column scrollable. Desktop (md+): sidebar + workspace */
-    <main className="grid w-full grid-cols-[minmax(0,1fr)] gap-px bg-border md:h-full md:grid-cols-[var(--spacing-logo)_repeat(3,minmax(0,1fr))] md:grid-rows-[var(--spacing-header)_minmax(0,1fr)] md:overflow-hidden">
-      {/* Single, stable page h1 — data-independent so it's present at every
+    <>
+      {/* Mobile: single-column scrollable. Desktop (md+): sidebar + workspace */}
+      {/* `<main class="contents">` : voir home-page. */}
+      {/* Trois rangées et non deux : l'en-tête, le corps, et une rangée de pied
+ en `auto` que se partagent la note du rail et le pavé d'action. Ils étaient
+ auparavant chacun collé au bas de SA colonne — la note par `mt-auto` dans
+ le rail, le CTA par la sous-grille du panneau — et leurs deux filets
+ tombaient donc à 7px l'un de l'autre, mesuré à l'écran. Deux cellules qui
+ doivent s'aligner appartiennent à la même rangée de grille ; toute autre
+ méthode est une coïncidence qu'il faut entretenir à la main, et que la
+ traduction anglaise casserait au premier retour à la ligne de plus. */}
+      <PageShell className="grid-cols-[minmax(0,1fr)] app:grid-cols-[var(--spacing-logo)_minmax(0,1fr)_auto] app:grid-rows-[var(--spacing-header)_minmax(0,1fr)_auto]">
+        <main id={MAIN_ID} className="contents">
+          {/* Single, stable page h1 — data-independent so it's present at every
  breakpoint and before Strapi resolves. The selected category is an h2. */}
-      <h1 className="sr-only">{postprodLabel}</h1>
+          <h1 className="sr-only">{postprodLabel}</h1>
 
-      <PageHeader className="col-span-full md:row-start-1" />
+          {/* Une des trois copies littérales du même bloc barre + tiroir. */}
+          <SelectionDrawer
+            title={postprodLabel}
+            items={cats.map((c) => ({
+              key: c.k,
+              label: c[lang],
+              sub: c.tagline[lang],
+            }))}
+            activeKey={k}
+            onSelect={navigateToType}
+            closeLabel={t('common.close')}
+          />
 
-      {/* Mobile navigation: sticky single-row trigger showing the current
- post-prod type. Tap opens a Drawer listing all types; selecting
- a row in the sheet updates the type and closes the sheet immediately.
- Name + tagline stack vertically so long taglines don't truncate the
- name (post-prod taglines are full sentences). */}
-      <Button
-        type="button"
-        onClick={() => setNavSheetOpen(true)}
-        aria-haspopup="dialog"
-        aria-expanded={navSheetOpen}
-        aria-controls="postprod-nav-sheet"
-        className="col-span-full sticky top-header z-30 md:hidden flex gap-4 min-h-14 w-full px-4 py-2.5 bg-background  border-b border-border text-left"
-      >
-        <span className="font-mono text-xs tracking-widest text-muted-foreground">
-          {currentNumber}
-        </span>
-        <span className="flex-1 min-w-0 flex flex-col gap-0.5">
-          <HoverMarquee className="text-base tracking-tight font-medium text-foreground">
-            {cat[lang]}
-          </HoverMarquee>
-          <HoverMarquee className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-            {cat.tagline[lang]}
-          </HoverMarquee>
-        </span>
-        <ChevronsUpDown
-          width="16"
-          height="16"
-          className="shrink-0 text-foreground"
-        />
-      </Button>
-
-      <Drawer open={navSheetOpen} onOpenChange={setNavSheetOpen}>
-        <DrawerContent id="postprod-nav-sheet">
-          <DrawerHeader>
-            <DrawerTitle>{postprodLabel}</DrawerTitle>
-            <DrawerClose
-              aria-label={t('common.close')}
-              render={<Button variant="ghost" size="icon" />}
-            >
-              <X />
-            </DrawerClose>
-          </DrawerHeader>
-          <ul className="m-0 flex list-none flex-col overflow-y-auto p-0">
-            {cats.map((c, i) => {
-              const active = c.k === k;
-              const num = String(i + 1).padStart(2, '0');
-              return (
-                <li key={c.k}>
-                  <Button
-                    type="button"
-                    onClick={() => navigateToType(c.k)}
-                    variant="cell"
-                    aria-current={active ? 'page' : undefined}
-                    // L'état courant inverse la cellule : c'est exactement ce
-                    // que fait la portée `dark`. Les enfants n'ont donc plus
-                    // besoin de connaître l'état — leurs tokens basculent
-                    // d'eux-mêmes.
-                    className={cn(
-                      'min-h-14 w-full gap-4 border-b border-border px-4 py-3 text-left',
-                      active && 'dark',
-                    )}
-                  >
-                    <span className="font-mono text-xs tracking-widest text-muted-foreground">
-                      {num}
-                    </span>
-                    <span className="flex-1 min-w-0 flex flex-col gap-0.5">
-                      <HoverMarquee className="text-base tracking-tight font-medium">
-                        {c[lang]}
-                      </HoverMarquee>
-                      <HoverMarquee className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-                        {c.tagline[lang]}
-                      </HoverMarquee>
-                    </span>
-                    <ArrowRight />
-                  </Button>
-                </li>
-              );
-            })}
-          </ul>
-        </DrawerContent>
-      </Drawer>
-
-      {/* Desktop sidebar — vertical list, hidden on mobile (mobile uses the inline nav above) */}
-      <aside className="hidden bg-background md:col-start-1 md:row-start-2 md:flex md:flex-col md:overflow-x-hidden md:overflow-y-auto">
-        {cats.map((c, idx) => {
-          const active = k === c.k;
-          return (
-            // « un trait entre chaque paire, plus un trait sous le dernier »
-            // revient à `border-b` sur tous : les deux ternaires calculés
-            // depuis l'index disparaissent sans rien changer au rendu.
-            //
-            // L'état actif est porté par `aria-pressed`, et les enfants le
-            // lisent par `group-aria-pressed:` — c'est Tailwind qui décide de
-            // la couleur, plus un ternaire en JavaScript.
-            <Button
-              key={c.k}
-              onClick={() => setType(c.k)}
-              variant="rail"
-              size="cell"
-              aria-pressed={active}
-              className="group min-h-18 flex-none gap-1 border-b border-b-border px-4 py-3"
-            >
-              <span className="font-mono text-xs tracking-widest text-muted-foreground group-aria-pressed:text-primary">
-                {String(idx + 1).padStart(2, '0')}
-              </span>
-              <span className="truncate text-sm font-normal leading-snug tracking-tight text-foreground group-aria-pressed:font-medium">
-                {c[lang]}
-              </span>
-              <span className="font-mono text-xs text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis mt-auto">
-                {c.price?.kind === 'quote'
-                  ? t('common.onRequest')
-                  : `${c.price.from ? t('postprod.from') + ' ' : ''}${c.price.amount}${c.price.unit?.[lang] ?? ''}`}
-              </span>
-            </Button>
-          );
-        })}
-        <div className="mt-auto flex py-3.5 px-4 border-t border-t-border flex-col gap-1.5 shrink-0 bg-muted">
-          <span className="font-mono text-xs uppercase tracking-widest text-primary">
-            {t('postprod.note')}
-          </span>
-          <span className="text-xs text-muted-foreground leading-normal text-pretty">
-            {t('postprod.noteBody')}
-          </span>
-        </div>
-      </aside>
-
-      {/* Mobile-only category subheading (h2). The page h1 is the stable"Post-production" title above; the sticky trigger surfaces the name +
- tagline visually on mobile, so this stays in the a11y tree only. */}
-      <h2 className="sr-only md:hidden">{cat[lang]}</h2>
-
-      {/* Description + pricing panel */}
-      <div
-        className={`${bgCls} ${fgCls} py-8 px-6 md:px-9 flex flex-col justify-between gap-6 md:col-start-2 md:row-start-2 md:overflow-y-auto md:min-h-0`}
-      >
-        <div className="flex flex-col gap-5">
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <span className="font-mono text-xs tracking-widest text-primary">
-              {String(cats.findIndex((x) => x.k === k) + 1).padStart(2, '0')} ·{' '}
-              {t('postprod.category')}
-            </span>
-            {cat.featured && (
-              <span className="font-mono text-xs uppercase tracking-widest text-primary-foreground bg-primary px-2 py-0.5">
-                {t('postprod.standard')}
-              </span>
-            )}
-          </div>
-          <h2
-            className={`hidden md:block m-0 text-5xl font-light tracking-tighter leading-none ${fgCls}`}
-          >
-            {cat[lang]}
-          </h2>
-          <ul className="mt-2 p-0 list-none flex flex-col gap-1.5">
-            {cat.features[lang].map((f) => (
-              <li
-                key={f}
-                className={`text-sm flex gap-2 items-start leading-snug ${fgCls}`}
-              >
-                <span className="text-primary font-mono shrink-0">+</span>
-                <span className="min-w-0">{f}</span>
-              </li>
+          {/* La colonne de gauche, masquée sous le palier où la barre de
+              sélection ci-dessus la remplace. `Rail` et non un `<aside>` écrit
+              à la main : il porte la même chaîne `flex min-h-0 flex-col
+              overflow-y-auto bg-background`, à ceci près que la copie locale
+              avait perdu le `min-h-0`. */}
+          <Rail className="hidden app:col-start-1 app:row-start-2 app:flex app:overflow-x-hidden">
+            {cats.map((c, idx) => (
+              <RailCell
+                key={c.k}
+                number={ordinal(idx)}
+                label={c[lang]}
+                sub={
+                  c.price?.kind === 'quote'
+                    ? t('common.onRequest')
+                    : `${c.price.from ? `${t('postprod.from')} ` : ''}${c.price.amount}${c.price.unit?.[lang] ?? ''}`
+                }
+                density="tall"
+                active={k === c.k}
+                onSelect={() => setType(c.k)}
+              />
             ))}
-          </ul>
-        </div>
+          </Rail>
 
-        <div className={`flex flex-col gap-3 pt-4 border-t ${lineCls}`}>
-          {cat.price && (
-            <div className="flex items-baseline gap-2.5 flex-wrap">
-              {cat.price.kind === 'quote' ? (
-                <span
-                  className={`text-3xl font-light tracking-tight leading-none ${fgCls}`}
-                >
-                  {t('common.onRequest')}
-                </span>
-              ) : (
-                <>
-                  {cat.price.from && (
-                    <span
-                      className={`font-mono text-xs tracking-widest uppercase ${mutedCls}`}
-                    >
-                      {t('postprod.from')}
-                    </span>
-                  )}
-                  <span
-                    className={`text-5xl font-light tracking-tight leading-none ${fgCls}`}
-                  >
-                    {cat.price.amount}
-                  </span>
-                  <span className={`text-sm opacity-70 ${fgCls}`}>
-                    {cat.price.unit?.[lang] ?? ''}
-                  </span>
-                </>
-              )}
-            </div>
-          )}
-          <Button
-            onClick={() => goto('contact')}
-            className="w-full justify-between py-3.5 px-5 mt-2"
-          >
-            {t('postprod.requestQuote')}
-            <ArrowRight data-icon="inline-end" />
-          </Button>
-        </div>
-      </div>
+          {/* La note du rail, désormais cellule de la rangée de pied.
 
-      {/* Sample media grid — images + videos (EDO-222) */}
-      <div className="grid grid-cols-3 md:col-start-3 md:col-span-2 md:row-start-2 md:grid-rows-[minmax(0,1fr)_minmax(0,1fr)] md:min-h-0">
-        {cat.samples.slice(0, 6).map((sample, i) => (
+ Elle portait `bg-muted`, qui est EXACTEMENT la couleur de survol des
+ cellules du rail (`oklch(0.97 0 0)`, vérifié à l'écran) : posée en
+ permanence, elle donnait un bloc gris coincé sur un état de survol — le
+ défaut que `rail-cell.tsx` raconte avoir corrigé pour l'état choisi.
+
+ Et le sur-titre « À noter » est parti avec. Il n'apportait rien : il
+ annonçait une phrase qui s'annonce toute seule, et il le faisait dans
+ l'orange de marque — la couleur la plus forte du site, dépensée pour un
+ mot vide, à l'endroit le plus périphérique de l'écran. C'est le même
+ défaut que le point médian et le tiret cadratin que le dépôt bannit : un
+ signe émis parce qu'il fallait remplir, pas parce qu'il y avait à dire.
+
+ Plus de `border-t` non plus : c'est la gouttière de la rangée qui trace
+ le filet, et elle le trace sur toute la largeur de l'écran.
+
+ `items-center` parce que la rangée est dimensionnée par la plus haute des
+ deux cellules — le CTA — et que la note, plus courte, y flotterait sinon
+ en haut. */}
+          <p className="hidden bg-background px-4 py-3 text-xs leading-normal text-pretty text-muted-foreground app:col-start-1 app:row-start-3 app:flex app:items-center">
+            {t('postprod.noteBody')}
+          </p>
+
+          {/* Mobile-only category subheading (h2). The page h1 is the stable"Post-production" title above; the sticky trigger surfaces the name +
+ tagline visually on mobile, so this stays in the a11y tree only. */}
+          <h2 className="sr-only app:hidden">{cat[lang]}</h2>
+
+          {/* Description + pricing panel.
+
+ `p-pad-cell` : le canon du dépôt, celui que `size="cell"` pose déjà sur le
+ CTA en dessous. Le panneau disait `py-8 px-6 md:px-9` — 32 et 36px, deux
+ valeurs hors échelle — et son contenu démarrait donc 16px à droite de
+ celui du CTA, dans la même colonne. Un décalage ne se voit qu'en
+ franchissant la frontière entre deux cellules. */}
           <div
-            key={i}
             className={cn(
               bgCls,
-              'relative overflow-hidden aspect-[4/5] md:aspect-auto md:h-full',
-              i % 3 !== 2 && 'border-r border-border',
-              i < 3 && 'border-b border-border',
+              'text-foreground p-pad-cell flex flex-col justify-between gap-6 app:col-start-2 app:row-start-2 app:overflow-y-auto app:min-h-0',
             )}
           >
-            <SampleImage
-              sample={sample}
-              label={
-                cat.brands?.[i] ||
-                `${cat.k.toUpperCase()} · ${String(i + 1).padStart(2, '0')}`
-              }
-              medium={cat.medium}
-            />
+            <div className="flex flex-col gap-5">
+              {cat.featured && (
+                <StatusBadge>{t('postprod.standard')}</StatusBadge>
+              )}
+              {/* `text-3xl` — « titre de section » de l'échelle. Le panneau
+ portait `text-5xl`, réservé au titre de PAGE : c'était le seul h2 du site
+ à ce corps, et il rendait au même corps que le prix juste en dessous. */}
+              <h2 className="hidden app:block m-0 text-3xl font-light leading-none tracking-tighter">
+                {cat[lang]}
+              </h2>
+              {/* La tagline vient du CMS (`description` de la prestation) et ne
+ vivait que dans le rail et le tiroir mobile — le panneau, qui est pourtant
+ l'endroit où on lit la prestation, ne la montrait pas. Elle dit ce que la
+ liste de puces en dessous ne dit pas : à qui ça s'adresse. */}
+              {cat.tagline[lang] && (
+                <p className="hidden app:block m-0 max-w-prose text-base leading-relaxed text-pretty text-muted-foreground">
+                  {cat.tagline[lang]}
+                </p>
+              )}
+              <ul className="mt-2 p-0 list-none flex flex-col gap-1.5">
+                {cat.features[lang].map((f) => (
+                  <li
+                    key={f}
+                    className="flex items-start gap-2 text-sm leading-snug"
+                  >
+                    <span className="text-primary font-mono shrink-0">+</span>
+                    <span className="min-w-0">{f}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Le prix ferme le panneau. Il ne porte plus de filet à lui : le
+ vrai filet est la gouttière juste en dessous, celle qui le sépare du
+ CTA. Un `border-t` en retrait du padding doublait ce trait, décalé. */}
+            {cat.price && (
+              <div className="flex items-baseline">
+                {cat.price.kind === 'quote' ? (
+                  // « Sur devis » n'est pas un montant : pas de `tabular-nums`
+                  // à lui appliquer, donc pas de `Price`. Il en emprunte
+                  // seulement l'échelle.
+                  <span className="text-3xl font-light leading-none tracking-tighter">
+                    {t('common.onRequest')}
+                  </span>
+                ) : (
+                  <Price
+                    size="2xl"
+                    from={cat.price.from ? t('postprod.from') : undefined}
+                    value={cat.price.amount ?? ''}
+                    unit={cat.price.unit?.[lang]}
+                  />
+                )}
+              </div>
+            )}
           </div>
-        ))}
-      </div>
-    </main>
+
+          <CtaCell
+            title={t('postprod.requestQuote')}
+            onClick={() => goto('contact')}
+            className="app:col-start-2 app:row-start-3"
+          />
+
+          {/* Sample media grid — images + videos (EDO-222).
+ `row-end-4` : la mosaïque enjambe le corps ET la rangée de pied, elle
+ descend donc jusqu'au bas de l'écran comme avant. La gouttière entre les
+ deux rangées passe derrière elle sans la couper.
+
+ TROIS colonnes sur DEUX rangées à toutes les tailles — le layout de la
+ maquette, qui ne se recompose jamais — et la vignette en 4/5, comme la
+ galerie.
+
+ Le 4/5 n'est pas un choix esthétique ici : le CMS livre ces photos en 4/5
+ (mesuré, 253×316 et 337×422). Une vignette d'un autre ratio oblige
+ `object-cover` à zoomer dans la photo et à en rogner les côtés — le sujet
+ grossit et se rapproche à chaque redimensionnement, ce qui se lit comme une
+ déformation. En 4/5 la photo entre exactement, sans un pixel de recadrage.
+
+ DEUX colonnes sur TROIS rangées, et c'est la LARGEUR de la mosaïque qui se
+ déduit de la hauteur de l'écran — pas l'inverse.
+
+ Les photos sont livrées en 4/5 par le CMS (mesuré : 253×316, 337×422). La
+ vignette doit donc être en 4/5, sinon `object-cover` zoome dedans et rogne
+ les côtés. Une colonne dont la largeur vient de l'écran ne peut pas contenir
+ six vignettes en 4/5 sans laisser un reste — il valait 178px à 1440×900.
+
+ En dimensionnant la mosaïque sur la hauteur, il n'y a plus de reste : trois
+ rangées se partagent la hauteur utile, une vignette 4/5 vaut les quatre
+ cinquièmes d'une rangée, la mosaïque en vaut deux de large — soit
+ `(100vh - en-tête - gouttière) × 8 / 15`. La colonne de grille est en `auto`
+ et s'y ajuste ; le panneau, en `1fr`, prend tout le reste de la largeur.
+
+ La soustraction est écrite avec le token et non avec les 57px qu'elle vaut :
+ c'est la bande d'en-tête plus sa gouttière, donc elle doit suivre
+ `--spacing-header` le jour où il bouge. Mesuré à huit tailles de 390 à 2560 :
+ vignette à 0,80 partout, aucun défilement, aucun vide, aucune photo
+ recadrée. */}
+          <div className="app:col-start-3 app:row-start-2 app:row-end-4 app:h-full app:min-h-0 app:w-[calc((100vh_-_var(--spacing-header)_-_1px)_*_8_/_15)] app:overflow-hidden">
+            <div className="grid grid-cols-3 gap-px bg-border app:h-full app:grid-cols-2">
+              {cat.samples.slice(0, 6).map((sample, i) => {
+                const cellCls = cn(dark && 'dark');
+                const inner = (
+                  <SampleImage
+                    sample={sample}
+                    medium={cat.medium}
+                    priority={i < 2}
+                  />
+                );
+                if (sample.kind === 'placeholder') {
+                  return (
+                    <MediaFrame key={i} className={cellCls}>
+                      {inner}
+                    </MediaFrame>
+                  );
+                }
+                return (
+                  <MediaFrame
+                    key={i}
+                    className={cn(cellCls, 'p-0')}
+                    render={
+                      <Button
+                        type="button"
+                        onClick={() => setLightboxIndex(i)}
+                        // Six vignettes sans nom propre : le verbe dit ce que fait
+                        // le bouton, l'index dit laquelle. Même clé que la galerie.
+                        aria-label={t('galleryPage.enlargeImage', {
+                          name: cat[lang],
+                          index: i + 1,
+                        })}
+                        variant="cell"
+                        size="cell"
+                      />
+                    }
+                  >
+                    {inner}
+                  </MediaFrame>
+                );
+              })}
+            </div>
+          </div>
+        </main>
+      </PageShell>
+
+      {lightboxIndex !== null && media.length > 0 && (
+        <GalleryLightbox
+          project={{
+            id: 0,
+            brand: cat[lang],
+            cat: cat.k,
+            plateau: '',
+            year: '',
+            tone: 'mono',
+            media,
+          }}
+          initialIndex={lightboxIndex}
+          lang={lang}
+          onClose={() => setLightboxIndex(null)}
+          onBook={() => {
+            setLightboxIndex(null);
+            goto('book');
+          }}
+          onContact={() => {
+            setLightboxIndex(null);
+            goto('contact');
+          }}
+        />
+      )}
+    </>
   );
 };
 

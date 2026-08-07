@@ -36,7 +36,12 @@ const SocialLinksRow = ({
           key={s.k}
           variant="cell"
           render={<a href={s.href} target="_blank" rel="noopener noreferrer" />}
-          className="h-auto justify-between px-3 py-3 no-underline"
+          // `justify-center gap-2` et non `justify-between` : le sigle et son
+          // libellé sont UNE étiquette. Écartés aux deux bords, ils tenaient
+          // dans les 100px de la piste du bento, mais la même cellule fait 225px
+          // dans la pile élargie — l'icône et son libellé s'y lisaient comme
+          // deux éléments sans rapport, aux deux bouts d'une case vide.
+          className="h-auto justify-center gap-2 px-3 py-3 no-underline"
         >
           <SocialIcon kind={s.k} size={12} />
           <span className="font-mono text-xs tracking-widest">

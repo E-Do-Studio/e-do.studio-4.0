@@ -13,6 +13,8 @@ import {
 import { cn } from '@/lib/utils';
 import { HoverMarquee } from './hover-marquee';
 import { ArrowRight, ChevronDown, X } from 'lucide-react';
+import { MonoLabel, monoLabelVariants } from './mono-label';
+import { StatusBadge } from './status-badge';
 
 type StripOption = {
   k: string;
@@ -135,7 +137,7 @@ const MobileNavStrip = ({
     <>
       <div
         className={cn(
-          'sticky top-header z-30 flex h-14 items-stretch border-b border-border bg-background md:hidden',
+          'sticky top-header z-30 flex h-header items-stretch border-b border-border bg-background app:hidden',
           className,
         )}
         role="toolbar"
@@ -151,31 +153,23 @@ const MobileNavStrip = ({
           size="cell"
           className="min-h-11 w-full flex-row items-center gap-2 bg-transparent px-4"
         >
-          <span className="font-mono text-xs uppercase tracking-widest text-foreground">
-            {triggerLabel}
-          </span>
+          <MonoLabel>{triggerLabel}</MonoLabel>
           {summary ? (
-            <HoverMarquee className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-              · {summary}
+            <HoverMarquee className={monoLabelVariants({ tone: 'muted' })}>
+              {summary}
             </HoverMarquee>
           ) : null}
           <span className="ml-auto flex shrink-0 items-center gap-2">
             {badgeCount > 1 ? (
-              <span
-                aria-hidden
-                className="font-mono text-xs uppercase tracking-widest text-primary-foreground inline-flex h-5 min-w-5 items-center justify-center bg-primary px-1"
-              >
+              <StatusBadge aria-hidden size="count">
                 {badgeCount}
-              </span>
+              </StatusBadge>
             ) : null}
             <ChevronDown
               width={16}
               height={16}
               aria-hidden
-              className={cn(
-                'text-muted-foreground transition-transform duration-150 ease-out',
-                open && 'rotate-180',
-              )}
+              className="text-muted-foreground"
             />
           </span>
         </Button>
@@ -205,9 +199,13 @@ const MobileNavStrip = ({
                   key={group.key}
                   className="flex flex-col border-b border-border last:border-b-0"
                 >
-                  <legend className="font-mono text-xs uppercase tracking-widest text-muted-foreground w-full bg-muted px-4 py-2">
+                  <MonoLabel
+                    render={<legend />}
+                    tone="muted"
+                    className="w-full bg-muted px-4 py-2"
+                  >
                     {group.label}
-                  </legend>
+                  </MonoLabel>
                   {group.options.map((option) => {
                     const isActive = currentValue === option.k;
                     const dimmed = option.dimmed ?? false;
@@ -223,7 +221,7 @@ const MobileNavStrip = ({
                         // disponibilité, pas la sélection. Aucun token ne
                         // l'exprime.
                         className={cn(
-                          'relative flex min-h-11 cursor-pointer select-none items-center gap-3 border-t border-border bg-background px-4 py-3 text-foreground outline-none transition-colors duration-150 ease-out hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50',
+                          'relative flex min-h-11 cursor-pointer select-none items-center gap-3 border-t border-border bg-background px-4 py-3 text-foreground outline-none transition-colors duration-150 ease-out hover:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-foreground',
                           isActive && 'dark',
                           dimmed && !isActive && 'opacity-40',
                         )}
@@ -248,13 +246,13 @@ const MobileNavStrip = ({
                             <span className="block size-1.5 bg-foreground" />
                           ) : null}
                         </span>
-                        <span className="flex-1 font-mono text-sm uppercase tracking-widest">
+                        <MonoLabel className="flex-1 text-sm">
                           {option.label}
-                        </span>
+                        </MonoLabel>
                         {typeof option.count === 'number' ? (
-                          <span className="shrink-0 font-mono text-xs uppercase tracking-widest text-muted-foreground">
+                          <MonoLabel tone="muted" className="shrink-0">
                             {option.count}
-                          </span>
+                          </MonoLabel>
                         ) : null}
                       </label>
                     );
@@ -287,7 +285,7 @@ const MobileNavStrip = ({
               <span>
                 {t('mobileNav.applyFilters')}
                 {typeof liveCount === 'number'
-                  ? ` · ${t('galleryPage.resultsCount', { count: liveCount })}`
+                  ? ` ${t('galleryPage.resultsCount', { count: liveCount })}`
                   : ''}
               </span>
               <ArrowRight data-icon="inline-end" aria-hidden />

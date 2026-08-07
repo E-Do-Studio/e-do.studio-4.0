@@ -3,6 +3,8 @@ import { usePageContext } from './lib/page-context';
 import { SCREEN_TO_PATH } from './lib/screens';
 import type { Lang } from './types';
 import { cn } from '@/lib/utils';
+import { MonoLabel } from './ui/mono-label';
+import { Button } from '@/components/ui/button';
 
 const COPY = {
   fr: {
@@ -67,17 +69,24 @@ interface NavLinkProps {
   navigate: (opts: { to: string }) => void;
 }
 
+// Les deux liens de cette page réécrivaient un bouton à la main — typographie
+// mono, anneau de focus, transition, `no-underline` — soit quinze classes pour
+// retrouver ce que `variant="cell"` donne déjà. `render` conserve la véritable
+// ancre : elle garde son `href`, donc le clic milieu et le « ouvrir dans un
+// nouvel onglet ».
 const NavLink = ({ href, label, navigate }: NavLinkProps) => (
-  <a
-    href={href}
+  <Button
+    variant="cell"
+    // biome-ignore lint/a11y/useAnchorContent: Base UI clone cette ancre avec les enfants du bouton — elle n'est vide qu'à la lecture statique
+    render={<a href={href} />}
     onClick={(e) => {
       e.preventDefault();
       navigate({ to: href });
     }}
-    className="font-mono text-xs uppercase tracking-widest text-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50 inline-flex items-center justify-center border border-border bg-transparent px-4 py-2 no-underline transition-colors hover:bg-muted"
+    className="border border-border px-4 py-2 hover:bg-muted"
   >
     {label}
-  </a>
+  </Button>
 );
 
 export const NotFoundPage = () => {
@@ -98,25 +107,25 @@ export const NotFoundPage = () => {
         'flex min-h-screen w-full flex-col items-center justify-center gap-6 bg-background px-6 py-16 text-center text-foreground',
       )}
     >
-      <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-        {copy.code}
-      </span>
+      <MonoLabel tone="muted">{copy.code}</MonoLabel>
       <h1 className="text-3xl font-light tracking-tighter leading-tight">
         {copy.title}
       </h1>
       <p className="max-w-md font-mono text-sm text-muted-foreground">
         {copy.body}
       </p>
-      <a
-        href={homeHref}
+      <Button
+        variant="cell"
+        // biome-ignore lint/a11y/useAnchorContent: Base UI clone cette ancre avec les enfants du bouton — elle n'est vide qu'à la lecture statique
+        render={<a href={homeHref} />}
         onClick={(e) => {
           e.preventDefault();
           navigate({ to: homeHref });
         }}
-        className="font-mono text-xs uppercase tracking-widest text-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50 inline-flex h-10 cursor-pointer items-center gap-2  dark bg-background px-5 no-underline transition-colors hover:opacity-90"
+        className="dark h-10 gap-2 bg-background px-5 hover:opacity-90"
       >
         {copy.cta}
-      </a>
+      </Button>
       <nav
         aria-label={copy.explore}
         className="mt-4 flex w-full max-w-xl flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:justify-center"

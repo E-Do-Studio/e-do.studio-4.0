@@ -1,5 +1,4 @@
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { Checkbox } from '@/components/ui/checkbox';
 import type { Dispatch, SetStateAction } from 'react';
 import { useT } from '../../i18n/use-t';
 import type {
@@ -9,6 +8,7 @@ import type {
   TeamState,
 } from '../../lib/booking-engine';
 import { EQUIPE, fmtEUR, recommendSession } from '../../lib/booking-engine';
+import { StatusBadge } from '@/ui/status-badge';
 
 interface StepTeamProps {
   lang: Lang;
@@ -32,26 +32,16 @@ const TeamToggle = ({
   label: string;
   onClick: () => void;
 }) => (
-  <Button
-    type="button"
-    variant="ghost"
-    aria-pressed={active}
-    onClick={onClick}
-    className="h-auto shrink-0 gap-2.5 px-0 tracking-wider hover:bg-transparent"
-  >
+  // Un libellé et une case : c'est une case à cocher, pas un bouton qui en
+  // dessine une. La version précédente peignait un carré de 22px en `border-2`
+  // avec un « ✓ » typographique — une troisième géométrie de case, et une
+  // graisse `font-bold` que la fonte ne livre pas.
+  <label className="flex shrink-0 cursor-pointer items-center gap-2.5">
     <span className={active ? 'text-primary' : 'text-muted-foreground'}>
       {label}
     </span>
-    <span
-      aria-hidden
-      className={cn(
-        'w-5.5 h-5.5 border-2 inline-flex items-center justify-center text-primary-foreground text-sm font-bold',
-        active ? 'border-primary bg-primary' : 'border-input bg-background',
-      )}
-    >
-      {active ? '✓' : ''}
-    </span>
-  </Button>
+    <Checkbox checked={active} onCheckedChange={onClick} />
+  </label>
 );
 
 const StepTeam = ({
@@ -95,52 +85,53 @@ const StepTeam = ({
   };
 
   return (
-    <div className="px-5 md:px-12 pb-6">
-      <div className="flex flex-col gap-px bg-border">
-        {items.map((e) => {
-          const isHourly = e.unit === 'hour';
-          const active = isHourly
-            ? Number(team[e.k] || 0) > 0
-            : team[e.k] === true;
-          return (
-            <div
-              key={e.k}
-              className="bg-background px-5 py-4 flex items-center justify-between gap-5"
-            >
-              <div>
-                <div className="text-sm font-medium tracking-tight flex items-center gap-2">
-                  <span>{e[lang]}</span>
-                  {recommended[e.k] && (
-                    <span className="font-mono text-xs tracking-wider uppercase text-primary border border-primary px-1.5 py-0.5 leading-none">
-                      {t('booking.recommended')}
-                    </span>
-                  )}
-                </div>
-                <div className="font-mono text-xs text-muted-foreground mt-0.5">
-                  {isHourly
-                    ? `${fmtEUR(e.price)} € / h`
-                    : t('booking.rateOnRequestBasedOn')}
-                </div>
+    // Aucun filet de fermeture : la séparation d'avec le plateau suivant est
+    // posée par `MultiPlateauStep`, et celle d'avec la barre d'actions par la
+    // barre elle-même.
+    <div className="flex flex-col gap-px bg-border">
+      {items.map((e) => {
+        const isHourly = e.unit === 'hour';
+        const active = isHourly
+          ? Number(team[e.k] || 0) > 0
+          : team[e.k] === true;
+        return (
+          <div
+            key={e.k}
+            className="bg-background px-pad-cell py-4 flex items-center justify-between gap-5"
+          >
+            <div>
+              <div className="text-sm tracking-tight flex items-center gap-2">
+                <span>{e[lang]}</span>
+                {recommended[e.k] && (
+                  <StatusBadge tone="outline">
+                    {t('booking.recommended')}
+                  </StatusBadge>
+                )}
               </div>
-              <TeamToggle
-                active={active}
-                label={
-                  isHourly
-                    ? active
-                      ? t('booking.included')
-                      : t('booking.add')
-                    : t('common.onRequest')
-                }
-                onClick={() =>
-                  isHourly
-                    ? toggle(e.k, active ? null : 1)
-                    : toggle(e.k, active ? null : true)
-                }
-              />
+              <div className="font-mono text-xs text-muted-foreground mt-0.5">
+                {isHourly
+                  ? `${fmtEUR(e.price)} € / h`
+                  : t('booking.rateOnRequestBasedOn')}
+              </div>
             </div>
-          );
-        })}
-      </div>
+            <TeamToggle
+              active={active}
+              label={
+                isHourly
+                  ? active
+                    ? t('booking.included')
+                    : t('booking.add')
+                  : t('common.onRequest')
+              }
+              onClick={() =>
+                isHourly
+                  ? toggle(e.k, active ? null : 1)
+                  : toggle(e.k, active ? null : true)
+              }
+            />
+          </div>
+        );
+      })}
     </div>
   );
 };

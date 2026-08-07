@@ -1,18 +1,56 @@
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useT } from '../i18n/use-t';
 import { STEP, type StepDef } from './booking-steps';
 import type { SubmitMode } from './use-booking-submit';
 
-// Géométrie des actions de bas de tunnel — pleine hauteur de bande, empilées
-// sous `md`. Tout le reste (mono capitales, anneau de focus, curseur, état
-// désactivé) vient des variantes de `Button` : `variant="cell"` pour les
-// actions sur fond de page, la variante par défaut pour l'action principale.
-const FOOTER_ACTION =
-  'h-auto min-h-11 flex-1 whitespace-normal border-t border-border px-5 py-3 md:min-h-0 md:border-t-0 md:border-l md:py-0';
-const FOOTER_BACK =
-  'h-auto min-h-11 justify-start whitespace-normal px-5 py-3 md:min-h-0 md:flex-1 md:py-0';
+// Géométrie des actions de bas de tunnel. Tout le reste — mono capitales,
+// anneau de focus, curseur, état désactivé, cible tactile — vient des variantes
+// de `Button` : `variant="cell"` pour les actions sur fond de page, la variante
+// par défaut pour l'action principale, `size="touch"` pour les 44px.
+//
+// Cette barre était restée à l'écart de tout ce que la bande de mode a unifié,
+// et l'écart se voyait dans la même page :
+//
+//   — DEUX mécanismes de flèche. Un caractère `←` posé dans le texte à gauche,
+//     un `<ArrowRight>` de lucide à droite. Ni la même graisse, ni la même
+//     taille, ni le même alignement optique.
+//
+//   — `data-icon` absent des deux côtés. C'est lui qui fait compenser le
+//     padding par la base du bouton ; sans lui la flèche colle au bord de
+//     l'aplat, ce que `cta-cell.tsx` documente déjà.
+//
+//   — `min-h-11` écrit en dur, alors que `--spacing-tap` existe et que
+//     `size="touch"` le porte.
+//
+//   — aucun filet vertical, dans un site entièrement structuré par des filets :
+//     le blanc courait sans couture du « Retour » jusqu'à l'aplat orange.
+//
+// `border-t` sur la barre, et RIEN sous le dernier bloc de l'étape : c'est
+// cette barre, et elle seule, qui possède la couture du bas.
+//
+// Les deux ont coexisté, au prétexte que l'une fermait la grille et l'autre
+// ouvrait la barre. Ça ne tenait que tant que le contenu restait plus court que
+// sa zone : depuis que le dernier bloc de chaque étape prend la hauteur
+// disponible, les deux filets se touchent TOUJOURS, et le trait sort à 2px.
+// Une couture, un propriétaire — celui qui sait qu'il y a un après.
+//
+// `min-h-cta` (84px) : `--spacing-cta` existe pour les bandeaux d'action en bas
+// de page, ce qu'est exactement cette barre. `min-h-tap` la réduisait à la
+// hauteur d'une cible tactile.
+//
+// `max-md:whitespace-normal` et `max-md:flex-1`, posés sur les actions : c'est
+// en dessous de `md`, et là seulement, qu'elles doivent se partager la largeur.
+//
+// Au-delà, elles prennent celle de leur libellé et c'est « Retour » qui absorbe
+// le reste. Les trois étaient en `flex-1`, donc à un tiers de la barre chacun :
+// « Valider, plateau suivant » y débordait des deux côtés — d'où aussi le
+// raccourcissement du libellé, une virgule dans un bouton annonçant deux
+// actions là où le clic n'en déclenche qu'une.
+//
+// `px-pad-cell` : `size="touch"` pose `px-2.5`, soit 10px, quand toute la
+// colonne du tunnel est à 20px — « Retour » collait au bord gauche.
 
 interface BookingFooterNavProps {
   step: number;
@@ -106,17 +144,23 @@ const BookingFooterNav = ({
   })();
 
   return (
-    <div className="border-t border-border flex flex-col md:flex-row md:items-stretch shrink-0 bg-background md:min-h-11">
+    <div className="flex shrink-0 flex-col border-t border-border bg-background md:min-h-cta md:flex-row md:items-stretch">
       <Button
         type="button"
         variant="cell"
+        size="touch"
         onClick={goBack}
         disabled={idx <= 0 && onFirstSub}
-        className={FOOTER_BACK}
+        className="min-w-0 justify-start px-pad-cell md:flex-1"
       >
-        ← {t('booking.back')}
+        <ArrowLeft data-icon="inline-start" />
+        {t('booking.back')}
       </Button>
-      <div className="flex items-stretch md:flex-none md:w-1/2">
+      {/* Le filet entre les actions vient de `*+*` : posé sur chaque bouton, le
+          premier en porterait un contre le bord gauche de l'écran en mobile.
+          `md:border-l` sépare le groupe du « Retour », et seulement à partir du
+          moment où ils partagent une ligne. */}
+      <div className="flex items-stretch border-t border-border md:w-fit md:border-l md:border-t-0 [&>*+*]:border-l [&>*+*]:border-border">
         {/* Le cyclorama se facture sur devis : pas de demande de devis séparée. */}
         {step >= STEP.CONTACT && !isCyclo && (
           // Volontairement cliquable même quand le contact est incomplet :
@@ -126,22 +170,28 @@ const BookingFooterNav = ({
           <Button
             type="button"
             variant="cell"
+            size="touch"
             onClick={() => onSubmit('quote')}
             disabled={saving}
             title={t('booking.noDateHeld')}
-            className={cn(FOOTER_ACTION, !contactValid && 'opacity-30')}
+            className={cn(
+              'min-w-0 px-pad-cell max-md:flex-1 max-md:whitespace-normal',
+              !contactValid && 'opacity-30',
+            )}
           >
-            {saving ? t('booking.sending') : t('booking.receiveMyQuote')}{' '}
-            <ArrowRight />
+            {saving ? t('booking.sending') : t('booking.receiveMyQuote')}
+            <ArrowRight data-icon="inline-end" />
           </Button>
         )}
         <Button
           type="button"
+          size="touch"
           onClick={primary.onClick}
           disabled={primary.disabled}
-          className={FOOTER_ACTION}
+          className="min-w-0 px-pad-cell max-md:flex-1 max-md:whitespace-normal"
         >
-          {primary.label} <ArrowRight />
+          {primary.label}
+          <ArrowRight data-icon="inline-end" />
         </Button>
       </div>
     </div>

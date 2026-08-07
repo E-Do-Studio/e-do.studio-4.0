@@ -5,6 +5,9 @@ import { useRouterState } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import { QuoteTable } from '@/ui/quote-table';
+import { MonoLabel } from '@/ui/mono-label';
+import { KeyValueList, KeyValueRow } from '@/ui/key-value-row';
 import { cn } from '@/lib/utils';
 import { ArrowRight, Plus, Trash2, X } from 'lucide-react';
 import type { Lang, ChatMessage } from './types';
@@ -113,9 +116,7 @@ const AssistantHeader = ({
   return (
     <div className="flex shrink-0 items-center justify-between">
       <div className="flex items-center gap-2">
-        <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-          Assistant
-        </span>
+        <MonoLabel tone="muted">Assistant</MonoLabel>
         {mode === 'chat' && (
           <span
             className={cn(
@@ -191,12 +192,31 @@ const ChatSessionList = ({
   onClose,
 }: ChatSessionListProps) => {
   const t = useT();
+  const panelRef = useRef<HTMLDivElement>(null);
+  // Le panneau recouvrait le chat sans rien déclarer : ni rôle, ni nom, ni
+  // Échap, et surtout les commandes du dessous restaient dans l'ordre de
+  // tabulation — le focus filait derrière un panneau opaque. Il n'est pas
+  // modal au sens du document (il ne couvre que la cellule du chat), d'où
+  // `role="dialog"` sans `aria-modal` : ce qui neutralise l'arrière-plan,
+  // c'est l'`inert` posé sur lui au site d'appel.
+  useEffect(() => {
+    panelRef.current?.focus();
+  }, []);
   return (
-    <div className="absolute inset-0 z-40 flex flex-col bg-background">
+    <div
+      ref={panelRef}
+      role="dialog"
+      aria-label={t('assistant.history')}
+      tabIndex={-1}
+      onKeyDown={(event) => {
+        if (event.key !== 'Escape') return;
+        event.stopPropagation();
+        onClose();
+      }}
+      className="absolute inset-0 z-40 flex flex-col bg-background outline-none"
+    >
       <div className="flex shrink-0 items-center justify-between border-b border-border px-4.5 py-3">
-        <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-          {t('assistant.history')}
-        </span>
+        <MonoLabel tone="muted">{t('assistant.history')}</MonoLabel>
         <Button
           type="button"
           onClick={onClose}
@@ -321,36 +341,37 @@ interface ChatBubbleProps {
 const isSafeHref = (href: unknown): href is string =>
   typeof href === 'string' && /^(https?:|mailto:)/i.test(href);
 
+const MarkdownHeading = ({ children }: { children?: React.ReactNode }) => (
+  <MonoLabel
+    tone="primary"
+    lines="multi"
+    className="mb-1 mt-2 block first:mt-0"
+  >
+    {children}
+  </MonoLabel>
+);
+
 const assistantMarkdownComponents = {
   p: ({ children }: { children?: React.ReactNode }) => (
     <p className="m-0 mb-2 text-sm leading-normal last:mb-0">{children}</p>
   ),
+  // `font-bold` : ABC Favorit ne livre que 300/400/700, et 600 rend exactement
+  // comme 700. Tout le `**gras**` émis par l'assistant tombait donc sur une
+  // graisse inexistante — l'emphase ne rendait pas du tout.
   strong: ({ children }: { children?: React.ReactNode }) => (
-    <strong className="font-semibold text-foreground">{children}</strong>
+    <strong className="font-bold text-foreground">{children}</strong>
   ),
   em: ({ children }: { children?: React.ReactNode }) => (
     <em className="italic">{children}</em>
   ),
-  h1: ({ children }: { children?: React.ReactNode }) => (
-    <div className="mb-1 mt-2 font-mono text-xs uppercase tracking-widest text-primary first:mt-0">
-      {children}
-    </div>
-  ),
-  h2: ({ children }: { children?: React.ReactNode }) => (
-    <div className="mb-1 mt-2 font-mono text-xs uppercase tracking-widest text-primary first:mt-0">
-      {children}
-    </div>
-  ),
-  h3: ({ children }: { children?: React.ReactNode }) => (
-    <div className="mb-1 mt-2 font-mono text-xs uppercase tracking-widest text-primary first:mt-0">
-      {children}
-    </div>
-  ),
-  h4: ({ children }: { children?: React.ReactNode }) => (
-    <div className="mb-1 mt-2 font-mono text-xs uppercase tracking-widest text-primary first:mt-0">
-      {children}
-    </div>
-  ),
+  // Les quatre niveaux rendent la même chose, et c'est voulu : un `<div>` et
+  // non un `<h1>`–`<h4>`, pour qu'une réponse du chatbot n'injecte pas de
+  // titres dans le plan du document. Ils étaient écrits quatre fois de suite,
+  // à l'identique.
+  h1: MarkdownHeading,
+  h2: MarkdownHeading,
+  h3: MarkdownHeading,
+  h4: MarkdownHeading,
   ul: ({ children }: { children?: React.ReactNode }) => (
     <ul className="m-0 mb-2 list-disc pl-4 text-sm leading-normal last:mb-0">
       {children}
@@ -373,7 +394,7 @@ const assistantMarkdownComponents = {
         href={href}
         target={isMail || isInternal ? '_self' : '_blank'}
         rel={isMail || isInternal ? undefined : 'noopener noreferrer'}
-        className="font-medium text-primary underline underline-offset-2 transition-colors hover:text-foreground"
+        className="text-primary underline underline-offset-2 transition-colors hover:text-foreground"
       >
         {children}
       </a>
@@ -410,9 +431,9 @@ const ChatBubble = ({ role, content }: ChatBubbleProps) => {
         )}
       >
         {!isUser && (
-          <div className="mb-0.5 font-mono text-xs uppercase tracking-widest text-primary">
+          <MonoLabel tone="primary" className="mb-0.5 block">
             E-DO
-          </div>
+          </MonoLabel>
         )}
         {isUser ? (
           content
@@ -430,23 +451,35 @@ const ChatBubble = ({ role, content }: ChatBubbleProps) => {
   );
 };
 
-const TypingBubble = () => (
-  <div className="flex justify-start">
-    <div className="py-1">
-      <div className="mb-1 font-mono text-xs uppercase tracking-widest text-primary">
-        E-DO
-      </div>
-      <div className="flex h-3.5 items-center gap-1">
-        {[0, 1, 2].map((dot) => (
-          <span
-            key={dot}
-            className="animate-pulse h-1 w-1 rounded-full bg-foreground"
-          />
-        ))}
+const TypingBubble = () => {
+  const t = useT();
+  return (
+    <div className="flex justify-start">
+      <div className="py-1">
+        <MonoLabel tone="primary" className="mb-1 block">
+          E-DO
+        </MonoLabel>
+        {/* Les points n'étaient qu'un signal visuel : rien n'indiquait qu'une
+          réponse arrivait. `role="status"` l'annonce, le texte lui donne un
+          équivalent, et `motion-safe` respecte la préférence d'animation. */}
+        <div
+          role="status"
+          aria-live="polite"
+          className="flex h-3.5 items-center gap-1"
+        >
+          <span className="sr-only">{t('assistant.thinking')}</span>
+          {[0, 1, 2].map((dot) => (
+            <span
+              key={dot}
+              aria-hidden
+              className="motion-safe:animate-pulse h-1 w-1 rounded-full bg-foreground"
+            />
+          ))}
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 interface AssistantInputProps {
   input: string;
@@ -469,7 +502,9 @@ const AssistantInput = ({
   return (
     <form
       name="assistant-chat"
-      aria-label="Assistant chat"
+      // Était codé en dur en anglais, seul `aria-label` du fichier à ne pas
+      // passer par `t()` — sur un site bilingue.
+      aria-label={t('assistant.label')}
       onSubmit={(event) => {
         event.preventDefault();
         onSend(input);
@@ -479,6 +514,7 @@ const AssistantInput = ({
       <Input
         ref={inputRef}
         name="message"
+        aria-label={t('assistant.placeholder')}
         value={input}
         onChange={(event) =>
           setInput(event.target.value.slice(0, MAX_INPUT_CHARS))
@@ -533,10 +569,12 @@ const MONTHS_SHORT: Record<Lang, string[]> = {
   ],
 };
 
+// `null` et non un tiret quand la date manque : le site d'appel n'affiche alors
+// pas le fragment du tout. Un tiret prétendrait que la date est connue et vide.
 const fmtRecapDate = (
   d: { y: number; m: number; d: number } | null,
   lang: Lang,
-) => (d ? `${d.d} ${MONTHS_SHORT[lang][d.m]} ${d.y}` : '—');
+) => (d ? `${d.d} ${MONTHS_SHORT[lang][d.m]} ${d.y}` : null);
 
 interface ContactFormProps {
   lang: Lang;
@@ -582,25 +620,37 @@ const ContactForm = ({ lang, onSubmit }: ContactFormProps) => {
     parts.push(f.siren.trim() ? `SIREN: ${f.siren.trim()}` : 'SIREN: aucun');
     if (f.autresInfos.trim())
       parts.push(`Autres infos: ${f.autresInfos.trim()}`);
-    onSubmit('Mes coordonnées — ' + parts.join(' · '));
+    onSubmit('Mes coordonnées — ' + parts.join(', '));
   };
 
   return (
     <form
       onSubmit={submit}
+      aria-label={t('assistant.contactFormTitle')}
       className="shrink-0 border border-border bg-background p-3"
     >
-      <div className="mb-2 font-mono text-xs uppercase tracking-widest text-primary">
+      <MonoLabel tone="primary" className="mb-2 block">
         {t('assistant.contactFormTitle')}
-      </div>
+      </MonoLabel>
+      {/* Neuf champs qui n'avaient que leur placeholder : aucun nom accessible,
+          aucun `name`, aucun `autocomplete`. Ici le libellé reste porté par
+          `aria-label` plutôt que par un `<label>` visible — la carte vit dans
+          une bulle de conversation, et neuf libellés supplémentaires
+          doubleraient sa hauteur. Le placeholder garde son rôle d'exemple. */}
       <div className="flex flex-col gap-1.5">
         <div className="flex gap-1.5">
           <Input
+            name="prenom"
+            autoComplete="given-name"
+            aria-label={t('assistant.contactFirstName')}
             placeholder={t('assistant.contactFirstName')}
             value={f.prenom}
             onChange={upd('prenom')}
           />
           <Input
+            name="nom"
+            autoComplete="family-name"
+            aria-label={t('assistant.contactLastName')}
             placeholder={t('assistant.contactLastName')}
             value={f.nom}
             onChange={upd('nom')}
@@ -608,37 +658,56 @@ const ContactForm = ({ lang, onSubmit }: ContactFormProps) => {
         </div>
         <Input
           type="email"
+          name="email"
+          autoComplete="email"
+          aria-label={t('assistant.contactEmail')}
           placeholder={t('assistant.contactEmail')}
           value={f.email}
           onChange={upd('email')}
         />
         <Input
           type="tel"
+          name="tel"
+          autoComplete="tel"
+          aria-label={t('assistant.contactPhone')}
           placeholder={t('assistant.contactPhone')}
           value={f.tel}
           onChange={upd('tel')}
         />
         <Input
+          name="societe"
+          autoComplete="organization"
+          aria-label={t('assistant.contactCompany')}
           placeholder={t('assistant.contactCompany')}
           value={f.societe}
           onChange={upd('societe')}
         />
         <Input
+          name="adresseFacturation"
+          autoComplete="street-address"
+          aria-label={t('assistant.contactBillingAddress')}
           placeholder={t('assistant.contactBillingAddress')}
           value={f.adresseFacturation}
           onChange={upd('adresseFacturation')}
         />
         <Input
+          name="marque"
+          aria-label={t('assistant.contactBrand')}
           placeholder={t('assistant.contactBrand')}
           value={f.marque}
           onChange={upd('marque')}
         />
         <Input
+          name="siren"
+          inputMode="numeric"
+          aria-label={t('assistant.contactSiren')}
           placeholder={t('assistant.contactSiren')}
           value={f.siren}
           onChange={upd('siren')}
         />
         <Input
+          name="autresInfos"
+          aria-label={t('assistant.contactNotes')}
           placeholder={t('assistant.contactNotes')}
           value={f.autresInfos}
           onChange={upd('autresInfos')}
@@ -678,52 +747,64 @@ const BookingRecapCard = ({
   const ttc = Math.round(proposal.quote.total * 1.2);
   return (
     <div className="shrink-0 border border-border bg-background p-3">
-      <div className="mb-2 font-mono text-xs uppercase tracking-widest text-primary">
+      <MonoLabel tone="primary" className="mb-2 block">
         {t('assistant.bookingRecapTitle')}
-      </div>
+      </MonoLabel>
 
-      <div className="mb-2 flex flex-col gap-1">
+      {/* `rule={false}` : la carte porte déjà sa bordure et le filet du devis
+          juste en dessous. Le libellé est composite — plateau, date, heure sur
+          une même ligne — donc un nœud, pas une chaîne en capitales. */}
+      <KeyValueList pad="none" className="mb-2">
         {proposal.sessions.map((s) => {
           const px = BOOK_PLATEAUX.find((p) => p.k === s.plateauKey);
           return (
-            <div
+            <KeyValueRow
               key={`${s.plateauKey}-${s.date}-${s.arrivalHour ?? ''}`}
-              className="flex justify-between gap-2 text-sm"
-            >
-              <span className="text-foreground">
-                {px ? px[lang] : s.plateauKey} · {fmtRecapDate(s.date, lang)}
-                {s.arrivalHour != null ? ` · ${s.arrivalHour}h` : ''}
-              </span>
-              <span className="text-muted-foreground">{s.hours}h</span>
-            </div>
+              rule={false}
+              label={
+                <span className="flex min-w-0 flex-wrap items-baseline gap-x-2 text-foreground">
+                  <span>{px ? px[lang] : s.plateauKey}</span>
+                  {fmtRecapDate(s.date, lang) && (
+                    <span>{fmtRecapDate(s.date, lang)}</span>
+                  )}
+                  {s.arrivalHour != null && <span>{s.arrivalHour}h</span>}
+                </span>
+              }
+              value={<span className="text-muted-foreground">{s.hours}h</span>}
+            />
           );
         })}
-      </div>
+      </KeyValueList>
 
-      <div className="mb-2 flex flex-col gap-0.5 border-t border-border pt-2">
-        {proposal.quote.rows.map((r) => (
-          <div key={r.lbl} className="flex justify-between gap-2 text-xs">
-            <span className="text-muted-foreground">{r.lbl}</span>
-            <span className="text-foreground">
-              {r.onReq ? '—' : `${fmtEUR(r.amt, lang)} €`}
-            </span>
-          </div>
-        ))}
-      </div>
-
-      <div className="flex justify-between border-t border-border pt-2 text-sm font-semibold text-foreground">
-        <span>{t('assistant.bookingTotalHT')}</span>
-        <span>{fmtEUR(proposal.quote.total, lang)} €</span>
-      </div>
-      <div className="mb-2 text-right font-mono text-xs text-muted-foreground">
-        {fmtEUR(ttc, lang)} € {t('assistant.bookingTotalTTC')}
-      </div>
+      {/* Le total se lisait exactement comme ses lignes : `font-semibold` rend
+          comme 400 dans cette famille, et le filet au-dessus était le seul
+          écart réel. C'est la taille du chiffre qui porte le poids. */}
+      <QuoteTable
+        variant="chat"
+        className="mb-2 border-t border-border pt-2"
+        rows={proposal.quote.rows.map((r) => ({
+          label: r.lbl,
+          value: r.onReq
+            ? t('booking.onRequestLower')
+            : `${fmtEUR(r.amt, lang)} €`,
+        }))}
+        totalLabel={t('assistant.bookingTotalHT')}
+        total={`${fmtEUR(proposal.quote.total, lang)} €`}
+        disclaimer={`${fmtEUR(ttc, lang)} € ${t('assistant.bookingTotalTTC')}`}
+      />
 
       <div className="mb-2 border-t border-border pt-2 text-xs text-muted-foreground">
-        {t('assistant.bookingContact')}: {proposal.contact.prenom}{' '}
-        {proposal.contact.nom} · {proposal.contact.email} ·{' '}
-        {proposal.contact.tel}
-        {proposal.contact.siren ? ` · SIREN ${proposal.contact.siren}` : ''}
+        <span className="flex flex-wrap items-baseline gap-x-2.5">
+          <span>
+            {t('assistant.bookingContact')}: {proposal.contact.prenom}{' '}
+            {proposal.contact.nom}
+          </span>
+          <span>{proposal.contact.email}</span>
+          <span>{proposal.contact.tel}</span>
+          {proposal.contact.siren && (
+            <span>SIREN {proposal.contact.siren}</span>
+          )}
+        </span>
       </div>
 
       <div className="mb-2 text-xs italic text-muted-foreground">
@@ -900,72 +981,84 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
       )}
     >
       {badge != null && (
-        <span className="pointer-events-none absolute right-1.5 top-1.5 z-30 rounded-sm bg-primary px-2 py-1 font-mono text-xs font-semibold tracking-widest text-primary-foreground shadow-md">
+        <span className="pointer-events-none absolute right-1.5 top-1.5 z-30 rounded-sm bg-primary px-2 py-1 font-mono text-xs font-bold tracking-widest text-primary-foreground shadow-md">
           #{badge}
         </span>
       )}
 
-      <AssistantHeader
-        lang={lang}
-        mode={mode}
-        loading={loading}
-        historyCount={savedSessions.length}
-        onNewSession={startNewSession}
-        onOpenHistory={() => setHistoryOpen(true)}
-      />
+      {/* `contents` : le conteneur ne crée pas de boîte, la colonne flex du
+          panneau reste inchangée — il ne sert qu'à neutraliser d'un bloc tout
+          ce que l'historique recouvre. */}
+      <div className="contents" inert={historyOpen}>
+        <AssistantHeader
+          lang={lang}
+          mode={mode}
+          loading={loading}
+          historyCount={savedSessions.length}
+          onNewSession={startNewSession}
+          onOpenHistory={() => setHistoryOpen(true)}
+        />
 
-      {mode === 'prompt' ? (
-        <AssistantPrompt lang={lang} onSend={send} />
-      ) : (
-        <div
-          ref={scrollRef}
-          className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto pr-1 scrollbar-thin"
-        >
-          {messages.map((message, index) => (
-            <ChatBubble
-              key={`${message.role}-${index}`}
-              role={message.role}
-              content={message.content}
-            />
-          ))}
-          {loading && <TypingBubble />}
+        {mode === 'prompt' ? (
+          <AssistantPrompt lang={lang} onSend={send} />
+        ) : (
+          // Les réponses de l'assistant arrivent en asynchrone : sans région
+          // live, elles étaient totalement muettes. `role="log"` est le rôle
+          // d'un fil de conversation — il annonce les ajouts, pas le contenu
+          // déjà lu, contrairement à un `aria-live` posé sur tout le bloc.
+          <div
+            ref={scrollRef}
+            role="log"
+            aria-live="polite"
+            aria-label={t('assistant.label')}
+            className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto pr-1 scrollbar-thin"
+          >
+            {messages.map((message, index) => (
+              <ChatBubble
+                key={`${message.role}-${index}`}
+                role={message.role}
+                content={message.content}
+              />
+            ))}
+            {loading && <TypingBubble />}
 
-          {!loading && suggestions.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {suggestions.map((s) => (
-                <QuickReplyButton key={s} onClick={() => send(s)}>
-                  {s}
-                </QuickReplyButton>
-              ))}
-            </div>
-          )}
+            {!loading && suggestions.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {suggestions.map((s) => (
+                  <QuickReplyButton key={s} onClick={() => send(s)}>
+                    {s}
+                  </QuickReplyButton>
+                ))}
+              </div>
+            )}
 
-          {collectContact && !proposal && (
-            <ContactForm lang={lang} onSubmit={(m) => send(m)} />
-          )}
+            {collectContact && !proposal && (
+              <ContactForm lang={lang} onSubmit={(m) => send(m)} />
+            )}
 
-          {proposal && (
-            <BookingRecapCard
-              proposal={proposal}
-              lang={lang}
-              cgv={cgv}
-              setCgv={setCgv}
-              busy={bookingBusy}
-              error={bookingErr}
-              onConfirm={confirmBooking}
-            />
-          )}
-        </div>
-      )}
+            {proposal && (
+              <BookingRecapCard
+                proposal={proposal}
+                lang={lang}
+                cgv={cgv}
+                setCgv={setCgv}
+                busy={bookingBusy}
+                error={bookingErr}
+                onConfirm={confirmBooking}
+              />
+            )}
+          </div>
+        )}
 
-      <AssistantInput
-        input={input}
-        setInput={setInput}
-        loading={loading}
-        lang={lang}
-        onSend={send}
-        inputRef={inputRef}
-      />
+        <AssistantInput
+          input={input}
+          setInput={setInput}
+          loading={loading}
+          lang={lang}
+          onSend={send}
+          inputRef={inputRef}
+        />
+      </div>
 
       {historyOpen && (
         <ChatSessionList

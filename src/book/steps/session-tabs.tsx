@@ -4,6 +4,8 @@ import { useT } from '../../i18n/use-t';
 import type { BookingSession } from '../../lib/booking-engine';
 import { isSessionValid } from '../../lib/booking-engine';
 import { PRODUCTS, catLabel, findEntry } from '../catalog';
+import { ordinal } from '@/lib/format';
+import { MonoLabel } from '../../ui/mono-label';
 
 interface SessionTabsProps {
   sessions: BookingSession[];
@@ -30,10 +32,10 @@ const SessionTabs = ({
   const t = useT();
   return (
     <>
-      <div className="px-6 pt-3.5 pb-1 flex items-baseline justify-between gap-4 flex-wrap">
-        <span className="font-mono text-xs font-normal uppercase tracking-widest text-primary">
+      <div className="px-pad-cell pt-3.5 pb-1 flex items-baseline justify-between gap-4 flex-wrap">
+        <MonoLabel tone="primary">
           {t('booking.productSessions')} — {sessions.length}
-        </span>
+        </MonoLabel>
         <Button
           type="button"
           onClick={onAdd}
@@ -79,18 +81,18 @@ const SessionTabs = ({
                     isActive ? 'text-primary' : 'text-muted-foreground',
                   )}
                 >
-                  {t('booking.session')} {String(i + 1).padStart(2, '0')}
+                  {t('booking.session')} {ordinal(i)}
                 </span>
                 <span className="text-sm font-normal tracking-tight">
                   {label}
                 </span>
-                <span className="font-mono text-xs tracking-wide text-muted-foreground">
+                <MonoLabel tone="muted">
                   {isSessionValid(s)
                     ? s.projectType === 'cyclorama'
                       ? t('booking.onRequestLower')
                       : `${s.quantity} ${t('booking.products')}`
                     : t('booking.incomplete')}
-                </span>
+                </MonoLabel>
               </Button>
               {/* Hors de l'onglet, pas dedans : un bouton dans un bouton n'est
                   ni du HTML valide ni atteignable au clavier. */}
@@ -99,7 +101,7 @@ const SessionTabs = ({
                 variant="ghost"
                 size="icon-xs"
                 onClick={() => onRemove(i)}
-                aria-label={`${t('booking.remove')} — ${t('booking.session')} ${String(i + 1).padStart(2, '0')}`}
+                aria-label={`${t('booking.remove')} — ${t('booking.session')} ${ordinal(i)}`}
                 title={t('booking.remove')}
                 className="absolute right-2 top-2.5 text-sm leading-none text-muted-foreground"
               >
