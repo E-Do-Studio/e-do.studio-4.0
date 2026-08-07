@@ -169,8 +169,7 @@ export const SelectTile = ({
   children,
 }: SelectTileProps) => {
   // Rien après le sous-titre : c'est lui, avec le titre, qui forme le pied.
-  const pinTitle =
-    !desc && !children && !price && !footer?.length ? 'mt-auto' : undefined;
+  const titleClosesTile = !desc && !children && !price && !footer?.length;
   return (
     <Button
       render={
@@ -222,10 +221,37 @@ export const SelectTile = ({
         sous-titre reposent alors au pied de la tuile, sous le numéro et la
         flèche qui la coiffent. Sans ça, ils flottent au milieu — c'est ce que
         `justify-between` produisait sur les tuiles de la page d'accueil. */}
-      <span className={cn(tileTitleVariants({ size }), pinTitle)}>{title}</span>
+      <span
+        className={cn(
+          tileTitleVariants({ size }),
+          titleClosesTile && 'mt-auto',
+        )}
+      >
+        {title}
+      </span>
 
       {sub && (
-        <MonoLabel tone="muted" lines="multi" className="block">
+        <MonoLabel
+          tone="muted"
+          lines="multi"
+          className={cn(
+            'block',
+            // Deux lignes réservées quand le sous-titre ferme la tuile.
+            //
+            // Le titre est alors collé au bas par `mt-auto`, donc c'est la
+            // HAUTEUR DU SOUS-TITRE qui décide où tombe le titre : sur la rangée
+            // de machines de l'accueil, « Packshot à plat » tient sur une ligne
+            // quand les trois autres en prennent deux, et « Horizontal »
+            // descendait d'une ligne sous ses voisins. Les bas s'alignaient, les
+            // titres non — et ce sont les titres que l'œil lit en rangée.
+            //
+            // `min-h` et non une hauteur fixe : c'est un plancher, un sous-titre
+            // de trois lignes pousse toujours. `2lh` et non une valeur en pixels
+            // — l'unité vaut l'interligne calculée de CE libellé, donc elle suit
+            // `lines="multi"` sans qu'on ait à recopier `leading-snug` ici.
+            titleClosesTile && 'min-h-[2lh]',
+          )}
+        >
           {sub}
         </MonoLabel>
       )}
