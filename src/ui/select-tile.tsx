@@ -235,7 +235,17 @@ export const SelectTile = ({
           tone="muted"
           lines="multi"
           className={cn(
-            'block',
+            // Un cran sous le `text-xs` de `MonoLabel`, et c'est de l'optique,
+            // pas du caprice : ce libellé est en capitales monospace interlettré
+            // à `tracking-widest`. Aucune descendante, aucune variation de
+            // hauteur d'x, un chasse fixe — à 12px il pesait autant que le titre
+            // en 16px sans, et occupait plus de largeur que lui. La hiérarchie
+            // se lisait à l'envers.
+            //
+            // Ici et non dans `MonoLabel` : sa base sert plus de quatre-vingts
+            // fichiers, où le libellé est seul dans sa cellule et n'a personne
+            // à qui céder le pas.
+            'block text-[11px]',
             // Deux lignes réservées quand le sous-titre ferme la tuile.
             //
             // Le titre est alors collé au bas par `mt-auto`, donc c'est la
