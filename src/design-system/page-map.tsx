@@ -97,7 +97,7 @@ export const PageMap = ({ title, cols, rows, regions, note }: PageMapProps) => (
         {title}
       </span>
       <code className="break-all font-mono text-[10px] leading-relaxed text-neutral-500">
-        {cols ? `cols: ${cols}` : 'cols: — (les deux cellules enjambent tout)'}
+        {cols ? `cols: ${cols}` : 'cols: — (la piste unique de la coquille)'}
         <br />
         {`rows: ${rows}`}
       </code>

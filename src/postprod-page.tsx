@@ -352,7 +352,7 @@ const PostprodPage = () => {
  doivent s'aligner appartiennent à la même rangée de grille ; toute autre
  méthode est une coïncidence qu'il faut entretenir à la main, et que la
  traduction anglaise casserait au premier retour à la ligne de plus. */}
-      <PageShell className="grid-cols-[minmax(0,1fr)] app:grid-cols-[var(--spacing-logo)_minmax(0,1fr)_auto] app:grid-rows-[var(--spacing-header)_minmax(0,1fr)_auto]">
+      <PageShell className="app:grid-cols-[var(--spacing-logo)_minmax(0,1fr)_auto] app:grid-rows-[var(--spacing-header)_minmax(0,1fr)_auto]">
         <main id={MAIN_ID} className="contents">
           {/* Single, stable page h1 — data-independent so it's present at every
  breakpoint and before Strapi resolves. The selected category is an h2. */}

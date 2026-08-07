@@ -45,7 +45,15 @@ export const PageShell = ({
       // `gap-px bg-border` : le conteneur est noir, les cellules peignent leur
       // fond. Le verrou est gardé par `app:` seul — sous le palier, __root.tsx
       // rend la main au défilement et la page s'empile.
-      'grid w-full gap-px bg-border app:h-full app:overflow-hidden',
+      //
+      // `grid-cols-[minmax(0,1fr)]` sans palier : la colonne unique de la pile
+      // mobile. Ce n'est pas la réécriture du défaut implicite — une piste
+      // `auto` prend la taille minimale de son contenu et déborde donc en
+      // largeur dès qu'une cellule ne peut pas se réduire, quand `minmax(0,1fr)`
+      // la force à céder. Huit pages s'en remettaient à l'implicite, une seule
+      // écrivait cette ligne ; c'est un invariant, il appartient à la coquille.
+      // Une page qui veut autre chose l'écrase (l'accueil pose `grid-cols-2`).
+      'grid w-full grid-cols-[minmax(0,1fr)] gap-px bg-border app:h-full app:overflow-hidden',
       className,
     )}
   >

@@ -107,14 +107,14 @@ const COQUILLES = [
   },
   {
     title: 'mentions légales',
-    cols: 'var(--spacing-logo) repeat(3,minmax(0,1fr))',
+    cols: 'var(--spacing-logo) minmax(0,1fr)',
     rows: 'var(--spacing-header) minmax(0,1fr)',
     regions: [
-      { label: 'bande', area: '1/1/2/5', tone: 'band' as const },
+      { label: 'bande', area: '1/1/2/3', tone: 'band' as const },
       { label: 'sommaire', area: '2/1/3/2', tone: 'rail' as const },
-      { label: 'texte', area: '2/2/3/5' },
+      { label: 'texte', area: '2/2/3/3' },
     ],
-    note: 'Déclare quatre pistes et n’en distingue que deux : le contenu fusionne les trois dernières. Le gabarit garde l’alignement des filets avec ses voisines.',
+    note: 'Deux pistes, pas quatre. Elle en déclarait trois à droite du rail, que le texte enjambait toutes — aucun filet ne tombait sur leurs frontières et la largeur rendue est la même.',
   },
   {
     title: 'discovery',
@@ -168,13 +168,12 @@ const COQUILLES = [
   },
   {
     title: 'confirmation',
-    cols: 'var(--spacing-logo) minmax(0,1fr)',
     rows: 'var(--spacing-header) minmax(0,1fr)',
     regions: [
-      { label: 'bande', area: '1/1/2/3', tone: 'band' as const },
-      { label: 'récapitulatif', area: '2/1/3/3' },
+      { label: 'bande', area: '1/1/2/2', tone: 'band' as const },
+      { label: 'récapitulatif', area: '2/1/3/2' },
     ],
-    note: 'Deux pistes déclarées, une seule cellule qui les enjambe : la colonne du sigle n’y sert qu’à aligner le filet de la bande.',
+    note: 'Même coquille que sa branche de repli, désormais. Les deux états de la page portaient deux gabarits différents pour un rendu identique.',
   },
   {
     title: 'confirmation — repli',

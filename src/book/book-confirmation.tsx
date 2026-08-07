@@ -96,14 +96,20 @@ const ConfirmedView = ({
   }, []);
 
   return (
-    <PageShell className="app:grid-cols-[var(--spacing-logo)_minmax(0,1fr)] app:grid-rows-[var(--spacing-header)_minmax(0,1fr)]">
+    /* Aucune colonne déclarée, comme la branche de repli plus bas : les deux
+       états de cette page portaient deux gabarits différents pour le même
+       rendu. Celui-ci annonçait une colonne de sigle et une colonne souple que
+       le récapitulatif enjambait toutes les deux — 240px plus la gouttière plus
+       le reste font la largeur entière, exactement ce que donne la piste unique
+       de la coquille. */
+    <PageShell className="app:grid-rows-[var(--spacing-header)_minmax(0,1fr)]">
       {/* Un vrai `<main>` et non un `<div>` : la page n'en avait aucun, donc le
           lien d'évitement de skip-link.tsx ne trouvait pas sa cible et laissait
           le focus sur `<body>`. C'est le dernier écran du parcours de
           conversion, celui qu'on atteint au clavier après un formulaire. */}
       <main
         id={MAIN_ID}
-        className="overflow-auto flex flex-col gap-px bg-border app:col-span-2 app:row-start-2 app:min-h-0"
+        className="overflow-auto flex flex-col gap-px bg-border app:row-start-2 app:min-h-0"
       >
         <div className="grid gap-px bg-border grid-cols-1 app:grid-cols-[1.6fr_1fr]">
           {/* Après la soumission, `navigate()` amène sur un document neuf, focus

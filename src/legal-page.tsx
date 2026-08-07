@@ -180,7 +180,13 @@ const LegalPage = () => {
 
   return (
     /* `<main class="contents">` : voir home-page. */
-    <PageShell className="app:grid-cols-[var(--spacing-logo)_repeat(3,minmax(0,1fr))] app:grid-rows-[var(--spacing-header)_minmax(0,1fr)]">
+    /* Deux pistes et non quatre. Le gabarit en déclarait trois à droite du
+       rail, que le texte enjambait toutes : aucun filet ne tombait sur leurs
+       frontières, et la largeur rendue est identique — trois pistes plus leurs
+       deux gouttières valent exactement la piste unique qui les remplace. Un
+       gabarit qui annonce des pistes que personne n'occupe fait chercher une
+       colonne qui n'existe pas. */
+    <PageShell className="app:grid-cols-[var(--spacing-logo)_minmax(0,1fr)] app:grid-rows-[var(--spacing-header)_minmax(0,1fr)]">
       <main id={MAIN_ID} className="contents">
         {/* La barre collante et son tiroir : `SelectionDrawer` rend les mêmes
             `RailCell` que la colonne desktop juste en dessous. Trois pages
@@ -227,7 +233,7 @@ const LegalPage = () => {
         </Rail>
 
         {/* Main content */}
-        <div className="bg-muted overflow-auto app:col-start-2 app:col-span-3 app:row-start-2">
+        <div className="bg-muted overflow-auto app:col-start-2 app:row-start-2">
           {/* La date de mise à jour passe par `meta`, qui l'aligne sur la ligne
               de base du titre — la grille à deux colonnes qui la tenait à
               droite faisait exactement cela, à la main. */}
