@@ -71,36 +71,58 @@ export function useAvailability(
     const lastDay = new Date(year, month + 1, 0).getDate();
     const endDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
 
-    supabase
+    const sessionsPromise = supabase
       .from('booking_sessions')
       .select('session_date, arrival_hour, hours, bookings!inner(status)')
       .eq('plateau_key', plateauKey)
       .not('session_date', 'is', null)
       .gte('session_date', startDate)
       .lte('session_date', endDate)
-      .in('bookings.status', ['pending', 'confirmed'])
-      .then(({ data, error }) => {
+      .in('bookings.status', ['pending', 'confirmed']);
+
+    const blockedPromise = (supabase as any)
+      .from('blocked_dates')
+      .select('date')
+      .gte('date', startDate)
+      .lte('date', endDate);
+
+    Promise.all([sessionsPromise, blockedPromise])
+      .then(([{ data: sessData, error: sessErr }, { data: blockedData, error: blockedErr }]) => {
         if (controller.signal.aborted) return;
 
-        if (error || !data) {
+        if (sessErr || blockedErr) {
           setLoading(false);
           return;
         }
 
+        const blockedSet = new Set<string>();
+        if (blockedData) {
+          for (const row of blockedData as unknown as { date: string }[]) {
+            if (row.date) blockedSet.add(row.date);
+          }
+        }
+
         const occupiedPerDay: Record<number, Set<number>> = {};
-        for (const session of data as unknown as SessionAvailabilityRow[]) {
-          if (!session.session_date || session.arrival_hour == null || session.hours == null) continue;
-          const day = new Date(session.session_date + 'T00:00:00').getDate();
-          if (!occupiedPerDay[day]) occupiedPerDay[day] = new Set();
-          for (const h of getOccupiedHours(session.arrival_hour, session.hours)) {
-            occupiedPerDay[day].add(h);
+        if (sessData) {
+          for (const session of sessData as unknown as SessionAvailabilityRow[]) {
+            if (!session.session_date || session.arrival_hour == null || session.hours == null) continue;
+            const day = new Date(session.session_date + 'T00:00:00').getDate();
+            if (!occupiedPerDay[day]) occupiedPerDay[day] = new Set();
+            for (const h of getOccupiedHours(session.arrival_hour, session.hours)) {
+              occupiedPerDay[day].add(h);
+            }
           }
         }
 
         const result: Record<number, AvailabilityState> = {};
         for (let d = 1; d <= lastDay; d++) {
-          const occupied = occupiedPerDay[d] || new Set();
-          result[d] = isDayFullyBooked(occupied, rentalHours) ? 'unavailable' : 'free';
+          const ds = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+          if (blockedSet.has(ds)) {
+            result[d] = 'unavailable';
+          } else {
+            const occupied = occupiedPerDay[d] || new Set();
+            result[d] = isDayFullyBooked(occupied, rentalHours) ? 'unavailable' : 'free';
+          }
         }
 
         dayCache.set(cacheKey, result);
