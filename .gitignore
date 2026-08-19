@@ -9,3 +9,4 @@ deno.lock
 .playwright-mcp/
 /*.png
 supabase/.temp/
+package-lock.json
