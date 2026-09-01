@@ -1,6 +1,14 @@
-import type { Bilingual, MachineInfo, DiscoveryPost, DiscoveryCategory, SocialLink } from '../types';
+import type {
+  Bilingual,
+  MachineInfo,
+  DiscoveryPost,
+  DiscoveryCategory,
+  SocialLink,
+} from '../types';
+import { getT } from '../i18n';
 import type { BlockNode } from './render-blocks';
 import { getPreviewState } from './preview-mode';
+import { ordinal } from './format';
 
 const STRAPI_URL = import.meta.env.VITE_STRAPI_URL || 'https://cms.e-do.studio';
 const STRAPI_TOKEN = import.meta.env.VITE_STRAPI_TOKEN || '';
@@ -9,26 +17,59 @@ const API_ORIGIN = import.meta.env.DEV ? '' : STRAPI_URL;
 
 // ─── Generic fetcher ────────────────────────────────────────────────────────
 
-const cache = new Map<string, { data: unknown; ts: number }>();
+interface CacheEntry {
+  data: unknown;
+  ts: number;
+  /** Dernière tentative de revalidation, pour ne pas la relancer à chaque requête. */
+  attemptedAt: number;
+}
+
+const cache = new Map<string, CacheEntry>();
 const CACHE_TTL = 5 * 60 * 1000;
+
+// Le process SSR vit longtemps et le cache n'avait aucune borne : chaque slug
+// d'article demandé une seule fois y laissait une entrée définitive. Plafond +
+// éviction de la plus ancienne (Map conserve l'ordre d'insertion).
+const CACHE_MAX_ENTRIES = 200;
+
+// Quand Strapi est indisponible, la revalidation de fond échoue sans toucher
+// `ts` : la condition « périmé » restait vraie et chaque requête entrante
+// relançait un fetch condamné. On espace désormais les tentatives.
+const REVALIDATE_BACKOFF = 30 * 1000;
+
+function cacheSet(key: string, data: unknown): void {
+  cache.delete(key);
+  cache.set(key, { data, ts: Date.now(), attemptedAt: Date.now() });
+  while (cache.size > CACHE_MAX_ENTRIES) {
+    const oldest = cache.keys().next().value;
+    if (oldest === undefined) break;
+    cache.delete(oldest);
+  }
+}
 
 // Requêtes en vol, par clé. En SSR, plusieurs visiteurs simultanés sur un cache
 // froid déclenchaient autant d'appels Strapi ; ils partagent maintenant la même
 // promesse. Purgée dès la résolution.
 const inflight = new Map<string, Promise<unknown>>();
 
-async function fetchStrapi<T>(path: string, params?: Record<string, string>): Promise<T> {
+async function fetchStrapi<T>(
+  path: string,
+  params?: Record<string, string>,
+): Promise<T> {
   // En dev, API_ORIGIN est vide pour passer par le proxy Vite (`/api` →
   // cms.e-do.studio) et éviter le CORS côté navigateur. Mais les loaders
   // tournent aussi côté Node (SSR en dev, prerender au build), où `window`
   // n'existe pas : on y vise le CMS en absolu, Node n'étant pas soumis au CORS.
   const base =
-    API_ORIGIN || (typeof window !== 'undefined' ? window.location.origin : STRAPI_URL);
+    API_ORIGIN ||
+    (typeof window !== 'undefined' ? window.location.origin : STRAPI_URL);
   const url = new URL(`/api/${path}`, base);
   if (params) {
     Object.entries(params).forEach(([k, v]) => {
       if (k === 'populate' && v.includes(',')) {
-        v.split(',').forEach((field, i) => url.searchParams.append(`populate[${i}]`, field.trim()));
+        v.split(',').forEach((field, i) => {
+          url.searchParams.append(`populate[${i}]`, field.trim());
+        });
       } else {
         url.searchParams.set(k, v);
       }
@@ -49,7 +90,10 @@ async function fetchStrapi<T>(path: string, params?: Record<string, string>): Pr
   // authenticates with a read-only API token via VITE_STRAPI_TOKEN.
   // Without the token the request is anonymous and Strapi will reject
   // it with 401 once the plugin is gone.
-  const token = preview.active && STRAPI_PREVIEW_TOKEN ? STRAPI_PREVIEW_TOKEN : STRAPI_TOKEN;
+  const token =
+    preview.active && STRAPI_PREVIEW_TOKEN
+      ? STRAPI_PREVIEW_TOKEN
+      : STRAPI_TOKEN;
   const headers: Record<string, string> = {};
   if (token) headers.Authorization = `Bearer ${token}`;
 
@@ -60,7 +104,7 @@ async function fetchStrapi<T>(path: string, params?: Record<string, string>): Pr
       const res = await fetch(key, { headers });
       if (!res.ok) throw new Error(`Strapi ${path}: ${res.status}`);
       const json = (await res.json()) as T;
-      if (!preview.active) cache.set(key, { data: json, ts: Date.now() });
+      if (!preview.active) cacheSet(key, json);
       return json;
     })().finally(() => inflight.delete(key));
     inflight.set(key, p);
@@ -78,14 +122,22 @@ async function fetchStrapi<T>(path: string, params?: Record<string, string>): Pr
     // après chaque expiration payait l'aller-retour Strapi (jusqu'à 2,3 s sur
     // la galerie). L'échec du rafraîchissement est ignoré — l'entrée périmée
     // reste servie, et le prochain appel réessaiera.
-    if (Date.now() - hit.ts >= CACHE_TTL) void load().catch(() => {});
+    const stale = Date.now() - hit.ts >= CACHE_TTL;
+    const canRetry = Date.now() - hit.attemptedAt >= REVALIDATE_BACKOFF;
+    if (stale && canRetry) {
+      hit.attemptedAt = Date.now();
+      void load().catch(() => {});
+    }
     return hit.data as T;
   }
 
   return load();
 }
 
-async function fetchStrapiBilingual<T>(path: string, params?: Record<string, string>): Promise<{ fr: T; en: T }> {
+async function fetchStrapiBilingual<T>(
+  path: string,
+  params?: Record<string, string>,
+): Promise<{ fr: T; en: T }> {
   const [fr, en] = await Promise.all([
     fetchStrapi<T>(path, { ...params, locale: 'fr' }),
     fetchStrapi<T>(path, { ...params, locale: 'en' }),
@@ -95,9 +147,18 @@ async function fetchStrapiBilingual<T>(path: string, params?: Record<string, str
 
 // ─── Strapi response types (single-locale, matching i18n API) ──────────────
 
-interface StrapiSpec { label: string; value: string }
-interface StrapiLocalizedItem { text: string }
-interface StrapiSocialLink { platform: string; label: string; url: string }
+interface StrapiSpec {
+  label: string;
+  value: string;
+}
+interface StrapiLocalizedItem {
+  text: string;
+}
+interface StrapiSocialLink {
+  platform: string;
+  label: string;
+  url: string;
+}
 
 interface StrapiPricingRow {
   label: string;
@@ -178,10 +239,22 @@ interface StrapiBlogCategory {
   slug: string;
 }
 
-interface StrapiTransportEntry { label: string }
-interface StrapiAddressEntry { label: string; address: string }
+interface StrapiTransportEntry {
+  label: string;
+}
+interface StrapiAddressEntry {
+  label: string;
+  address: string;
+}
 
-type DayOfWeek = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+type DayOfWeek =
+  | 'monday'
+  | 'tuesday'
+  | 'wednesday'
+  | 'thursday'
+  | 'friday'
+  | 'saturday'
+  | 'sunday';
 
 interface StrapiOpeningHour {
   dayOfWeek: DayOfWeek;
@@ -278,8 +351,23 @@ export interface SeoMeta {
 }
 
 export type MediaItem =
-  | { kind: 'image'; url: string; previewUrl?: string; alt: Bilingual; width?: number; height?: number }
-  | { kind: 'video'; url: string; previewUrl?: string; poster?: string; alt: Bilingual; width?: number; height?: number };
+  | {
+      kind: 'image';
+      url: string;
+      previewUrl?: string;
+      alt: Bilingual;
+      width?: number;
+      height?: number;
+    }
+  | {
+      kind: 'video';
+      url: string;
+      previewUrl?: string;
+      poster?: string;
+      alt: Bilingual;
+      width?: number;
+      height?: number;
+    };
 
 export interface PlateauSpec {
   num: string;
@@ -296,7 +384,10 @@ export interface PlateauSpec {
   seo?: Bilingual<SeoMeta>;
 }
 
-function buildSeo(seoFr: StrapiSeoMeta | undefined, seoEn: StrapiSeoMeta | undefined): Bilingual<SeoMeta> | undefined {
+function buildSeo(
+  seoFr: StrapiSeoMeta | undefined,
+  seoEn: StrapiSeoMeta | undefined,
+): Bilingual<SeoMeta> | undefined {
   const fr = seoFr ?? {};
   const en = seoEn ?? seoFr ?? {};
   const hasAny = (s: StrapiSeoMeta) => !!(s.title || s.description || s.image);
@@ -311,7 +402,8 @@ function buildSeo(seoFr: StrapiSeoMeta | undefined, seoEn: StrapiSeoMeta | undef
     en: {
       title: en.title || fr.title,
       description: en.description || fr.description,
-      imageUrl: resolveStrapiMediaUrl(en.image) || resolveStrapiMediaUrl(fr.image),
+      imageUrl:
+        resolveStrapiMediaUrl(en.image) || resolveStrapiMediaUrl(fr.image),
       noIndex: en.noIndex ?? fr.noIndex,
     },
   };
@@ -355,30 +447,32 @@ export interface PPCat {
 // no-op — we only swap when Strapi's EN value is identical to FR.
 const PLATEAU_EN_FALLBACK: Record<string, string> = {
   // Cyclorama / machine spec labels
-  'Surface': 'Surface',
-  'Dimensions': 'Dimensions',
+  Surface: 'Surface',
+  Dimensions: 'Dimensions',
   'Éclairage naturel': 'Natural light',
-  'Accès': 'Access',
-  'Extérieur': 'Exterior',
-  'Électricité': 'Electricity',
+  Accès: 'Access',
+  Extérieur: 'Exterior',
+  Électricité: 'Electricity',
   'Connectivité & son': 'Connectivity & sound',
-  'Maquillage': 'Make-up',
-  'Habillage': 'Dressing',
-  'Cuisine': 'Kitchen',
-  'Caméra': 'Camera',
-  'Pilotage': 'Control',
-  'Éclairage': 'Lighting',
+  Maquillage: 'Make-up',
+  Habillage: 'Dressing',
+  Cuisine: 'Kitchen',
+  Caméra: 'Camera',
+  Pilotage: 'Control',
+  Éclairage: 'Lighting',
   'Détourage automatique': 'Auto clipping',
-  'Formats': 'Formats',
-  'Motorisation': 'Motion',
+  Formats: 'Formats',
+  Motorisation: 'Motion',
   // Cyclorama spec values
   '240 m² · Cyclo 2 faces 32 m²': '240 m² · 2-sided cyclo 32 m²',
   '6,3m L × 5,2m l × 5m H': '6.3m L × 5.2m W × 5m H',
   'Skydomes occultable': 'Blackout skydomes',
   'Quai de livraison 3,5m L × 4,5m H': 'Loading dock 3.5m L × 4.5m H',
   'Accès direct, parking sur place': 'Direct access, on-site parking',
-  '1 prise Marechal 63A triphasée · 15 prises 16A': '1 Marechal 63A 3-phase · 15 × 16A outlets',
-  'Wi-Fi très haut débit · Sound system intégré': 'High-speed Wi-Fi · Integrated sound system',
+  '1 prise Marechal 63A triphasée · 15 prises 16A':
+    '1 Marechal 63A 3-phase · 15 × 16A outlets',
+  'Wi-Fi très haut débit · Sound system intégré':
+    'High-speed Wi-Fi · Integrated sound system',
   '2 postes maquillage équipés': '2 equipped make-up stations',
   "2 cabines d'essayage": '2 fitting rooms',
   'Entièrement équipée': 'Fully equipped',
@@ -390,7 +484,8 @@ const PLATEAU_EN_FALLBACK: Record<string, string> = {
   'AutoAlpha™': 'AutoAlpha™',
   'JPG · PNG · TIFF · RAW': 'JPG · PNG · TIFF · RAW',
   'JPG · PNG · TIFF · RAW · MP4 · MOV': 'JPG · PNG · TIFF · RAW · MP4 · MOV',
-  '4 axes · hauteur · inclinaison · zoom · rotation 360°': '4 axes · height · tilt · zoom · 360° rotation',
+  '4 axes · hauteur · inclinaison · zoom · rotation 360°':
+    '4 axes · height · tilt · zoom · 360° rotation',
   '3 axes · hauteur · inclinaison · zoom': '3 axes · height · tilt · zoom',
   // Cyclorama usages
   'Campagne & éditorial': 'Campaign & editorial',
@@ -410,18 +505,18 @@ const PLATEAU_EN_FALLBACK: Record<string, string> = {
 const PLATEAU_FR_FALLBACK: Record<string, string> = {
   // Cyclorama / machine spec labels (EN → FR)
   'Natural light': 'Éclairage naturel',
-  'Access': 'Accès',
-  'Exterior': 'Extérieur',
-  'Electricity': 'Électricité',
+  Access: 'Accès',
+  Exterior: 'Extérieur',
+  Electricity: 'Électricité',
   'Connectivity & sound': 'Connectivité & son',
   'Make-up': 'Maquillage',
-  'Dressing': 'Habillage',
-  'Kitchen': 'Cuisine',
-  'Camera': 'Caméra',
-  'Control': 'Pilotage',
-  'Lighting': 'Éclairage',
+  Dressing: 'Habillage',
+  Kitchen: 'Cuisine',
+  Camera: 'Caméra',
+  Control: 'Pilotage',
+  Lighting: 'Éclairage',
   'Auto clipping': 'Détourage automatique',
-  'Motion': 'Motorisation',
+  Motion: 'Motorisation',
   // Cyclorama spec values (EN → FR)
   '240 m² · 2-sided cyclo 32 m²': '240 m² · Cyclo 2 faces 32 m²',
   '240 m² 2-sided cyclo 32 m²': '240 m² · Cyclo 2 faces 32 m²',
@@ -429,9 +524,12 @@ const PLATEAU_FR_FALLBACK: Record<string, string> = {
   'Blackout skydomes': 'Skydomes occultable',
   'Loading dock 3.5m L × 4.5m H': 'Quai de livraison 3,5m L × 4,5m H',
   'Direct access, on-site parking': 'Accès direct, parking sur place',
-  '1 Marechal 63A 3-phase · 15 × 16A outlets': '1 prise Marechal 63A triphasée · 15 prises 16A',
-  '1 Maréchal 63A 3-phase · 15 × 16A outlets': '1 prise Marechal 63A triphasée · 15 prises 16A',
-  'High-speed Wi-Fi · Integrated sound system': 'Wi-Fi très haut débit · Sound system intégré',
+  '1 Marechal 63A 3-phase · 15 × 16A outlets':
+    '1 prise Marechal 63A triphasée · 15 prises 16A',
+  '1 Maréchal 63A 3-phase · 15 × 16A outlets':
+    '1 prise Marechal 63A triphasée · 15 prises 16A',
+  'High-speed Wi-Fi · Integrated sound system':
+    'Wi-Fi très haut débit · Sound system intégré',
   '2 equipped make-up stations': '2 postes maquillage équipés',
   '2 fitting rooms': "2 cabines d'essayage",
   'Fully equipped': 'Entièrement équipée',
@@ -440,7 +538,8 @@ const PLATEAU_FR_FALLBACK: Record<string, string> = {
   'Canon EOS R · 70–200 mm motorized': 'Canon EOS R · 70–200 mm motorisé',
   'iPad · intuitive app': 'iPad · application intuitive',
   'High-CRI LED continuous': 'LED High-CRI continue',
-  '4 axes · height · tilt · zoom · 360° rotation': '4 axes · hauteur · inclinaison · zoom · rotation 360°',
+  '4 axes · height · tilt · zoom · 360° rotation':
+    '4 axes · hauteur · inclinaison · zoom · rotation 360°',
   '3 axes · height · tilt · zoom': '3 axes · hauteur · inclinaison · zoom',
   // Cyclorama usages (EN → FR)
   'Campaign & editorial': 'Campagne & éditorial',
@@ -459,7 +558,10 @@ function fallbackFr(frValue: string, enValue: string): string {
   return frValue || enValue;
 }
 
-function mergeSpecs(frSpecs: StrapiSpec[], enSpecs: StrapiSpec[]): { k: Bilingual; v: Bilingual }[] {
+function mergeSpecs(
+  frSpecs: StrapiSpec[],
+  enSpecs: StrapiSpec[],
+): { k: Bilingual; v: Bilingual }[] {
   const len = Math.max(frSpecs.length, enSpecs.length);
   const result: { k: Bilingual; v: Bilingual }[] = [];
   for (let i = 0; i < len; i++) {
@@ -477,7 +579,10 @@ function mergeSpecs(frSpecs: StrapiSpec[], enSpecs: StrapiSpec[]): { k: Bilingua
   return result;
 }
 
-function mergeLocalizedItems(frItems: StrapiLocalizedItem[], enItems: StrapiLocalizedItem[]): Bilingual[] {
+function mergeLocalizedItems(
+  frItems: StrapiLocalizedItem[],
+  enItems: StrapiLocalizedItem[],
+): Bilingual[] {
   const len = Math.max(frItems.length, enItems.length);
   return Array.from({ length: len }, (_, i) => {
     const fr = frItems[i]?.text ?? enItems[i]?.text ?? '';
@@ -494,7 +599,10 @@ function mediaListToItems(items: StrapiMedia[] | undefined): MediaItem[] {
     const rawUrl = resolveRawMediaUrl(m);
     const url = rawUrl ?? previewUrl;
     if (!url) continue;
-    const alt: Bilingual = { fr: m.alternativeText ?? '', en: m.alternativeText ?? '' };
+    const alt: Bilingual = {
+      fr: m.alternativeText ?? '',
+      en: m.alternativeText ?? '',
+    };
     const width = m.width ?? undefined;
     const height = m.height ?? undefined;
     if (m.mime?.startsWith('video/')) {
@@ -506,7 +614,10 @@ function mediaListToItems(items: StrapiMedia[] | undefined): MediaItem[] {
   return out;
 }
 
-function formatRowAmount(row: StrapiPricingRow, fallback: Bilingual): string | Bilingual {
+function formatRowAmount(
+  row: StrapiPricingRow,
+  fallback: Bilingual,
+): string | Bilingual {
   if (row.kind === 'quote' || row.amount == null || row.amount === '') {
     return fallback;
   }
@@ -547,16 +658,64 @@ function pricingRowsToRates(
 // page from a future drop of the same data.
 const MACHINE_SPECS: Record<string, { k: Bilingual; v: Bilingual }[]> = {
   cyclorama: [
-    { k: { fr: 'Surface', en: 'Surface' }, v: { fr: '240 m² · Cyclo 2 faces 32 m²', en: '240 m² · 2-sided cyclo 32 m²' } },
-    { k: { fr: 'Dimensions', en: 'Dimensions' }, v: { fr: '6,3m L × 5,2m l × 5m H', en: '6.3m L × 5.2m W × 5m H' } },
-    { k: { fr: 'Éclairage naturel', en: 'Natural light' }, v: { fr: 'Skydomes occultable', en: 'Blackout skydomes' } },
-    { k: { fr: 'Accès', en: 'Access' }, v: { fr: 'Quai de livraison 3,5m L × 4,5m H', en: 'Loading dock 3.5m L × 4.5m H' } },
-    { k: { fr: 'Extérieur', en: 'Exterior' }, v: { fr: 'Accès direct, parking sur place', en: 'Direct access, on-site parking' } },
-    { k: { fr: 'Électricité', en: 'Electricity' }, v: { fr: '1 prise Marechal 63A triphasée · 15 prises 16A', en: '1 Marechal 63A 3-phase · 15 × 16A outlets' } },
-    { k: { fr: 'Connectivité & son', en: 'Connectivity & sound' }, v: { fr: 'Wi-Fi très haut débit · Sound system intégré', en: 'High-speed Wi-Fi · Integrated sound system' } },
-    { k: { fr: 'Maquillage', en: 'Make-up' }, v: { fr: '2 postes maquillage équipés', en: '2 equipped make-up stations' } },
-    { k: { fr: 'Habillage', en: 'Dressing' }, v: { fr: "2 cabines d'essayage", en: '2 fitting rooms' } },
-    { k: { fr: 'Cuisine', en: 'Kitchen' }, v: { fr: 'Entièrement équipée', en: 'Fully equipped' } },
+    {
+      k: { fr: 'Surface', en: 'Surface' },
+      v: {
+        fr: '240 m² · Cyclo 2 faces 32 m²',
+        en: '240 m² · 2-sided cyclo 32 m²',
+      },
+    },
+    {
+      k: { fr: 'Dimensions', en: 'Dimensions' },
+      v: { fr: '6,3m L × 5,2m l × 5m H', en: '6.3m L × 5.2m W × 5m H' },
+    },
+    {
+      k: { fr: 'Éclairage naturel', en: 'Natural light' },
+      v: { fr: 'Skydomes occultable', en: 'Blackout skydomes' },
+    },
+    {
+      k: { fr: 'Accès', en: 'Access' },
+      v: {
+        fr: 'Quai de livraison 3,5m L × 4,5m H',
+        en: 'Loading dock 3.5m L × 4.5m H',
+      },
+    },
+    {
+      k: { fr: 'Extérieur', en: 'Exterior' },
+      v: {
+        fr: 'Accès direct, parking sur place',
+        en: 'Direct access, on-site parking',
+      },
+    },
+    {
+      k: { fr: 'Électricité', en: 'Electricity' },
+      v: {
+        fr: '1 prise Marechal 63A triphasée · 15 prises 16A',
+        en: '1 Marechal 63A 3-phase · 15 × 16A outlets',
+      },
+    },
+    {
+      k: { fr: 'Connectivité & son', en: 'Connectivity & sound' },
+      v: {
+        fr: 'Wi-Fi très haut débit · Sound system intégré',
+        en: 'High-speed Wi-Fi · Integrated sound system',
+      },
+    },
+    {
+      k: { fr: 'Maquillage', en: 'Make-up' },
+      v: {
+        fr: '2 postes maquillage équipés',
+        en: '2 equipped make-up stations',
+      },
+    },
+    {
+      k: { fr: 'Habillage', en: 'Dressing' },
+      v: { fr: "2 cabines d'essayage", en: '2 fitting rooms' },
+    },
+    {
+      k: { fr: 'Cuisine', en: 'Kitchen' },
+      v: { fr: 'Entièrement équipée', en: 'Fully equipped' },
+    },
   ],
 };
 
@@ -583,7 +742,10 @@ const MACHINE_USES: Record<string, Bilingual[]> = {
   eclipse: [
     { fr: 'Photo & vidéo e-commerce', en: 'E-commerce photo & video' },
     { fr: 'Still life', en: 'Still life' },
-    { fr: 'Accessoires, chaussures & beauté', en: 'Accessories, footwear & beauty' },
+    {
+      fr: 'Accessoires, chaussures & beauté',
+      en: 'Accessories, footwear & beauty',
+    },
   ],
   live: [
     { fr: 'Shooting porté', en: 'On-model shooting' },
@@ -605,7 +767,13 @@ const MACHINE_LABELS: Record<string, { fr: string; en: string }> = {
 // Stable display order on every plateau-aware page. Cyclorama goes first;
 // the rest follows the studio's standard ordering (live → eclipse → packshot
 // stages). Any machine slug not listed falls in afterwards in API order.
-const PLATEAU_ORDER = ['cyclorama', 'live', 'eclipse', 'horizontal', 'vertical'];
+const PLATEAU_ORDER = [
+  'cyclorama',
+  'live',
+  'eclipse',
+  'horizontal',
+  'vertical',
+];
 
 function sortByPlateauOrder<T extends { slug: string }>(rows: T[]): T[] {
   const indexOf = (slug: string) => {
@@ -616,10 +784,13 @@ function sortByPlateauOrder<T extends { slug: string }>(rows: T[]): T[] {
 }
 
 export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
-  const machinesBI = await fetchStrapiBilingual<{ data: StrapiMachine[] }>('machines', {
-    'populate': 'specs,usages,pricingRows,seo,seo.image,media',
-    'sort': 'createdAt:asc',
-  });
+  const machinesBI = await fetchStrapiBilingual<{ data: StrapiMachine[] }>(
+    'machines',
+    {
+      populate: 'specs,usages,pricingRows,seo,seo.image,media',
+      sort: 'createdAt:asc',
+    },
+  );
 
   const machinesFr = sortByPlateauOrder(machinesBI.fr.data);
   const machinesEn = machinesBI.en.data;
@@ -630,19 +801,24 @@ export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
   // EDO-241 invariant ("machines must not carry a cyclorama row") is
   // intentionally reversed — its absence now means the page won't render.
   machinesFr.forEach((mFr, i) => {
-    const mEn = machinesEn.find(e => e.slug === mFr.slug) ?? mFr;
-    const rates = pricingRowsToRates(mFr.pricingRows ?? [], mEn.pricingRows ?? []);
-    const uses = mFr.usages && mFr.usages.length > 0
-      ? mergeLocalizedItems(mFr.usages, mEn.usages ?? mFr.usages)
-      : (MACHINE_USES[mFr.slug] ?? []);
-    const specs = mFr.specs && mFr.specs.length > 0
-      ? mergeSpecs(mFr.specs, mEn.specs ?? mFr.specs)
-      : (MACHINE_SPECS[mFr.slug] ?? []);
+    const mEn = machinesEn.find((e) => e.slug === mFr.slug) ?? mFr;
+    const rates = pricingRowsToRates(
+      mFr.pricingRows ?? [],
+      mEn.pricingRows ?? [],
+    );
+    const uses =
+      mFr.usages && mFr.usages.length > 0
+        ? mergeLocalizedItems(mFr.usages, mEn.usages ?? mFr.usages)
+        : (MACHINE_USES[mFr.slug] ?? []);
+    const specs =
+      mFr.specs && mFr.specs.length > 0
+        ? mergeSpecs(mFr.specs, mEn.specs ?? mFr.specs)
+        : (MACHINE_SPECS[mFr.slug] ?? []);
     const noteFr = mFr.pricingDescription;
     const noteEn = mEn.pricingDescription ?? noteFr;
     const ratesNote = noteFr ? { fr: noteFr, en: noteEn ?? noteFr } : undefined;
     result[mFr.slug] = {
-      num: String(i + 1).padStart(2, '0'),
+      num: ordinal(i),
       name: mFr.title,
       slug: mFr.slug,
       tagline: { fr: mFr.subtitle, en: mEn.subtitle },
@@ -661,18 +837,29 @@ export async function fetchPlateaux(): Promise<Record<string, PlateauSpec>> {
 }
 
 export async function fetchMachines(): Promise<MachineInfo[]> {
-  const machinesBI = await fetchStrapiBilingual<{ data: StrapiMachine[] }>('machines', {
-    'sort': 'createdAt:asc',
-  });
+  const machinesBI = await fetchStrapiBilingual<{ data: StrapiMachine[] }>(
+    'machines',
+    {
+      sort: 'createdAt:asc',
+    },
+  );
 
   const machinesFr = sortByPlateauOrder(machinesBI.fr.data);
   const machinesEn = machinesBI.en.data;
   return machinesFr.map((mFr) => {
-    const mEn = machinesEn.find(e => e.slug === mFr.slug) ?? mFr;
+    const mEn = machinesEn.find((e) => e.slug === mFr.slug) ?? mFr;
     return {
       slug: mFr.slug,
-      fr: { t: mFr.title, sub: mFr.subtitle, label: MACHINE_LABELS[mFr.slug]?.fr },
-      en: { t: mEn.title, sub: mEn.subtitle, label: MACHINE_LABELS[mFr.slug]?.en },
+      fr: {
+        t: mFr.title,
+        sub: mFr.subtitle,
+        label: MACHINE_LABELS[mFr.slug]?.fr,
+      },
+      en: {
+        t: mEn.title,
+        sub: mEn.subtitle,
+        label: MACHINE_LABELS[mFr.slug]?.en,
+      },
     };
   });
 }
@@ -682,8 +869,15 @@ function priceFromRow(row: StrapiPricingRow): PPPrice {
     return { kind: 'quote', from: false };
   }
   const n = typeof row.amount === 'number' ? row.amount : Number(row.amount);
-  if (Number.isNaN(n)) return { amount: String(row.amount), kind: row.kind ?? 'unit', from: false };
-  const amount = Number.isInteger(n) ? `${n}€` : `${n.toFixed(2).replace('.', ',')}€`;
+  if (Number.isNaN(n))
+    return {
+      amount: String(row.amount),
+      kind: row.kind ?? 'unit',
+      from: false,
+    };
+  const amount = Number.isInteger(n)
+    ? `${n}€`
+    : `${n.toFixed(2).replace('.', ',')}€`;
   return {
     amount,
     kind: row.kind === 'package' ? 'package' : 'unit',
@@ -692,16 +886,19 @@ function priceFromRow(row: StrapiPricingRow): PPPrice {
 }
 
 export async function fetchPostProdTypes(): Promise<PPCat[]> {
-  const resBI = await fetchStrapiBilingual<{ data: StrapiPostProdType[] }>('post-production-types', {
-    'populate': 'includes,priceRows,media,seo,seo.image',
-    'sort': 'createdAt:asc',
-  });
+  const resBI = await fetchStrapiBilingual<{ data: StrapiPostProdType[] }>(
+    'post-production-types',
+    {
+      populate: 'includes,priceRows,media,seo,seo.image',
+      sort: 'createdAt:asc',
+    },
+  );
 
   const frTypes = resBI.fr.data;
   const enTypes = resBI.en.data;
 
-  return frTypes.map(tFr => {
-    const tEn = enTypes.find(e => e.slug === tFr.slug) ?? tFr;
+  return frTypes.map((tFr) => {
+    const tEn = enTypes.find((e) => e.slug === tFr.slug) ?? tFr;
     const firstRow = tFr.priceRows?.[0];
     const price: PPPrice = firstRow
       ? priceFromRow(firstRow)
@@ -717,7 +914,15 @@ export async function fetchPostProdTypes(): Promise<PPCat[]> {
           if (!url) return null;
           return { kind: 'video', url, mime: m.mime, alt };
         }
-        const url = resolveStrapiMediaUrl(m);
+        // L'ORIGINAL, comme pour la galerie (`mapGalleryProjects`), et non le
+        // dérivé `medium` : cette URL alimente le visionneur, qui l'affiche
+        // dans un cadre de 720px et laisse zoomer jusqu'à 400 %. À 750px de
+        // large, l'image y était étirée et floue dès l'ouverture.
+        //
+        // La grille, elle, n'y perd rien : `ResponsiveImage` retrouve le radical
+        // du fichier et resynthétise le srcset thumbnail/small/medium/large —
+        // elle sert donc le même `large_` qu'avant, jamais l'original.
+        const url = resolveRawMediaUrl(m);
         if (!url) return null;
         return { kind: 'image', url, alt };
       })
@@ -731,8 +936,8 @@ export async function fetchPostProdTypes(): Promise<PPCat[]> {
       price,
       note: { fr: '', en: '' },
       features: {
-        fr: (tFr.includes ?? []).map(i => i.text),
-        en: (tEn.includes ?? []).map(i => i.text),
+        fr: (tFr.includes ?? []).map((i) => i.text),
+        en: (tEn.includes ?? []).map((i) => i.text),
       },
       formats: [],
       samples,
@@ -743,11 +948,6 @@ export async function fetchPostProdTypes(): Promise<PPCat[]> {
 }
 
 const TONES: Array<'warm' | 'mono' | 'dark'> = ['warm', 'mono', 'dark'];
-
-function estimateReadingTime(text: string): number {
-  const words = text.trim().split(/\s+/).length;
-  return Math.max(1, Math.round(words / 200));
-}
 
 function resolveStrapiMediaUrl(media?: StrapiMedia | null): string | undefined {
   if (!media?.url) return undefined;
@@ -767,9 +967,16 @@ function resolveRawMediaUrl(media?: StrapiMedia | null): string | undefined {
 // 500w, medium 750w, large 1000w). `coverUrl`/`previewUrl` strings reaching
 // the UI may already be one of these variants — strip the prefix to recover
 // the stem, then synthesize the full srcset.
-const STRAPI_FORMAT_PREFIXES = ['large_', 'medium_', 'small_', 'thumbnail_'] as const;
+const STRAPI_FORMAT_PREFIXES = [
+  'large_',
+  'medium_',
+  'small_',
+  'thumbnail_',
+] as const;
 
-function splitVariantUrl(url: string): { dir: string; stem: string; query: string } | null {
+function splitVariantUrl(
+  url: string,
+): { dir: string; stem: string; query: string } | null {
   const m = url.match(/^(.*\/)([^/?#]+\.(?:jpg|jpeg|png|webp|avif))(\?.*)?$/i);
   if (!m) return null;
   const [, dir, filename, query = ''] = m;
@@ -786,7 +993,9 @@ function splitVariantUrl(url: string): { dir: string; stem: string; query: strin
 // Build a `srcset` covering thumbnail/small/medium/large for a Strapi-served
 // image URL. Returns `undefined` for URLs that don't match (SVG, external,
 // unrecognized extension) so the caller can skip the attribute entirely.
-export function buildStrapiSrcset(url: string | undefined | null): string | undefined {
+export function buildStrapiSrcset(
+  url: string | undefined | null,
+): string | undefined {
   if (!url) return undefined;
   const parts = splitVariantUrl(url);
   if (!parts) return undefined;
@@ -802,7 +1011,9 @@ export function buildStrapiSrcset(url: string | undefined | null): string | unde
 // Largest derivative (`large_*`, ~1000px wide, typically 30–60 KB) used as
 // the default `src`. Falls back to the input URL when the pattern doesn't
 // match — preserves behaviour for non-Strapi assets.
-export function getStrapiLargeUrl(url: string | undefined | null): string | undefined {
+export function getStrapiLargeUrl(
+  url: string | undefined | null,
+): string | undefined {
   if (!url) return undefined;
   const parts = splitVariantUrl(url);
   if (!parts) return url;
@@ -810,12 +1021,15 @@ export function getStrapiLargeUrl(url: string | undefined | null): string | unde
   return `${dir}large_${stem}${query}`;
 }
 
-function mapBlogPostToDiscovery(pFr: StrapiBlogPost, pEn: StrapiBlogPost, tone: 'warm' | 'mono' | 'dark'): DiscoveryPost {
+function mapBlogPostToDiscovery(
+  pFr: StrapiBlogPost,
+  pEn: StrapiBlogPost,
+  tone: 'warm' | 'mono' | 'dark',
+): DiscoveryPost {
   const catFr = pFr.categories?.[0];
   const catEn = pEn.categories?.[0];
   const bodyFr = pFr.body ?? '';
   const bodyEn = pEn.body ?? '';
-  const readingTime = estimateReadingTime(bodyFr || bodyEn);
   const displayDate = pFr.articleDate ?? pFr.publishedAt ?? '';
   const seo = buildSeo(pFr.seo, pEn.seo);
   return {
@@ -828,7 +1042,6 @@ function mapBlogPostToDiscovery(pFr: StrapiBlogPost, pEn: StrapiBlogPost, tone: 
     sub: { fr: pFr.excerpt, en: pEn.excerpt },
     body: { fr: bodyFr, en: bodyEn },
     date: formatStrapiDate(displayDate),
-    read: `${readingTime} min`,
     author: 'Studio',
     coverUrl: resolveStrapiMediaUrl(pFr.coverMedia),
     coverMime: pFr.coverMedia?.mime,
@@ -843,11 +1056,14 @@ export async function fetchDiscoveryPosts(): Promise<DiscoveryPost[]> {
   // re-sort by editorial `articleDate` below — sorting on `articleDate`
   // server-side fails with 400 on envs where the schema rename (EDO-256)
   // hadn't propagated yet, and a single 400 wipes the whole discovery page.
-  const resBI = await fetchStrapiBilingual<{ data: StrapiBlogPost[] }>('blog-posts', {
-    'populate': 'categories,coverMedia,seo,seo.image',
-    'sort': 'createdAt:desc',
-    'pagination[pageSize]': '50',
-  });
+  const resBI = await fetchStrapiBilingual<{ data: StrapiBlogPost[] }>(
+    'blog-posts',
+    {
+      populate: 'categories,coverMedia,seo,seo.image',
+      sort: 'createdAt:desc',
+      'pagination[pageSize]': '50',
+    },
+  );
 
   function sortKey(p: StrapiBlogPost): number {
     const raw = p.articleDate ?? p.publishedAt ?? p.createdAt ?? '';
@@ -858,20 +1074,25 @@ export async function fetchDiscoveryPosts(): Promise<DiscoveryPost[]> {
   const enPosts = resBI.en.data;
 
   return frPosts.map((pFr, i) => {
-    const pEn = enPosts.find(e => e.slug === pFr.slug) ?? pFr;
+    const pEn = enPosts.find((e) => e.slug === pFr.slug) ?? pFr;
     return mapBlogPostToDiscovery(pFr, pEn, TONES[i % 3]);
   });
 }
 
-export async function fetchDiscoveryPost(slug: string): Promise<DiscoveryPost | null> {
-  const resBI = await fetchStrapiBilingual<{ data: StrapiBlogPost[] }>('blog-posts', {
-    'populate': 'categories,coverMedia,seo,seo.image',
-    'filters[slug][$eq]': slug,
-    'pagination[pageSize]': '1',
-  });
+export async function fetchDiscoveryPost(
+  slug: string,
+): Promise<DiscoveryPost | null> {
+  const resBI = await fetchStrapiBilingual<{ data: StrapiBlogPost[] }>(
+    'blog-posts',
+    {
+      populate: 'categories,coverMedia,seo,seo.image',
+      'filters[slug][$eq]': slug,
+      'pagination[pageSize]': '1',
+    },
+  );
   const pFr = resBI.fr.data[0];
   if (!pFr) return null;
-  const pEn = resBI.en.data.find(e => e.slug === pFr.slug) ?? pFr;
+  const pEn = resBI.en.data.find((e) => e.slug === pFr.slug) ?? pFr;
   return mapBlogPostToDiscovery(pFr, pEn, TONES[0]);
 }
 
@@ -879,27 +1100,66 @@ function formatStrapiDate(iso: string): Bilingual {
   if (!iso) return { fr: '', en: '' };
   const d = new Date(iso);
   return {
-    fr: d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }).replace('.', ''),
+    fr: d
+      .toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
+      .replace('.', ''),
     en: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
   };
 }
 
 export async function fetchDiscoveryCategories(): Promise<DiscoveryCategory[]> {
-  const resBI = await fetchStrapiBilingual<{ data: StrapiBlogCategory[] }>('blog-categories', { 'sort': 'title:asc' });
+  const resBI = await fetchStrapiBilingual<{ data: StrapiBlogCategory[] }>(
+    'blog-categories',
+    { sort: 'title:asc' },
+  );
   const frCats = resBI.fr.data;
   const enCats = resBI.en.data;
   return [
     { k: 'all', fr: 'Tout', en: 'All' },
-    ...frCats.map(cFr => {
-      const cEn = enCats.find(e => e.slug === cFr.slug) ?? cFr;
+    ...frCats.map((cFr) => {
+      const cEn = enCats.find((e) => e.slug === cFr.slug) ?? cFr;
       return { k: cFr.slug, fr: cFr.title, en: cEn.title };
     }),
   ];
 }
 
+// ─── site-setting : un seul accès, des sélecteurs purs ─────────────────────
+//
+// `site-setting` est un single-type : un unique document. Six fetchers le
+// lisaient chacun avec son propre `populate`, donc six clés de cache distinctes,
+// donc neuf requêtes HTTP par page pour la même ligne. Ils partagent désormais
+// ce `populate` unique : la clé est la même, `inflight` et le cache mutualisent
+// l'appel, et il ne reste que deux requêtes (fr + en).
+//
+// Chaque `select*` ci-dessous est une fonction pure — testable sans réseau.
+const SITE_SETTING_POPULATE =
+  'transport,entries,address,socialLinks,openingHours,closures,defaultSeoImage';
+
+export interface SiteSettings {
+  fr: StrapiSiteSettings;
+  en: StrapiSiteSettings;
+}
+
+async function fetchSiteSettings(): Promise<SiteSettings> {
+  const res = await fetchStrapiBilingual<{ data: StrapiSiteSettings }>(
+    'site-setting',
+    {
+      populate: SITE_SETTING_POPULATE,
+    },
+  );
+  return { fr: res.fr.data, en: res.en.data };
+}
+
+export function selectSocialLinks({ fr }: SiteSettings): SocialLink[] {
+  return (fr.socialLinks ?? []).map((s) => ({
+    k: s.platform,
+    label: s.label,
+    href: s.url,
+  }));
+}
+
 export async function fetchSocialLinks(): Promise<SocialLink[]> {
-  const res = await fetchStrapi<{ data: StrapiSiteSettings }>('site-setting', { 'populate': 'socialLinks', 'locale': 'fr' });
-  return (res.data.socialLinks ?? []).map(s => ({ k: s.platform, label: s.label, href: s.url }));
+  return selectSocialLinks(await fetchSiteSettings());
 }
 
 export interface ContactInfo {
@@ -907,7 +1167,14 @@ export interface ContactInfo {
   phoneHref: string;
   email: string;
   emailHref: string;
-  address: { street: string; zip: string; city: string; postalCode: string; country?: string; complement?: string };
+  address: {
+    street: string;
+    zip: string;
+    city: string;
+    postalCode: string;
+    country?: string;
+    complement?: string;
+  };
   fullAddress?: string;
   googleMapsUrl?: string;
   mapsEmbedUrl?: string;
@@ -918,18 +1185,18 @@ export interface ContactInfo {
 }
 
 function composeFullAddress(addr: StrapiPostalAddress): string {
-  const parts = [addr.street, addr.complement, `${addr.postalCode} ${addr.city}`.trim(), addr.country && addr.country !== 'FR' ? addr.country : ''];
+  const parts = [
+    addr.street,
+    addr.complement,
+    `${addr.postalCode} ${addr.city}`.trim(),
+    addr.country && addr.country !== 'FR' ? addr.country : '',
+  ];
   return parts.filter(Boolean).join(', ');
 }
 
-export async function fetchContact(): Promise<ContactInfo> {
-  const resBI = await fetchStrapiBilingual<{ data: StrapiSiteSettings }>(
-    'site-setting',
-    { populate: 'transport,entries,address' },
-  );
-  const s = resBI.fr.data;
-  const sEn = resBI.en.data;
-  const phoneHref = s.phoneHref || (s.phone ? `tel:${s.phone.replace(/\s/g, '')}` : '');
+export function selectContact({ fr: s, en: sEn }: SiteSettings): ContactInfo {
+  const phoneHref =
+    s.phoneHref || (s.phone ? `tel:${s.phone.replace(/\s/g, '')}` : '');
 
   // Prefer the structured `address` component when populated; otherwise fall back to flat fields.
   const addr = s.address;
@@ -956,20 +1223,92 @@ export async function fetchContact(): Promise<ContactInfo> {
     fullAddress,
     googleMapsUrl: s.googleMapsUrl,
     mapsEmbedUrl: s.mapsEmbedUrl,
-    parking: s.parking || sEn?.parking ? { fr: s.parking ?? '', en: sEn?.parking ?? s.parking ?? '' } : undefined,
+    parking:
+      s.parking || sEn?.parking
+        ? { fr: s.parking ?? '', en: sEn?.parking ?? s.parking ?? '' }
+        : undefined,
     transport: s.transport ?? [],
     entries: s.entries ?? [],
     etouch: 'https://etouch.e-do.studio',
   };
 }
 
-export interface StudioHours {
-  weekday: Bilingual;
-  weekend: Bilingual;
+export async function fetchContact(): Promise<ContactInfo> {
+  return selectContact(await fetchSiteSettings());
 }
 
-const WEEKDAYS: DayOfWeek[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
-const WEEKEND: DayOfWeek[] = ['saturday', 'sunday'];
+/**
+ * Une rangée d'horaires, telle qu'elle s'affiche.
+ *
+ * Les jours sont GROUPÉS depuis la donnée, et le libellé en est dérivé. C'est
+ * tout l'objet de cette forme : la version précédente écrasait les sept jours
+ * dans deux paquets fixes (lundi-vendredi, samedi-dimanche) et la page imprimait
+ * deux libellés écrits en dur. Un studio fermé le lundi, ou ouvert du mardi au
+ * samedi, s'affichait donc « LUN — VEN » — le libellé affirmait un intervalle
+ * que personne n'avait vérifié. Pire, `stripLeadingDayPrefix` retirait le
+ * préfixe de jour que la rédaction avait tapé côté CMS pour laisser la place à
+ * cette affirmation : la vérité était détruite pour imprimer l'hypothèse.
+ */
+export interface StudioHoursRow {
+  /** Les jours réellement couverts, pour le JSON-LD. */
+  days: DayOfWeek[];
+  /** « Lun — Ven », « Sam », dérivé de `days`. Vide sur la forme héritée. */
+  label: Bilingual;
+  /** « 10:00 — 18:00 », ou le libellé du statut. */
+  value: Bilingual;
+  /**
+   * Une plage horaire n'est pas un statut. « Sur demande » et « Fermé » sont
+   * l'ABSENCE d'horaire, et les afficher au même poids qu'une plage — même
+   * taille, même tonalité, un filet entre les deux comme s'ils étaient
+   * comparables — était le défaut visible de cette cellule.
+   */
+  kind: 'hours' | 'status';
+  /** Bornes normalisées, pour que le JSON-LD n'ait pas à relire l'affichage. */
+  opens?: string;
+  closes?: string;
+}
+
+export interface StudioHours {
+  rows: StudioHoursRow[];
+}
+
+const DAY_ORDER: DayOfWeek[] = [
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+  'saturday',
+  'sunday',
+];
+
+// Le 1er janvier 2024 est un lundi : sept dates fixes suffisent à obtenir les
+// noms de jours dans les deux langues via `Intl`, sans ajouter quatorze clés
+// i18n ni dépendre de l'horloge.
+const DAY_REFERENCE_DATE: Record<DayOfWeek, string> = {
+  monday: '2024-01-01',
+  tuesday: '2024-01-02',
+  wednesday: '2024-01-03',
+  thursday: '2024-01-04',
+  friday: '2024-01-05',
+  saturday: '2024-01-06',
+  sunday: '2024-01-07',
+};
+
+function dayName(day: DayOfWeek, lang: 'fr' | 'en'): string {
+  const name = new Intl.DateTimeFormat(lang === 'fr' ? 'fr-FR' : 'en-GB', {
+    weekday: 'short',
+    timeZone: 'UTC',
+  }).format(new Date(`${DAY_REFERENCE_DATE[day]}T12:00:00Z`));
+  // `fr` rend « lun. » : le point est du bruit sous les capitales du libellé.
+  return name.replace(/\.$/, '');
+}
+
+function groupLabel(days: DayOfWeek[], lang: 'fr' | 'en'): string {
+  if (days.length === 0) return '';
+  if (days.length === 1) return dayName(days[0], lang);
+  return `${dayName(days[0], lang)} — ${dayName(days[days.length - 1], lang)}`;
+}
 
 function trimTime(t?: string | null): string {
   if (!t) return '';
@@ -977,75 +1316,180 @@ function trimTime(t?: string | null): string {
   return m ? `${m[1]}:${m[2]}` : String(t);
 }
 
-// Strapi sometimes stores the legacy `hours` / `weekendHours` strings with a
-// day prefix baked in (e.g. "Lun-Ven 10:00-18:00", "Sam-Dim sur demande"). The
-// rail already prints the day range as the row label, so trim that prefix so
-// the value column doesn't echo it back.
-function stripLeadingDayPrefix(value: string): string {
-  if (!value) return value;
-  return value
-    .replace(/^([A-Za-zéèêàâîïôûç]{2,})\s*[-–—]\s*([A-Za-zéèêàâîïôûç]{2,})\s+/i, '')
-    .trim();
+/** Ce qui distingue deux rangées : deux jours de même signature se regroupent. */
+function daySignature(row: StrapiOpeningHour | undefined): string {
+  if (!row || row.closed) return 'closed';
+  if (row.byAppointment) return 'appointment';
+  const opens = trimTime(row.opensAt);
+  const closes = trimTime(row.closesAt);
+  return opens && closes ? `${opens}-${closes}` : 'request';
 }
 
-function summarizeRange(rows: StrapiOpeningHour[], days: DayOfWeek[], lang: 'fr' | 'en'): string {
-  const matching = rows.filter((r) => days.includes(r.dayOfWeek));
-  const open = matching.filter((r) => !r.closed);
-  if (open.length === 0) {
-    return lang === 'fr' ? 'Fermé' : 'Closed';
+function signatureValue(
+  signature: string,
+  lang: 'fr' | 'en',
+): { value: string; kind: 'hours' | 'status' } {
+  if (signature === 'closed')
+    return { value: getT(lang)('contact.closed'), kind: 'status' };
+  if (signature === 'appointment')
+    return { value: getT(lang)('contact.byAppointment'), kind: 'status' };
+  if (signature === 'request')
+    return { value: getT(lang)('common.onRequest'), kind: 'status' };
+  const [opens, closes] = signature.split('-');
+  return { value: `${opens} — ${closes}`, kind: 'hours' };
+}
+
+// Les trois premières lettres suffisent à nommer un jour dans les deux langues,
+// et aucune ne collisionne. Sert à LIRE le préfixe que la rédaction a écrit dans
+// les champs texte hérités — « Lun–Ven », « Mar–Sam », « Mon–Fri ».
+const DAY_TOKENS: Record<string, DayOfWeek> = {
+  lun: 'monday',
+  mar: 'tuesday',
+  mer: 'wednesday',
+  jeu: 'thursday',
+  ven: 'friday',
+  sam: 'saturday',
+  dim: 'sunday',
+  mon: 'monday',
+  tue: 'tuesday',
+  wed: 'wednesday',
+  thu: 'thursday',
+  fri: 'friday',
+  sat: 'saturday',
+  sun: 'sunday',
+};
+
+const LEGACY_PREFIX =
+  /^([A-Za-zÀ-ÿ]{3,})(?:\s*[-–—]\s*([A-Za-zÀ-ÿ]{3,}))?[\s:,]+(.+)$/;
+const TIME_RANGE =
+  /(\d{1,2})\s*[:h]\s*(\d{2})?\s*[-–—]\s*(\d{1,2})\s*[:h]\s*(\d{2})?/;
+
+interface ParsedLegacySentence {
+  days: DayOfWeek[];
+  label: string;
+  value: string;
+  kind: 'hours' | 'status';
+  opens?: string;
+  closes?: string;
+}
+
+/**
+ * Découpe « Lun–Ven 10:00–18:00 » en son libellé et sa valeur.
+ *
+ * Rend `null` quand le préfixe ne nomme pas un jour : la phrase se rend alors
+ * entière plutôt que d'être coupée au hasard.
+ */
+function parseLegacySentence(sentence: string): ParsedLegacySentence | null {
+  const m = sentence.match(LEGACY_PREFIX);
+  if (!m) return null;
+  const first = DAY_TOKENS[m[1].slice(0, 3).toLowerCase()];
+  if (!first) return null;
+  const last = m[2] ? DAY_TOKENS[m[2].slice(0, 3).toLowerCase()] : first;
+  if (m[2] && !last) return null;
+  const from = DAY_ORDER.indexOf(first);
+  const to = DAY_ORDER.indexOf(last ?? first);
+  if (from < 0 || to < from) return null;
+
+  const value = m[3].trim();
+  const label = m[2] ? `${m[1]} — ${m[2]}` : m[1];
+  const time = value.match(TIME_RANGE);
+  const pad = (h: string) => h.padStart(2, '0');
+  return {
+    days: DAY_ORDER.slice(from, to + 1),
+    label,
+    value,
+    // « sur demande » n'est pas une plage : sans bornes lisibles, c'est un statut,
+    // et il ne se déclare pas au JSON-LD.
+    kind: time ? 'hours' : 'status',
+    opens: time ? `${pad(time[1])}:${time[2] ?? '00'}` : undefined,
+    closes: time ? `${pad(time[3])}:${time[4] ?? '00'}` : undefined,
+  };
+}
+
+export function selectStudioHours({ fr, en }: SiteSettings): StudioHours {
+  const dayRows = fr.openingHours ?? [];
+  if (dayRows.length > 0) {
+    const byDay = new Map(dayRows.map((r) => [r.dayOfWeek, r]));
+    const rows: StudioHoursRow[] = [];
+    let previousSignature: string | null = null;
+    for (const day of DAY_ORDER) {
+      const signature = daySignature(byDay.get(day));
+      // Jours CONSÉCUTIFS de même signature : une seule rangée. Deux jours qui
+      // partagent un horaire sans se suivre en font deux, et c'est correct —
+      // « Lun — Mer » et « Ven » ne se disent pas « Lun — Ven ».
+      if (signature === previousSignature) {
+        rows[rows.length - 1].days.push(day);
+        continue;
+      }
+      previousSignature = signature;
+      const valueFr = signatureValue(signature, 'fr');
+      const valueEn = signatureValue(signature, 'en');
+      const bounds = valueFr.kind === 'hours' ? signature.split('-') : [];
+      rows.push({
+        days: [day],
+        label: { fr: '', en: '' },
+        value: { fr: valueFr.value, en: valueEn.value },
+        kind: valueFr.kind,
+        opens: bounds[0],
+        closes: bounds[1],
+      });
+    }
+    for (const row of rows) {
+      row.label = {
+        fr: groupLabel(row.days, 'fr'),
+        en: groupLabel(row.days, 'en'),
+      };
+    }
+    return { rows };
   }
-  const byAppointment = open.every((r) => r.byAppointment);
-  if (byAppointment) {
-    return lang === 'fr' ? 'Sur rendez-vous' : 'By appointment';
-  }
-  // Take the first row's range; if everyone matches, that's the canonical display.
-  // If they differ, fall back to a multi-line summary (caller should switch to legacy).
-  const first = open[0];
-  const allSame = open.every((r) => trimTime(r.opensAt) === trimTime(first.opensAt) && trimTime(r.closesAt) === trimTime(first.closesAt));
-  const opens = trimTime(first.opensAt);
-  const closes = trimTime(first.closesAt);
-  if (!opens || !closes) {
-    return lang === 'fr' ? 'Sur demande' : 'On request';
-  }
-  if (!allSame) {
-    return open
-      .map((r) => `${trimTime(r.opensAt)} — ${trimTime(r.closesAt)}`)
-      .join(' · ');
-  }
-  return `${opens} — ${closes}`;
+
+  // Forme héritée : deux chaînes libres du genre « Lun–Ven 10:00–18:00 ». Le
+  // préfixe de jour EST le libellé que la rédaction a choisi — on le lit, on ne
+  // le jette plus pour le remplacer par une hypothèse. Quand il ne se lit pas,
+  // la phrase se rend entière, sans libellé en face, parce qu'on n'a rien de vrai
+  // à y mettre.
+  const legacy: StudioHoursRow[] = [];
+  const push = (frValue?: string, enValue?: string) => {
+    const sentenceFr = (frValue ?? '').trim();
+    if (!sentenceFr) return;
+    const sentenceEn = (enValue ?? frValue ?? '').trim();
+    const parsedFr = parseLegacySentence(sentenceFr);
+    const parsedEn = parseLegacySentence(sentenceEn);
+    if (!parsedFr) {
+      legacy.push({
+        days: [],
+        label: { fr: '', en: '' },
+        value: { fr: sentenceFr, en: sentenceEn },
+        kind: 'hours',
+      });
+      return;
+    }
+    legacy.push({
+      days: parsedFr.days,
+      label: { fr: parsedFr.label, en: parsedEn?.label || parsedFr.label },
+      value: { fr: parsedFr.value, en: parsedEn?.value || parsedFr.value },
+      kind: parsedFr.kind,
+      opens: parsedFr.opens,
+      closes: parsedFr.closes,
+    });
+  };
+  push(fr.hours, en?.hours ?? fr.hours);
+  push(fr.weekendHours, en?.weekendHours ?? fr.weekendHours);
+  return { rows: legacy };
 }
 
 export async function fetchStudioHours(): Promise<StudioHours> {
-  const resBI = await fetchStrapiBilingual<{ data: StrapiSiteSettings }>('site-setting', {
-    populate: 'openingHours',
-  });
-  const fr = resBI.fr.data;
-  const en = resBI.en.data;
-  const rowsFr = fr.openingHours ?? [];
-  if (rowsFr.length > 0) {
-    return {
-      weekday: { fr: summarizeRange(rowsFr, WEEKDAYS, 'fr'), en: summarizeRange(rowsFr, WEEKDAYS, 'en') },
-      weekend: { fr: summarizeRange(rowsFr, WEEKEND, 'fr'), en: summarizeRange(rowsFr, WEEKEND, 'en') },
-    };
-  }
-  const weekdayFr = stripLeadingDayPrefix(fr.hours ?? '');
-  const weekdayEn = stripLeadingDayPrefix(en?.hours ?? fr.hours ?? '');
-  const weekendFr = stripLeadingDayPrefix(fr.weekendHours ?? '');
-  const weekendEn = stripLeadingDayPrefix(en?.weekendHours ?? fr.weekendHours ?? '');
-  return {
-    weekday: { fr: weekdayFr, en: weekdayEn },
-    weekend: { fr: weekendFr, en: weekendEn },
-  };
+  return selectStudioHours(await fetchSiteSettings());
 }
 
 // Editorial announcement shown next to the studio hours on the home header
 // (e.g. "Studio climatisé"). Localized scalar on site-setting; empty = hidden.
+export function selectAnnouncement({ fr, en }: SiteSettings): Bilingual {
+  return { fr: fr.announcement ?? '', en: en.announcement ?? '' };
+}
+
 export async function fetchAnnouncement(): Promise<Bilingual> {
-  const resBI = await fetchStrapiBilingual<{ data: StrapiSiteSettings }>('site-setting');
-  return {
-    fr: resBI.fr.data.announcement ?? '',
-    en: resBI.en.data.announcement ?? '',
-  };
+  return selectAnnouncement(await fetchSiteSettings());
 }
 
 export interface ClosurePeriod {
@@ -1065,13 +1509,10 @@ export interface SiteBusinessInfo {
   closures: ClosurePeriod[];
 }
 
-export async function fetchSiteBusinessInfo(): Promise<SiteBusinessInfo> {
-  const resBI = await fetchStrapiBilingual<{ data: StrapiSiteSettings }>(
-    'site-setting',
-    { populate: 'closures' },
-  );
-  const fr = resBI.fr.data;
-  const en = resBI.en.data;
+export function selectSiteBusinessInfo({
+  fr,
+  en,
+}: SiteSettings): SiteBusinessInfo {
   const closuresFr = fr.closures ?? [];
   const closuresEn = en?.closures ?? [];
   const closures: ClosurePeriod[] = closuresFr.map((c, i) => {
@@ -1079,12 +1520,14 @@ export async function fetchSiteBusinessInfo(): Promise<SiteBusinessInfo> {
     return {
       startsAt: c.startsAt,
       endsAt: c.endsAt,
-      label: c.label || cEn?.label
-        ? { fr: c.label ?? '', en: cEn?.label ?? c.label ?? '' }
-        : undefined,
-      note: c.note || cEn?.note
-        ? { fr: c.note ?? '', en: cEn?.note ?? c.note ?? '' }
-        : undefined,
+      label:
+        c.label || cEn?.label
+          ? { fr: c.label ?? '', en: cEn?.label ?? c.label ?? '' }
+          : undefined,
+      note:
+        c.note || cEn?.note
+          ? { fr: c.note ?? '', en: cEn?.note ?? c.note ?? '' }
+          : undefined,
     };
   });
   return {
@@ -1098,6 +1541,10 @@ export async function fetchSiteBusinessInfo(): Promise<SiteBusinessInfo> {
   };
 }
 
+export async function fetchSiteBusinessInfo(): Promise<SiteBusinessInfo> {
+  return selectSiteBusinessInfo(await fetchSiteSettings());
+}
+
 export interface SiteDefaults {
   seoTitle: Bilingual;
   seoDescription: Bilingual;
@@ -1108,7 +1555,13 @@ export interface SiteDefaults {
 // Tuple runtime + type dérivé : la liste sert aussi à valider le `?doc=` de la
 // route legal (src/router.tsx), qui ne peut pas importer la page sans casser le
 // code-splitting.
-export const LEGAL_DOCUMENT_KEYS = ['mentions', 'cgv', 'cgu', 'privacy', 'cookies'] as const;
+export const LEGAL_DOCUMENT_KEYS = [
+  'mentions',
+  'cgv',
+  'cgu',
+  'privacy',
+  'cookies',
+] as const;
 
 export type LegalDocumentKey = (typeof LEGAL_DOCUMENT_KEYS)[number];
 
@@ -1135,14 +1588,19 @@ export interface LegalSectionContent {
   lastUpdatedAt?: string;
 }
 
-export type LegalSectionsByDocument = Partial<Record<LegalDocumentKey, LegalSectionContent[]>>;
+export type LegalSectionsByDocument = Partial<
+  Record<LegalDocumentKey, LegalSectionContent[]>
+>;
 
 export async function fetchLegalSectionsByDocument(): Promise<LegalSectionsByDocument> {
   try {
-    const resBI = await fetchStrapiBilingual<{ data: StrapiLegalSection[] }>('legal-sections', {
-      'sort': 'slug:asc',
-      'pagination[pageSize]': '200',
-    });
+    const resBI = await fetchStrapiBilingual<{ data: StrapiLegalSection[] }>(
+      'legal-sections',
+      {
+        sort: 'slug:asc',
+        'pagination[pageSize]': '200',
+      },
+    );
     const frSections = resBI.fr.data ?? [];
     const enSections = resBI.en.data ?? [];
     const enById = new Map(enSections.map((s) => [s.id, s]));
@@ -1151,7 +1609,11 @@ export async function fetchLegalSectionsByDocument(): Promise<LegalSectionsByDoc
       const en = enById.get(s.id) ?? s;
       const bodyFr = (Array.isArray(s.body) ? s.body : []) as BlockNode[];
       const bodyEn = (Array.isArray(en.body) ? en.body : bodyFr) as BlockNode[];
-      const list = grouped[s.documentKey] ?? (grouped[s.documentKey] = []);
+      let list = grouped[s.documentKey];
+      if (!list) {
+        list = [];
+        grouped[s.documentKey] = list;
+      }
       list.push({
         slug: s.slug,
         title: { fr: s.title, en: en.title },
@@ -1172,7 +1634,10 @@ export interface LegalDocumentMeta {
   updated: string;
 }
 
-const LEGAL_DOCUMENT_LABELS: Record<LegalDocumentKey, { fr: string; en: string }> = {
+const LEGAL_DOCUMENT_LABELS: Record<
+  LegalDocumentKey,
+  { fr: string; en: string }
+> = {
   mentions: { fr: 'Mentions légales', en: 'Legal notice' },
   cgv: { fr: 'Conditions de vente', en: 'Terms of sale' },
   cgu: { fr: "Conditions d'utilisation", en: 'Terms of use' },
@@ -1180,7 +1645,13 @@ const LEGAL_DOCUMENT_LABELS: Record<LegalDocumentKey, { fr: string; en: string }
   cookies: { fr: 'Cookies', en: 'Cookies' },
 };
 
-const LEGAL_DOCUMENT_ORDER: LegalDocumentKey[] = ['mentions', 'cgv', 'cgu', 'privacy', 'cookies'];
+const LEGAL_DOCUMENT_ORDER: LegalDocumentKey[] = [
+  'mentions',
+  'cgv',
+  'cgu',
+  'privacy',
+  'cookies',
+];
 
 function formatLastUpdated(iso?: string): string {
   if (!iso) return '';
@@ -1191,10 +1662,13 @@ function formatLastUpdated(iso?: string): string {
 }
 
 export async function fetchLegalDocuments(): Promise<LegalDocumentMeta[]> {
-  const resBI = await fetchStrapiBilingual<{ data: StrapiLegalSection[] }>('legal-sections', {
-    'sort': 'slug:asc',
-    'pagination[pageSize]': '200',
-  });
+  const resBI = await fetchStrapiBilingual<{ data: StrapiLegalSection[] }>(
+    'legal-sections',
+    {
+      sort: 'slug:asc',
+      'pagination[pageSize]': '200',
+    },
+  );
   const frSections = resBI.fr.data ?? [];
 
   // Pick the most recent lastUpdatedAt per document, and track which docs have content.
@@ -1208,12 +1682,14 @@ export async function fetchLegalDocuments(): Promise<LegalDocumentMeta[]> {
     }
   }
 
-  return LEGAL_DOCUMENT_ORDER.filter((k) => docsWithContent.has(k)).map((k) => ({
-    k,
-    fr: LEGAL_DOCUMENT_LABELS[k].fr,
-    en: LEGAL_DOCUMENT_LABELS[k].en,
-    updated: formatLastUpdated(updatedByDoc.get(k)),
-  }));
+  return LEGAL_DOCUMENT_ORDER.filter((k) => docsWithContent.has(k)).map(
+    (k) => ({
+      k,
+      fr: LEGAL_DOCUMENT_LABELS[k].fr,
+      en: LEGAL_DOCUMENT_LABELS[k].en,
+      updated: formatLastUpdated(updatedByDoc.get(k)),
+    }),
+  );
 }
 
 export interface TeamMember {
@@ -1234,11 +1710,14 @@ interface StrapiTeamMember {
 }
 
 export async function fetchTeamMembers(): Promise<TeamMember[]> {
-  const resBI = await fetchStrapiBilingual<{ data: StrapiTeamMember[] }>('team-members', {
-    'populate': 'photo',
-    'sort': 'createdAt:asc',
-    'pagination[pageSize]': '50',
-  });
+  const resBI = await fetchStrapiBilingual<{ data: StrapiTeamMember[] }>(
+    'team-members',
+    {
+      populate: 'photo',
+      sort: 'createdAt:asc',
+      'pagination[pageSize]': '50',
+    },
+  );
   const frMembers = resBI.fr.data ?? [];
   const enMembers = resBI.en.data ?? [];
   return frMembers.map((mFr) => {
@@ -1254,15 +1733,15 @@ export async function fetchTeamMembers(): Promise<TeamMember[]> {
   });
 }
 
-export async function fetchSiteDefaults(): Promise<SiteDefaults> {
-  const resBI = await fetchStrapiBilingual<{ data: StrapiSiteSettings }>(
-    'site-setting',
-    { populate: 'defaultSeoImage' },
-  );
-  const s = resBI.fr.data;
-  const sEn = resBI.en.data;
+export function selectSiteDefaults({
+  fr: s,
+  en: sEn,
+}: SiteSettings): SiteDefaults {
   return {
-    seoTitle: { fr: s.defaultSeoTitle ?? '', en: sEn?.defaultSeoTitle ?? s.defaultSeoTitle ?? '' },
+    seoTitle: {
+      fr: s.defaultSeoTitle ?? '',
+      en: sEn?.defaultSeoTitle ?? s.defaultSeoTitle ?? '',
+    },
     seoDescription: {
       fr: s.defaultSeoDescription ?? '',
       en: sEn?.defaultSeoDescription ?? s.defaultSeoDescription ?? '',
@@ -1270,6 +1749,10 @@ export async function fetchSiteDefaults(): Promise<SiteDefaults> {
     seoImageUrl: resolveStrapiMediaUrl(s.defaultSeoImage),
     googleAnalyticsId: s.googleAnalyticsId,
   };
+}
+
+export async function fetchSiteDefaults(): Promise<SiteDefaults> {
+  return selectSiteDefaults(await fetchSiteSettings());
 }
 
 // ─── Gallery types & fetchers ──────────────────────────────────────────────
@@ -1345,12 +1828,15 @@ export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
   // editorial `displayOrder` below — sorting on `displayOrder` server-side
   // 400s on any env where the schema field hasn't propagated yet, and a single
   // 400 wipes the whole gallery (same precaution as `fetchDiscoveryPosts`).
-  const res = await fetchStrapi<{ data: StrapiGalleryProject[] }>('gallery-projects', {
-    'populate': '*',
-    'sort': 'createdAt:asc',
-    'pagination[pageSize]': '100',
-    'locale': 'fr',
-  });
+  const res = await fetchStrapi<{ data: StrapiGalleryProject[] }>(
+    'gallery-projects',
+    {
+      populate: '*',
+      sort: 'createdAt:asc',
+      'pagination[pageSize]': '100',
+      locale: 'fr',
+    },
+  );
 
   const ordered = [...res.data].sort(
     (a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0),
@@ -1366,7 +1852,8 @@ export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
         const isVideo = m.mime?.startsWith('video/');
         const rawUrl = absoluteMediaUrl(m.url);
         const mediumPath = m.formats?.medium?.url;
-        const previewUrl = !isVideo && mediumPath ? absoluteMediaUrl(mediumPath) : undefined;
+        const previewUrl =
+          !isVideo && mediumPath ? absoluteMediaUrl(mediumPath) : undefined;
         return {
           kind: isVideo ? 'video' : 'image',
           url: rawUrl,
@@ -1379,7 +1866,12 @@ export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
     // Iframe embeds (360° packshots) follow the uploaded files in slot order.
     const embeds: GalleryMedia[] = [];
     for (const e of p.embeds ?? []) {
-      if (e.url) embeds.push({ kind: 'embed', url: normalizeEmbedUrl(e.url), alt: e.alt ?? '' });
+      if (e.url)
+        embeds.push({
+          kind: 'embed',
+          url: normalizeEmbedUrl(e.url),
+          alt: e.alt ?? '',
+        });
     }
     const media: GalleryMedia[] = [...files, ...embeds];
     return {
@@ -1395,13 +1887,16 @@ export async function fetchGalleryProjects(): Promise<GalleryProject[]> {
 }
 
 export async function fetchGalleryCategories(): Promise<GalleryCategory[]> {
-  const resBI = await fetchStrapiBilingual<{ data: StrapiGalleryCategory[] }>('gallery-categories', {
-    'sort': 'createdAt:asc',
-  });
+  const resBI = await fetchStrapiBilingual<{ data: StrapiGalleryCategory[] }>(
+    'gallery-categories',
+    {
+      sort: 'createdAt:asc',
+    },
+  );
   const frCats = resBI.fr.data;
   const enCats = resBI.en.data;
-  return frCats.map(cFr => {
-    const cEn = enCats.find(e => e.slug === cFr.slug) ?? cFr;
+  return frCats.map((cFr) => {
+    const cEn = enCats.find((e) => e.slug === cFr.slug) ?? cFr;
     return { k: cFr.slug, fr: cFr.name, en: cEn.name };
   });
 }
@@ -1425,10 +1920,13 @@ export interface HomeHero {
 
 export async function fetchHomeHero(): Promise<HomeHero | null> {
   try {
-    const res = await fetchStrapi<{ data: StrapiHomeHero | null }>('home-hero', {
-      'populate': 'video,poster',
-      'locale': 'fr',
-    });
+    const res = await fetchStrapi<{ data: StrapiHomeHero | null }>(
+      'home-hero',
+      {
+        populate: 'video,poster',
+        locale: 'fr',
+      },
+    );
     const data = res?.data;
     if (!data) return null;
     const posters: HomeHeroPoster[] = (data.poster ?? [])

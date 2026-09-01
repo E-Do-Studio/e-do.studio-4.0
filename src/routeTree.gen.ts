@@ -18,6 +18,8 @@ import { Route as LangGalerieRouteImport } from './routes/$lang/galerie'
 import { Route as LangGalleryRouteImport } from './routes/$lang/gallery'
 import { Route as LangLegalRouteImport } from './routes/$lang/legal'
 import { Route as LangPostProductionRouteImport } from './routes/$lang/post-production'
+import { Route as DevDesignSystemRouteImport } from './routes/dev/design-system'
+import { Route as DevInventaireRouteImport } from './routes/dev/inventaire'
 import { Route as LangBookIndexRouteImport } from './routes/$lang/book/index'
 import { Route as LangBookConfirmationRouteImport } from './routes/$lang/book/confirmation'
 import { Route as LangBookContactRouteImport } from './routes/$lang/book/contact'
@@ -84,6 +86,16 @@ const LangPostProductionRoute = LangPostProductionRouteImport.update({
   id: '/post-production',
   path: '/post-production',
   getParentRoute: () => LangRouteRoute,
+} as any)
+const DevDesignSystemRoute = DevDesignSystemRouteImport.update({
+  id: '/dev/design-system',
+  path: '/dev/design-system',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DevInventaireRoute = DevInventaireRouteImport.update({
+  id: '/dev/inventaire',
+  path: '/dev/inventaire',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const LangBookIndexRoute = LangBookIndexRouteImport.update({
   id: '/book/',
@@ -211,6 +223,8 @@ export interface FileRoutesByFullPath {
   '/$lang/gallery': typeof LangGalleryRoute
   '/$lang/legal': typeof LangLegalRoute
   '/$lang/post-production': typeof LangPostProductionRoute
+  '/dev/design-system': typeof DevDesignSystemRoute
+  '/dev/inventaire': typeof DevInventaireRoute
   '/$lang/': typeof LangIndexRoute
   '/$lang/book/confirmation': typeof LangBookConfirmationRoute
   '/$lang/book/contact': typeof LangBookContactRoute
@@ -242,6 +256,8 @@ export interface FileRoutesByTo {
   '/$lang/gallery': typeof LangGalleryRoute
   '/$lang/legal': typeof LangLegalRoute
   '/$lang/post-production': typeof LangPostProductionRoute
+  '/dev/design-system': typeof DevDesignSystemRoute
+  '/dev/inventaire': typeof DevInventaireRoute
   '/$lang': typeof LangIndexRoute
   '/$lang/book/confirmation': typeof LangBookConfirmationRoute
   '/$lang/book/contact': typeof LangBookContactRoute
@@ -275,6 +291,8 @@ export interface FileRoutesById {
   '/$lang/gallery': typeof LangGalleryRoute
   '/$lang/legal': typeof LangLegalRoute
   '/$lang/post-production': typeof LangPostProductionRoute
+  '/dev/design-system': typeof DevDesignSystemRoute
+  '/dev/inventaire': typeof DevInventaireRoute
   '/$lang/': typeof LangIndexRoute
   '/$lang/book/confirmation': typeof LangBookConfirmationRoute
   '/$lang/book/contact': typeof LangBookContactRoute
@@ -309,6 +327,8 @@ export interface FileRouteTypes {
     | '/$lang/gallery'
     | '/$lang/legal'
     | '/$lang/post-production'
+    | '/dev/design-system'
+    | '/dev/inventaire'
     | '/$lang/'
     | '/$lang/book/confirmation'
     | '/$lang/book/contact'
@@ -340,6 +360,8 @@ export interface FileRouteTypes {
     | '/$lang/gallery'
     | '/$lang/legal'
     | '/$lang/post-production'
+    | '/dev/design-system'
+    | '/dev/inventaire'
     | '/$lang'
     | '/$lang/book/confirmation'
     | '/$lang/book/contact'
@@ -372,6 +394,8 @@ export interface FileRouteTypes {
     | '/$lang/gallery'
     | '/$lang/legal'
     | '/$lang/post-production'
+    | '/dev/design-system'
+    | '/dev/inventaire'
     | '/$lang/'
     | '/$lang/book/confirmation'
     | '/$lang/book/contact'
@@ -399,6 +423,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LangRouteRoute: typeof LangRouteRouteWithChildren
+  DevDesignSystemRoute: typeof DevDesignSystemRoute
+  DevInventaireRoute: typeof DevInventaireRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -465,6 +491,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/$lang/post-production'
       preLoaderRoute: typeof LangPostProductionRouteImport
       parentRoute: typeof LangRouteRoute
+    }
+    '/dev/design-system': {
+      id: '/dev/design-system'
+      path: '/dev/design-system'
+      fullPath: '/dev/design-system'
+      preLoaderRoute: typeof DevDesignSystemRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dev/inventaire': {
+      id: '/dev/inventaire'
+      path: '/dev/inventaire'
+      fullPath: '/dev/inventaire'
+      preLoaderRoute: typeof DevInventaireRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/$lang/book/': {
       id: '/$lang/book/'
@@ -686,6 +726,8 @@ const LangRouteRouteWithChildren = LangRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LangRouteRoute: LangRouteRouteWithChildren,
+  DevDesignSystemRoute: DevDesignSystemRoute,
+  DevInventaireRoute: DevInventaireRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

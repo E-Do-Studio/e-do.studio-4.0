@@ -4,6 +4,10 @@ import { settle } from '../../../lib/route-data';
 import { fetchDiscoveryPost, fetchDiscoveryPosts } from '../../../lib/strapi';
 import type { Lang } from '../../../types';
 import { buildSeoHead } from '../../../lib/seo-head';
+import {
+  buildBlogPostingSchema,
+  buildPageBreadcrumb,
+} from '../../../lib/structured-data';
 
 export const Route = createFileRoute('/$lang/discovery/$slug')({
   loader: async ({ params }) => {
@@ -13,14 +17,24 @@ export const Route = createFileRoute('/$lang/discovery/$slug')({
     ]);
     return { post, posts };
   },
-  head: ({ params, loaderData }) =>
-    buildSeoHead({
+  head: ({ params, loaderData }) => {
+    const lang = params.lang as Lang;
+    const pathname = `/discovery/${params.slug}`;
+    const post = loaderData?.post;
+    return buildSeoHead({
       metaKey: 'discovery',
-      lang: params.lang as Lang,
-      pathname: `/discovery/${params.slug}`,
-      title: loaderData?.post?.seo?.[params.lang as Lang]?.title || loaderData?.post?.title?.[params.lang as Lang],
-      description: loaderData?.post?.seo?.[params.lang as Lang]?.description || loaderData?.post?.sub?.[params.lang as Lang],
-      noIndex: true,
-    }),
+      lang,
+      pathname,
+      title: post?.seo?.[lang]?.title || post?.title?.[lang],
+      description: post?.seo?.[lang]?.description || post?.sub?.[lang],
+      jsonLd: [
+        post && buildBlogPostingSchema(post, lang, pathname),
+        buildPageBreadcrumb(lang, [
+          { name: 'Discovery', pathname: '/discovery' },
+          { name: post?.title?.[lang] || params.slug, pathname },
+        ]),
+      ],
+    });
+  },
   component: DiscoveryPostPage,
 });

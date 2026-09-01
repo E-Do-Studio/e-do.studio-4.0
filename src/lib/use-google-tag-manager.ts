@@ -1,5 +1,8 @@
 import { useEffect } from 'react';
-import { COOKIE_CONSENT_EVENT, COOKIE_CONSENT_STORAGE_KEY } from './use-cookie-consent';
+import {
+  COOKIE_CONSENT_EVENT,
+  COOKIE_CONSENT_STORAGE_KEY,
+} from './use-cookie-consent';
 
 declare global {
   interface Window {
@@ -7,32 +10,35 @@ declare global {
   }
 }
 
-const SCRIPT_ID = 'edo-gtm-script';
+/** Id posé sur le <script> par l'amorçage en ligne (cf. routes/__root.tsx). */
+export const GTM_SCRIPT_ID = 'edo-gtm-script';
 
-type ConsentState = 'granted' | 'denied';
-
-const CONSENT_CATEGORIES = [
+export const GTM_CONSENT_CATEGORIES = [
   'ad_storage',
   'ad_user_data',
   'ad_personalization',
   'analytics_storage',
 ] as const;
 
-function pushConsent(command: 'default' | 'update', state: ConsentState) {
+type ConsentState = 'granted' | 'denied';
+
+// L'API Consent de GTM attend la forme de l'objet `arguments` du shim gtag()
+// — un objet indexé numériquement avec `length` — et non un tableau littéral.
+// Le rest param de TypeScript ne donne pas accès à `arguments`, on reconstruit
+// donc cette forme explicitement.
+function gtag(...args: unknown[]) {
   window.dataLayer = window.dataLayer || [];
-  const payload: Record<string, ConsentState> = {};
-  for (const c of CONSENT_CATEGORIES) payload[c] = state;
-  window.dataLayer.push(['consent', command, payload]);
+  const argumentsLike: Record<string, unknown> = { length: args.length };
+  args.forEach((a, i) => {
+    argumentsLike[i] = a;
+  });
+  window.dataLayer.push(argumentsLike);
 }
 
-function loadGtm(id: string) {
-  window.dataLayer = window.dataLayer || [];
-  window.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' });
-  const script = document.createElement('script');
-  script.id = SCRIPT_ID;
-  script.async = true;
-  script.src = `https://www.googletagmanager.com/gtm.js?id=${encodeURIComponent(id)}`;
-  document.head.appendChild(script);
+function pushConsentUpdate(state: ConsentState) {
+  const payload: Record<string, ConsentState> = {};
+  for (const c of GTM_CONSENT_CATEGORIES) payload[c] = state;
+  gtag('consent', 'update', payload);
 }
 
 function readStoredConsent(): ConsentState | null {
@@ -44,22 +50,19 @@ function readStoredConsent(): ConsentState | null {
   return null;
 }
 
+/**
+ * Ne charge PAS GTM : le conteneur et le Consent Mode par défaut sont amorcés en
+ * ligne dans le <head>, avant l'hydratation (cf. gtmBootstrap dans __root).
+ * Ce hook ne fait que relayer les changements de consentement ultérieurs.
+ */
 export function useGoogleTagManager() {
   const gtmId = import.meta.env.VITE_GTM_ID?.trim();
 
   useEffect(() => {
     if (!gtmId) return;
-    if (document.getElementById(SCRIPT_ID)) return;
-
-    pushConsent('default', 'denied');
-    const stored = readStoredConsent();
-    if (stored === 'granted') pushConsent('update', 'granted');
-
-    loadGtm(gtmId);
-
     const onConsentChange = () => {
       const next = readStoredConsent();
-      if (next) pushConsent('update', next);
+      if (next) pushConsentUpdate(next);
     };
     window.addEventListener(COOKIE_CONSENT_EVENT, onConsentChange);
     window.addEventListener('storage', onConsentChange);

@@ -31,7 +31,10 @@ function readStorage(): PreviewState {
     if (!raw) return INACTIVE;
     const parsed = JSON.parse(raw) as Partial<PreviewState>;
     if (!parsed.active) return INACTIVE;
-    return { active: true, status: parsed.status === 'published' ? 'published' : 'draft' };
+    return {
+      active: true,
+      status: parsed.status === 'published' ? 'published' : 'draft',
+    };
   } catch {
     return INACTIVE;
   }
@@ -49,7 +52,11 @@ function writeStorage(state: PreviewState): void {
   }
 }
 
-function readUrlParams(): { preview: boolean; secret: string; status: 'draft' | 'published' } | null {
+function readUrlParams(): {
+  preview: boolean;
+  secret: string;
+  status: 'draft' | 'published';
+} | null {
   if (typeof window === 'undefined') return null;
   const params = new URLSearchParams(window.location.search);
   if (params.get('preview') !== '1') return null;

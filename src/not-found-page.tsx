@@ -2,7 +2,10 @@ import { useNavigate } from '@tanstack/react-router';
 import { usePageContext } from './lib/page-context';
 import { SCREEN_TO_PATH } from './lib/screens';
 import type { Lang } from './types';
-import { cn } from './ui/cn';
+import { cn } from '@/lib/utils';
+import { MonoLabel } from './ui/mono-label';
+import { MAIN_ID } from './ui/skip-link';
+import { Button } from '@/components/ui/button';
 
 const COPY = {
   fr: {
@@ -67,17 +70,24 @@ interface NavLinkProps {
   navigate: (opts: { to: string }) => void;
 }
 
+// Les deux liens de cette page réécrivaient un bouton à la main — typographie
+// mono, anneau de focus, transition, `no-underline` — soit quinze classes pour
+// retrouver ce que `variant="cell"` donne déjà. `render` conserve la véritable
+// ancre : elle garde son `href`, donc le clic milieu et le « ouvrir dans un
+// nouvel onglet ».
 const NavLink = ({ href, label, navigate }: NavLinkProps) => (
-  <a
-    href={href}
+  <Button
+    variant="cell"
+    // biome-ignore lint/a11y/useAnchorContent: Base UI clone cette ancre avec les enfants du bouton — elle n'est vide qu'à la lecture statique
+    render={<a href={href} />}
     onClick={(e) => {
       e.preventDefault();
       navigate({ to: href });
     }}
-    className="edo-focus-ring inline-flex items-center justify-center border border-hairline bg-transparent px-4 py-2 font-mono text-caption uppercase tracking-label text-foreground no-underline transition-colors hover:bg-muted"
+    className="border border-border px-4 py-2 hover:bg-muted"
   >
     {label}
-  </a>
+  </Button>
 );
 
 export const NotFoundPage = () => {
@@ -92,39 +102,61 @@ export const NotFoundPage = () => {
   const contactHref = SCREEN_TO_PATH.contact(lang);
 
   return (
+    // `id` et non un `<main>` nu : `SkipLink` est rendu par __root sur TOUTES
+    // les pages, 404 comprise, et cherche `#contenu`. Sans lui, « aller au
+    // contenu » ne faisait rien ici et laissait le focus sur `<body>` — le
+    // même défaut que la confirmation de réservation, dernière occurrence.
+    //
+    // Cette page est la seule sans bande d'en-tête : elle n'est nulle part,
+    // donc elle ne se nomme pas et ne porte pas la navigation du site. C'est
+    // aussi pourquoi elle n'emploie pas `PageShell` — il n'y a pas de bento à
+    // verrouiller, seulement un bloc centré.
     <main
+      id={MAIN_ID}
       role="main"
       className={cn(
         'flex min-h-screen w-full flex-col items-center justify-center gap-6 bg-background px-6 py-16 text-center text-foreground',
       )}
     >
-      <span className="font-mono text-label uppercase tracking-meta text-muted-foreground">
-        {copy.code}
-      </span>
-      <h1 className="text-page-title font-light tracking-display leading-tight">
+      <MonoLabel tone="muted">{copy.code}</MonoLabel>
+      <h1 className="text-3xl font-light tracking-tighter leading-tight">
         {copy.title}
       </h1>
-      <p className="max-w-md font-mono text-detail text-muted-foreground">
+      <p className="max-w-md font-mono text-sm text-muted-foreground">
         {copy.body}
       </p>
-      <a
-        href={homeHref}
+      <Button
+        variant="cell"
+        // biome-ignore lint/a11y/useAnchorContent: Base UI clone cette ancre avec les enfants du bouton — elle n'est vide qu'à la lecture statique
+        render={<a href={homeHref} />}
         onClick={(e) => {
           e.preventDefault();
           navigate({ to: homeHref });
         }}
-        className="edo-focus-ring inline-flex h-10 cursor-pointer items-center gap-2 border-0 bg-foreground px-5 font-mono text-label uppercase tracking-ui text-white no-underline transition-colors hover:opacity-90"
+        className="dark h-10 gap-2 bg-background px-5 hover:opacity-90"
       >
         {copy.cta}
-      </a>
+      </Button>
       <nav
         aria-label={copy.explore}
         className="mt-4 flex w-full max-w-xl flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:justify-center"
       >
-        <NavLink href={galleryHref} label={copy.links.gallery} navigate={navigate} />
-        <NavLink href={cycloramaHref} label={copy.links.cyclorama} navigate={navigate} />
+        <NavLink
+          href={galleryHref}
+          label={copy.links.gallery}
+          navigate={navigate}
+        />
+        <NavLink
+          href={cycloramaHref}
+          label={copy.links.cyclorama}
+          navigate={navigate}
+        />
         <NavLink href={bookHref} label={copy.links.book} navigate={navigate} />
-        <NavLink href={contactHref} label={copy.links.contact} navigate={navigate} />
+        <NavLink
+          href={contactHref}
+          label={copy.links.contact}
+          navigate={navigate}
+        />
       </nav>
       <script
         type="application/ld+json"

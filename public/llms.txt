@@ -11,6 +11,7 @@
 - [Cyclorama](https://e-do.studio/fr/cyclorama): plateau cyclo 240 m² · 2 faces 32 m²
 - [Plateaux packshot](https://e-do.studio/fr/plateau/horizontal): automation horizontal · vertical · éclipse · live
 - [Post-production](https://e-do.studio/fr/post-production): retouche photo et vidéo, ghost, détourage
+- [Discovery](https://e-do.studio/fr/discovery): journal du studio, coulisses et conseils de prise de vue
 - [Réserver](https://e-do.studio/fr/reserver): configurateur et créneaux disponibles
 - [Contact](https://e-do.studio/fr/contact): adresse, horaires, équipe
 
@@ -18,6 +19,7 @@
 
 - [Home](https://e-do.studio/en)
 - [Gallery](https://e-do.studio/en/gallery)
+- [Discovery](https://e-do.studio/en/discovery)
 - [Book](https://e-do.studio/en/book)
 - [Contact](https://e-do.studio/en/contact)
 

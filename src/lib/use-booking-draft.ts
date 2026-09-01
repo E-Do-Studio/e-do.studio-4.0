@@ -37,7 +37,10 @@ export function loadDraft(): BookingDraft | null {
     const raw = localStorage.getItem(DRAFT_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as BookingDraft;
-    if (parsed.v !== DRAFT_VERSION) { localStorage.removeItem(DRAFT_KEY); return null; }
+    if (parsed.v !== DRAFT_VERSION) {
+      localStorage.removeItem(DRAFT_KEY);
+      return null;
+    }
     if (Date.now() - parsed.ts > MAX_AGE_MS) {
       localStorage.removeItem(DRAFT_KEY);
       return null;
@@ -49,10 +52,14 @@ export function loadDraft(): BookingDraft | null {
 }
 
 export function clearDraft(): void {
-  try { localStorage.removeItem(DRAFT_KEY); } catch {}
+  try {
+    localStorage.removeItem(DRAFT_KEY);
+  } catch {}
 }
 
-export function useBookingDraftSaver(getState: () => Omit<BookingDraft, 'v' | 'ts'>) {
+export function useBookingDraftSaver(
+  getState: () => Omit<BookingDraft, 'v' | 'ts'>,
+) {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const getStateRef = useRef(getState);
   getStateRef.current = getState;
@@ -60,7 +67,11 @@ export function useBookingDraftSaver(getState: () => Omit<BookingDraft, 'v' | 't
   const writeNow = useCallback(() => {
     try {
       const state = getStateRef.current();
-      const draft: BookingDraft = { v: DRAFT_VERSION, ts: Date.now(), ...state };
+      const draft: BookingDraft = {
+        v: DRAFT_VERSION,
+        ts: Date.now(),
+        ...state,
+      };
       localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
     } catch {}
   }, []);

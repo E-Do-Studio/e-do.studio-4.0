@@ -1,15 +1,16 @@
 import { useLoaderData, useNavigate } from '@tanstack/react-router';
+import { Button } from '@/components/ui/button';
 import { usePageContext } from '../lib/page-context';
-import { SCREEN_TO_PATH } from '../lib/screens';
-import { cn } from '../ui/cn';
-import { IconArrowRight } from '../ui/icons';
-import { PageHeader, buildMainNav } from '../ui/page-header';
-import { buildWebPageSchema, buildBreadcrumbSchema } from '../lib/structured-data';
-import { bookPicker, booking } from '../i18n/messages';
+import { cn } from '@/lib/utils';
+import { ArrowRight } from 'lucide-react';
+import { PageShell } from '../ui/page-shell';
+import { MonoLabel } from '../ui/mono-label';
+import { MAIN_ID } from '../ui/skip-link';
+import { SectionIntro } from '../ui/section-intro';
+import { useT } from '../i18n/use-t';
 import { configuratorPath, manualPath } from './book-routes';
 import { ContactRail, ContactRightColumn } from '../contact-page';
 import type { TeamMember } from '../lib/strapi';
-import type { Lang } from '../types';
 
 interface TileProps {
   index: number;
@@ -17,62 +18,79 @@ interface TileProps {
   description: string;
   variant: 'primary' | 'foreground' | 'surface';
   onClick: () => void;
-  lang: Lang;
 }
 
-const PickerTile = ({ index, label, description, variant, onClick, lang }: TileProps) => {
-  const onDark = variant === 'primary' || variant === 'foreground';
+const PickerTile = ({
+  index,
+  label,
+  description,
+  variant,
+  onClick,
+}: TileProps) => {
+  const t = useT();
+  // La tuile sombre passe par la portée `dark` et non par `bg-foreground
+  // text-background` : c'est l'idiome du dépôt (contact-page, booking-side-panel,
+  // home-page…), et lui seul fait résoudre `text-muted-foreground` contre le
+  // fond de la cellule au lieu de le laisser calé sur le thème clair.
   const palette =
     variant === 'primary'
-      ? 'bg-primary text-primary-foreground hover:bg-edo-orange/90'
+      ? 'bg-primary text-primary-foreground hover:bg-primary/90'
       : variant === 'foreground'
-      ? 'bg-edo-black text-edo-white hover:bg-edo-dark'
-      : 'bg-white text-foreground hover:bg-edo-gray-50';
-  const subtleTone = onDark ? 'text-white/75' : 'text-muted-foreground';
-  const labelMutedTone = subtleTone;
-  const descTone = subtleTone;
-  const idxTone = subtleTone;
+        ? 'dark bg-background text-foreground hover:bg-background'
+        : 'bg-background text-foreground hover:bg-muted';
+  // L'aplat orange n'a pas de portée qui le décrive : `text-muted-foreground`
+  // y tombe sur un gris illisible. La teinte discrète s'y dérive du premier
+  // plan de la cellule, comme le fait `CtaCell`.
+  const subtle =
+    variant === 'primary'
+      ? 'text-primary-foreground/75'
+      : 'text-muted-foreground';
   return (
-    <button
-      type="button"
+    <Button
+      variant="cell"
+      size="cell"
       onClick={onClick}
       className={cn(
-        'edo-focus-ring group flex flex-1 min-h-40 cursor-pointer flex-col gap-3 border-0 px-6 py-7 text-left transition-[color,background-color,opacity] duration-150 ease-edo-out md:aspect-square md:min-h-fit md:min-w-0 md:border-t md:border-edo-pure-black md:px-8 md:py-8',
+        'group min-h-40 flex-1 gap-3 px-6 py-7 app:aspect-square app:min-h-fit app:min-w-0 app:px-8 app:py-8',
         palette,
       )}
     >
       <div className="flex items-start justify-between">
-        <span className={cn('font-mono text-label tracking-meta uppercase', idxTone)}>
+        <MonoLabel tone="inherit" className={subtle}>
           {String(index).padStart(2, '0')}
-        </span>
-        <IconArrowRight
-          className="flex-shrink-0 transition-transform duration-200 ease-edo-out group-hover:translate-x-1.5 group-hover:scale-110"
-          width="16"
-          height="16"
-        />
+        </MonoLabel>
+        <ArrowRight data-icon="inline-end" />
       </div>
       <div className="mt-auto flex flex-col gap-2">
-        <span className={cn('font-mono text-label uppercase tracking-label', labelMutedTone)}>
-          {lang === 'fr' ? 'Mode' : 'Mode'}
+        <MonoLabel tone="inherit" className={subtle}>
+          {t('bookPicker.modeLabel')}
+        </MonoLabel>
+        <span className="text-xl font-light tracking-tight leading-tight">
+          {label}
         </span>
-        <span className="text-tile-title font-light tracking-headline leading-tight">{label}</span>
-        <span className={cn('text-detail leading-snug tracking-copy-tight md:min-h-[2lh]', descTone)}>
+        <span
+          className={cn(
+            'text-sm leading-snug tracking-tight app:min-h-[2lh]',
+            subtle,
+          )}
+        >
           {description}
         </span>
       </div>
-    </button>
+    </Button>
   );
 };
 
 const BookPicker = () => {
-  const { lang, setLang, openMenu, goto, siteData } = usePageContext();
+  const t = useT();
+  const { lang, goto, siteData } = usePageContext();
   const navigate = useNavigate();
-  const bookPathname = lang === 'fr' ? '/reserver' : '/book';
-
   const contact = siteData.contact;
   const hours = siteData.studioHours;
   // Servie par deux routes (/reserver en FR, /book en EN) au loader partagé.
-  const { teamMembers } = useLoaderData({ strict: false }) as { teamMembers: TeamMember[] | null };
+  const { teamMembers } = useLoaderData({ strict: false }) as {
+    teamMembers: TeamMember[] | null;
+  };
   const team = teamMembers ?? [];
   const closures = siteData.businessInfo?.closures ?? [];
 
@@ -83,59 +101,63 @@ const BookPicker = () => {
   const goManual = () => navigate({ to: manualHref });
 
   return (
-    <div className="edo-page-enter grid w-full edo-hairline md:h-full md:grid-cols-contact-shell md:grid-rows-page md:overflow-hidden">
-      <PageHeader
-        lang={lang}
-        title={booking.title[lang]}
-        className="col-span-full h-14 md:col-span-full md:row-start-1 md:h-full"
-        onMenuClick={openMenu}
-        onLogoClick={() => goto('home')}
-        onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
-        actions={buildMainNav({ lang, goto })}
-      />
+    <PageShell className="app:grid-cols-[var(--spacing-logo)_repeat(3,minmax(0,1fr))] app:grid-rows-[var(--spacing-header)_minmax(0,1fr)]">
+      <main
+        id={MAIN_ID}
+        className="flex flex-col overflow-auto bg-background app:col-start-2 app:col-span-2 app:row-start-2"
+      >
+        <SectionIntro
+          title={t('bookPicker.title')}
+          subtitle={t('bookPicker.subtitle')}
+          className="bg-background"
+        />
 
-      <main className="flex flex-col overflow-auto bg-white md:col-start-2 md:col-span-2 md:row-start-2">
-        <div className="bg-white px-6 py-10 md:px-12 md:py-14">
-          <h1 className="m-0 text-hero font-light tracking-display leading-solid text-balance text-foreground">
-            {bookPicker.title[lang]}
-          </h1>
-          <p className="m-0 mt-4 max-w-2xl text-detail text-muted-foreground leading-normal text-pretty">
-            {bookPicker.subtitle[lang]}
-          </p>
-        </div>
+        {/* Pas de `flex-1` ici : `bg-border` (noir pur) ne peint que les filets
+            1px entre tuiles, il ne doit pas peindre la hauteur restante de
+            <main>. `mt-auto` ancre le bloc en bas, le vide au-dessus reste
+            blanc.
 
-        <div className="flex flex-1 flex-col edo-hairline border-t border-hairline md:flex-row md:items-end md:border-t-0">
+            Le filet supérieur est porté par ce conteneur et non par les tuiles :
+            la tuile 02 est une portée `dark`, où `border-border` vaut blanc à
+            10 % au lieu du noir pur de la grille. */}
+        {/* `md:flex-row` : les trois modes passent côte à côte dès qu'il y a la
+            place pour trois cellules, sans attendre le bento. Empilés jusqu'à
+            1024, ils demandaient trois écrans de défilement pour un choix qui
+            tient sur une ligne. */}
+        <div className="flex flex-col gap-px bg-border border-t border-border md:flex-row md:items-stretch app:mt-auto app:items-end">
           <PickerTile
             index={1}
-            label={bookPicker.configuratorLabel[lang]}
-            description={bookPicker.configuratorDesc[lang]}
+            label={t('bookPicker.configuratorLabel')}
+            description={t('bookPicker.configuratorDesc')}
             variant="primary"
             onClick={goConfigurator}
-            lang={lang}
           />
           <PickerTile
             index={2}
-            label={bookPicker.manualLabel[lang]}
-            description={bookPicker.manualDesc[lang]}
+            label={t('bookPicker.manualLabel')}
+            description={t('bookPicker.manualDesc')}
             variant="foreground"
             onClick={goManual}
-            lang={lang}
           />
           <PickerTile
             index={3}
-            label={bookPicker.contactLabel[lang]}
-            description={bookPicker.contactDesc[lang]}
+            label={t('bookPicker.contactLabel')}
+            description={t('bookPicker.contactDesc')}
             variant="surface"
             onClick={() => goto('contact')}
-            lang={lang}
           />
         </div>
       </main>
 
-      <ContactRail lang={lang} contact={contact} hours={hours} closures={closures} />
+      <ContactRail
+        lang={lang}
+        contact={contact}
+        hours={hours}
+        closures={closures}
+      />
 
       <ContactRightColumn lang={lang} contact={contact} team={team} />
-    </div>
+    </PageShell>
   );
 };
 

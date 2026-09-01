@@ -1,10 +1,20 @@
 import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import type { Lang } from '../types';
-import { mobileNav, resultsCount } from '../i18n/messages';
-import { BottomSheet } from './bottom-sheet';
-import { cn } from './cn';
+import { useT } from '../i18n/use-t';
+import { Button } from '@/components/ui/button';
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer';
+import { cn } from '@/lib/utils';
 import { HoverMarquee } from './hover-marquee';
-import { IconArrowRight, IconChevronDown } from './icons';
+import { ArrowRight, ChevronDown, X } from 'lucide-react';
+import { MonoLabel, monoLabelVariants } from './mono-label';
+import { StatusBadge } from './status-badge';
 
 type StripOption = {
   k: string;
@@ -35,7 +45,7 @@ interface MobileNavStripProps {
   countFor?: (draft: Record<string, string>) => number;
   /** Commit URL state at sheet close / apply. If absent, onSelect is fired live. */
   onApply?: (draft: Record<string, string>) => void;
-  /** Optional anchor offset — defaults to top-14 to sit under the header. */
+  /** Optional anchor offset — defaults to top-header to sit under the header. */
   className?: string;
 }
 
@@ -55,6 +65,7 @@ const MobileNavStrip = ({
   onApply,
   className,
 }: MobileNavStripProps) => {
+  const t = useT();
   const autoId = useId();
   const sheetId = `mobile-nav-strip-${autoId}`;
   const [open, setOpen] = useState(false);
@@ -126,156 +137,162 @@ const MobileNavStrip = ({
     <>
       <div
         className={cn(
-          'sticky top-14 z-30 flex h-14 items-stretch border-b border-border bg-white md:hidden',
+          'sticky top-header z-30 flex h-header items-stretch border-b border-border bg-background app:hidden',
           className,
         )}
         role="toolbar"
         aria-label={ariaLabel}
       >
-        <button
+        <Button
           type="button"
           onClick={() => setOpen(true)}
           aria-haspopup="dialog"
           aria-expanded={open}
           aria-controls={sheetId}
-          className="edo-focus-ring flex min-h-11 w-full cursor-pointer items-center gap-2 px-4 text-left transition-colors duration-150 ease-edo-out hover:bg-muted"
+          variant="cell"
+          size="cell"
+          className="min-h-11 w-full flex-row items-center gap-2 bg-transparent px-4"
         >
-          <span className="font-mono text-label uppercase tracking-label text-foreground">
-            {triggerLabel}
-          </span>
+          <MonoLabel>{triggerLabel}</MonoLabel>
           {summary ? (
-            <HoverMarquee className="font-mono text-label uppercase tracking-caption text-muted-foreground">
-              · {summary}
+            <HoverMarquee className={monoLabelVariants({ tone: 'muted' })}>
+              {summary}
             </HoverMarquee>
           ) : null}
           <span className="ml-auto flex shrink-0 items-center gap-2">
             {badgeCount > 1 ? (
-              <span
-                aria-hidden
-                className="inline-flex h-5 min-w-5 items-center justify-center bg-primary px-1 font-mono text-micro uppercase tracking-label text-primary-foreground"
-              >
+              <StatusBadge aria-hidden size="count">
                 {badgeCount}
-              </span>
+              </StatusBadge>
             ) : null}
-            <IconChevronDown
+            <ChevronDown
               width={16}
               height={16}
               aria-hidden
-              className={cn(
-                'text-muted-foreground transition-transform duration-150 ease-edo-out',
-                open && 'rotate-180',
-              )}
+              className="text-muted-foreground"
             />
           </span>
-        </button>
+        </Button>
       </div>
 
-      <BottomSheet
-        id={sheetId}
+      <Drawer
         open={open}
-        onClose={handleClose}
-        title={triggerLabel}
-        ariaLabel={ariaLabel}
-        closeLabel={mobileNav.closeFilters[lang]}
-        footer={
-          <div
-            className="flex items-stretch justify-between gap-2 px-3 py-3"
-            style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 12px)' }}
+        onOpenChange={(next: boolean) => {
+          if (!next) handleClose();
+        }}
+      >
+        <DrawerContent id={sheetId} aria-label={ariaLabel}>
+          <DrawerHeader>
+            <DrawerTitle>{triggerLabel}</DrawerTitle>
+            <DrawerClose
+              aria-label={t('mobileNav.closeFilters')}
+              render={<Button variant="ghost" size="icon" />}
+            >
+              <X />
+            </DrawerClose>
+          </DrawerHeader>
+          <div className="flex flex-col overflow-y-auto">
+            {groups.map((group) => {
+              const currentValue = draft[group.key] ?? group.value;
+              return (
+                <fieldset
+                  key={group.key}
+                  className="flex flex-col border-b border-border last:border-b-0"
+                >
+                  <MonoLabel
+                    render={<legend />}
+                    tone="muted"
+                    className="w-full bg-muted px-4 py-2"
+                  >
+                    {group.label}
+                  </MonoLabel>
+                  {group.options.map((option) => {
+                    const isActive = currentValue === option.k;
+                    const dimmed = option.dimmed ?? false;
+                    return (
+                      <label
+                        key={option.k}
+                        // L'état courant inverse la cellule : c'est exactement
+                        // ce que fait la portée `dark`, et elle vaut sur un
+                        // `<label>` comme sur un bouton — c'est la classe qui
+                        // redéfinit les tokens, pas le préfixe `dark:`.
+                        //
+                        // `dimmed` survit en ternaire : il encode la
+                        // disponibilité, pas la sélection. Aucun token ne
+                        // l'exprime.
+                        className={cn(
+                          'relative flex min-h-11 cursor-pointer select-none items-center gap-3 border-t border-border bg-background px-4 py-3 text-foreground outline-none transition-colors duration-150 ease-out hover:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-foreground',
+                          isActive && 'dark',
+                          dimmed && !isActive && 'opacity-40',
+                        )}
+                      >
+                        <input
+                          type="radio"
+                          name={`${sheetId}-${group.key}`}
+                          value={option.k}
+                          checked={isActive}
+                          onChange={() => handleSelect(group, option.k)}
+                          className="sr-only"
+                        />
+                        <span
+                          aria-hidden
+                          // `border-foreground` et non `border-border` : en
+                          // portée sombre ce dernier vaut du blanc à 10%,
+                          // c'est-à-dire invisible. Le marqueur s'inverse donc
+                          // avec sa ligne, comme un radio sélectionné normal.
+                          className="grid size-4 shrink-0 place-items-center border border-foreground bg-background"
+                        >
+                          {isActive ? (
+                            <span className="block size-1.5 bg-foreground" />
+                          ) : null}
+                        </span>
+                        <MonoLabel className="flex-1 text-sm">
+                          {option.label}
+                        </MonoLabel>
+                        {typeof option.count === 'number' ? (
+                          <MonoLabel tone="muted" className="shrink-0">
+                            {option.count}
+                          </MonoLabel>
+                        ) : null}
+                      </label>
+                    );
+                  })}
+                </fieldset>
+              );
+            })}
+          </div>
+          <DrawerFooter
+            className="flex-row items-stretch justify-between gap-2"
+            style={{
+              paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 12px)',
+            }}
           >
             {draftHasActive ? (
-              <button
-                type="button"
+              <Button
+                variant="outline"
                 onClick={handleReset}
-                className="edo-focus-ring inline-flex min-h-11 cursor-pointer items-center gap-1 border border-border bg-white px-3 font-mono text-label uppercase tracking-button text-foreground transition-colors duration-150 ease-edo-out hover:bg-muted"
+                className="min-h-11"
               >
-                <span aria-hidden>↺</span> {mobileNav.reset[lang]}
-              </button>
+                <span aria-hidden>↺</span> {t('mobileNav.reset')}
+              </Button>
             ) : (
               <span />
             )}
-            <button
-              type="button"
+            <Button
               onClick={handleApply}
-              className="edo-focus-ring inline-flex min-h-11 flex-1 cursor-pointer items-center justify-center gap-2 bg-foreground px-4 font-mono text-label uppercase tracking-button text-background transition-colors duration-150 ease-edo-out hover:opacity-90"
+              className="min-h-11 flex-1 bg-foreground text-background hover:opacity-90"
             >
               <span>
-                {mobileNav.applyFilters[lang]}
+                {t('mobileNav.applyFilters')}
                 {typeof liveCount === 'number'
-                  ? ` · ${resultsCount(liveCount, lang)}`
+                  ? ` ${t('galleryPage.resultsCount', { count: liveCount })}`
                   : ''}
               </span>
-              <IconArrowRight width={14} height={14} aria-hidden />
-            </button>
-          </div>
-        }
-      >
-        <div className="flex flex-col">
-          {groups.map((group) => {
-            const currentValue = draft[group.key] ?? group.value;
-            return (
-              <fieldset
-                key={group.key}
-                className="flex flex-col border-b border-border last:border-b-0"
-              >
-                <legend className="w-full bg-muted px-4 py-2 font-mono text-micro uppercase tracking-label text-muted-foreground">
-                  {group.label}
-                </legend>
-                {group.options.map((option) => {
-                  const isActive = currentValue === option.k;
-                  const dimmed = option.dimmed ?? false;
-                  return (
-                    <label
-                      key={option.k}
-                      className={cn(
-                        'edo-focus-ring relative flex min-h-11 cursor-pointer select-none items-center gap-3 border-t border-border px-4 py-3 transition-colors duration-150 ease-edo-out',
-                        isActive
-                          ? 'bg-foreground text-background'
-                          : 'bg-white text-foreground hover:bg-muted',
-                        dimmed && !isActive && 'opacity-40',
-                      )}
-                    >
-                      <input
-                        type="radio"
-                        name={`${sheetId}-${group.key}`}
-                        value={option.k}
-                        checked={isActive}
-                        onChange={() => handleSelect(group, option.k)}
-                        className="sr-only"
-                      />
-                      <span
-                        aria-hidden
-                        className={cn(
-                          'grid size-4 shrink-0 place-items-center border',
-                          isActive
-                            ? 'border-background bg-background'
-                            : 'border-border bg-white',
-                        )}
-                      >
-                        {isActive ? (
-                          <span className="block size-1.5 bg-foreground" />
-                        ) : null}
-                      </span>
-                      <span className="flex-1 font-mono text-detail uppercase tracking-caption">
-                        {option.label}
-                      </span>
-                      {typeof option.count === 'number' ? (
-                        <span
-                          className={cn(
-                            'shrink-0 font-mono text-micro uppercase tracking-label',
-                            isActive ? 'text-background' : 'text-muted-foreground',
-                          )}
-                        >
-                          {option.count}
-                        </span>
-                      ) : null}
-                    </label>
-                  );
-                })}
-              </fieldset>
-            );
-          })}
-        </div>
-      </BottomSheet>
+              <ArrowRight data-icon="inline-end" aria-hidden />
+            </Button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
     </>
   );
 };

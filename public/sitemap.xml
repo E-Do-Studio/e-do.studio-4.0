@@ -98,7 +98,28 @@
     <priority>0.8</priority>
   </url>
 
+  <url>
+    <loc>https://e-do.studio/fr/discovery</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://e-do.studio/fr/discovery"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://e-do.studio/en/discovery"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
 
+  <url>
+    <loc>https://e-do.studio/en/discovery</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://e-do.studio/fr/discovery"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://e-do.studio/en/discovery"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!--
+    Les articles (/{fr,en}/discovery/<slug>) ne sont pas listés : ils viennent de
+    Strapi et ce fichier est statique. La page d'index les lie tous, le crawl les
+    atteint donc — mais une passe de génération reste à faire si la section
+    grossit.
+  -->
 
   <url>
     <loc>https://e-do.studio/fr/post-production</loc>

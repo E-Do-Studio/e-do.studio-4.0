@@ -1,4 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
-  <rect width="32" height="32" fill="#000"></rect>
-  <text x="50%" y="50%" font-family="system-ui, sans-serif" font-size="16" font-weight="700" fill="#fff" text-anchor="middle" dominant-baseline="central">E</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <style>
+    /* Les couleurs claires sont portées par les attributs de présentation
+       ci-dessous, pas par cette feuille : un rastériseur qui ignore le CSS
+       (cairosvg, librsvg, un scraper) rend alors la variante claire, correcte.
+       Le CSS ne fait que surcharger — il l'emporte sur un attribut de
+       présentation, quelle que soit sa spécificité. Ne pas repasser par des
+       var() : cairosvg ne les résout pas et peignait le pavé en noir. */
+    @media (prefers-color-scheme: dark) {
+      .plate { fill: #0a0a0a }
+      .ink { stroke: #fafafa }
+    }
+  </style>
+  <rect class="plate" width="512" height="512" fill="#fff" />
+  <g class="ink" fill="none" stroke="#000" stroke-linecap="butt">
+    <rect x="82.5" y="82.5" width="346" height="346" stroke-width="11.5" />
+    <circle cx="253" cy="253.5" r="134" stroke-width="12" />
+    <path d="M201 123.5V383.5" stroke-width="12" />
+    <path d="M201 253.5H342" stroke-width="13" />
+  </g>
 </svg>

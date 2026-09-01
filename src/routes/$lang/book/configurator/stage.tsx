@@ -5,6 +5,11 @@ import { buildSeoHead } from '../../../../lib/seo-head';
 
 export const Route = createFileRoute('/$lang/book/configurator/stage')({
   head: ({ params }) =>
-    buildSeoHead({ metaKey: 'book', lang: params.lang as Lang, pathname: '/book/configurator/stage', noIndex: true }),
+    buildSeoHead({
+      metaKey: 'book',
+      lang: params.lang as Lang,
+      pathname: '/book/configurator/stage',
+      noIndex: true,
+    }),
   component: ConfigStep2,
 });

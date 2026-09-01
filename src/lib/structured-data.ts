@@ -9,6 +9,8 @@ import type {
   GalleryCategory,
 } from './strapi';
 import type { DiscoveryPost } from '../types';
+import { getT } from '../i18n';
+import { bcp47 } from './format';
 
 const SITE_URL = 'https://e-do.studio';
 const ORGANIZATION_ID = `${SITE_URL}/#organization`;
@@ -20,7 +22,11 @@ const DEFAULT_LOGO = `${SITE_URL}/brand/logo-full.webp`;
 export type JsonLdNode = Record<string, unknown>;
 
 function pageUrl(lang: Lang, pathname = ''): string {
-  const safe = pathname.startsWith('/') ? pathname : pathname ? `/${pathname}` : '';
+  const safe = pathname.startsWith('/')
+    ? pathname
+    : pathname
+      ? `/${pathname}`
+      : '';
   return `${SITE_URL}/${lang}${safe}`;
 }
 
@@ -36,39 +42,55 @@ function compact<T extends Record<string, unknown>>(node: T): T {
 
 // ─── Opening hours mapping ──────────────────────────────────────────────────
 
-function parseHourRange(s?: string): { opens: string; closes: string } | null {
-  if (!s) return null;
-  const m = s.match(/(\d{1,2}):(\d{2})\s*[—–-]\s*(\d{1,2}):(\d{2})/);
-  if (!m) return null;
-  const pad = (h: string) => (h.length === 1 ? `0${h}` : h);
-  return { opens: `${pad(m[1])}:${m[2]}`, closes: `${pad(m[3])}:${m[4]}` };
-}
+// Une rangée d'horaires porte déjà ses jours et ses bornes normalisées : ce
+// bloc les lit, il ne les redevine plus.
+//
+// La version précédente relisait la CHAÎNE D'AFFICHAGE à la regex, puis
+// affirmait `dayOfWeek: [Monday…Friday]` quelle que soit la donnée. Un studio
+// ouvert du mardi au samedi déclarait donc à Google des horaires du lundi au
+// vendredi — le même postulat que celui du rail, mais envoyé au moteur de
+// recherche, où personne ne le voit se tromper.
+const JSONLD_DAY: Record<string, string> = {
+  monday: 'Monday',
+  tuesday: 'Tuesday',
+  wednesday: 'Wednesday',
+  thursday: 'Thursday',
+  friday: 'Friday',
+  saturday: 'Saturday',
+  sunday: 'Sunday',
+};
 
-function buildOpeningHoursSpec(hours?: StudioHours | null): JsonLdNode[] | undefined {
+function buildOpeningHoursSpec(
+  hours?: StudioHours | null,
+): JsonLdNode[] | undefined {
   if (!hours) return undefined;
   const out: JsonLdNode[] = [];
-  const weekday = parseHourRange(hours.weekday?.fr);
-  if (weekday) {
+  for (const row of hours.rows) {
+    // Seule une plage se déclare. Un jour fermé ou sur rendez-vous n'a pas
+    // d'`opens`/`closes`, et un `OpeningHoursSpecification` sans bornes ne dit
+    // rien de plus que son absence.
+    if (row.kind !== 'hours' || !row.opens || !row.closes) continue;
+    const dayOfWeek = row.days.map((d) => JSONLD_DAY[d]).filter(Boolean);
+    if (dayOfWeek.length === 0) continue;
     out.push({
       '@type': 'OpeningHoursSpecification',
-      dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-      opens: weekday.opens,
-      closes: weekday.closes,
-    });
-  }
-  const weekend = parseHourRange(hours.weekend?.fr);
-  if (weekend) {
-    out.push({
-      '@type': 'OpeningHoursSpecification',
-      dayOfWeek: ['Saturday', 'Sunday'],
-      opens: weekend.opens,
-      closes: weekend.closes,
+      dayOfWeek,
+      opens: row.opens,
+      closes: row.closes,
     });
   }
   return out.length > 0 ? out : undefined;
 }
 
 // ─── Organization / LocalBusiness ───────────────────────────────────────────
+
+// Le studio est en France ; seul ce cas mérite une correspondance. Toute autre
+// valeur est renvoyée telle quelle : un code déjà valide passe, et une saisie
+// inattendue reste visible plutôt que d'être silencieusement réécrite en FR.
+function toCountryCode(country?: string): string {
+  if (!country) return 'FR';
+  return /^france$/i.test(country.trim()) ? 'FR' : country;
+}
 
 export interface BuildOrganizationArgs {
   lang: Lang;
@@ -85,10 +107,7 @@ export function buildLocalBusinessSchema({
   business,
   socials,
 }: BuildOrganizationArgs): JsonLdNode {
-  const description =
-    lang === 'fr'
-      ? 'Studio photo et vidéo professionnel à Paris. Cyclorama, plateaux de prise de vue et services de post-production pour marques de mode, cosmétique, joaillerie et food.'
-      : 'Professional photo and video studio in Paris. Cyclorama, shooting stages and post-production services for fashion, cosmetics, jewelry and food brands.';
+  const description = getT(lang)('seo.localBusinessDescription');
   const address = contact?.address;
   const sameAs = (socials ?? [])
     .map((s) => s.href)
@@ -99,21 +118,24 @@ export function buildLocalBusinessSchema({
         streetAddress: address.street,
         postalCode: address.postalCode,
         addressLocality: address.city,
-        addressCountry: address.country || 'FR',
+        // schema.org attend un code ISO 3166-1 alpha-2 ; le CMS saisit le nom
+        // en toutes lettres (« France »).
+        addressCountry: toCountryCode(address.country),
       })
     : undefined;
-  const contactPoints = contact?.phone || contact?.email
-    ? [
-        compact({
-          '@type': 'ContactPoint',
-          telephone: contact?.phone,
-          email: contact?.email,
-          contactType: 'customer service',
-          areaServed: 'FR',
-          availableLanguage: ['French', 'English'],
-        }),
-      ]
-    : undefined;
+  const contactPoints =
+    contact?.phone || contact?.email
+      ? [
+          compact({
+            '@type': 'ContactPoint',
+            telephone: contact?.phone,
+            email: contact?.email,
+            contactType: 'customer service',
+            areaServed: 'FR',
+            availableLanguage: ['French', 'English'],
+          }),
+        ]
+      : undefined;
   return compact({
     '@context': 'https://schema.org',
     '@type': ['Organization', 'LocalBusiness'],
@@ -143,7 +165,7 @@ export function buildLocalBusinessSchema({
     openingHoursSpecification: buildOpeningHoursSpec(hours),
     contactPoint: contactPoints,
     sameAs,
-    inLanguage: lang === 'fr' ? 'fr-FR' : 'en-US',
+    inLanguage: bcp47(lang),
   });
 }
 
@@ -156,7 +178,7 @@ export function buildWebSiteSchema(lang: Lang): JsonLdNode {
     '@id': WEBSITE_ID,
     url: SITE_URL,
     name: 'E-Do Studio',
-    inLanguage: lang === 'fr' ? 'fr-FR' : 'en-US',
+    inLanguage: bcp47(lang),
     publisher: { '@id': ORGANIZATION_ID },
   });
 }
@@ -168,7 +190,10 @@ export interface BreadcrumbItem {
   pathname: string;
 }
 
-export function buildBreadcrumbSchema(items: BreadcrumbItem[], lang: Lang): JsonLdNode {
+function buildBreadcrumbSchema(
+  items: BreadcrumbItem[],
+  lang: Lang,
+): JsonLdNode {
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -179,6 +204,20 @@ export function buildBreadcrumbSchema(items: BreadcrumbItem[], lang: Lang): Json
       item: pageUrl(lang, it.pathname),
     })),
   };
+}
+
+/**
+ * Fil d'Ariane d'une page interne : l'accueil, puis les niveaux fournis.
+ * Évite de répéter le premier maillon dans le `head()` de chaque route.
+ */
+export function buildPageBreadcrumb(
+  lang: Lang,
+  trail: BreadcrumbItem[],
+): JsonLdNode {
+  return buildBreadcrumbSchema(
+    [{ name: getT(lang)('common.home'), pathname: '' }, ...trail],
+    lang,
+  );
 }
 
 // ─── Service (plateaux + post-prod) ─────────────────────────────────────────
@@ -196,7 +235,8 @@ export function buildPlateauServiceSchema({
   lang,
   pathname,
 }: BuildPlateauServiceArgs): JsonLdNode {
-  const name = plateau.seo?.[lang]?.title || `${plateau.name} — E-Do Studio Paris`;
+  const name =
+    plateau.seo?.[lang]?.title || `${plateau.name} — E-Do Studio Paris`;
   const description =
     plateau.seo?.[lang]?.description ||
     plateau.desc?.[lang] ||
@@ -205,7 +245,11 @@ export function buildPlateauServiceSchema({
   const offers = (plateau.rates ?? [])
     .map((r) => {
       const value = typeof r.v === 'string' ? r.v : r.v?.[lang];
-      const priceMatch = value ? String(value).replace(/\s/g, '').match(/(\d+(?:[.,]\d+)?)/) : null;
+      const priceMatch = value
+        ? String(value)
+            .replace(/\s/g, '')
+            .match(/(\d+(?:[.,]\d+)?)/)
+        : null;
       const price = priceMatch ? priceMatch[1].replace(',', '.') : undefined;
       if (!price) return null;
       const labelObj = r.k as { fr?: string; en?: string } | undefined;
@@ -225,7 +269,8 @@ export function buildPlateauServiceSchema({
     '@context': 'https://schema.org',
     '@type': 'Service',
     '@id': `${pageUrl(lang, pathname)}#service`,
-    serviceType: slug === 'cyclorama' ? 'Cyclorama rental' : 'Photo & video stage rental',
+    serviceType:
+      slug === 'cyclorama' ? 'Cyclorama rental' : 'Photo & video stage rental',
     name,
     description,
     url: pageUrl(lang, pathname),
@@ -249,7 +294,11 @@ export function buildPostProdServiceSchema({
 }: BuildPostProdServiceArgs): JsonLdNode {
   const items = cats.map((c) => {
     const priceStr = c.price?.amount;
-    const priceMatch = priceStr ? String(priceStr).replace(/\s/g, '').match(/(\d+(?:[.,]\d+)?)/) : null;
+    const priceMatch = priceStr
+      ? String(priceStr)
+          .replace(/\s/g, '')
+          .match(/(\d+(?:[.,]\d+)?)/)
+      : null;
     const price = priceMatch ? priceMatch[1].replace(',', '.') : undefined;
     return compact({
       '@type': 'Offer',
@@ -263,7 +312,10 @@ export function buildPostProdServiceSchema({
         '@type': 'Service',
         name: lang === 'fr' ? c.fr : c.en,
         description: c.tagline?.[lang] || c.note?.[lang],
-        serviceType: c.medium === 'video' ? 'Video post-production' : 'Photo post-production',
+        serviceType:
+          c.medium === 'video'
+            ? 'Video post-production'
+            : 'Photo post-production',
       }),
     });
   });
@@ -272,11 +324,8 @@ export function buildPostProdServiceSchema({
     '@type': 'Service',
     '@id': `${pageUrl(lang, pathname)}#service`,
     name: 'Post-production — E-Do Studio',
-    serviceType: lang === 'fr' ? 'Post-production photo et vidéo' : 'Photo & video post-production',
-    description:
-      lang === 'fr'
-        ? 'Retouche, colorimétrie, montage et livraison express. Studio E-Do à Paris.'
-        : 'Retouching, color grading, editing and express delivery. E-Do Studio in Paris.',
+    serviceType: getT(lang)('seo.postprodServiceType'),
+    description: getT(lang)('seo.postprodDescription'),
     url: pageUrl(lang, pathname),
     provider: { '@id': ORGANIZATION_ID },
     areaServed: { '@type': 'Country', name: 'France' },
@@ -284,7 +333,7 @@ export function buildPostProdServiceSchema({
       items.length > 0
         ? compact({
             '@type': 'OfferCatalog',
-            name: lang === 'fr' ? 'Prestations post-production' : 'Post-production services',
+            name: getT(lang)('seo.postprodCatalogName'),
             itemListElement: items,
           })
         : undefined,
@@ -301,16 +350,16 @@ export function buildBlogSchema(
   const items = posts.slice(0, 20).map((p, i) => ({
     '@type': 'ListItem',
     position: i + 1,
-    url: pageUrl(lang, `${pathname}?post=${p.id}`),
+    url: pageUrl(lang, `${pathname}/${p.slug}`),
     name: p.title[lang],
   }));
   return compact({
     '@context': 'https://schema.org',
     '@type': 'Blog',
     '@id': `${pageUrl(lang, pathname)}#blog`,
-    name: lang === 'fr' ? 'Discovery — Journal E-Do Studio' : 'Discovery — E-Do Studio Journal',
+    name: getT(lang)('seo.discoveryBlogName'),
     url: pageUrl(lang, pathname),
-    inLanguage: lang === 'fr' ? 'fr-FR' : 'en-US',
+    inLanguage: bcp47(lang),
     publisher: { '@id': ORGANIZATION_ID },
     mainEntity:
       items.length > 0
@@ -336,22 +385,29 @@ export function buildBlogPostingSchema(
   lang: Lang,
   pathname: string,
 ): JsonLdNode {
-  const url = pageUrl(lang, `${pathname}?post=${post.id}`);
+  const url = pageUrl(lang, pathname);
   return compact({
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
     '@id': `${url}#article`,
     headline: post.title[lang],
     description: post.sub[lang],
-    inLanguage: lang === 'fr' ? 'fr-FR' : 'en-US',
+    inLanguage: bcp47(lang),
     url,
     mainEntityOfPage: { '@type': 'WebPage', '@id': url },
-    image: post.coverUrl,
-    datePublished: toIsoDate(post.date?.[lang]) || toIsoDate(post.date?.fr),
-    author: post.author ? compact({ '@type': 'Person', name: post.author }) : undefined,
+    // La couverture d'un article peut être une vidéo : schema.org attend une
+    // image ici, et un .mov y produit un balisage invalide.
+    image: post.coverMime?.startsWith('image/') ? post.coverUrl : undefined,
+    // `post.date` est une date d'affichage localisée (« 12 mars ») que
+    // Date.parse ne sait pas lire : c'est publishedAt qui porte l'ISO.
+    datePublished: toIsoDate(post.publishedAt),
+    author: post.author
+      ? compact({ '@type': 'Person', name: post.author })
+      : undefined,
     publisher: { '@id': ORGANIZATION_ID },
     articleSection: post.tag?.[lang],
-    keywords: [post.tag?.[lang], post.cat].filter(Boolean).join(', ') || undefined,
+    keywords:
+      [post.tag?.[lang], post.cat].filter(Boolean).join(', ') || undefined,
   });
 }
 
@@ -369,11 +425,8 @@ export function buildContactPageSchema(
     '@id': `${url}#contact`,
     url,
     name: 'Contact — E-Do Studio Paris',
-    inLanguage: lang === 'fr' ? 'fr-FR' : 'en-US',
-    description:
-      lang === 'fr'
-        ? 'Contactez E-Do Studio pour réserver un plateau photo ou vidéo à Paris.'
-        : 'Contact E-Do Studio to book a photo or video stage in Paris.',
+    inLanguage: bcp47(lang),
+    description: getT(lang)('seo.contactDescription'),
     about: { '@id': ORGANIZATION_ID },
     mainEntity:
       contact?.email || contact?.phone
@@ -415,9 +468,9 @@ export function buildGalleryCollectionSchema(
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
     '@id': `${url}#gallery`,
-    name: lang === 'fr' ? 'Galerie — E-Do Studio Paris' : 'Gallery — E-Do Studio Paris',
+    name: getT(lang)('seo.galleryName'),
     url,
-    inLanguage: lang === 'fr' ? 'fr-FR' : 'en-US',
+    inLanguage: bcp47(lang),
     isPartOf: { '@id': WEBSITE_ID },
     about: { '@id': ORGANIZATION_ID },
     mainEntity:
@@ -456,7 +509,7 @@ export function buildWebPageSchema({
     url,
     name,
     description,
-    inLanguage: lang === 'fr' ? 'fr-FR' : 'en-US',
+    inLanguage: bcp47(lang),
     isPartOf: { '@id': WEBSITE_ID },
     about: { '@id': ORGANIZATION_ID },
   });

@@ -1,5 +1,3 @@
-import { supabase } from './supabase';
-import type { Database } from './database.types';
 import type {
   BookingSessionData,
   BookingQuoteData,
@@ -8,202 +6,98 @@ import type {
 
 export type { BookingSessionData, BookingQuoteData, CreateBookingInput };
 
-type BookingInsert = Database['public']['Tables']['bookings']['Insert'];
-type BookingSessionInsert = Database['public']['Tables']['booking_sessions']['Insert'];
-type BookingQuoteInsert = Database['public']['Tables']['booking_quotes']['Insert'];
-type BookingRow = Database['public']['Tables']['bookings']['Row'];
-
-function generateReference(mode: 'quote' | 'booking' | 'request'): string {
-  const prefix = mode === 'quote' ? 'EDO-Q-' : mode === 'booking' ? 'EDO-R-' : 'EDO-';
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code = '';
-  for (let i = 0; i < 6; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return prefix + code;
-}
-
 export interface CreateBookingResult {
-  booking: BookingRow;
   reference: string;
+  /** Total recalculé par le serveur — il fait foi sur celui envoyé. */
+  total: number;
 }
 
-interface SessionSlot {
-  plateauKey: string;
-  date: string;
-  arrivalHour: number;
-  hours: number;
-}
-
-function dateToIso(d: { y: number; m: number; d: number }): string {
-  return `${d.y}-${String(d.m + 1).padStart(2, '0')}-${String(d.d).padStart(2, '0')}`;
-}
-
-async function findConflictingSession(slot: SessionSlot): Promise<boolean> {
-  const { data, error } = await supabase
-    .from('booking_sessions')
-    .select('arrival_hour, hours, bookings!inner(status)')
-    .eq('plateau_key', slot.plateauKey)
-    .eq('session_date', slot.date)
-    .in('bookings.status', ['pending', 'confirmed']);
-
-  if (error || !data) return false;
-
-  const reqStart = slot.arrivalHour;
-  const reqEnd = slot.arrivalHour + slot.hours;
-
-  for (const row of data as any[]) {
-    if (row.arrival_hour == null || row.hours == null) continue;
-    const exStart = row.arrival_hour;
-    const exEnd = row.arrival_hour + row.hours;
-    if (reqStart < exEnd && reqEnd > exStart) return true;
+export class SlotTakenError extends Error {
+  constructor() {
+    super('Ce créneau est déjà réservé. Veuillez choisir un autre horaire.');
+    this.name = 'SlotTakenError';
   }
-  return false;
 }
 
-export async function createBooking(input: CreateBookingInput): Promise<CreateBookingResult> {
-  const reference = generateReference(input.mode);
-  const quoteRef = input.mode === 'booking' ? generateReference('quote') : reference;
+/**
+ * Crée une réservation via l'Edge Function `create-booking`.
+ *
+ * Le front écrivait auparavant dans Supabase avec la clé anon, en envoyant le
+ * total qu'il avait lui-même calculé. Deux conséquences : le prix était
+ * déclaratif, et `.insert().select()` imposait un droit de lecture `anon` sur
+ * des lignes portant e-mail, téléphone, SIREN et adresse de facturation.
+ *
+ * La fonction recalcule le devis avec le moteur partagé, écrit avec le rôle de
+ * service, puis déclenche la synchronisation calendrier et les e-mails. Elle ne
+ * renvoie que la référence et le total : aucune donnée personnelle ne repart.
+ */
+export async function createBooking(
+  input: CreateBookingInput,
+): Promise<CreateBookingResult> {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  if (!supabaseUrl) throw new Error('VITE_SUPABASE_URL manquant');
 
-  const fallbackDate = input.preferredDate ? dateToIso(input.preferredDate) : null;
-  const fallbackHour = input.arrivalHour;
-
-  const resolvedSessions = input.sessions.map(s => {
-    const date = s.date ? dateToIso(s.date) : fallbackDate;
-    const arrivalHour = s.arrivalHour ?? fallbackHour;
-    return { session: s, date, arrivalHour };
+  const res = await fetch(`${supabaseUrl}/functions/v1/create-booking`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
   });
 
-  for (const r of resolvedSessions) {
-    if (!r.date || r.arrivalHour == null) continue;
-    const conflict = await findConflictingSession({
-      plateauKey: r.session.plateauKey,
-      date: r.date,
-      arrivalHour: r.arrivalHour,
-      hours: r.session.hours,
-    });
-    if (conflict) {
-      throw new Error('Ce créneau est déjà réservé. Veuillez choisir un autre horaire.');
-    }
+  // Le créneau vient d'être pris entre l'affichage et l'envoi : c'est la
+  // contrainte d'exclusion en base qui tranche, pas une lecture préalable.
+  if (res.status === 409) throw new SlotTakenError();
+
+  if (!res.ok) {
+    const detail = await res.text().catch(() => '');
+    throw new Error(
+      `create-booking ${res.status}${detail ? `: ${detail}` : ''}`,
+    );
   }
 
-  const primary = resolvedSessions[0];
-  const headerDate = primary?.date ?? fallbackDate;
-  const headerHour = primary?.arrivalHour ?? fallbackHour;
-
-  const bookingData: BookingInsert = {
-    reference,
-    status: input.mode === 'booking' ? 'pending' : 'draft',
-    client_name: [input.contact.prenom, input.contact.nom].filter(Boolean).join(' '),
-    client_first_name: input.contact.prenom || null,
-    client_last_name: input.contact.nom || null,
-    client_email: input.contact.email,
-    client_company: input.contact.societe || null,
-    client_brand: input.contact.marque || null,
-    client_billing_address: input.contact.adresseFacturation || null,
-    client_siren: input.contact.siren || null,
-    client_phone: input.contact.tel || null,
-    project_type: input.projectType,
-    urgency: input.urgency,
-    total_estimate: input.quote.total,
-    notes: input.contact.autresInfos || null,
-    preferred_date: headerDate,
-    arrival_hour: headerHour,
-  };
-
-  const { data: booking, error: bookingError } = await supabase
-    .from('bookings')
-    .insert(bookingData)
-    .select()
-    .single();
-
-  if (bookingError || !booking) {
-    throw new Error(bookingError?.message ?? 'Failed to create booking');
-  }
-
-  if (input.sessions.length > 0) {
-    const sessionRows: BookingSessionInsert[] = resolvedSessions.map(({ session: s, date, arrivalHour }) => ({
-      booking_id: booking.id,
-      plateau_key: s.plateauKey,
-      slot_type: s.slotType ?? 'hour',
-      hours: s.hours,
-      session_date: date,
-      arrival_hour: arrivalHour,
-      cyclo_mode: s.cycloMode,
-      product_type: s.productType,
-      method: s.method,
-      submethod: s.submethod,
-      media: s.media,
-      views: s.views,
-      views_count: s.viewsCount,
-      quantity: s.quantity,
-      postprod_enabled: s.postprodEnabled,
-      postprod_video: s.postprodVideo,
-    }));
-
-    const { error: sessionsError } = await supabase
-      .from('booking_sessions')
-      .insert(sessionRows);
-
-    if (sessionsError) {
-      throw new Error(sessionsError.message);
-    }
-  }
-
-  const quoteData: BookingQuoteInsert = {
-    booking_id: booking.id,
-    reference: quoteRef,
-    rows: input.quote.rows as unknown[],
-    total: input.quote.total,
-  };
-
-  const { error: quoteError } = await supabase
-    .from('booking_quotes')
-    .insert(quoteData);
-
-  if (quoteError) {
-    throw new Error(quoteError.message);
-  }
-
-  // Best-effort instant sync. It is no longer the guarantee: the server-side
-  // reconcile cron (reconcile_calendar_sync) re-pushes any booking left
-  // unsynced, so a failure here is logged, not swallowed, and self-heals.
-  syncToCalendar(booking.id).catch((e) => console.error('calendar sync failed', e));
-  sendBookingEmails(booking.id).catch((e) => console.error('booking email failed', e));
-
-  return { booking, reference };
+  return (await res.json()) as CreateBookingResult;
 }
 
-async function syncToCalendar(bookingId: string): Promise<void> {
+/**
+ * Prévient le studio qu'une réservation n'a pas pu être enregistrée.
+ *
+ * Sans elle, cet incident-là ne laissait AUCUNE trace : la ligne n'existe pas
+ * en base, l'erreur ne sortait pas du navigateur du client, et le studio ne
+ * l'apprenait que si celui-ci prenait la peine d'écrire. `create-booking` a pu
+ * répondre 404 pendant un temps indéterminé sans que personne le sache.
+ *
+ * « Au mieux », comme la soumission HubSpot : jamais attendue, jamais relancée,
+ * et son propre échec ne remonte nulle part — sinon la panne qu'on signale
+ * devient la panne qui empêche de la signaler. Elle passe par `send-email`,
+ * qui est une Edge Function distincte de `create-booking` : le jour où celle-ci
+ * tombe, l'alerte part quand même.
+ */
+export function reportBookingFailure(input: {
+  error: unknown;
+  mode: string;
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+}): void {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   if (!supabaseUrl) return;
 
-  const res = await fetch(`${supabaseUrl}/functions/v1/calendar-sync`, {
+  void fetch(`${supabaseUrl}/functions/v1/send-email`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ bookingId, action: 'create' }),
-  });
-  if (!res.ok) throw new Error(`calendar-sync ${res.status}`);
-}
-
-async function sendBookingEmails(bookingId: string): Promise<void> {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  if (!supabaseUrl) return;
-
-  await fetch(`${supabaseUrl}/functions/v1/send-email`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ type: 'booking', bookingId }),
-  });
-}
-
-export async function getBookingByRef(ref: string): Promise<BookingRow | null> {
-  const { data, error } = await supabase
-    .from('bookings')
-    .select()
-    .eq('reference', ref)
-    .single();
-
-  if (error || !data) return null;
-  return data;
+    // `keepalive` : la soumission échoue souvent au moment où l'on quitte ou
+    // recharge la page. Sans lui, la requête est annulée avec le document.
+    keepalive: true,
+    body: JSON.stringify({
+      type: 'booking_failure_alert',
+      error:
+        input.error instanceof Error
+          ? `${input.error.name}: ${input.error.message}`
+          : String(input.error),
+      mode: input.mode,
+      contactName: input.contactName,
+      contactEmail: input.contactEmail,
+      contactPhone: input.contactPhone,
+      pageUrl: typeof location === 'undefined' ? undefined : location.href,
+    }),
+  }).catch(() => {});
 }

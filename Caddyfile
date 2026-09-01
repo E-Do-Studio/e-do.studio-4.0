@@ -104,19 +104,6 @@
         -Server
     }
 
-    # ===== Discovery — hors index tant que la section est en construction =====
-    # Les routes portent déjà `noIndex: true` (meta robots dans le HTML rendu),
-    # et la section est absente du sitemap et de llms.txt. Cet en-tête est un
-    # second signal, indépendant du parsing HTML — c'est celui que Google traite
-    # le plus tôt, avant même de lire le document.
-    #
-    # Volontairement PAS de Disallow dans robots.txt : il empêcherait Google de
-    # recrawler, donc de constater le noindex, et la page resterait indexée sans
-    # description pendant des mois. Le crawl doit rester ouvert jusqu'à la
-    # désindexation effective.
-    @discovery path /fr/discovery* /en/discovery*
-    header @discovery X-Robots-Tag "noindex, nofollow"
-
     # Strapi Preview entry: when the URL carries ?preview=1, allow the CMS
     # admin to embed the SPA in its preview iframe. The flag is non-secret on
     # its own — the SPA still validates ?secret=… against VITE_PREVIEW_SECRET

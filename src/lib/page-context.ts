@@ -1,6 +1,11 @@
 import { createContext, useContext } from 'react';
 import type { Lang, MachineInfo, SocialLink } from '../types';
-import type { ContactInfo, SiteBusinessInfo, SiteDefaults, StudioHours } from './strapi';
+import type {
+  ContactInfo,
+  SiteBusinessInfo,
+  SiteDefaults,
+  StudioHours,
+} from './strapi';
 
 // Données Strapi partagées par plusieurs pages ou consommées par des composants
 // profonds (cellules, pied de page, meta). Chargées une fois par le loader de la

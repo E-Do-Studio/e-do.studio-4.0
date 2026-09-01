@@ -1,22 +1,32 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { cn } from './ui/cn';
-import { PageHeader, buildMainNav } from './ui/page-header';
+import { cn } from '@/lib/utils';
+import { PageShell } from './ui/page-shell';
+import { MAIN_ID } from './ui/skip-link';
 import { SocialLinksRow } from './ui/social-links-row';
-import { CellLabel } from './ui/typography';
-import { buildContactPageSchema, buildBreadcrumbSchema } from './lib/structured-data';
 import { useLoaderData } from '@tanstack/react-router';
-import type { ContactInfo, StudioHours as StudioHoursData, TeamMember as StrapiTeamMember, ClosurePeriod } from './lib/strapi';
-import type { Lang, ContactFormData, Bilingual } from './types';
+import type {
+  ContactInfo,
+  StudioHours as StudioHoursData,
+  TeamMember as StrapiTeamMember,
+  ClosurePeriod,
+} from './lib/strapi';
+import type { Lang, ContactFormData } from './types';
 import { usePageContext } from './lib/page-context';
 import { submitContactForm } from './lib/contact';
-import { common, contact as contactMsg } from './i18n/messages';
-import { ContactForm, ContactSuccess, INITIAL_FORM, contactErrorMessage } from './contact-form';
-
-const UNAVAILABLE: Bilingual = {
-  fr: 'Contenu temporairement indisponible',
-  en: 'Content temporarily unavailable',
-};
+import { useT } from './i18n/use-t';
+import { bcp47 } from './lib/format';
+import {
+  ContactForm,
+  ContactSuccess,
+  INITIAL_FORM,
+  contactErrorMessage,
+} from './contact-form';
+import { MonoLabel } from './ui/mono-label';
+import { KeyValueList, KeyValueRow } from './ui/key-value-row';
+import { LabelledCell } from './ui/labelled-cell';
+import { HeadlineCell } from './ui/headline-cell';
+import { CtaCell } from './ui/cta-cell';
 
 const METRO_COLOR_BY_LINE: Record<string, string> = {
   '13': 'bg-metro-13 text-black',
@@ -35,17 +45,75 @@ interface ContactRailProps {
   hours: StudioHoursData | null;
 }
 
-const ContactRail = ({ lang, contact, hours, closures }: ContactRailProps & { closures: ClosurePeriod[] }) => {
-  const today = new Date().toISOString().slice(0, 10);
-  const hasClosures = closures.some((c) => c.endsAt >= today);
+/**
+ * L'URL d'itinéraire du pavé de bas de colonne.
+ *
+ * `googleMapsUrl` est renseigné côté CMS mais n'avait **aucun consommateur dans
+ * toute l'application** — d'où le repli construit sur l'adresse : sans lui, le
+ * pavé disparaîtrait en silence dès que le champ n'est pas rempli, ce qui est
+ * précisément le genre d'absence qu'on ne remarque jamais.
+ */
+function mapsLink(contact: ContactInfo | null): string | null {
+  if (!contact) return null;
+  if (contact.googleMapsUrl) return contact.googleMapsUrl;
+  const query =
+    contact.fullAddress ||
+    [contact.address.street, contact.address.zip].filter(Boolean).join(' ');
+  return query
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`
+    : null;
+}
+
+// Une colonne flex, et non une grille : la grille figeait des hauteurs
+// (`96px_repeat(5,64px)`) devinées sur le contenu d'un jour, avec cinq
+// `app:row-[…]` posés à la main. Elle n'alignait rien sur les colonnes voisines —
+// le panneau de formulaire a sa propre grille — et elle coûtait deux défauts :
+// HORAIRES demandait 136px pour une piste de 64 et débordait sur la couture, et
+// TÉLÉPHONE, seule sur la piste `1fr`, absorbait toute la hauteur restante de la
+// colonne. Son filet de fermeture tombait 376px sous son numéro.
+//
+// La hauteur restante appartient à une CALE, jamais à l'intérieur d'une cellule.
+// C'est la règle déjà écrite pour les grilles média — le reste devient une bande
+// de fond de page à côté de la grille, pas des bandes dans les tuiles — appliquée
+// ici à la verticale. Le filet de chaque cellule retombe où son contenu finit.
+//
+// La cale ne vaut qu'au-dessus du palier : sous lui, l'`<aside>` n'a pas de
+// hauteur définie et un `flex-1` n'y a rien à distribuer. Le modificateur était
+// exactement à l'envers — `flex-1 app:hidden`, donc inerte des deux côtés.
+const ContactRail = ({
+  lang,
+  contact,
+  hours,
+  closures,
+}: ContactRailProps & { closures: ClosurePeriod[] }) => {
+  const t = useT();
+  const mapsUrl = mapsLink(contact);
   return (
-    <aside className="flex flex-col overflow-auto bg-white md:col-start-1 md:row-start-2 md:grid md:grid-rows-contact-form md:gap-hairline md:overflow-hidden md:bg-hairline">
-      <FindUsSection lang={lang} contact={contact} className="md:row-[1/5]" />
-      <HoursSection lang={lang} hours={hours} className={hasClosures ? 'md:row-[5/6]' : 'md:row-[5/7]'} />
-      <ClosuresSection lang={lang} closures={closures} className="md:row-[6/7]" />
-      <PhoneSection lang={lang} contact={contact} className="md:row-[7/8]" />
-      <div className="flex-1 md:hidden" />
-      <SocialLinksRow className="border-t border-hairline md:row-[8/9] md:auto-rows-[2.75rem] md:border-t-0" />
+    <aside className="flex flex-col gap-px overflow-y-auto bg-border app:col-start-1 app:row-start-2">
+      <FindUsSection lang={lang} contact={contact} />
+      <HoursSection lang={lang} hours={hours} />
+      <ClosuresSection lang={lang} closures={closures} />
+      <ReachSection contact={contact} />
+      <div className="hidden flex-1 bg-background app:block" />
+      {/* La colonne se ferme sur une action, pas sur du vide — comme la colonne
+          du milieu de la post-prod et comme celle du formulaire. `tone="surface"`
+          et non le défaut orange : le formulaire est l'action primaire de la page
+          et garde le seul aplat, celle-ci est une sortie discrète. */}
+      {mapsUrl && (
+        <CtaCell
+          tone="surface"
+          title={t('contact.directions')}
+          href={mapsUrl}
+        />
+      )}
+      {/* `auto-rows` pilote la grille INTERNE de la bande, pas celle du rail : ses
+          deux rangées de sigles valent la bande sociale du reste du site. Plus de
+          `border-t` en revanche — la gouttière du rail la dessine maintenant à
+          toutes les tailles, et deux mécanismes pour une couture en font deux. */}
+      <SocialLinksRow
+        layout="row"
+        className="app:auto-rows-[var(--spacing-band)]"
+      />
     </aside>
   );
 };
@@ -60,38 +128,57 @@ function formatClosureDate(iso: string, lang: Lang): string {
   if (!iso) return '';
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
-  const locale = lang === 'fr' ? 'fr-FR' : 'en-US';
-  return d.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
+  return d.toLocaleDateString(bcp47(lang), {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
 }
 
-const ClosuresSection = ({ lang, closures, className }: ClosuresSectionProps) => {
+const ClosuresSection = ({
+  lang,
+  closures,
+  className,
+}: ClosuresSectionProps) => {
+  const t = useT();
   const today = new Date().toISOString().slice(0, 10);
   const upcoming = closures
     .filter((c) => c.endsAt >= today)
     .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
   if (upcoming.length === 0) return null;
   return (
-    <section className={cn('border-b border-border bg-white p-6 md:border-b-0', className)}>
-      <CellLabel className="mb-5 block">
-        {lang === 'fr' ? 'Fermetures' : 'Closures'}
-      </CellLabel>
-      <div className="flex flex-col gap-3 text-caption">
-        {upcoming.map((c) => (
-          <div key={`${c.startsAt}-${c.endsAt}`} className="flex flex-col gap-0.5">
-            <span className="font-mono tracking-ui">
-              {c.startsAt === c.endsAt
-                ? formatClosureDate(c.startsAt, lang)
-                : `${formatClosureDate(c.startsAt, lang)} → ${formatClosureDate(c.endsAt, lang)}`}
-            </span>
-            {c.label && (
-              <span className="text-muted-foreground">{c.label[lang] || c.label.fr}</span>
-            )}
-            {c.note && (
-              <span className="opacity-55 text-muted-foreground">{c.note[lang] || c.note.fr}</span>
-            )}
-          </div>
-        ))}
-      </div>
+    <section className={cn('bg-background py-6', className)}>
+      <LabelledCell pad="section" label={t('contact.closures')}>
+        <div className="flex flex-col gap-3 text-xs">
+          {upcoming.map((c) => (
+            <div
+              key={`${c.startsAt}-${c.endsAt}`}
+              className="flex flex-col gap-0.5"
+            >
+              {/* La plage passe à la ligne dans un rail de 240px : à
+                  `leading-none` les deux lignes se toucheraient. */}
+              <MonoLabel lines="multi">
+                {c.startsAt === c.endsAt
+                  ? formatClosureDate(c.startsAt, lang)
+                  : `${formatClosureDate(c.startsAt, lang)} → ${formatClosureDate(c.endsAt, lang)}`}
+              </MonoLabel>
+              {c.label && (
+                <span className="text-muted-foreground">
+                  {c.label[lang] || c.label.fr}
+                </span>
+              )}
+              {/* Plus d'`opacity-50` : il s'appliquait par-dessus
+                  `text-muted-foreground` et faisait tomber le contraste sous
+                  3:1. Une note qu'on ne peut pas lire ne hiérarchise rien. */}
+              {c.note && (
+                <span className="text-muted-foreground">
+                  {c.note[lang] || c.note.fr}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      </LabelledCell>
     </section>
   );
 };
@@ -103,44 +190,115 @@ interface FindUsSectionProps {
 }
 
 const FindUsSection = ({ lang, contact, className }: FindUsSectionProps) => {
+  const t = useT();
   const c = contact;
   const showFallback = !c;
-  const eyebrowFromEntries = c?.entries && c.entries.length > 0
-    ? c.entries.map((e) => `${e.label}${e.address ? ` ${e.address}` : ''}`).join(' · ')
-    : null;
-  const eyebrow = eyebrowFromEntries || c?.address.complement || 'Parc d’activités Victor Hugo · Bât. 6.7';
+  // Une entrée par LIGNE, et non un `label + adresse` par entrée joint par
+  // « — ». Cette chaîne-là n'était pas une phrase : c'étaient des valeurs qu'une
+  // machine avait assemblées faute de savoir comment les disposer, et en
+  // capitales letterspacées dans un rail de 240px. Même règle que pour le « · »
+  // (voir CLAUDE.md) : chaque valeur reçoit son élément, la mise en page sépare.
+  //
+  // Complément de voie et pays sont les MÊMES lignes d'une même adresse : la
+  // précision qui suit le nom de rue. Ils vivaient dans deux blocs séparés, de
+  // part et d'autre du titre, ce qui donnait trois groupes dans une cellule qui
+  // n'a qu'une chose à dire.
+  const addressDetails = [
+    ...(c?.entries && c.entries.length > 0
+      ? c.entries.map((e) =>
+          [e.label, e.address].filter(Boolean).join(' ').trim(),
+        )
+      : [c?.address.complement || 'Parc d’activités Victor Hugo, Bât. 6.7']),
+    c?.address.country,
+  ].filter(Boolean);
   return (
-    <section className={cn('border-b border-border bg-white p-6 md:overflow-auto md:border-b-0', className)}>
-      <CellLabel className="mb-5 block">{contactMsg.findUs[lang]}</CellLabel>
+    // Le premier bloc du rail couvre exactement les quatre premières rangées de
+    // la colonne du formulaire — bande d'en-tête plus trois rangées de champ,
+    // gouttières comprises. C'est ce qui fait tomber sa couture de fermeture à la
+    // même hauteur que celle du formulaire, à deux colonnes d'ici : elle en était
+    // à SIX pixels, l'écart qui se lit comme une erreur plutôt que comme deux
+    // colonnes indépendantes.
+    //
+    // Le calcul est celui de la grille voisine, écrit avec les mêmes tokens : ni
+    // l'une ni l'autre ne porte plus le nombre en clair.
+    <section
+      className={cn(
+        'bg-background py-6',
+        'app:min-h-[calc(var(--spacing-col-head)+3*var(--spacing-col-row)+3px)]',
+        className,
+      )}
+    >
       {showFallback ? (
-        <UnavailableNote lang={lang} />
+        <LabelledCell pad="section" label={t('contact.findUs')}>
+          <UnavailableNote />
+        </LabelledCell>
       ) : (
-        <>
-          <div className="text-detail leading-copy font-medium text-foreground">
-            <span className="mb-2 block font-mono text-label font-normal uppercase tracking-ui text-muted-foreground">
-              {eyebrow}
+        // L'ADRESSE EST LA RÉPONSE DE LA CELLULE, et le seul libellé est celui
+        // que `HeadlineCell` pose déjà.
+        //
+        // Le complément de voie et le pays étaient en `MonoLabel` : du CONTENU
+        // habillé en étiquette. `MonoLabel` nomme des libellés — catégories,
+        // intitulés de cellule, en-têtes — et « Parc d'activités Victor Hugo,
+        // Bât. 6.7 » n'en est pas un. Trois blocs mono gris se succédaient donc
+        // dans une cellule qui n'a qu'une seule chose à dire, et la capitale
+        // letterspacée rendait illisible la ligne la plus longue du rail.
+        <HeadlineCell
+          pad="section"
+          label={t('contact.findUs')}
+          // `xs` et non `sm` : à 24px l'adresse prend trois lignes de 24 et la
+          // cellule dépasse de six pixels le module de la colonne voisine, donc
+          // sa couture tombe à côté. À 20px elle rentre, avec six pixels de marge
+          // — et les deux « réponses » du rail, l'adresse et le téléphone,
+          // partagent alors un seul registre.
+          size="xs"
+          headline={
+            <address className="not-italic">
+              {c?.address.street}
+              <br />
+              {c?.address.zip}
+            </address>
+          }
+          details={addressDetails.map((line) => (
+            <span key={line} className="block">
+              {line}
             </span>
-            {c?.address.street}<br />
-            {c?.address.postalCode} <span className="whitespace-nowrap">{c?.address.city}</span>
-            {c?.address.country ? <>,<br />{c.address.country}</> : null}
-          </div>
-          {c?.transport && c.transport.length > 0 && (
-            <div className="mt-5 flex flex-col gap-2.5 font-mono text-label leading-relaxed tracking-ui text-muted-foreground">
-              {c.transport.map((t, i) => {
-                const { line, name } = parseMetroLabel(t.label);
-                if (!line) return <div key={i} className="whitespace-nowrap">{t.label}</div>;
+          ))}
+        >
+          {/* Transport et parking sont la MÊME question — comment on arrive —
+              donc le même bloc. Le nom de station est une valeur, donc en sans
+              comme toutes les valeurs du site : en mono grise letterspacée, la
+              pastille (la décoration) était l'élément le plus fort de la cellule
+              et le nom propre qu'elle désigne le plus faible. */}
+          {(c?.transport?.length || c?.parking) && (
+            <div className="flex flex-col gap-2 text-sm leading-snug">
+              {c?.transport?.map((entry) => {
+                const { line, name } = parseMetroLabel(entry.label);
+                if (!line)
+                  return (
+                    <div key={entry.label} className="text-foreground">
+                      {entry.label}
+                    </div>
+                  );
                 return (
                   <MetroLine
-                    key={i}
+                    key={entry.label}
                     line={line}
                     label={name}
-                    className={METRO_COLOR_BY_LINE[line] ?? 'bg-muted text-foreground'}
+                    className={
+                      METRO_COLOR_BY_LINE[line] ?? 'bg-muted text-foreground'
+                    }
                   />
                 );
               })}
+              {/* `parking` vivait dans le payload du CMS sans un seul
+                  consommateur dans l'app. Pour un studio où l'on vient décharger
+                  du matériel, c'est l'info pratique qui manquait. */}
+              {c?.parking && (
+                <p className="m-0 text-muted-foreground">{c.parking[lang]}</p>
+              )}
             </div>
           )}
-        </>
+        </HeadlineCell>
       )}
     </section>
   );
@@ -154,7 +312,17 @@ interface MetroLineProps {
 
 const MetroLine = ({ line, label, className }: MetroLineProps) => (
   <div className="flex items-center gap-2 whitespace-nowrap">
-    <span className={cn('inline-flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full text-label font-bold tracking-normal', className)}>
+    <span
+      className={cn(
+        // Carré, y compris pour un numéro de ligne de métro : la RATP les
+        // dessine ronds, ce système ne dessine rien de rond. `--radius` vaut 0
+        // et `rounded-full` est le seul rayon qui l'ignore, en posant 9999px en
+        // dur — deux disques colorés au milieu d'une page entièrement réglée à
+        // l'équerre se lisaient comme un emprunt à une autre charte.
+        'inline-flex h-4.5 w-4.5 shrink-0 items-center justify-center text-xs font-bold',
+        className,
+      )}
+    >
       {line}
     </span>
     {label}
@@ -167,67 +335,137 @@ interface HoursSectionProps {
   className?: string;
 }
 
+// Plus de `KeyValueRow` ici : les horaires ne sont pas une paire nom / valeur.
+//
+// La question qu'on pose à cette cellule est « vous ouvrez quand ? », et la
+// réponse est une plage. Les jours la QUALIFIENT, ils ne lui font pas face. En
+// tableau, le libellé se collait au bord gauche et la plage au bord droit, avec
+// un vide au milieu : dans les 192px utiles du rail, l'œil faisait du ping-pong
+// entre deux bords pour rapprocher deux mots qui forment une seule phrase. Et le
+// filet entre les rangées découpait en deux enregistrements ce qui est un seul
+// fait, l'horaire du studio.
+//
+// La cellule prend donc la même forme que ses deux voisines : la réponse au
+// registre du titre, les nuances en gris dessous.
 const HoursSection = ({ lang, hours, className }: HoursSectionProps) => {
-  const h = hours;
-  const showFallback = !h;
+  const t = useT();
+  const rows = hours?.rows ?? [];
+  // La réponse est la première PLAGE. Un statut n'en est pas une : une cellule
+  // dont le seul contenu est « sur demande » n'a pas de titre à donner, et ses
+  // lignes se lisent alors toutes au même registre.
+  const primary = rows.find((row) => row.kind === 'hours');
+  const line = (row: (typeof rows)[number]) =>
+    [row.label[lang], row.value[lang]].filter(Boolean).join('  ');
   return (
-    <section className={cn('border-b border-border bg-white p-6 md:border-b-0', className)}>
-      <CellLabel className="mb-5 block">{contactMsg.hours[lang]}</CellLabel>
-      {showFallback ? (
-        <UnavailableNote lang={lang} />
+    <section className={cn('bg-background py-6', className)}>
+      {rows.length === 0 ? (
+        <LabelledCell pad="section" label={t('contact.hours')}>
+          <UnavailableNote />
+        </LabelledCell>
+      ) : primary ? (
+        <HeadlineCell
+          pad="section"
+          label={t('contact.hours')}
+          headline={primary.value[lang]}
+          details={[primary, ...rows.filter((row) => row !== primary)].map(
+            (row) => (
+              <span key={row.days.join('-') || row.value.fr} className="block">
+                {row === primary ? row.label[lang] : line(row)}
+              </span>
+            ),
+          )}
+        />
       ) : (
-        <div className="flex flex-col gap-3 text-caption">
-          <HoursRow label={contactMsg.monFri[lang]} value={h?.weekday[lang] || '—'} />
-          <HoursRow label={contactMsg.satSun[lang]} value={h?.weekend[lang] || common.onRequest[lang]} muted />
-        </div>
+        <LabelledCell pad="section" label={t('contact.hours')}>
+          <div className="text-sm leading-snug text-muted-foreground">
+            {rows.map((row) => (
+              <span key={row.days.join('-') || row.value.fr} className="block">
+                {line(row)}
+              </span>
+            ))}
+          </div>
+        </LabelledCell>
       )}
     </section>
   );
 };
 
-interface HoursRowProps {
-  label: string;
-  value: string;
-  muted?: boolean;
-}
-
-const HoursRow = ({ label, value, muted = false }: HoursRowProps) => (
-  <div className="flex items-baseline justify-between gap-3 whitespace-nowrap">
-    <span className="text-muted-foreground">{label}</span>
-    <span className={cn('text-caption', muted ? 'text-muted-foreground' : 'font-mono text-foreground')}>
-      {value}
-    </span>
-  </div>
-);
-
-interface PhoneSectionProps {
-  lang: Lang;
+interface ReachSectionProps {
   contact: ContactInfo | null;
   className?: string;
 }
 
-const PhoneSection = ({ lang, contact, className }: PhoneSectionProps) => {
+// Une cellule, deux façons de nous joindre. Le téléphone avait la sienne et
+// l'email n'était affiché NULLE PART sur la page — sur une page de contact, et
+// alors que `email` / `emailHref` sont dans le payload depuis toujours.
+//
+// Le numéro monte au registre `text-xl` : c'est l'action la plus directe de la
+// colonne, et il se lisait à la même taille que la mention d'horaires. Il reste
+// sous l'adresse dans la hiérarchie — le formulaire, à deux colonnes d'ici, est
+// l'action primaire de la page et garde le seul aplat orange.
+//
+// `min-h-tap` sur les deux : un numéro et un mail sont des cibles tactiles, et
+// c'étaient des `<a>` en ligne de 20px de haut.
+const ReachSection = ({ contact, className }: ReachSectionProps) => {
+  const t = useT();
   const c = contact;
-  const showFallback = !c;
   return (
-    <section className={cn('bg-white p-6', className)}>
-      <CellLabel className="mb-5 block">{contactMsg.phone[lang]}</CellLabel>
-      {showFallback ? (
-        <UnavailableNote lang={lang} />
-      ) : c?.phone ? (
-        <a href={c.phoneHref} className="text-detail font-medium tracking-copy-tight text-primary no-underline">
-          {c.phone}
-        </a>
-      ) : null}
+    <section className={cn('bg-background py-6', className)}>
+      {!c ? (
+        <LabelledCell pad="section" label={t('contact.reachUs')}>
+          <UnavailableNote />
+        </LabelledCell>
+      ) : (
+        // Le lien n'emporte que sa couleur : corps, graisse et interlettrage lui
+        // viennent du registre que la cellule pose, donc rien n'est recopié.
+        //
+        // La cible tactile passe par une zone de clic étendue et non par
+        // `min-h-tap` : un plancher de 44px pour 20px de texte centre le texte et
+        // laisse 12px de blanc de chaque côté, qui s'AJOUTAIENT au `gap` de la
+        // cellule. Le rail affichait 22px puis 21px là où ses deux voisines
+        // affichent 14 puis 8. Le pseudo-élément, lui, ne déplace rien : le lien
+        // occupe la largeur de la colonne et son `-inset-y-1` porte la cible à
+        // 28px sans toucher au rythme. C'est l'idiome de `switch.tsx`.
+        <HeadlineCell
+          pad="section"
+          label={t('contact.reachUs')}
+          size="xs"
+          headline={
+            <a
+              href={c.phoneHref}
+              className="relative block text-primary no-underline after:absolute after:-inset-x-3 after:-inset-y-1"
+            >
+              {c.phone}
+            </a>
+          }
+          details={
+            c.email && (
+              <a
+                href={c.emailHref}
+                className="relative block break-all tracking-tight text-primary no-underline after:absolute after:-inset-x-3 after:-inset-y-1"
+              >
+                {c.email}
+              </a>
+            )
+          }
+        />
+      )}
     </section>
   );
 };
 
-const UnavailableNote = ({ lang }: { lang: Lang }) => (
-  <span className="block font-mono text-micro uppercase tracking-meta text-muted-foreground opacity-55">
-    {UNAVAILABLE[lang]} · offline
-  </span>
-);
+// `lines="multi"` : la phrase passe à la ligne dans un rail de 240px. Et plus
+// d'`opacity-50` par-dessus `text-muted-foreground` — la note tombait sous 3:1,
+// donc la seule chose que la page avait à dire quand la donnée manque était
+// justement la moins lisible.
+const UnavailableNote = () => {
+  const t = useT();
+  return (
+    <MonoLabel tone="muted" lines="multi" className="block">
+      {t('contact.temporarilyUnavailable')}
+    </MonoLabel>
+  );
+};
 
 interface ContactFormPanelProps {
   lang: Lang;
@@ -241,23 +479,45 @@ interface ContactFormPanelProps {
   goto: (screen: string) => void;
 }
 
-const ContactFormPanel = ({ lang, form, sent, sending, sendError, setForm, setSent, submit, goto }: ContactFormPanelProps) => (
-  <main className="overflow-hidden bg-white md:col-start-2 md:col-span-2 md:row-start-2">
-    {!sent ? (
-      <ContactForm lang={lang} form={form} setForm={setForm} submit={submit} sending={sending} sendError={sendError} />
-    ) : (
-      <ContactSuccess
-        lang={lang}
-        onNewMessage={() => {
-          setSent(false);
-          setForm(INITIAL_FORM);
-        }}
-        onContinue={() => goto('gallery')}
-        continueLabel={`${contactMsg.seeGallery[lang]} →`}
-      />
-    )}
-  </main>
-);
+const ContactFormPanel = ({
+  lang,
+  form,
+  sent,
+  sending,
+  sendError,
+  setForm,
+  setSent,
+  submit,
+  goto,
+}: ContactFormPanelProps) => {
+  const t = useT();
+  return (
+    <main
+      id={MAIN_ID}
+      className="overflow-hidden bg-background app:col-start-2 app:col-span-2 app:row-start-2"
+    >
+      {!sent ? (
+        <ContactForm
+          lang={lang}
+          form={form}
+          setForm={setForm}
+          submit={submit}
+          sending={sending}
+          sendError={sendError}
+        />
+      ) : (
+        <ContactSuccess
+          onNewMessage={() => {
+            setSent(false);
+            setForm(INITIAL_FORM);
+          }}
+          onContinue={() => goto('gallery')}
+          continueLabel={`${t('contact.seeGallery')} →`}
+        />
+      )}
+    </main>
+  );
+};
 
 interface ContactRightColumnProps {
   lang: Lang;
@@ -265,15 +525,25 @@ interface ContactRightColumnProps {
   team: StrapiTeamMember[];
 }
 
-const ContactRightColumn = ({ lang, contact, team }: ContactRightColumnProps) => (
-  <aside className="grid grid-rows-2 overflow-hidden md:col-start-4 md:row-start-2 min-h-72 md:min-h-0">
-    <ContactMap lang={lang} contact={contact} className="border-b border-hairline" />
+const ContactRightColumn = ({
+  lang,
+  contact,
+  team,
+}: ContactRightColumnProps) => (
+  <aside className="grid grid-rows-2 overflow-hidden app:col-start-4 app:row-start-2 min-h-72 app:min-h-0">
+    <ContactMap contact={contact} className="border-b border-border" />
     <TeamPanel lang={lang} members={team} />
   </aside>
 );
 
-function buildMapsEmbedFallback(fullAddress?: string, street?: string, postalCode?: string, city?: string): string {
-  const q = fullAddress || [street, postalCode, city].filter(Boolean).join(', ');
+function buildMapsEmbedFallback(
+  fullAddress?: string,
+  street?: string,
+  postalCode?: string,
+  city?: string,
+): string {
+  const q =
+    fullAddress || [street, postalCode, city].filter(Boolean).join(', ');
   return `https://www.google.com/maps?q=${encodeURIComponent(q)}&z=17&output=embed`;
 }
 
@@ -285,69 +555,100 @@ function forceMapPlanView(url: string): string {
 }
 
 interface ContactMapProps {
-  lang: Lang;
   contact: ContactInfo | null;
   className?: string;
 }
 
-const ContactMap = ({ lang, contact, className }: ContactMapProps) => {
+const ContactMap = ({ contact, className }: ContactMapProps) => {
+  const t = useT();
   const c = contact;
   const showFallback = !c;
   const embedUrl = forceMapPlanView(
-    c?.mapsEmbedUrl
-    || buildMapsEmbedFallback(c?.fullAddress, c?.address.street, c?.address.postalCode, c?.address.city),
+    c?.mapsEmbedUrl ||
+      buildMapsEmbedFallback(
+        c?.fullAddress,
+        c?.address.street,
+        c?.address.postalCode,
+        c?.address.city,
+      ),
   );
   return (
-    <section className={cn('relative overflow-hidden bg-edo-warm', className)}>
+    <section
+      className={cn(
+        'relative overflow-hidden bg-[oklch(0.91_0.03_82)]',
+        className,
+      )}
+    >
       {showFallback ? (
         <div className="absolute inset-0 flex items-center justify-center p-6">
-          <UnavailableNote lang={lang} />
+          <UnavailableNote />
         </div>
       ) : (
         <iframe
           src={embedUrl}
-          className="absolute inset-0 h-full w-full border-0"
+          className="absolute inset-0 h-full w-full "
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
-          title={contactMsg.mapTitle[lang]}
+          title={t('contact.mapTitle')}
         />
       )}
     </section>
   );
 };
 
-const TeamPanel = ({ lang, members }: { lang: Lang; members: StrapiTeamMember[] }) => (
-  <section className="flex flex-col gap-3.5 bg-foreground p-6 text-white">
-    <span className="edo-cell-label text-white/70">{contactMsg.team[lang]}</span>
-    <div className="flex flex-col gap-2.5">
-      {members.map((member) => (
-        <TeamMemberRow key={member.id} member={member} lang={lang} />
-      ))}
-    </div>
-  </section>
-);
+const TeamPanel = ({
+  lang,
+  members,
+}: {
+  lang: Lang;
+  members: StrapiTeamMember[];
+}) => {
+  const t = useT();
+  return (
+    <section className="dark bg-background py-6 text-foreground">
+      <KeyValueList pad="section" heading={t('contact.team')}>
+        {members.map((member) => (
+          <TeamMemberRow key={member.id} member={member} lang={lang} />
+        ))}
+      </KeyValueList>
+    </section>
+  );
+};
 
 interface TeamMemberRowProps {
   member: StrapiTeamMember;
   lang: Lang;
 }
 
+// Le libellé est COMPOSITE — nom en sans, rôle en mono en dessous — donc un
+// nœud et non une chaîne : l'enfermer dans le `MonoLabel` du composant mettrait
+// le nom de la personne en capitales.
 const TeamMemberRow = ({ member, lang }: TeamMemberRowProps) => (
-  <div className="grid grid-cols-fluid-auto gap-2 border-b border-white/10 py-2">
-    <div className="flex flex-col gap-0.5">
-      <span className="text-detail tracking-copy-tight text-white">{member.name[lang]}</span>
-      <span className="font-mono text-micro uppercase tracking-ui text-white/55">{member.role[lang]}</span>
-    </div>
-    {member.email && member.emailHref && (
-      <a href={member.emailHref} className="self-center font-mono text-label tracking-caption text-primary no-underline">
-        {member.email}
-      </a>
-    )}
-  </div>
+  <KeyValueRow
+    label={
+      <span className="flex flex-col gap-0.5">
+        <span className="text-sm tracking-tight text-foreground">
+          {member.name[lang]}
+        </span>
+        <MonoLabel tone="muted">{member.role[lang]}</MonoLabel>
+      </span>
+    }
+    value={
+      member.email && member.emailHref ? (
+        <a
+          href={member.emailHref}
+          className="font-mono text-xs tracking-widest text-primary no-underline"
+        >
+          {member.email}
+        </a>
+      ) : null
+    }
+  />
 );
 
 const ContactPage = () => {
-  const { lang, setLang, openMenu, goto, siteData } = usePageContext();
+  const t = useT();
+  const { lang, goto, siteData } = usePageContext();
   const contact = siteData.contact;
   const hours = siteData.studioHours;
   const { teamMembers } = useLoaderData({ from: '/$lang/contact' });
@@ -373,22 +674,30 @@ const ContactPage = () => {
   };
 
   return (
-    <div className="edo-page-enter grid w-full edo-hairline md:h-full md:grid-cols-contact-shell md:grid-rows-page md:overflow-hidden">
-      <h1 className="sr-only">{common.contactUs[lang]} — E-Do Studio Paris</h1>
-      {/* Unified header — compact right-aligned actions on all breakpoints */}
-      <PageHeader
+    <PageShell className="app:grid-cols-[var(--spacing-logo)_repeat(3,minmax(0,1fr))] app:grid-rows-[var(--spacing-header)_minmax(0,1fr)]">
+      {/* Après la bande et non avant : la page n'a pas de titre visible — sa
+          première cellule EST le titre —, mais l'ordre annoncé reste celui des
+          huit autres pages, bannière puis titre puis contenu. */}
+      <h1 className="sr-only">{t('common.contactUs')} — E-Do Studio Paris</h1>
+      <ContactFormPanel
         lang={lang}
-        title={common.contactUs[lang]}
-        className="col-span-full h-14 md:col-span-full md:row-start-1 md:h-full"
-        onMenuClick={openMenu}
-        onLogoClick={() => goto('home')}
-        onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
-        actions={buildMainNav({ lang, goto, exclude: 'contact' })}
+        form={form}
+        sent={sent}
+        sending={sending}
+        sendError={sendError}
+        setForm={setForm}
+        setSent={setSent}
+        submit={submit}
+        goto={goto}
       />
-      <ContactFormPanel lang={lang} form={form} sent={sent} sending={sending} sendError={sendError} setForm={setForm} setSent={setSent} submit={submit} goto={goto} />
-      <ContactRail lang={lang} contact={contact} hours={hours} closures={closures} />
+      <ContactRail
+        lang={lang}
+        contact={contact}
+        hours={hours}
+        closures={closures}
+      />
       <ContactRightColumn lang={lang} contact={contact} team={team} />
-    </div>
+    </PageShell>
   );
 };
 

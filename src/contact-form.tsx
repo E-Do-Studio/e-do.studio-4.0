@@ -1,11 +1,16 @@
 import { useEffect, useState } from 'react';
-import type { FormEvent, InputHTMLAttributes, TextareaHTMLAttributes } from 'react';
+import type { FormEvent } from 'react';
 import type { ContactFormData, Lang } from './types';
 import { submitContactForm } from './lib/contact';
-import { common, contact as contactMsg } from './i18n/messages';
-import { Button } from './ui/button';
-import { cn } from './ui/cn';
-import { IconArrowRight } from './ui/icons';
+import { getT } from './i18n';
+import { useT } from './i18n/use-t';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { FormCell, FormCellInput, FormCellTextarea } from './ui/form-cell';
+import { SectionIntro } from './ui/section-intro';
+import { StatusBadge } from './ui/status-badge';
+import { CtaCell } from './ui/cta-cell';
 
 export const INITIAL_FORM: ContactFormData = {
   nom: '',
@@ -17,44 +22,18 @@ export const INITIAL_FORM: ContactFormData = {
   formLoadedAt: 0,
 };
 
-/** Maps the edge function's machine codes to a localized, user-facing string. */
+/**
+ * Traduit les codes machine de la fonction Edge en message affichable.
+ *
+ * `getT` et non `useT` : l'appelant est un gestionnaire de soumission, pas un
+ * rendu — il n'a pas de hook à sa disposition.
+ */
 export const contactErrorMessage = (err: unknown, lang: Lang): string => {
+  const t = getT(lang);
   const code = err instanceof Error ? err.message : '';
-  if (code === 'rate_limited') return contactMsg.errorRateLimited[lang];
-  return contactMsg.errorSend[lang];
+  if (code === 'rate_limited') return t('contact.errorRateLimited');
+  return t('contact.errorSend');
 };
-
-const inputClassName =
-  'edo-bento-input w-full border-0 bg-white px-5 font-sans text-cell font-light tracking-copy-tight text-foreground outline-none transition-colors focus:bg-muted';
-
-interface ContactInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
-  value: string;
-  onChange: (value: string) => void;
-}
-
-export const ContactInput = ({ value, onChange, className, type = 'text', ...props }: ContactInputProps) => (
-  <input
-    type={type}
-    value={value}
-    onChange={(event) => onChange(event.target.value)}
-    className={cn(inputClassName, className)}
-    {...props}
-  />
-);
-
-interface ContactTextareaProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'onChange'> {
-  value: string;
-  onChange: (value: string) => void;
-}
-
-export const ContactTextarea = ({ value, onChange, className, ...props }: ContactTextareaProps) => (
-  <textarea
-    value={value}
-    onChange={(event) => onChange(event.target.value)}
-    className={cn(inputClassName, 'col-span-2 h-full min-h-36 resize-none py-4 leading-normal', className)}
-    {...props}
-  />
-);
 
 interface ContactFormProps {
   lang: Lang;
@@ -73,21 +52,42 @@ export const ContactForm = ({
   sending,
   sendError,
 }: ContactFormProps) => {
-  // Stamped on mount rather than in INITIAL_FORM: that constant is evaluated at
-  // import time, which under SSR would be the server's render clock.
+  const t = useT();
+
+  // Horodaté au montage et non dans `INITIAL_FORM` : cette constante est
+  // évaluée à l'import, donc côté SSR sur l'horloge du serveur — l'écart
+  // mesuré serait celui du rendu, pas celui de la saisie.
+  //
+  // Dépendances volontairement vides : le tampon marque le montage. Le
+  // relancer à chaque frappe repousserait l'origine et laisserait passer les
+  // soumissions instantanées que le contrôle est censé rejeter.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: cf. ci-dessus
   useEffect(() => {
     if (!form.formLoadedAt) setForm({ ...form, formLoadedAt: Date.now() });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <form
       onSubmit={submit}
-      className="grid grid-cols-2 grid-rows-contact-form-compact gap-hairline bg-edo-pure-black md:h-full"
+      // Le rythme de la colonne vient des tokens : le rail de contact, à côté,
+      // aligne ses coutures sur le même module. Les deux mesures étaient écrites
+      // en littéraux ici ET dans le rail, donc elles dérivaient séparément.
+      //
+      // Le PIED est la seule piste qui change de valeur selon le palier, d'où la
+      // variable : au-dessus de `app` les deux colonnes sont côte à côte, et le
+      // rail s'y ferme sur DEUX cellules — le pavé d'itinéraire et la bande
+      // sociale, plus leur couture. Le pavé d'envoi leur fait face d'un seul
+      // tenant, sinon sa couture haute tombe au milieu du pied voisin. Sous le
+      // palier les colonnes sont empilées : il n'y a plus de voisin, le pavé
+      // revient à une bande.
+      className="grid grid-cols-2 grid-rows-[var(--spacing-col-head)_repeat(3,var(--spacing-col-row))_minmax(0,1fr)_var(--form-foot)] gap-px bg-border [--form-foot:var(--spacing-band)] app:h-full app:[--form-foot:calc(2*var(--spacing-band)+1px)]"
     >
-      {/* Honeypot — positioned off-screen rather than display:none, which many
-          bots know to skip. Never focusable, never announced. */}
-      <div className="absolute left-[-9999px] h-0 w-0 overflow-hidden" aria-hidden="true">
+      {/* Leurre anti-bot — hors écran plutôt qu'en `display:none`, que beaucoup
+          de robots savent ignorer. Jamais focusable, jamais annoncé. */}
+      <div
+        className="absolute left-[-9999px] h-0 w-0 overflow-hidden"
+        aria-hidden="true"
+      >
         <input
           type="text"
           name="website"
@@ -98,102 +98,146 @@ export const ContactForm = ({
         />
       </div>
 
-      <div className="col-span-2 flex flex-col justify-center bg-white px-5 py-2.5">
-        <span className="edo-cell-label text-primary">{contactMsg.writeToUs[lang]}</span>
-        <h1 className="m-0 mt-0.5 text-tile-large font-light leading-none tracking-display text-foreground">
-          {contactMsg.projectVisit[lang]}
-        </h1>
-      </div>
+      {/* `<h2>` et non `<h1>` : la page porte déjà le sien (contact-page).
+          Le formulaire est aussi embarqué dans la galerie et le tunnel, où
+          un second `<h1>` doublonnait à chaque fois.
 
-      <ContactInput
-        required
-        value={form.nom}
-        onChange={(value) => setForm({ ...form, nom: value })}
-        placeholder={contactMsg.name[lang]}
-        className="col-start-1 row-start-2"
+          Plus de sur-titre : « Écrivez-nous » ne disait rien que « Un projet,
+          une visite ? » ne dise déjà, et le `h1` de la page étant `sr-only`,
+          ce titre EST celui de l'écran — au registre `flow`, un cran au-dessus
+          des cellules du rail (`HeadlineCell`, « titre de cellule »), il porte
+          enfin la hiérarchie que le mono orange simulait.
+
+          `px-4 sm:px-3` est la paire de `FormCell` : le titre démarre sur la
+          verticale des libellés de champ qu'il coiffe, pas 8px à leur droite. */}
+      <SectionIntro
+        size="flow"
+        as="h2"
+        title={t('contact.projectVisit')}
+        className="col-span-2 justify-center bg-background px-4 py-2.5 sm:px-3"
       />
-      <ContactInput
-        required
-        type="tel"
-        value={form.telephone}
-        onChange={(value) => setForm({ ...form, telephone: value })}
-        placeholder={contactMsg.phonePlaceholder[lang]}
-        className="col-start-2 row-start-2"
-      />
-      <ContactInput
-        required
-        type="email"
-        value={form.email}
-        onChange={(value) => setForm({ ...form, email: value })}
-        placeholder="Email*"
-        className="col-span-2 row-start-3"
-      />
-      <ContactInput
-        required
-        value={form.societe}
-        onChange={(value) => setForm({ ...form, societe: value })}
-        placeholder={contactMsg.companyBrand[lang]}
-        className="col-span-2 row-start-4"
-      />
-      <ContactTextarea
-        required
-        value={form.message}
-        onChange={(value) => setForm({ ...form, message: value })}
-        placeholder={contactMsg.yourMessage[lang]}
-        className="row-start-5"
-      />
+
+      <FormCell
+        label={t('contact.name')}
+        className="col-start-1 row-start-2 justify-center"
+      >
+        <FormCellInput
+          name="nom"
+          autoComplete="name"
+          placeholder={t('contact.placeholderName')}
+          value={form.nom}
+          onChange={(nom) => setForm({ ...form, nom })}
+        />
+      </FormCell>
+      <FormCell
+        label={t('contact.phonePlaceholder')}
+        className="col-start-2 row-start-2 justify-center"
+      >
+        <FormCellInput
+          type="tel"
+          name="telephone"
+          autoComplete="tel"
+          inputMode="tel"
+          placeholder={t('contact.placeholderPhone')}
+          value={form.telephone}
+          onChange={(telephone) => setForm({ ...form, telephone })}
+        />
+      </FormCell>
+      <FormCell
+        label="Email*"
+        className="col-span-2 row-start-3 justify-center"
+      >
+        <FormCellInput
+          type="email"
+          name="email"
+          autoComplete="email"
+          inputMode="email"
+          placeholder={t('contact.placeholderEmail')}
+          value={form.email}
+          onChange={(email) => setForm({ ...form, email })}
+        />
+      </FormCell>
+      <FormCell
+        label={t('contact.companyBrand')}
+        className="col-span-2 row-start-4 justify-center"
+      >
+        <FormCellInput
+          name="societe"
+          autoComplete="organization"
+          placeholder={t('contact.placeholderCompany')}
+          value={form.societe}
+          onChange={(societe) => setForm({ ...form, societe })}
+        />
+      </FormCell>
+      <FormCell
+        label={t('contact.yourMessage')}
+        className="col-span-2 row-start-5 justify-start"
+      >
+        <FormCellTextarea
+          name="message"
+          placeholder={t('contact.placeholderMessage')}
+          value={form.message}
+          onChange={(message) => setForm({ ...form, message })}
+          fill
+        />
+      </FormCell>
 
       {sendError && (
-        <div className="col-span-2 flex items-center bg-red-50 px-5 py-2 text-sm text-red-600">
-          {sendError}
-        </div>
+        <Alert variant="destructive" className="col-span-2 rounded-none">
+          <AlertDescription>{sendError}</AlertDescription>
+        </Alert>
       )}
 
-      <button
+      <CtaCell
         type="submit"
         disabled={sending}
-        className="edo-focus-ring col-span-2 row-start-6 flex cursor-pointer items-center justify-center gap-3.5 border-0 bg-primary font-mono text-caption uppercase tracking-label text-white transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        {sending ? (
-          common.sending[lang]
-        ) : (
-          <>
-            {common.send[lang]} <IconArrowRight width="16" height="16" />
-          </>
-        )}
-      </button>
+        title={sending ? t('common.sending') : t('common.send')}
+        className="col-span-2 row-start-6"
+      />
     </form>
   );
 };
 
 interface ContactSuccessProps {
-  lang: Lang;
   onNewMessage: () => void;
   onContinue?: () => void;
   continueLabel?: string;
 }
 
-export const ContactSuccess = ({ lang, onNewMessage, onContinue, continueLabel }: ContactSuccessProps) => (
-  <div className="flex h-full flex-col items-start justify-center gap-4 bg-white px-7 py-8">
-    <span className="edo-cell-label text-primary">✓ {contactMsg.messageSent[lang]}</span>
-    <h1 className="m-0 max-w-lg text-page-title font-light leading-tight tracking-display text-foreground">
-      {contactMsg.thanksSoon[lang]}
-    </h1>
-    <p className="m-0 max-w-md text-detail leading-normal text-muted-foreground">
-      {contactMsg.replyTime[lang]}
-    </p>
-    <div className="mt-3 flex flex-wrap gap-2.5">
+export const ContactSuccess = ({
+  onNewMessage,
+  onContinue,
+  continueLabel,
+}: ContactSuccessProps) => {
+  const t = useT();
+  return (
+    // Le sur-titre reste ici, mais en pastille : il porte un ÉTAT, pas une
+    // catégorie décorative — et `<output>` l'annonce comme tel. C'est la forme
+    // que la confirmation de réservation lui donne déjà (`book-confirmation`).
+    // Le `✓` en préfixe disparaît : l'aplat orange est la marque.
+    <SectionIntro
+      size="flow"
+      as="h2"
+      kicker={
+        <StatusBadge render={<output />} size="md" className="self-start">
+          {t('contact.messageSent')}
+        </StatusBadge>
+      }
+      title={t('contact.thanksSoon')}
+      subtitle={t('contact.replyTime')}
+      className="h-full items-start justify-center bg-background px-7 py-8"
+    >
       <Button variant="outline" size="lg" onClick={onNewMessage}>
-        {contactMsg.newMessage[lang]}
+        {t('contact.newMessage')}
       </Button>
       {onContinue && (
         <Button size="lg" onClick={onContinue}>
-          {continueLabel ?? `${common.backToGallery[lang]} →`}
+          {continueLabel ?? `${t('common.backToGallery')} →`}
         </Button>
       )}
-    </div>
-  </div>
-);
+    </SectionIntro>
+  );
+};
 
 interface EmbeddedContactFormProps {
   lang: Lang;
@@ -228,7 +272,7 @@ export const EmbeddedContactForm = ({
   };
 
   return (
-    <div className={cn('bg-white md:h-full', className)}>
+    <div className={cn('bg-background app:h-full', className)}>
       {!sent ? (
         <ContactForm
           lang={lang}
@@ -240,7 +284,6 @@ export const EmbeddedContactForm = ({
         />
       ) : (
         <ContactSuccess
-          lang={lang}
           onNewMessage={() => {
             setSent(false);
             setForm(INITIAL_FORM);

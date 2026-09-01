@@ -1,9 +1,18 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { tanstackStart } from '@tanstack/react-start/plugin/vite';
 
 export default defineConfig({
+  // `@/` doit être déclaré ici ET dans tsconfig.json : tsc résout les chemins
+  // pour le typecheck, Vite pour le bundle. N'en déclarer qu'un donne un
+  // typecheck vert et un build cassé.
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
+  },
   plugins: [
     // tanstackStart doit précéder react() : il génère l'arbre de routes et les
     // entrées serveur/client que le plugin React transforme ensuite.

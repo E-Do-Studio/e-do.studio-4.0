@@ -1,6 +1,7 @@
 import { usePageContext } from '../lib/page-context';
 import type { SocialLink } from '../types';
-import { cn } from './cn';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { SocialIcon } from './social-icon';
 
 const ABBREV: Record<string, string> = {
@@ -18,26 +19,35 @@ interface SocialLinksRowProps {
 }
 
 const LAYOUT_CLASSES: Record<'auto' | 'row', string> = {
-  auto: 'grid grid-cols-2 gap-hairline bg-hairline',
-  row: 'grid grid-cols-4 gap-hairline bg-hairline',
+  auto: 'grid grid-cols-2 gap-px bg-border',
+  row: 'grid grid-cols-4 gap-px bg-border',
 };
 
-const SocialLinksRow = ({ className, layout = 'auto' }: SocialLinksRowProps) => {
+const SocialLinksRow = ({
+  className,
+  layout = 'auto',
+}: SocialLinksRowProps) => {
   const { siteData } = usePageContext();
   const items: SocialLink[] = siteData.socialLinks ?? [];
   return (
     <div className={cn(LAYOUT_CLASSES[layout], className)}>
       {items.map((s) => (
-        <a
+        <Button
           key={s.k}
-          href={s.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="edo-focus-ring group flex items-center justify-between border-0 bg-white px-3 py-3 text-foreground no-underline transition-colors duration-150 hover:bg-muted"
+          variant="cell"
+          render={<a href={s.href} target="_blank" rel="noopener noreferrer" />}
+          // `justify-center gap-2` et non `justify-between` : le sigle et son
+          // libellé sont UNE étiquette. Écartés aux deux bords, ils tenaient
+          // dans les 100px de la piste du bento, mais la même cellule fait 225px
+          // dans la pile élargie — l'icône et son libellé s'y lisaient comme
+          // deux éléments sans rapport, aux deux bouts d'une case vide.
+          className="h-auto justify-center gap-2 px-3 py-3 no-underline"
         >
           <SocialIcon kind={s.k} size={12} />
-          <span className="font-mono text-micro tracking-meta">{labelFor(s)}</span>
-        </a>
+          <span className="font-mono text-xs tracking-widest">
+            {labelFor(s)}
+          </span>
+        </Button>
       ))}
     </div>
   );

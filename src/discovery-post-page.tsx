@@ -1,23 +1,34 @@
+import { ArrowLeft } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
+import { Button } from '@/components/ui/button';
 import { useLoaderData, useNavigate } from '@tanstack/react-router';
-import { buildBlogPostingSchema, buildBreadcrumbSchema } from './lib/structured-data';
+import { cn } from '@/lib/utils';
 import { renderMarkdown } from './lib/render-markdown';
 import { DiscoveryCoverMedia } from './discovery/discovery-cover';
-import { SplitArticleCard } from './discovery/tiles';
+import { hasCover } from './discovery/cover';
+import { ArticleTeaserCell } from './discovery/article-teaser-cell';
 import { GalleryLightbox } from './gallery-lightbox';
 import type { GalleryMedia } from './lib/strapi';
-import { ArticleMeta, ArrowIcon } from './discovery/shared';
+import { MonoLabel } from './ui/mono-label';
+import { Separator } from '@/components/ui/separator';
 import { HoverMarquee } from './ui/hover-marquee';
-import { discoveryPage } from './i18n/messages';
+import { useT } from './i18n/use-t';
 import { usePageContext } from './lib/page-context';
 import { NotFoundPage } from './not-found-page';
+import { PageShell } from './ui/page-shell';
+import { SectionIntro } from './ui/section-intro';
+import { MAIN_ID } from './ui/skip-link';
 
 export const DiscoveryPostPage = () => {
+  const t = useT();
   const { lang, goto } = usePageContext();
   const navigate = useNavigate();
   const { post, posts } = useLoaderData({ from: '/$lang/discovery/$slug' });
 
-  const bodyHtml = useMemo(() => (post ? renderMarkdown(post.body[lang]) : ''), [post, lang]);
+  const bodyHtml = useMemo(
+    () => (post ? renderMarkdown(post.body[lang]) : ''),
+    [post, lang],
+  );
 
   // Suggestion at the end of the article: the next post in chronological order,
   // wrapping to the newest once the oldest is reached.
@@ -32,7 +43,10 @@ export const DiscoveryPostPage = () => {
   // never enlarged on click. Clicking a body image collects every body media in
   // document order and opens the lightbox at its index.
   const bodyRef = useRef<HTMLDivElement>(null);
-  const [lightbox, setLightbox] = useState<{ media: GalleryMedia[]; index: number } | null>(null);
+  const [lightbox, setLightbox] = useState<{
+    media: GalleryMedia[];
+    index: number;
+  } | null>(null);
 
   const openLightboxFor = (img: Element) => {
     if (!bodyRef.current) return;
@@ -48,7 +62,11 @@ export const DiscoveryPostPage = () => {
         };
       }
       const image = el as HTMLImageElement;
-      return { kind: 'image', url: image.currentSrc || image.src, alt: image.alt };
+      return {
+        kind: 'image',
+        url: image.currentSrc || image.src,
+        alt: image.alt,
+      };
     });
     setLightbox({ media, index: Math.max(0, els.indexOf(img)) });
   };
@@ -70,112 +88,183 @@ export const DiscoveryPostPage = () => {
     openLightboxFor(img);
   };
 
-  const seoOverride = post?.seo?.[lang]
-    ? {
-        title: post.seo[lang].title,
-        description: post.seo[lang].description,
-        imageUrl: post.seo[lang].imageUrl ?? post.coverUrl,
-        noIndex: post.seo[lang].noIndex,
-      }
-    : post
-      ? { title: post.title[lang], description: post.sub[lang], imageUrl: post.coverUrl }
-      : undefined;
-
   if (!post) {
     return <NotFoundPage />;
   }
 
-  const backToIndex = () => navigate({ to: '/$lang/discovery', params: { lang } });
+  const backToIndex = () =>
+    navigate({ to: '/$lang/discovery', params: { lang } });
+
+  const cover = hasCover(post);
 
   return (
     <>
-    <main className="edo-page-enter grid w-full grid-rows-page md:h-full edo-hairline overflow-hidden">
-      <div className="row-start-1 flex edo-hairline">
-        <button
-          onClick={backToIndex}
-          className="edo-focus-ring flex flex-none cursor-pointer items-center gap-2.5 border-0 bg-white px-4 text-foreground transition-colors hover:bg-muted md:px-cell-lg"
-        >
-          <span className="inline-block rotate-180"><ArrowIcon width="14" height="14" /></span>
-          <span className="hidden font-mono text-caption uppercase tracking-label text-foreground sm:inline">
-            {discoveryPage.backToJournal[lang]}
-          </span>
-        </button>
-        <div className="flex min-w-0 flex-1 items-center gap-3.5 bg-white px-4 md:px-6">
-          <span className="edo-cell-label text-primary">{post.tag[lang]}</span>
-          <HoverMarquee className="font-mono text-label tracking-ui text-muted-foreground">
-            {post.read} · {post.author} · {post.date[lang]}
-          </HoverMarquee>
-        </div>
-      </div>
+      {/* `<main class="contents">` : voir home-page. */}
+      {/* Le gabarit de rangées n'est pas gardé par `app:` — l'article garde le
+          même rythme à toutes les largeurs, bande d'en-tête, bande de retour,
+          puis le corps. Le verrou de défilement, lui, l'est : cette page était
+          la seule du site à poser `overflow-hidden` sans palier, donc à couper
+          son propre article sur mobile au lieu de le laisser défiler. */}
+      <PageShell className="grid-rows-[var(--spacing-header)_var(--spacing-band)_minmax(0,1fr)]">
+        <main id={MAIN_ID} className="contents">
+          {/* Retour au journal et méta de l'article, en rangée 2 — la même forme
+            que l'index Discovery, dont la bande sociale occupe cette rangée. */}
+          <div className="row-start-2 flex gap-px bg-border">
+            <Button
+              onClick={backToIndex}
+              variant="header"
+              // Sans `size`, cette cellule héritait `h-8` de `size="default"` et
+              // flottait dans sa rangée de `--spacing-band`, laissant passer 12px
+              // du filet noir sous elle. Ses `gap-2.5 px-4 md:px-6` l'emportent
+              // toujours.
+              size="header"
+              className="flex-none gap-2.5 px-4 md:px-6"
+            >
+              <ArrowLeft />
+              <MonoLabel className="hidden sm:inline">
+                {t('discoveryPage.backToJournal')}
+              </MonoLabel>
+            </Button>
+            <div className="flex min-w-0 flex-1 items-center gap-3.5 bg-background px-4 md:px-6">
+              <MonoLabel tone="primary">{post.tag[lang]}</MonoLabel>
+              {/* Sans l'auteur : `strapi.ts` le pose en dur à « Studio » pour
+                  tous les articles, ce n'est pas un champ que la rédaction
+                  renseigne. Une valeur constante n'apprend rien. Elle reste
+                  dans le JSON-LD, où schema.org attend un auteur. */}
+              {/* Sans la durée de lecture : « 4 MIN » était une estimation
+                  fabriquée par `strapi.ts` — le nombre de mots divisé par 200 —
+                  posée entre la catégorie et la date. Trois valeurs alignées
+                  dans une bande, dont une inventée, se lisent comme la chaîne au
+                  point médian que ce dépôt bannit ailleurs. Le champ est parti
+                  du modèle, pas seulement de l'affichage.
 
-      <div className="row-start-2 grid min-h-0 grid-cols-1 edo-hairline overflow-y-auto md:grid-cols-overlay md:overflow-hidden">
-        <div className="relative min-h-64 bg-foreground md:min-h-0">
-          <DiscoveryCoverMedia
-            post={post}
-            lang={lang}
-            sizes="(min-width: 768px) 55vw, 100vw"
-            priority
-            controls
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-        </div>
-        <article className="flex min-h-0 flex-col gap-5 overflow-y-auto bg-white px-6 py-8 md:px-12 md:py-10">
-          <ArticleMeta post={post} lang={lang} />
-          <h1 className="m-0 text-balance text-hero font-light leading-none tracking-display text-foreground">
-            {post.title[lang]}
-          </h1>
-          {post.sub[lang] && (
-            <p className="m-0 text-pretty text-cell font-normal leading-copy text-foreground">
-              {post.sub[lang]}
-            </p>
-          )}
-          {bodyHtml && (
-            <div
-              ref={bodyRef}
-              onClick={onBodyClick}
-              onKeyDown={onBodyKeyDown}
-              className="prose prose-sm m-0 max-w-none text-foreground [&_a]:text-primary [&_a]:underline [&_blockquote]:border-l-2 [&_blockquote]:border-border [&_blockquote]:pl-4 [&_blockquote]:italic [&_h2]:mt-6 [&_h2]:text-lg [&_h2]:font-medium [&_h3]:mt-4 [&_h3]:text-base [&_h3]:font-medium [&_hr]:my-6 [&_hr]:border-border [&_figure]:my-4 [&_figure_img]:block [&_figure_img]:w-full [&_figure_img]:cursor-zoom-in [&_figure_img:focus-visible]:[outline:1.5px_solid_var(--ring)] [&_figure_img:focus-visible]:[outline-offset:2px] [&_figure_video]:block [&_figure_video]:w-full [&_figure_video]:h-auto [&_figcaption]:mt-1.5 [&_figcaption]:text-micro [&_figcaption]:leading-snug [&_figcaption]:text-muted-foreground [&_li]:ml-4 [&_p]:leading-relaxed [&_ul]:my-2 [&_ul]:list-disc"
-              dangerouslySetInnerHTML={{ __html: bodyHtml }}
-            />
-          )}
-          {nextPost && (
-            <aside className="mt-auto flex flex-col gap-2.5 border-t border-border pt-6">
-              <span className="font-mono text-label uppercase tracking-label text-primary">
-                {discoveryPage.nextArticle[lang]}
-              </span>
-              <div className="border border-border">
-                <SplitArticleCard
-                  post={nextPost}
+                  `HoverMarquee` ne peut pas porter le `gap` du parent — il pose
+                  ses enfants dans une piste interne et mesure
+                  `scrollWidth - clientWidth` sur un `whitespace-nowrap`, qu'un
+                  `flex` sur son enveloppe fausserait. */}
+              <HoverMarquee className="font-mono text-xs tracking-widest text-muted-foreground">
+                {post.date[lang]}
+              </HoverMarquee>
+            </div>
+          </div>
+
+          {/* Sans cover, pas de colonne de cover : l'article prend toute la
+              largeur et se lit en une colonne. La réserve grise a du sens dans
+              une vignette de 48px, où elle tient l'alignement de la liste ;
+              étalée sur la moitié d'un écran, elle ne tiendrait rien du tout —
+              elle occuperait la moitié de la page pour dire qu'il manque une
+              image. */}
+          <div
+            className={cn(
+              'row-start-3 grid min-h-0 grid-cols-1 overflow-y-auto app:overflow-hidden',
+              // `gap-px bg-border` ne peint QUE la gouttière entre les deux
+              // colonnes. Sans cover il n'y a plus de gouttière, et l'aplat
+              // débordait de part et d'autre de la colonne de lecture centrée :
+              // un article en noir sur les deux tiers de l'écran.
+              cover
+                ? 'gap-px bg-border app:grid-cols-[1.1fr_1fr]'
+                : 'bg-background',
+            )}
+          >
+            {cover && (
+              <div className="relative min-h-64 bg-foreground app:min-h-0">
+                <DiscoveryCoverMedia
+                  post={post}
                   lang={lang}
-                  onOpen={() => navigate({ to: '/$lang/discovery/$slug', params: { lang, slug: nextPost.slug } })}
+                  sizes="(min-width: 768px) 55vw, 100vw"
+                  priority
+                  controls
+                  className="absolute inset-0 h-full w-full object-cover"
                 />
               </div>
-            </aside>
-          )}
-          <footer className="flex flex-col gap-4 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
-            <span className="font-mono text-label uppercase tracking-code text-muted-foreground">
-              {post.author} · {post.date[lang]}
-            </span>
-            <button
-              onClick={backToIndex}
-              className="edo-focus-ring h-10 cursor-pointer border-0 bg-foreground px-cell-lg font-mono text-caption uppercase tracking-label text-white transition-[color,background-color,opacity] duration-150 ease-edo-out hover:text-primary"
-            >
-              {discoveryPage.close[lang]}
-            </button>
-          </footer>
-        </article>
-      </div>
-    </main>
-    {lightbox && lightbox.media.length > 0 && (
-      <GalleryLightbox
-        project={{ id: post.id, brand: post.title[lang], cat: post.cat, plateau: '', year: '', tone: 'mono', media: lightbox.media }}
-        initialIndex={lightbox.index}
-        lang={lang}
-        onClose={() => setLightbox(null)}
-        onBook={() => { setLightbox(null); goto('book'); }}
-        onContact={() => { setLightbox(null); goto('contact'); }}
-      />
-    )}
+            )}
+            {/* Ni méta en tête ni signature en pied : la bande de la rangée 2
+                porte déjà la catégorie, la durée, l'auteur et la date, et elle
+                reste à l'écran pendant que l'article défile dans sa cellule.
+                Les répéter ne renseignait personne. */}
+            {/* La mesure est portée par le bloc de texte, pas par la cellule :
+                l'aplat blanc doit remplir sa colonne — sinon c'est la gouttière
+                noire de la grille qui apparaît sur les côtés — mais le texte,
+                lui, s'arrête à 36rem.
+
+                Mesuré, dans cette police et à ce corps : 74 caractères par ligne
+                à 1440 avec cover, 86 sans, et 81 à 2560 même une fois plafonné à
+                42rem. 36rem donne 68 en moyenne (63 à 75 selon le paragraphe),
+                dans la plage lisible de 60 à 75. La mesure se vérifie en comptant
+                des caractères, pas en choisissant un palier de largeur. */}
+            <article className="flex min-h-0 w-full flex-col overflow-y-auto bg-background px-6 py-8 md:px-12 md:py-10">
+              <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-5">
+                {/* `flow` : la cellule de l'article porte déjà son retrait, celui
+                  de `lg` s'y ajouterait. Le chapô reste hors du composant — ce
+                  n'en est pas un, c'est le chapeau de l'article, qui se lit au
+                  corps du texte et non en gris réduit. */}
+                <SectionIntro size="flow" title={post.title[lang]} />
+                {post.sub[lang] && (
+                  <p className="m-0 text-pretty text-base font-normal leading-relaxed text-foreground">
+                    {post.sub[lang]}
+                  </p>
+                )}
+                {bodyHtml && (
+                  <div
+                    ref={bodyRef}
+                    onClick={onBodyClick}
+                    onKeyDown={onBodyKeyDown}
+                    className="article-prose prose prose-sm m-0 max-w-none text-foreground"
+                    dangerouslySetInnerHTML={{ __html: bodyHtml }}
+                  />
+                )}
+                {nextPost && (
+                  <aside className="mt-auto flex flex-col gap-2.5">
+                    <Separator className="mb-3.5" />
+                    <MonoLabel tone="primary">
+                      {t('discoveryPage.nextArticle')}
+                    </MonoLabel>
+                    <ArticleTeaserCell
+                      post={nextPost}
+                      lang={lang}
+                      onOpen={() =>
+                        navigate({
+                          to: '/$lang/discovery/$slug',
+                          params: { lang, slug: nextPost.slug },
+                        })
+                      }
+                    />
+                  </aside>
+                )}
+                {/* Plus de pied « Fermer » : la bande de la rangée 2 porte
+                  « Retour journal », elle reste à l'écran pendant que l'article
+                  défile, et elle dit où l'on revient. Le bouton noir posé en bas
+                  à droite était la seconde sortie de la même pièce, sous un
+                  troisième filet. */}
+              </div>
+            </article>
+          </div>
+        </main>
+      </PageShell>
+      {lightbox && lightbox.media.length > 0 && (
+        <GalleryLightbox
+          project={{
+            id: post.id,
+            brand: post.title[lang],
+            cat: post.cat,
+            plateau: '',
+            year: '',
+            tone: 'mono',
+            media: lightbox.media,
+          }}
+          initialIndex={lightbox.index}
+          lang={lang}
+          onClose={() => setLightbox(null)}
+          onBook={() => {
+            setLightbox(null);
+            goto('book');
+          }}
+          onContact={() => {
+            setLightbox(null);
+            goto('contact');
+          }}
+        />
+      )}
     </>
   );
 };

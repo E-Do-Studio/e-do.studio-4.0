@@ -1,17 +1,37 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
 
 export type CookieConsent = 'accepted' | 'rejected' | null;
 
 const STORAGE_KEY = 'edo-cookie-consent';
 const CHANGE_EVENT = 'edo-consent-change';
 
-function readConsent(): CookieConsent {
+// Trois états, et non deux : « pas encore lu » n'est pas « aucun consentement ».
+// Les confondre faisait rendre la bannière côté serveur puis disparaître à
+// l'hydratation — un flash à chaque visite d'un visiteur ayant déjà répondu.
+// C'est le store qui porte la distinction ; `getServerSnapshot` renvoie
+// `unknown`, si bien que serveur et première passe client s'accordent.
+type Snapshot = 'accepted' | 'rejected' | 'none' | 'unknown';
+
+function readSnapshot(): Snapshot {
   try {
     const v = localStorage.getItem(STORAGE_KEY);
     if (v === 'accepted' || v === 'rejected') return v;
   } catch {}
-  return null;
+  return 'none';
 }
+
+// Défini au niveau du module : useSyncExternalStore se réabonne dès que la
+// référence change.
+function subscribe(onStoreChange: () => void): () => void {
+  window.addEventListener(CHANGE_EVENT, onStoreChange);
+  window.addEventListener('storage', onStoreChange);
+  return () => {
+    window.removeEventListener(CHANGE_EVENT, onStoreChange);
+    window.removeEventListener('storage', onStoreChange);
+  };
+}
+
+const serverSnapshot = (): Snapshot => 'unknown';
 
 function writeConsent(value: Exclude<CookieConsent, null>) {
   try {
@@ -24,32 +44,29 @@ function writeConsent(value: Exclude<CookieConsent, null>) {
 
 export function useCookieConsent(): {
   consent: CookieConsent;
+  /** Faux tant que le stockage n'a pas été lu. */
+  ready: boolean;
   accept: () => void;
   reject: () => void;
 } {
-  const [consent, setConsent] = useState<CookieConsent>(() => readConsent());
+  const snapshot = useSyncExternalStore(
+    subscribe,
+    readSnapshot,
+    serverSnapshot,
+  );
 
-  useEffect(() => {
-    const onChange = () => setConsent(readConsent());
-    window.addEventListener(CHANGE_EVENT, onChange);
-    window.addEventListener('storage', onChange);
-    return () => {
-      window.removeEventListener(CHANGE_EVENT, onChange);
-      window.removeEventListener('storage', onChange);
-    };
-  }, []);
+  // `writeConsent` émet CHANGE_EVENT : l'abonnement ci-dessus rafraîchit le
+  // snapshot, il n'y a donc aucun état local à tenir en parallèle.
+  const accept = useCallback(() => writeConsent('accepted'), []);
+  const reject = useCallback(() => writeConsent('rejected'), []);
 
-  const accept = useCallback(() => {
-    writeConsent('accepted');
-    setConsent('accepted');
-  }, []);
-
-  const reject = useCallback(() => {
-    writeConsent('rejected');
-    setConsent('rejected');
-  }, []);
-
-  return { consent, accept, reject };
+  return {
+    consent:
+      snapshot === 'accepted' || snapshot === 'rejected' ? snapshot : null,
+    ready: snapshot !== 'unknown',
+    accept,
+    reject,
+  };
 }
 
 export const COOKIE_CONSENT_EVENT = CHANGE_EVENT;

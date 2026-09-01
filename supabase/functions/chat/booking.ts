@@ -38,6 +38,7 @@ const QUOTE_LABELS: Record<Lang, QuoteLabels> = {
     images: "images",
     videoEditing: "Monté vidéo",
     onRequest: "Sur demande",
+    fullDayWithHours: (count: number) => (count > 1 ? "journées (8h)" : "journée (8h)"),
   },
   en: {
     cyclo5h: "Half day (5h)",
@@ -52,6 +53,7 @@ const QUOTE_LABELS: Record<Lang, QuoteLabels> = {
     images: "images",
     videoEditing: "Video editing",
     onRequest: "On request",
+    fullDayWithHours: (count: number) => (count > 1 ? "days (8h)" : "day (8h)"),
   },
 };
 

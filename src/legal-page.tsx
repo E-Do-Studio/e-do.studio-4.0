@@ -1,18 +1,26 @@
-import { useState } from 'react';
 import { useNavigate, useSearch } from '@tanstack/react-router';
-import { BottomSheet } from './ui/bottom-sheet';
-import { Button } from './ui/button';
-import { cn } from './ui/cn';
-import { HoverMarquee } from './ui/hover-marquee';
-import { IconArrowRight, IconSelector } from './ui/icons';
-import { PageHeader, buildMainNav } from './ui/page-header';
-import { buildWebPageSchema, buildBreadcrumbSchema } from './lib/structured-data';
+import { Button } from '@/components/ui/button';
+import { ArrowRight } from 'lucide-react';
+import { PageShell } from './ui/page-shell';
+import { MAIN_ID } from './ui/skip-link';
+import { Rail, RailCell } from './ui/rail-cell';
+import { SelectionDrawer } from './ui/selection-drawer';
+import { ordinal } from './lib/format';
 import type { Lang } from './types';
 import { usePageContext } from './lib/page-context';
-import { common, legalPage } from './i18n/messages';
+import { useT } from './i18n/use-t';
 import { useLoaderData } from '@tanstack/react-router';
 import type { LegalSectionContent, LegalDocumentKey } from './lib/strapi';
-import { renderStrapiBlocks, type BlockNode, type InlineNode } from './lib/render-blocks';
+import {
+  renderStrapiBlocks,
+  type BlockNode,
+  type InlineNode,
+} from './lib/render-blocks';
+import { MonoLabel } from './ui/mono-label';
+import { KeyValueList, KeyValueRow } from './ui/key-value-row';
+import { StepHeading } from '@/ui/step-heading';
+import { SectionIntro } from './ui/section-intro';
+import type { ReactNode } from 'react';
 
 function inlineText(children: InlineNode[]): string {
   return children
@@ -43,7 +51,7 @@ interface DefRow {
   v: string;
 }
 
-// Detects a section authored as "Label : Value" lines (one per line in a
+// Detects a section authored as"Label : Value" lines (one per line in a
 // single paragraph, or one per paragraph). Returns null when the content does
 // not match the definition-list shape — the section then renders as prose.
 function tryParseDefList(blocks: BlockNode[]): DefRow[] | null {
@@ -65,7 +73,7 @@ function tryParseDefList(blocks: BlockNode[]): DefRow[] | null {
   return rows;
 }
 
-// Article sections are seeded as "Art. NN — Title" so the article number can
+// Article sections are seeded as"Art. NN — Title" so the article number can
 // be lifted out into a dedicated column matching the previous composition.
 function tryParseArticle(title: string): { n: string; t: string } | null {
   const m = title.match(/^Art\.\s*(\d+)\s*[—–-]\s*(.+)$/);
@@ -77,14 +85,15 @@ interface SectionRendererProps {
   lang: Lang;
 }
 
-const PROSE_CLASS =
-  'max-w-3xl text-detail leading-relaxed text-muted-foreground ' +
-  '[&_p]:m-0 [&_p]:mb-3 last:[&_p]:mb-0 ' +
-  '[&_a]:text-foreground [&_a]:underline ' +
-  '[&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 ' +
-  '[&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 ' +
-  '[&_li]:my-1 ' +
-  '[&_video]:my-4 [&_video]:block [&_video]:w-full [&_video]:aspect-video [&_video]:object-cover [&_video]:rounded';
+// Le corps d'un article juridique : du HTML produit par Strapi, dont on ne
+// maîtrise que les sélecteurs enfants. C'est un composant, pas une chaîne de
+// classes — la mesure de 3xl et le rythme des paragraphes appartiennent au
+// bloc, et personne d'autre ne doit avoir à les recopier pour l'obtenir.
+const Prose = ({ children }: { children: ReactNode }) => (
+  <div className="max-w-3xl text-sm leading-relaxed text-muted-foreground [&_p]:m-0 [&_p]:mb-3 last:[&_p]:mb-0 [&_a]:text-foreground [&_a]:underline [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1 [&_video]:my-4 [&_video]:block [&_video]:aspect-video [&_video]:w-full [&_video]:object-cover">
+    {children}
+  </div>
+);
 
 const StrapiSectionsRenderer = ({ sections, lang }: SectionRendererProps) => (
   <>
@@ -94,16 +103,21 @@ const StrapiSectionsRenderer = ({ sections, lang }: SectionRendererProps) => (
         return (
           <article
             key={s.slug}
-            className="grid grid-cols-legal-article gap-5 py-5 border-b border-border"
+            className="grid grid-cols-[70px_minmax(0,1fr)] gap-5 py-5 border-b border-border"
           >
-            <span className="font-mono text-caption tracking-label text-primary pt-1">
+            <MonoLabel tone="primary" className="pt-1">
               Art. {article.n}
-            </span>
+            </MonoLabel>
             <div>
-              <h4 className="m-0 mb-2 text-cell font-medium tracking-copy-tight text-foreground">
+              {/* Le corps juste dessous est `text-sm` ET `text-muted-foreground` :
+                  deux pixels d'écart, mais aussi un écart de couleur et de
+                  graisse. Le gras n'est plus nécessaire pour les séparer — c'est
+                  le même cran que l'article, dont le corps est passé en 300 et
+                  les titres en 400. */}
+              <h4 className="m-0 mb-2 text-base font-normal tracking-tight text-foreground">
                 {article.t}
               </h4>
-              <div className={PROSE_CLASS}>{renderStrapiBlocks(s.body[lang])}</div>
+              <Prose>{renderStrapiBlocks(s.body[lang])}</Prose>
             </div>
           </article>
         );
@@ -111,25 +125,27 @@ const StrapiSectionsRenderer = ({ sections, lang }: SectionRendererProps) => (
       const rows = tryParseDefList(s.body[lang]);
       return (
         <section key={s.slug} className="py-6 border-b border-border">
-          <h3 className="mb-3.5 text-tile-title font-medium tracking-headline text-foreground">
+          {/* Même cran que le `h4` ci-dessus. Ce titre coiffe soit un corps
+              `text-sm` atténué, soit une liste de définitions : quatre pixels
+              d'écart et une couleur, la graisse n'a plus à s'en charger. */}
+          <h3 className="mb-3.5 text-xl font-normal tracking-tight text-foreground">
             {s.title[lang]}
           </h3>
           {rows ? (
-            <div>
+            // `pad="none"` : le retrait vient déjà du conteneur de la page
+            // (`px-5 md:px-10`), commun à la prose et à cette liste.
+            <KeyValueList pad="none">
               {rows.map((r, i) => (
-                <div
+                <KeyValueRow
                   key={i}
-                  className="grid grid-cols-legal-row gap-5 py-2.5 border-b border-border last:border-b-0 text-detail items-baseline"
-                >
-                  <span className="font-mono text-label tracking-ui uppercase text-muted-foreground">
-                    {r.k}
-                  </span>
-                  <span className="text-foreground tracking-copy-tight">{r.v}</span>
-                </div>
+                  orientation="columns"
+                  label={r.k}
+                  value={<span className="tracking-tight">{r.v}</span>}
+                />
               ))}
-            </div>
+            </KeyValueList>
           ) : (
-            <div className={PROSE_CLASS}>{renderStrapiBlocks(s.body[lang])}</div>
+            <Prose>{renderStrapiBlocks(s.body[lang])}</Prose>
           )}
         </section>
       );
@@ -138,206 +154,191 @@ const StrapiSectionsRenderer = ({ sections, lang }: SectionRendererProps) => (
 );
 
 const LegalPage = () => {
-  const { lang, setLang, openMenu, goto } = usePageContext();
+  const t = useT();
+  const { lang, goto } = usePageContext();
   const { doc } = useSearch({ from: '/$lang/legal' });
   const sec = doc ?? 'mentions';
   const navigate = useNavigate();
   const setSec = (next: LegalDocumentKey) =>
     navigate({ to: '.', search: next === 'mentions' ? {} : { doc: next } });
-  const [navSheetOpen, setNavSheetOpen] = useState(false);
-  const { documents: legalDocs, sections: legalSectionsByDoc } = useLoaderData({ from: '/$lang/legal' });
+  const { documents: legalDocs, sections: legalSectionsByDoc } = useLoaderData({
+    from: '/$lang/legal',
+  });
 
   const sections = legalDocs ?? [];
   const active = sections.find((s) => s.k === sec) ?? sections[0];
-  const activeIndex = Math.max(0, sections.findIndex((s) => s.k === sec));
-  const currentNumber = String(activeIndex + 1).padStart(2, '0');
   const navigateToSection = (next: LegalDocumentKey) => {
-    setNavSheetOpen(false);
     if (next !== sec) setSec(next);
   };
-  const allSections = legalSectionsByDoc?.[sec]?.filter((s) => s.body[lang]?.length > 0) ?? [];
+  const allSections =
+    legalSectionsByDoc?.[sec]?.filter((s) => s.body[lang]?.length > 0) ?? [];
   const introSection = allSections.find((s) => s.slug === `${sec}-intro`);
   const strapiBody = allSections.filter((s) => s !== introSection);
   const intro = introSection ? blocksToPlainText(introSection.body[lang]) : '';
   const hasStrapiBody = strapiBody.length > 0;
-  const articleCount = strapiBody.filter((s) => tryParseArticle(s.title[lang])).length;
+  const articleCount = strapiBody.filter((s) =>
+    tryParseArticle(s.title[lang]),
+  ).length;
 
   return (
-    <main className="edo-page-enter grid w-full edo-hairline md:grid-cols-contact-shell md:grid-rows-app md:h-full md:overflow-hidden">
+    /* `<main class="contents">` : voir home-page. */
+    /* Deux pistes et non quatre. Le gabarit en déclarait trois à droite du
+       rail, que le texte enjambait toutes : aucun filet ne tombait sur leurs
+       frontières, et la largeur rendue est identique — trois pistes plus leurs
+       deux gouttières valent exactement la piste unique qui les remplace. Un
+       gabarit qui annonce des pistes que personne n'occupe fait chercher une
+       colonne qui n'existe pas. */
+    <PageShell className="app:grid-cols-[var(--spacing-logo)_minmax(0,1fr)] app:grid-rows-[var(--spacing-header)_minmax(0,1fr)]">
+      <main id={MAIN_ID} className="contents">
+        {/* La barre collante et son tiroir : `SelectionDrawer` rend les mêmes
+            `RailCell` que la colonne desktop juste en dessous. Trois pages
+            portaient une copie de ce bloc, à la chaîne de classes près. */}
+        <SelectionDrawer
+          title={t('legalPage.contents')}
+          items={sections.map((s) => ({ key: s.k, label: s[lang] }))}
+          activeKey={sec}
+          onSelect={(k) => navigateToSection(k as LegalDocumentKey)}
+          closeLabel={t('common.close')}
+        />
 
-      {/* Unified header — compact right-aligned actions on all breakpoints */}
-      <PageHeader
-        lang={lang}
-        title={common.legal[lang]}
-        className="col-span-full h-14 md:col-span-full md:row-start-1 md:h-full"
-        onMenuClick={openMenu}
-        onLogoClick={() => goto('home')}
-        onLangToggle={() => setLang(lang === 'fr' ? 'en' : 'fr')}
-        actions={buildMainNav({ lang, goto })}
-      />
-
-      {/* Mobile navigation: sticky single-row trigger showing the current legal
-          section. Tap opens a BottomSheet listing all sections; selecting a row
-          in the sheet updates the section and closes the sheet immediately. */}
-      {active && (
-        <button
-          type="button"
-          onClick={() => setNavSheetOpen(true)}
-          aria-haspopup="dialog"
-          aria-expanded={navSheetOpen}
-          aria-controls="legal-nav-sheet"
-          className="sticky top-14 z-30 md:hidden flex items-center gap-4 min-h-14 w-full px-4 py-3 bg-white border-b border-border text-left edo-focus-ring cursor-pointer"
+        {/* Desktop sidebar — vertical list, hidden on mobile (replaced by trigger + sheet above). */}
+        <Rail
+          label={t('legalPage.contents')}
+          className="hidden app:col-start-1 app:row-start-2 app:flex"
         >
-          <span className="font-mono text-label tracking-label text-muted-foreground">
-            {currentNumber}
-          </span>
-          <HoverMarquee className="text-cell tracking-copy-tight font-medium text-foreground">
-            {active[lang]}
-          </HoverMarquee>
-          <IconSelector width="16" height="16" className="ml-auto shrink-0 text-foreground" />
-        </button>
-      )}
+          {sections.map((s, i) => (
+            <RailCell
+              key={s.k}
+              number={ordinal(i)}
+              label={s[lang]}
+              active={sec === s.k}
+              onSelect={() => setSec(s.k)}
+            />
+          ))}
 
-      <BottomSheet
-        id="legal-nav-sheet"
-        open={navSheetOpen}
-        onClose={() => setNavSheetOpen(false)}
-        title={legalPage.contents[lang]}
-        ariaLabel={legalPage.contents[lang]}
-        closeLabel={common.close[lang]}
-      >
-        <ul className="list-none m-0 p-0 flex flex-col">
-          {sections.map((s, i) => {
-            const isActive = s.k === sec;
-            const num = String(i + 1).padStart(2, '0');
-            return (
-              <li key={s.k}>
-                <button
-                  type="button"
-                  onClick={() => navigateToSection(s.k)}
-                  aria-current={isActive ? 'page' : undefined}
-                  className={cn(
-                    'w-full flex items-center gap-4 min-h-14 px-4 py-3',
-                    'border-b border-border text-left',
-                    'edo-focus-ring cursor-pointer transition-colors duration-150 ease-edo-out',
-                    isActive ? 'bg-foreground text-background' : 'bg-white text-foreground',
-                  )}
-                >
-                  <span
-                    className={cn(
-                      'font-mono text-label tracking-label',
-                      isActive ? 'text-background/70' : 'text-muted-foreground',
-                    )}
-                  >
-                    {num}
+          <div className="px-4 py-6 border-t border-border mt-3">
+            <MonoLabel tone="muted" className="mb-2.5 block">
+              {t('legalPage.gotQuestion')}
+            </MonoLabel>
+            <p className="text-xs text-muted-foreground leading-normal mb-3">
+              {t('legalPage.writeDirectly')}
+            </p>
+            <Button
+              variant="ghost"
+              render={<a href="mailto:contact@e-do.studio" />}
+              className="h-auto gap-2 self-start border-b border-border px-0 pb-0.5 no-underline"
+            >
+              contact@e-do.studio <ArrowRight data-icon="inline-end" />
+            </Button>
+          </div>
+          <div className="flex-1" />
+        </Rail>
+
+        {/* Main content */}
+        <div className="bg-muted overflow-auto app:col-start-2 app:row-start-2">
+          {/* La date de mise à jour passe par `meta`, qui l'aligne sur la ligne
+              de base du titre — la grille à deux colonnes qui la tenait à
+              droite faisait exactement cela, à la main. */}
+          <SectionIntro
+            size="sm"
+            kicker={
+              <StepHeading
+                number={ordinal(sections.findIndex((s) => s.k === sec))}
+                title={t('common.legal')}
+              />
+            }
+            title={active ? active[lang] : ''}
+            subtitle={intro}
+            meta={
+              active?.updated ? (
+                // `items-end` seulement à partir de md : en dessous, le bloc
+                // passe à la ligne sous le titre, et l'aligner à droite le
+                // détacherait du titre qu'il qualifie.
+                <span className="flex flex-col gap-1 md:items-end">
+                  {t('legalPage.lastUpdated')}
+                  <span className="text-sm text-foreground">
+                    {active.updated}
                   </span>
-                  <HoverMarquee className="text-cell tracking-copy-tight font-medium">
-                    {s[lang]}
-                  </HoverMarquee>
-                  <IconArrowRight width="16" height="16" className="ml-auto shrink-0" />
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      </BottomSheet>
+                </span>
+              ) : undefined
+            }
+            className="border-b border-border bg-background pt-9 pb-7 md:px-10"
+          />
 
-      {/* Desktop sidebar — vertical list, hidden on mobile (replaced by trigger + sheet above). */}
-      <div className="hidden bg-white overflow-auto md:col-start-1 md:row-start-2 md:flex md:flex-col">
-        <div className="px-4 pt-4 pb-2.5 shrink-0">
-          <span className="edo-cell-label">{legalPage.contents[lang]}</span>
-        </div>
-        {sections.map((s, i) => {
-          const isActive = sec === s.k;
-          return (
-            <button key={s.k} onClick={() => setSec(s.k)} className={`edo-focus-ring flex-none py-3 px-4 border-0 cursor-pointer text-left flex flex-col gap-0.5 font-inherit transition-all duration-150 ${isActive ? 'bg-muted border-l-2 border-l-primary' : 'bg-transparent border-l-2 border-l-transparent hover:bg-muted'}`}>
-              <span className="font-mono text-micro tracking-label text-muted-foreground">0{i + 1}</span>
-              <span className={`text-detail tracking-copy-tight whitespace-nowrap ${isActive ? 'font-medium text-foreground' : 'font-normal text-muted-foreground'}`}>
-                {s[lang]}
-              </span>
-            </button>
-          );
-        })}
+          <div className="pt-2 px-5 pb-10 max-w-5xl md:px-10">
+            {hasStrapiBody && articleCount > 0 && (
+              // Le filet appartient à la LISTE et non à la ligne : seule de sa
+              // liste, elle tombe sous `last:border-b-0` et le trait qui la
+              // sépare des articles disparaîtrait.
+              <KeyValueList pad="none" className="border-b border-border">
+                {/* La valeur reste en mono muet : les deux moitiés de cette
+                    ligne sont des méta-données du document, pas une paire
+                    libellé / contenu. */}
+                <KeyValueRow
+                  rule={false}
+                  density="tight"
+                  label={`${articleCount} articles`}
+                  value={
+                    <MonoLabel tone="muted">
+                      Version {active?.updated ?? ''}
+                    </MonoLabel>
+                  }
+                />
+              </KeyValueList>
+            )}
 
-        <div className="px-4 py-cell-lg border-t border-border mt-3">
-          <span className="edo-cell-label mb-2.5 block">{legalPage.gotQuestion[lang]}</span>
-          <p className="text-caption text-muted-foreground leading-normal mb-3">
-            {legalPage.writeDirectly[lang]}
-          </p>
-          <a href="mailto:contact@e-do.studio" className="edo-focus-ring inline-flex items-center gap-2 text-caption text-foreground no-underline border-b border-hairline pb-0.5">contact@e-do.studio <IconArrowRight width="10" height="10" /></a>
-        </div>
-        <div className="flex-1" />
-      </div>
+            {hasStrapiBody && (
+              <StrapiSectionsRenderer sections={strapiBody} lang={lang} />
+            )}
 
-      {/* Main content */}
-      <div className="bg-muted overflow-auto md:col-start-2 md:col-span-3 md:row-start-2">
-
-        <div className="bg-white pt-9 px-5 pb-7 border-b border-border grid grid-cols-fluid-auto gap-6 items-end md:px-10">
-          <div>
-            <span className="edo-cell-label text-primary">
-              {String(sections.findIndex((s) => s.k === sec) + 1).padStart(2, '0')} · {common.legal[lang]}
-            </span>
-            <h1 className="mt-2.5 mb-3 text-page-title font-light tracking-display leading-none text-foreground">
-              {active ? active[lang] : ''}<span className="text-primary">.</span>
-            </h1>
-            {intro && (
-              <p className="m-0 text-detail text-muted-foreground leading-relaxed max-w-2xl">
-                {intro}
+            {!hasStrapiBody && legalDocs && (
+              <p className="py-12 text-center text-sm text-muted-foreground">
+                {t('legalPage.contentUpdating')}
               </p>
             )}
-          </div>
-          <div className="text-right flex flex-col gap-1">
-            <span className="font-mono text-label tracking-meta uppercase text-muted-foreground">
-              {legalPage.lastUpdated[lang]}
-            </span>
-            <span className="font-mono text-detail tracking-caption text-foreground">{active?.updated ?? ''}</span>
-          </div>
-        </div>
 
-        <div className="pt-2 px-5 pb-10 max-w-5xl md:px-10">
-
-          {hasStrapiBody && articleCount > 0 && (
-            <div className="pt-4 pb-2 border-b border-border flex justify-between font-mono text-label tracking-meta uppercase text-muted-foreground">
-              <span>{articleCount} articles</span>
-              <span>Version {active?.updated ?? ''}</span>
-            </div>
-          )}
-
-          {hasStrapiBody && (
-            <StrapiSectionsRenderer sections={strapiBody} lang={lang} />
-          )}
-
-          {!hasStrapiBody && legalDocs && (
-            <p className="py-12 text-center text-detail text-muted-foreground">
-              {lang === 'fr' ? 'Contenu en cours de mise à jour.' : 'Content being updated.'}
-            </p>
-          )}
-
-          {sec === 'cookies' && (
-            <div className="mt-9 bg-foreground text-white py-7 px-8 grid grid-cols-fluid-auto gap-6 items-center">
-              <div>
-                <span className="font-mono text-label tracking-label uppercase text-primary">© GRW · E-Do Studio</span>
-                <p className="mt-1.5 text-detail leading-copy opacity-75 max-w-xl">
-                  {legalPage.allRightsReserved[lang]}
-                </p>
+            {sec === 'cookies' && (
+              <div className="mt-9 dark bg-background text-foreground py-7 px-8 grid grid-cols-[minmax(0,1fr)_auto] gap-6 items-center">
+                <div>
+                  <MonoLabel tone="primary">© GRW — E-Do Studio</MonoLabel>
+                  <p className="mt-1.5 text-sm leading-relaxed opacity-75 max-w-xl">
+                    {t('legalPage.allRightsReserved')}
+                  </p>
+                </div>
+                <Button
+                  variant="default"
+                  size="lg"
+                  onClick={() => goto('home')}
+                >
+                  {t('legalPage.backToHome')}{' '}
+                  <ArrowRight data-icon="inline-end" />
+                </Button>
               </div>
-              <Button variant="default" size="lg" onClick={() => goto('home')}>{legalPage.backToHome[lang]} <IconArrowRight width="14" height="14" /></Button>
-            </div>
-          )}
+            )}
 
-          <div className="mt-8 flex justify-end items-center gap-5 font-mono text-label tracking-code uppercase text-muted-foreground">
-            <button onClick={() => window.print()} className="edo-focus-ring bg-transparent border-0 cursor-pointer text-foreground font-inherit tracking-inherit text-transform-inherit">
-              ↓ {legalPage.print[lang]}
-            </button>
-            <a href="mailto:contact@e-do.studio" className="edo-focus-ring text-foreground no-underline">
-              contact@e-do.studio
-            </a>
+            <MonoLabel
+              tone="muted"
+              className="mt-8 flex items-center justify-end gap-5"
+            >
+              <Button
+                onClick={() => window.print()}
+                variant="link"
+                className="h-auto p-0 normal-case tracking-[inherit] text-foreground no-underline"
+              >
+                ↓ {t('legalPage.print')}
+              </Button>
+              <Button
+                variant="ghost"
+                render={<a href="mailto:contact@e-do.studio" />}
+                className="h-auto p-0 text-foreground no-underline"
+              >
+                contact@e-do.studio
+              </Button>
+            </MonoLabel>
           </div>
-
         </div>
-      </div>
-
-    </main>
+      </main>
+    </PageShell>
   );
 };
 

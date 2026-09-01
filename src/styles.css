@@ -1,13 +1,13 @@
-@import "tailwindcss";
-@import "../colors_and_type.css";
+@import "tailwindcss" source("./");
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-/* ── Self-hosted web fonts ──────────────────────────────────────
-   ABC Favorit is the brand sans-serif face.
-   ABC Favorit Mono is the brand monospace face.
-   Files live in /public/fonts/ as .woff2 (converted from .otf).
-   ────────────────────────────────────────────────────────────── */
+@custom-variant dark (&:is(.dark *));
 
-/* ABC Favorit — Light 300 */
+/* ── Brand typefaces ────────────────────────────────────────────
+   ABC Favorit (sans) and ABC Favorit Mono, self-hosted as .woff2.
+   ──────────────────────────────────────────────────────────────── */
+
 @font-face {
   font-family: "ABC Favorit";
   src: url("/fonts/ABCFavorit-Light.woff2") format("woff2");
@@ -16,7 +16,6 @@
   font-display: swap;
 }
 
-/* ABC Favorit — Regular 400 */
 @font-face {
   font-family: "ABC Favorit";
   src: url("/fonts/ABCFavorit-Regular_1.woff2") format("woff2");
@@ -25,7 +24,6 @@
   font-display: swap;
 }
 
-/* ABC Favorit — Regular Italic 400 */
 @font-face {
   font-family: "ABC Favorit";
   src: url("/fonts/ABCFavorit-RegularItalic.woff2") format("woff2");
@@ -34,7 +32,6 @@
   font-display: swap;
 }
 
-/* ABC Favorit — Bold 700 */
 @font-face {
   font-family: "ABC Favorit";
   src: url("/fonts/ABCFavorit-Bold.woff2") format("woff2");
@@ -43,7 +40,6 @@
   font-display: swap;
 }
 
-/* ABC Favorit Mono — Book 400 */
 @font-face {
   font-family: "ABC Favorit Mono";
   src: url("/fonts/ABCFavoritMono-Book.woff2") format("woff2");
@@ -52,7 +48,6 @@
   font-display: swap;
 }
 
-/* ABC Favorit Mono — Book Italic 400 */
 @font-face {
   font-family: "ABC Favorit Mono";
   src: url("/fonts/ABCFavoritMono-BookItalic.woff2") format("woff2");
@@ -61,7 +56,6 @@
   font-display: swap;
 }
 
-/* ABC Favorit Mono — Bold 700 */
 @font-face {
   font-family: "ABC Favorit Mono";
   src: url("/fonts/ABCFavoritMono-Bold.woff2") format("woff2");
@@ -70,7 +64,6 @@
   font-display: swap;
 }
 
-/* ABC Favorit Mono — Bold Italic 700 */
 @font-face {
   font-family: "ABC Favorit Mono";
   src: url("/fonts/ABCFavoritMono-BoldItalic.woff2") format("woff2");
@@ -79,245 +72,408 @@
   font-display: swap;
 }
 
+/* ── Theme ──────────────────────────────────────────────────────
+   Standard shadcn token set. The brand contributes five colours, a
+   zero radius and two typefaces — nothing else. Sizing, spacing,
+   tracking and leading come from Tailwind's own scales.
+   ──────────────────────────────────────────────────────────────── */
+
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  /* Marque : l'orange du studio est la seule couleur d'accent. */
+  --primary: oklch(0.679 0.216 39);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(1 0 0);
+
+  /* Marque : les filets 1px de la grille bento sont du noir pur, pas le gris
+     neutre du preset — ce sont des séparateurs suisses francs. */
+  --border: oklch(0 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.679 0.216 39);
+
+  --radius: 0;
+
+  /* La quatrième couleur de marque, restée sans nom. Elle porte pourtant un
+     sens — « disponibilité partielle » sur le calendrier du tunnel — et se
+     retrouvait en littéral dans trois fichiers : `step-date.tsx` (deux teintes
+     plus une bordure), `contact-page.tsx` (fond de la cellule carte) et
+     `gallery-page.tsx` (palette « warm »). Trois teintes d'une même famille
+     (H=82) qu'aucun token ne couvrait. */
+  --sand: oklch(0.91 0.03 82);
+  --sand-strong: oklch(0.86 0.045 82);
+  --sand-border: oklch(0.72 0.045 82);
+
+  /* `contact-page.tsx` applique `bg-metro-13` / `bg-metro-14` depuis toujours,
+     sans que ces classes existent : ni ici, ni dans un `tailwind.config` — il
+     n'y en a pas. Tailwind n'émettait donc rien, et la pastille de la ligne 14
+     rendait du blanc sur du blanc. Couleurs officielles RATP. */
+  --metro-13: oklch(0.78 0.09 220);
+  --metro-14: oklch(0.42 0.18 300);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  /* La marque ne s'inverse pas : l'orange du studio reste l'orange du studio,
+     sur fond clair comme sur fond sombre. Le gris hérité du preset rendait
+     grises les puces `text-primary` des cellules courantes du configurateur,
+     et tous les anneaux de focus posés en portée sombre. */
+  --primary: oklch(0.679 0.216 39);
+  --primary-foreground: oklch(1 0 0);
+  --ring: oklch(0.679 0.216 39);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-sand: var(--sand);
+  --color-sand-strong: var(--sand-strong);
+  --color-sand-border: var(--sand-border);
+  --color-metro-13: var(--metro-13);
+  --color-metro-14: var(--metro-14);
+
+  --font-sans: "ABC Favorit", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "ABC Favorit Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-heading: var(--font-sans);
+
+  --radius-xs: calc(var(--radius) * 0.4);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* La bande d'en-tête et la colonne du logo sont une seule mesure, pas onze.
+   Chaque page redéclarait la sienne : 52px ici, 54px là, 56px en mobile, et
+   les strips collants supposaient 56 des trois côtés à la fois.
+
+   `--spacing-*` sert les deux syntaxes dont on a besoin : les utilitaires
+   nommés (`h-header`, `top-header`, `basis-logo`) et la valeur arbitraire des
+   gabarits de grille (`grid-rows-[var(--spacing-header)_minmax(0,1fr)]`), qui
+   est la seule façon pour une page de partager la mesure du composant.
+
+   Bloc séparé, et surtout pas `@theme inline` : celui-ci émettrait
+   `height: 3.5rem` au lieu de `height: var(--spacing-header)`, ce qui coupe le
+   lien à l'exécution — le header et les grilles se désynchroniseraient au
+   premier override de la variable. */
+@theme {
+  /* Le palier du bento. `md` (768px) portait deux décisions sans rapport : « il
+     y a plus de place », vrai, et « la grille bento plein écran s'applique »,
+     faux — une grille 12 colonnes prévue pour 1280px y tenait dans 768, dans un
+     viewport verrouillé par `overflow:hidden` (cf. `__root.tsx`), donc rognée
+     sans molette. Deux noms, deux décisions : `md` garde la première, `app`
+     prend la seconde.
+
+     1024 n'est pas choisi : c'est la mesure déjà faite dans `page-header.tsx`,
+     où la bande complète demande 976px en français, arrondie au cran existant.
+     L'en-tête était monté à `lg` tout seul et la grille ne l'avait jamais
+     suivi — d'où 768–1023px, une grille de bureau sous un en-tête mobile.
+
+     `app` ABSORBE `lg`, il ne s'y ajoute pas : les paliers du site décrivaient
+     déjà cette même bascule sous trois noms. Le `lg:` qui subsiste dans
+     `src/components/ui/` appartient à shadcn et ne touche jamais la grille. */
+  --breakpoint-app: 64rem; /* 1024px — le bento plein écran s'applique */
+
+  --spacing-header: 3.5rem; /* 56px */
+  --spacing-logo: 15rem; /* 240px */
+  --spacing-band: 2.75rem; /* 44px — bande sociale, bande de retour d'article */
+  --spacing-cta: 5.25rem; /* 84px — bandeau d'action en bas de page */
+
+  /* Densités de rail. Le site en comptait CINQ, toutes accidentelles : 32px
+     (filtres), 44px (stepper), 62px (sommaire légal), 72px (post-prod), 76px
+     (plateaux) — nées de `py-2` ici, `py-3` là, `py-3.5` ailleurs, sur des
+     contenus à deux ou trois lignes. Trois paliers nommés, choisis par ce que
+     la cellule contient, et non par le padding qu'on lui a donné. */
+  --spacing-rail-compact: 2rem; /* 32px — libellé seul */
+  --spacing-rail-default: 2.75rem; /* 44px — numéro + libellé */
+  --spacing-rail-tall: 4.5rem; /* 72px — + une 3e ligne (prix, tagline) */
+
+  /* Cible tactile. `size="lg"` de `button.tsx` plafonne à 36px : aucune taille
+     n'atteignait les 44px, d'où 38 `min-h-11` ajoutés à la main dans le site.
+     La mesure appartient au bouton, pas aux trente-huit sites d'appel. */
+  --spacing-tap: 2.75rem; /* 44px */
+
+  /* Retraits. Huit valeurs de `px-*` cohabitaient pour un même rôle (px-3,
+     px-3.5, px-4, px-4.5, px-5, px-6, px-8, px-12), au point que deux cellules
+     voisines de la MÊME bande d'en-tête n'avaient pas le même. */
+  --spacing-pad-tight: 1rem; /* 16px */
+  --spacing-pad-cell: 1.25rem; /* 20px — le canon, déjà porté par size="cell" */
+  --spacing-pad-section: 1.5rem; /* 24px */
+
+  /* Le rythme d'une colonne de page : une bande d'en-tête, puis des rangées.
+     Les deux colonnes de la page de contact partagent ce module — c'est ce qui
+     fait que leurs filets tombent à la même hauteur d'un bout à l'autre de
+     l'écran, comme le `min-h-11` de `step-band.tsx` aligne les bandes.
+
+     Les deux mesures vivaient en LITTÉRAUX dans les deux colonnes à la fois
+     (`grid-rows-[96px_64px_64px_64px_…]` écrit une fois dans `contact-form.tsx`
+     et une fois dans le rail), donc le rythme partagé dérivait dès qu'on touchait
+     l'une sans l'autre. Il a suffi de six pixels pour que la couture du premier
+     bloc du rail tombe à côté de celle du formulaire. */
+  --spacing-col-head: 6rem; /* 96px — la bande d'en-tête d'une colonne */
+  --spacing-col-row: 4rem; /* 64px — une rangée de champ */
+
+  /* Ratios de cadre média. Huit valeurs arbitraires vivaient inline dans huit
+     fichiers — aspect-[4/5], [4/3], [6/5], [5/4], [4/1] — et presque toutes
+     étaient suivies de `md:aspect-auto`, c'est-à-dire d'un abandon : au-delà du
+     palier, la cellule prenait la hauteur de sa rangée de grille et son ratio
+     devenait une conséquence du viewport. Mesuré sur la mosaïque post-prod dans
+     une fenêtre de 784×900 : des cellules de 160×410, soit 2:5. Aucune photo
+     n'est cadrée ainsi, et `object-cover` n'en gardait qu'une tranche.
+
+     Un ratio de cadre média ne s'abandonne donc jamais : il vaut à toutes les
+     tailles, et c'est le conteneur qui défile — la galerie fait ainsi depuis
+     toujours. Une page qui écrit `aspect-auto` sur un média redonne le cadrage
+     à la fenêtre.
+
+     Deux paliers, un par forme de cellule média du site, et pas un de plus :
+     les ratios restants (`4/1` de la bande d'accueil, `1.5` des cellules de
+     nav) ne cadrent aucune photo et restent en clair là où ils servent. */
+  --aspect-portrait: 4 / 5; /* galerie, mosaïque post-prod, lightbox */
+  --aspect-photo: 4 / 3; /* plateau — la seule cellule paysage du site */
+}
+
 @layer base {
   * {
-    box-sizing: border-box;
+    @apply border-border outline-ring/50;
   }
 
-  button,
-  input,
-  textarea,
-  select {
-    font: inherit;
-  }
-
-  button {
-    color: inherit;
-  }
-
-  img,
-  picture,
-  video,
-  source,
-  svg {
-    -webkit-user-drag: none;
-    -webkit-touch-callout: none;
-    user-select: none;
-    -webkit-user-select: none;
-  }
-}
-
-.edo-line-clamp-2,
-.edo-line-clamp-3,
-.edo-line-clamp-4 {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.edo-line-clamp-2 {
-  -webkit-line-clamp: 2;
-}
-
-.edo-line-clamp-3 {
-  -webkit-line-clamp: 3;
-}
-
-.edo-line-clamp-4 {
-  -webkit-line-clamp: 4;
-}
-
-/* Article body image grid: 1 column on mobile, 2 side-by-side from sm.
-   When the count is odd, the last image spans the full width (3 → 2 + 1). */
-.edo-img-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.5rem;
-  margin: 1rem 0;
-}
-
-.edo-img-grid > figure {
-  margin: 0;
-}
-
-@media (min-width: 640px) {
-  .edo-img-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .edo-img-grid > figure:last-child:nth-child(odd) {
-    grid-column: 1 / -1;
-  }
-}
-
-@keyframes edo-typing-dot {
-  0%, 80%, 100% {
-    opacity: 0.2;
-    transform: translateY(0);
-  }
-
-  40% {
-    opacity: 1;
-    transform: translateY(-3px);
-  }
-}
-
-.edo-typing-dot {
-  animation: edo-typing-dot 1.2s ease-in-out infinite;
-}
-
-.edo-typing-dot:nth-child(2) {
-  animation-delay: 150ms;
-}
-
-.edo-typing-dot:nth-child(3) {
-  animation-delay: 300ms;
-}
-
-/* ── Respect prefers-reduced-motion ── */
-@media (prefers-reduced-motion: reduce) {
-  .edo-typing-dot {
-    animation: none;
-  }
-  /* Disable transform-based hover/interaction transitions; keep color/opacity for comprehension */
-  .transition-transform {
-    transition: none;
-  }
-}
-
-/* ── Mobile: allow normal page scroll (root is overflow:hidden on desktop) ──
-   Use 100dvh instead of 100% so the height tracks the dynamic viewport on
-   iOS (the URL bar collapse no longer leaves a phantom white strip at the
-   bottom). Body inherits the page bento gap colour so any area below the
-   last cell — overscroll, short pages — blends in instead of flashing
-   white. */
-@media (max-width: 767px) {
-  html, body, #root {
-    overflow: visible;
-    height: auto;
-    min-height: 100dvh;
+  html {
+    @apply font-sans;
+    color-scheme: light;
   }
 
   body {
-    background: var(--edo-pure-black);
+    @apply bg-background text-foreground;
   }
 
-  /* Every routed page wraps its layout in `.edo-page-enter`. On mobile we
-     force the wrapper to fill at least the dynamic viewport so short pages
-     no longer leave a phantom strip below the last cell. Desktop keeps its
-     own `md:h-full` rule untouched. */
-  .edo-page-enter {
-    min-height: 100dvh;
+  /* Lucide ships a 2px stroke; the brand draws at 1.5. Presentation
+     attributes lose to CSS, so one rule covers every icon. */
+  .lucide {
+    stroke-width: 1.5;
   }
-}
 
-/* ── Bottom sheet primitive ──
-   Native <dialog> based. Backdrop is animated separately via ::backdrop.
-   Open: slide-up 250ms cubic-bezier(0.2, 0, 0, 1).
-   Close: slide-down 175ms cubic-bezier(0.4, 0, 1, 1) (exit-faster-than-enter).
-   prefers-reduced-motion: fade 100ms only. */
-.edo-bottom-sheet[open] {
-  display: block;
-}
+  /* `color: transparent` — le correctif du flash de texte alt.
 
-.edo-bottom-sheet.edo-bottom-sheet-open::backdrop {
-  background: rgb(0 0 0 / 0.55);
-  animation: edo-bottom-sheet-backdrop-in 250ms cubic-bezier(0.2, 0, 0, 1) both;
-}
+     Entre la mise en page et la peinture, le navigateur dessine la chaîne `alt`
+     dans la couleur du texte, à l'intérieur de la boîte de l'image. Sur une
+     connexion lente c'est une seconde de légende ; sur une bonne, la frame que
+     Théo a capturée. La règle est globale et non portée par ResponsiveImage :
+     les images Markdown de Discovery flashent pour exactement la même raison,
+     et elles ne passent par aucun composant.
 
-.edo-bottom-sheet.edo-bottom-sheet-closing::backdrop {
-  background: rgb(0 0 0 / 0.55);
-  animation: edo-bottom-sheet-backdrop-out 175ms cubic-bezier(0.4, 0, 1, 1) both;
-}
-
-.edo-bottom-sheet.edo-bottom-sheet-open .edo-bottom-sheet-panel {
-  animation: edo-bottom-sheet-in 250ms cubic-bezier(0.2, 0, 0, 1) both;
-}
-
-.edo-bottom-sheet.edo-bottom-sheet-closing .edo-bottom-sheet-panel {
-  animation: edo-bottom-sheet-out 175ms cubic-bezier(0.4, 0, 1, 1) both;
-}
-
-@keyframes edo-bottom-sheet-in {
-  from {
-    transform: translateY(100%);
+     Le fondu, lui, est posé par `data-loading` depuis un callback ref
+     (`responsive-image.tsx`) et jamais au rendu serveur : une opacité 0 rendue
+     par le serveur laisserait le site sans JS entièrement blanc. */
+  img {
+    color: transparent;
+    transition: opacity 200ms var(--ease-out);
   }
-  to {
-    transform: translateY(0);
-  }
-}
 
-@keyframes edo-bottom-sheet-out {
-  from {
-    transform: translateY(0);
-  }
-  to {
-    transform: translateY(100%);
-  }
-}
-
-@keyframes edo-bottom-sheet-backdrop-in {
-  from {
+  img[data-loading] {
     opacity: 0;
   }
-  to {
-    opacity: 1;
+
+  /* Une image cassée doit dire son alt : c'est le seul moment où ce texte a
+     quelque chose à apprendre au lecteur. */
+  img[data-error] {
+    color: inherit;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    img {
+      transition: none;
+    }
   }
 }
 
-@keyframes edo-bottom-sheet-backdrop-out {
-  from {
-    opacity: 1;
+/* Le corps d'un article Discovery vient de Strapi en Markdown : le HTML est
+   produit à l'exécution, aucune balise n'y porte de classe. Le style ne peut
+   donc être posé que depuis le parent, et il l'était par quarante utilitaires
+   `[&_…]` alignés sur une seule ligne de JSX, dont deux échappements CSS bruts
+   pour le focus des images.
+
+   `@utility` et non `@layer components` : la règle reste triable par Tailwind
+   avec les utilitaires, donc une classe posée après elle sur le même élément
+   l'emporte toujours. */
+@utility article-prose {
+  /* ABC Favorit ne livre que 300/400/700 : le fichier ne contient que Light,
+     Regular et Bold, et `font-weight: 500` rend exactement comme 400 — mesuré au
+     pixel sur la police chargée.
+
+     L'article se lit donc un cran plus bas que la version précédente : le corps
+     passe en 300, ce qui LIBÈRE le 400 comme graisse de titre. Les trois niveaux
+     restent distincts sans jamais toucher au gras :
+
+       titre d'article   36px / 300   (posé par `SectionIntro`)
+       titre de section   24px / 400
+       sous-titre         16px / 400
+       corps              16px / 300
+
+     Le sous-titre ne se distingue que par sa graisse, comme avant — c'est la
+     même mécanique, décalée d'un cran. Le 700 reste pour ce qu'il est : une
+     emphase dans le fil du texte, pas un niveau de titre. */
+  & :is(h2, h3) {
+    @apply font-normal tracking-tight text-balance;
   }
-  to {
-    opacity: 0;
+  /* Deux niveaux séparés par deux pixels de corps, c'est trop peu pour se voir
+     dans une colonne d'article. `h2` monte d'un cran et gagne un interligne de
+     titre ; `h3` reste à la taille du corps mais s'en détache par la graisse.
+     L'espace au-dessus fait le reste du travail : il double entre les deux
+     niveaux, ce qui dit la subordination mieux que la taille.
+
+     Un titre a AUSSI un espace en dessous, et il vaut le tiers de celui du
+     dessus. À zéro, le paragraphe était collé au titre : la ligne de base du
+     texte touchait la descendante du titre, et le bloc se lisait comme un seul
+     pavé. Le rapport compte plus que les valeurs — tant que le blanc au-dessus
+     domine, le titre reste attaché à ce qu'il coiffe plutôt qu'à ce qui le
+     précède, et il n'a pas besoin d'être collé pour ça. */
+  & h2 {
+    @apply mt-8 mb-2.5 text-2xl leading-tight;
+  }
+  & h3 {
+    @apply mt-5 mb-1.5 text-base leading-snug;
+  }
+  & p {
+    @apply font-light leading-relaxed text-pretty;
+  }
+  /* Le blanc entre deux blocs de texte, écrit UNE fois.
+
+     Les paragraphes n'étaient séparés par rien — ni marge, ni retrait —, et huit
+     d'entre eux se lisaient comme un seul bloc. Le filet de séparation d'un
+     article, c'est son blanc.
+
+     La règle porte sur des voisins et non sur chaque élément : le titre garde
+     son paragraphe collé sous lui, ce qui est justement ce qui l'y rattache, et
+     le premier bloc du corps ne commence pas par une marge en l'air.
+
+     Et elle porte sur TOUS les blocs de flux, pas seulement sur `p` : une liste
+     ou une citation qui suit un paragraphe respire comme deux paragraphes entre
+     eux. Écrites élément par élément, ces marges avaient déjà divergé — 8px pour
+     une liste, 16 pour une figure, rien pour une citation, contre 16 entre deux
+     paragraphes : quatre valeurs pour un seul intervalle.
+
+     Pas de `ol` dans la liste : `render-markdown.ts` ne sait produire que des
+     listes à puces. Une règle pour une balise que le rendu ne peut pas émettre
+     est une règle qu'on ne vérifiera jamais. */
+  & :is(p, ul, blockquote, figure, .edo-img-grid)
+    + :is(p, ul, blockquote, figure, .edo-img-grid) {
+    @apply mt-4;
+  }
+  & a {
+    @apply text-primary underline;
+  }
+  & ul {
+    @apply list-disc;
+  }
+  & li {
+    @apply ml-4;
+  }
+  /* `render-markdown.ts` regroupe les images qui se suivent sous cette classe,
+     qui ne correspondait à AUCUNE règle : deux images d'affilée s'empilaient
+     pleine largeur, et le nom promettait une grille que personne n'avait
+     écrite. Deux colonnes, séparées par le filet du site — la même gouttière
+     que partout ailleurs, dessinée par le fond du conteneur. */
+  & .edo-img-grid {
+    @apply grid grid-cols-2 gap-px bg-border;
+  }
+  & .edo-img-grid figure {
+    @apply m-0;
+  }
+  /* Le trait de séparation demande plus d'air que l'intervalle courant : il
+     annonce une rupture, pas la suite. */
+  & hr {
+    @apply my-6 border-border;
+  }
+  & blockquote {
+    @apply border-l-2 border-border pl-4 italic;
+  }
+  & :is(figure img, figure video) {
+    @apply block w-full;
+  }
+  & figure img {
+    @apply cursor-zoom-in;
+  }
+  /* `renderMarkdown` pose `tabindex` et `role` sur les images du corps pour
+     qu'elles ouvrent le lightbox au clavier : il leur faut donc un focus
+     visible, et l'anneau des boutons ne s'applique pas à une balise nue. */
+  & figure img:focus-visible {
+    outline: 1.5px solid var(--ring);
+    outline-offset: 2px;
+  }
+  & figure video {
+    @apply h-auto;
+  }
+  & figcaption {
+    @apply mt-1.5 text-xs leading-snug text-muted-foreground;
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .edo-bottom-sheet.edo-bottom-sheet-open .edo-bottom-sheet-panel,
-  .edo-bottom-sheet.edo-bottom-sheet-closing .edo-bottom-sheet-panel {
-    animation-duration: 100ms;
-    animation-name: edo-bottom-sheet-fade-in;
-  }
-  .edo-bottom-sheet.edo-bottom-sheet-closing .edo-bottom-sheet-panel {
-    animation-name: edo-bottom-sheet-fade-out;
-  }
-  .edo-bottom-sheet.edo-bottom-sheet-open::backdrop,
-  .edo-bottom-sheet.edo-bottom-sheet-closing::backdrop {
-    animation-duration: 100ms;
-  }
-}
+/* Hachures diagonales : ce qui est fermé.
 
-@keyframes edo-bottom-sheet-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
+   Elles complètent une PROGRESSION à trois degrés, et c'est elle qui porte le
+   sens — pas trois motifs choisis séparément :
 
-@keyframes edo-bottom-sheet-fade-out {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
-}
+     libre         fond nu
+     partiel       gris uni très clair (`bg-muted`) — une nuance
+     indisponible  hachuré — la seule marque qui se voit de loin
 
-/* ── Mobile legibility floor (audit: USE_LEGIBLE_FONT_SIZE) ──
-   The editorial micro-scale dips to 9–11px, which fails the 12px minimum on
-   phones (gallery, cyclorama and plateau read at 14–26% passing). On <768px we
-   lift the *readable* steps — micro (used for project titles, brand + meta
-   labels), label and caption — to a 12px floor while desktop keeps the full
-   scale. `text-nano` (8px) stays as-is: it is reserved for decorative numbering
-   / badges. These rules are intentionally unlayered so they win over Tailwind's
-   inlined `@theme` utilities. Most call sites truncate or marquee on overflow,
-   so the 2–3px bump does not break the dense grids. */
-@media (max-width: 767px) {
-  .text-micro { font-size: 0.75rem; line-height: 1.15; }
-  .text-label { font-size: 0.75rem; line-height: 1.15; }
-  .text-caption { font-size: 0.75rem; }
+   Un trait fin (1px) largement espacé (5px) plutôt qu'un damier serré : la même
+   règle sert une pastille de légende de 12px et une case de 80px sans changer
+   d'aspect. C'est ce qu'un motif à demi rempli ne peut pas faire — lisible dans
+   la pastille, il devient un grand triangle arbitraire dans la case.
+
+   Le CONTRASTE compte plus que la densité. Un trait de `--muted-foreground`
+   (0.556, un gris moyen) tous les 5px produit une vingtaine de traits nets par
+   case : un moiré qui fatigue l'œil et attire le regard sur les jours qu'on ne
+   peut PAS choisir. `--input` (0.922) donne une texture qu'on perçoit sans la
+   fixer — c'est ce qu'on attend d'un état fermé.
+
+   `transparent` pour que le motif se pose sur n'importe quel fond. */
+@utility stripes {
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--input) 0 1px,
+    transparent 1px 7px
+  );
 }

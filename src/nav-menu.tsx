@@ -1,85 +1,59 @@
-import { useNavigate } from '@tanstack/react-router';
-import { cn } from './ui/cn';
-import { IconLock, IconX } from './ui/icons';
+import { useNavigate, useRouterState } from '@tanstack/react-router';
+import { Button } from '@/components/ui/button';
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetTitle,
+} from '@/components/ui/sheet';
+import { X } from 'lucide-react';
 import { SocialLinksRow } from './ui/social-links-row';
-import { CellLabel } from './ui/typography';
-import { nav, common, home as homeMsg } from './i18n/messages';
+import { useT } from './i18n/use-t';
+import { MENU_NAV, activeNavIn } from './lib/nav';
+import { SCREEN_TO_PATH } from './lib/screens';
+import { useRoutePreload } from './lib/use-route-preload';
 import type { Lang } from './types';
+import { ordinal } from './lib/format';
+import { MonoLabel } from './ui/mono-label';
 
 interface NavItemDef {
   label: string;
   href: string;
-  disabled?: boolean;
+  current?: boolean;
 }
 
-interface NavOverlayProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-const NavOverlay = ({ isOpen, onClose }: NavOverlayProps) => (
-  <div
-    onClick={onClose}
-    aria-hidden="true"
-    className={cn(
-      "fixed inset-0 z-overlay bg-black/40 backdrop-blur-sm transition-opacity duration-300",
-      isOpen
-        ? "pointer-events-auto opacity-100"
-        : "pointer-events-none opacity-0",
-    )}
-  />
-);
-
-interface NavHeaderProps {
-  onClose: () => void;
-  lang: Lang;
-}
-
-const NavHeader = ({ onClose, lang }: NavHeaderProps) => (
-  <div className="grid grid-cols-fluid-auto border-b border-hairline">
-    <div className="flex items-center px-4 py-3.5">
-      <CellLabel>Navigation</CellLabel>
+const NavHeader = () => {
+  const t = useT();
+  return (
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] border-b border-border">
+      <div className="flex items-center px-4 py-3.5">
+        <SheetTitle>Navigation</SheetTitle>
+      </div>
+      <SheetClose
+        aria-label={t('common.close')}
+        render={
+          <Button
+            variant="header"
+            size="icon"
+            className="size-12 border-l border-border"
+          />
+        }
+      >
+        <X aria-hidden="true" />
+      </SheetClose>
     </div>
-    <button
-      type="button"
-      onClick={onClose}
-      aria-label={common.close[lang]}
-      className="edo-focus-ring flex h-12 w-12 cursor-pointer items-center justify-center border-0 border-l border-hairline bg-white transition-colors hover:bg-muted"
-    >
-      <IconX width="20" height="20" aria-hidden="true" />
-    </button>
-  </div>
-);
+  );
+};
 
 interface NavItemLinkProps {
   item: NavItemDef;
   index: number;
-  lang: Lang;
   onClose: () => void;
   navigate: (opts: { to: string }) => void;
 }
 
-const NavItemLink = ({ item, index, lang, onClose, navigate }: NavItemLinkProps) => {
-  if (item.disabled) {
-    return (
-      <div
-        aria-disabled="true"
-        aria-label={`${item.label} — ${homeMsg.comingSoon[lang]}`}
-        className="relative flex min-h-13 cursor-not-allowed flex-col justify-between gap-1 border-b border-hairline px-4 py-2.5"
-      >
-        <div className="flex items-center justify-between gap-2">
-          <CellLabel className="leading-none">{String(index + 1).padStart(2, "0")}</CellLabel>
-          <span className="inline-flex items-center gap-1 font-mono text-micro leading-none uppercase tracking-meta text-muted-foreground">
-            <IconLock width="9" height="9" aria-hidden="true" />
-            {homeMsg.comingSoon[lang]}
-          </span>
-        </div>
-        <span className="mt-auto text-cell font-light text-muted-foreground">
-          {item.label}
-        </span>
-      </div>
-    );
-  }
+const NavItemLink = ({ item, index, onClose, navigate }: NavItemLinkProps) => {
+  const preload = useRoutePreload(item.href);
   return (
     <a
       href={item.href}
@@ -88,12 +62,18 @@ const NavItemLink = ({ item, index, lang, onClose, navigate }: NavItemLinkProps)
         onClose();
         navigate({ to: item.href });
       }}
-      className="edo-focus-ring relative flex min-h-13 cursor-pointer flex-col justify-between gap-1 border-b border-hairline px-4 py-2.5 no-underline transition-colors hover:bg-muted"
+      // Le loader part au survol. Sous `lg` le tiroir est la seule navigation,
+      // c'est donc ici que le gain compte le plus — au toucher il n'y a pas de
+      // survol, mais `onFocus` couvre le clavier.
+      {...preload}
+      // Même repère que dans la bande d'en-tête, et il compte davantage ici :
+      // sous `lg` le tiroir est la seule navigation, donc le seul endroit où
+      // « vous êtes ici » puisse se lire.
+      aria-current={item.current ? 'page' : undefined}
+      className="outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-foreground relative flex min-h-13 cursor-pointer flex-col justify-between gap-1 border-b border-border px-4 py-2.5 text-foreground no-underline transition-colors hover:bg-muted aria-[current=page]:text-primary"
     >
-      <CellLabel>{String(index + 1).padStart(2, "0")}</CellLabel>
-      <span className="mt-auto text-cell font-light text-foreground">
-        {item.label}
-      </span>
+      <MonoLabel tone="muted">{ordinal(index)}</MonoLabel>
+      <span className="mt-auto text-base text-current">{item.label}</span>
     </a>
   );
 };
@@ -109,12 +89,17 @@ const NavExternalLink = ({ href, label, index }: NavExternalLinkProps) => (
     href={href}
     target="_blank"
     rel="noopener noreferrer"
-    className="edo-focus-ring relative flex min-h-13 cursor-pointer flex-col justify-between gap-1 border-b border-hairline px-4 py-2.5 no-underline transition-colors hover:bg-muted"
+    className="outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-foreground relative flex min-h-13 cursor-pointer flex-col justify-between gap-1 border-b border-border px-4 py-2.5 no-underline transition-colors hover:bg-muted"
   >
-    <CellLabel>{String(index + 1).padStart(2, "0")}</CellLabel>
-    <span className="mt-auto flex items-baseline gap-1.5 text-cell font-light text-foreground">
+    <MonoLabel tone="muted">{ordinal(index)}</MonoLabel>
+    <span className="mt-auto flex items-baseline gap-1.5 text-base text-foreground">
       {label}
-      <span aria-hidden="true" className="font-mono text-micro tracking-meta text-muted-foreground">↗</span>
+      <span
+        aria-hidden="true"
+        className="font-mono text-xs tracking-widest text-muted-foreground"
+      >
+        ↗
+      </span>
     </span>
   </a>
 );
@@ -127,27 +112,30 @@ interface NavFooterProps {
 }
 
 const NavFooter = ({ lang, setLang, onClose, navigate }: NavFooterProps) => {
-  const bookingHref = lang === "fr" ? "/fr/reserver" : "/en/book";
+  const t = useT();
+  const bookingHref = SCREEN_TO_PATH.book(lang);
+  const preload = useRoutePreload(bookingHref);
 
   return (
-    <div className="grid grid-cols-auto-fluid border-t border-hairline">
-      <button
-        onClick={() => setLang(lang === "fr" ? "en" : "fr")}
-        className="edo-focus-ring h-12 w-12 cursor-pointer border-0 border-r border-hairline bg-white font-mono text-caption uppercase tracking-label transition-colors hover:bg-muted"
+    <div className="grid grid-cols-[auto_minmax(0,1fr)] border-t border-border">
+      <Button
+        variant="header"
+        onClick={() => setLang(lang === 'fr' ? 'en' : 'fr')}
+        className="size-12 border-r border-border px-0"
       >
-        {common.langToggleLabel[lang]}
-      </button>
-      <a
-        href={bookingHref}
-        onClick={(e) => {
+        {t('common.langToggleLabel')}
+      </Button>
+      <Button
+        render={<a href={bookingHref} {...preload} />}
+        onClick={(e: React.MouseEvent) => {
           e.preventDefault();
           onClose();
           navigate({ to: bookingHref });
         }}
-        className="edo-focus-ring h-12 flex cursor-pointer items-center justify-center border-0 bg-primary font-mono text-caption uppercase tracking-label text-white no-underline transition-[color,background-color,opacity] duration-150 ease-edo-out hover:opacity-90"
+        className="h-12 no-underline"
       >
-        {common.bookNow[lang]}
-      </a>
+        {t('common.bookNow')}
+      </Button>
     </div>
   );
 };
@@ -161,38 +149,60 @@ interface NavMenuProps {
 
 const NavMenu = ({ lang, isOpen, onClose, setLang }: NavMenuProps) => {
   const navigate = useNavigate();
+  const t = useT();
+  // Même dérivation que la bande d'en-tête, sur la même table de chemins.
+  // `location` et non `resolvedLocation` : cf. le commentaire de __root.tsx.
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const current = activeNavIn(MENU_NAV, pathname);
 
   return (
-    <>
-      <NavOverlay isOpen={isOpen} onClose={onClose} />
-      <aside
-        role="dialog"
-        aria-modal="true"
-        aria-label={common.menu[lang]}
-        aria-hidden={isOpen ? undefined : true}
-        {...({ inert: isOpen ? undefined : '' } as Record<string, unknown>)}
-        className={cn(
-          "fixed left-0 top-0 z-sheet flex h-full w-72 flex-col border-r border-hairline bg-white transition-transform duration-300 ease-edo-out",
-          isOpen ? "translate-x-0" : "-translate-x-full",
-        )}
+    <Sheet
+      open={isOpen}
+      onOpenChange={(next: boolean) => {
+        if (!next) onClose();
+      }}
+    >
+      <SheetContent
+        side="left"
+        showCloseButton={false}
+        aria-label={t('common.menu')}
+        className="w-72 border-r border-border sm:max-w-72"
       >
-        <NavHeader onClose={onClose} lang={lang} />
+        <NavHeader />
 
-        <nav className="flex flex-1 flex-col overflow-y-auto" aria-label={common.menu[lang]}>
-          {nav.items[lang].map((item, index) => (
-            <NavItemLink key={item.href} item={item} index={index} lang={lang} onClose={onClose} navigate={navigate} />
+        <nav
+          className="flex flex-1 flex-col overflow-y-auto"
+          aria-label={t('common.menu')}
+        >
+          {MENU_NAV.map((entry, index) => (
+            <NavItemLink
+              key={entry.id}
+              item={{
+                label: t(entry.labelKey),
+                href: SCREEN_TO_PATH[entry.screen](lang),
+                current: entry.id === current,
+              }}
+              index={index}
+              onClose={onClose}
+              navigate={navigate}
+            />
           ))}
           <NavExternalLink
             href="https://etouch.e-do.studio"
             label="Etouch"
-            index={nav.items[lang].length}
+            index={MENU_NAV.length}
           />
-          <SocialLinksRow className="mt-auto border-t border-hairline" />
+          <SocialLinksRow className="mt-auto border-t border-border" />
         </nav>
 
-        <NavFooter lang={lang} setLang={setLang} onClose={onClose} navigate={navigate} />
-      </aside>
-    </>
+        <NavFooter
+          lang={lang}
+          setLang={setLang}
+          onClose={onClose}
+          navigate={navigate}
+        />
+      </SheetContent>
+    </Sheet>
   );
 };
 

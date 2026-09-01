@@ -1,99 +1,132 @@
-import React from 'react';
+import { ArrowRight } from 'lucide-react';
 import type { DiscoveryPost, Lang } from '../types';
+import { Button } from '@/components/ui/button';
 import { DiscoveryCoverMedia } from './discovery-cover';
 import { hasCover } from './cover';
-import { CellBadge } from './shared';
-import { cn } from '../ui/cn';
-import { EmptyState } from '../ui/empty-state';
-import { cellBase, labelBase } from './styles';
-import { discoveryPage } from '../i18n/messages';
+import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from '@/components/ui/empty';
+import { MonoLabel } from '../ui/mono-label';
+import { useT } from '../i18n/use-t';
 
 interface ArticleCardProps {
   post: DiscoveryPost;
   lang: Lang;
-  onOpen?: () => void;
-  headline?: boolean;
+  onOpen: () => void;
   className?: string;
-  badge?: number;
 }
 
-export const ArticleCard: React.FC<ArticleCardProps> = ({ post, lang, onOpen, headline = false, className, badge }) => {
+// L'article à la une : la plus grande cellule de la page, et la seule carte
+// d'article de l'index — le reste passe par la liste.
+//
+// Le filet sous la cover est un `Separator` et non la gouttière de la grille :
+// il sépare deux zones À L'INTÉRIEUR d'une cellule, quand la gouttière ne vaut
+// qu'ENTRE cellules. Un enfant peignant son fond masquerait par ailleurs le
+// `hover:bg-muted` que `variant="cell"` pose sur la cellule entière — un filet
+// de 1px, lui, ne masque rien.
+export const ArticleCard = ({
+  post,
+  lang,
+  onOpen,
+  className,
+}: ArticleCardProps) => {
+  const t = useT();
   const cover = hasCover(post);
   return (
-    <button
-      type="button"
+    <Button
+      variant="cell"
+      size="cell"
       onClick={onOpen}
       className={cn(
-        cellBase,
-        'edo-focus-ring group order-1 grid min-h-80 cursor-pointer border-0 bg-white p-0 text-left transition-opacity hover:opacity-90 lg:min-h-0',
-        cover
-          ? (headline ? 'grid-rows-article-headline lg:grid-rows-article-headline-lg' : 'grid-rows-article-auto')
-          : 'grid-rows-1',
-        className
+        // `grid-cols-1` n'est pas décoratif, c'est la correction du défaut qui
+        // rendait cette carte de travers : `size="cell"` pose `justify-start`,
+        // et une piste `auto` ne s'étire à la largeur du conteneur QUE si
+        // `justify-content` vaut `normal` ou `stretch`. Sans colonne déclarée,
+        // la grille se réduisait donc au max-content du titre — la cover, en
+        // `absolute inset-0`, remplissait fidèlement une colonne de 288px au
+        // milieu d'une cellule de 800, et laissait le reste en aplat.
+        'group grid grid-cols-1 min-h-96 gap-0 p-0 app:min-h-0',
+        cover ? 'grid-rows-[minmax(0,1fr)_auto_auto]' : 'grid-rows-1',
+        className,
       )}
     >
-      {badge != null && <CellBadge n={badge} />}
       {cover && (
-        <div className="relative min-h-0 border-b border-border">
-          <DiscoveryCoverMedia
-            post={post}
-            lang={lang}
-            sizes={headline ? '(min-width: 1024px) 50vw, 100vw' : '(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw'}
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-        </div>
+        <>
+          <div className="relative min-h-0">
+            <DiscoveryCoverMedia
+              post={post}
+              lang={lang}
+              sizes="(min-width: 768px) 50vw, 100vw"
+              priority
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          </div>
+          <Separator />
+        </>
       )}
 
-      <div className={cn(
-        'flex min-w-0 origin-left flex-col overflow-hidden transition-transform duration-200 ease-edo-out group-hover:scale-102',
-        !cover && 'justify-center',
-        headline ? 'gap-1 px-cell pb-3 pt-2.5' : 'gap-1 px-cell pb-4 pt-3.5'
-      )}>
-        <h3 className={cn(
-          'm-0 edo-line-clamp-2 text-balance text-foreground',
-          headline
-            ? 'edo-line-clamp-3 text-tile-title font-light leading-snug tracking-headline'
-            : 'text-cell font-normal leading-snug tracking-copy-tight'
-        )}>
-          {post.title[lang]}
-        </h3>
-        {headline && (
-          <span className="mt-1 inline-flex items-center gap-2 font-mono text-label uppercase tracking-label text-foreground">
-            {discoveryPage.readArticle[lang]} <span className="text-detail">→</span>
-          </span>
+      {/* Sans cover, c'est le titre qui tient la cellule — la plus grande de la
+          page. Pas de réserve ici, contrairement aux vignettes de la liste et du
+          renvoi : un aplat gris de 900px de haut ne remplace pas une image, il
+          annonce qu'il en manque une. Un titre au corps de l'affiche, lui, se
+          lit. C'est la même décision que la carte des tuiles — le texte devient
+          la surface quand il n'y a rien à montrer. */}
+      <div
+        className={cn(
+          'flex min-w-0 flex-col gap-2 overflow-hidden px-5 py-4',
+          !cover && 'justify-between py-8',
         )}
+      >
+        <h2
+          className={cn(
+            'm-0 line-clamp-3 text-balance font-light leading-snug tracking-tight text-foreground',
+            cover ? 'text-2xl' : 'text-4xl app:text-5xl',
+          )}
+        >
+          {post.title[lang]}
+        </h2>
+        <MonoLabel className="inline-flex items-center gap-2">
+          {t('discoveryPage.readArticle')}
+          <ArrowRight data-icon="inline-end" />
+        </MonoLabel>
       </div>
-    </button>
+    </Button>
   );
 };
 
 interface ArticleEmptyCardProps {
-  lang: Lang;
-  headline?: boolean;
   className?: string;
-  badge?: number;
 }
 
-export const ArticleEmptyCard: React.FC<ArticleEmptyCardProps> = ({ lang, headline = false, className, badge }) => (
-  <section
-    aria-label={discoveryPage.noFeaturedPost[lang]}
-    className={cn(
-      cellBase,
-      'order-1 grid min-h-80 grid-rows-article-auto bg-white lg:min-h-0',
-      headline && 'lg:grid-rows-article-headline-lg',
-      className,
-    )}
-  >
-    {badge != null && <CellBadge n={badge} />}
-    <div className="relative min-h-0 border-b border-border bg-muted">
-      <span className={cn(labelBase, 'absolute left-cell top-3 text-muted-foreground')}>
-        {discoveryPage.noFeaturedPost[lang]}
-      </span>
-    </div>
-    <EmptyState
-      size="compact"
-      label={discoveryPage.noPosts[lang]}
-      description={discoveryPage.noFeaturedPostHint[lang]}
-    />
-  </section>
-);
+export const ArticleEmptyCard = ({ className }: ArticleEmptyCardProps) => {
+  const t = useT();
+  return (
+    <section
+      aria-label={t('discoveryPage.noFeaturedPost')}
+      className={cn(
+        'grid min-h-96 min-w-0 grid-rows-[minmax(0,1fr)_auto_auto] overflow-hidden bg-background app:min-h-0',
+        className,
+      )}
+    >
+      <div className="relative min-h-0 bg-muted">
+        <MonoLabel tone="muted" className="absolute left-5 top-5">
+          {t('discoveryPage.noFeaturedPost')}
+        </MonoLabel>
+      </div>
+      <Separator />
+      <Empty size="compact">
+        <EmptyHeader>
+          <EmptyTitle>{t('discoveryPage.noPosts')}</EmptyTitle>
+          <EmptyDescription>
+            {t('discoveryPage.noFeaturedPostHint')}
+          </EmptyDescription>
+        </EmptyHeader>
+      </Empty>
+    </section>
+  );
+};
