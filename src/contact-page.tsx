@@ -16,7 +16,12 @@ import { usePageContext } from './lib/page-context';
 import { submitContactForm } from './lib/contact';
 import { useT } from './i18n/use-t';
 import { bcp47 } from './lib/format';
-import { ContactForm, ContactSuccess, INITIAL_FORM } from './contact-form';
+import {
+  ContactForm,
+  ContactSuccess,
+  INITIAL_FORM,
+  contactErrorMessage,
+} from './contact-form';
 import { MonoLabel } from './ui/mono-label';
 import { KeyValueList, KeyValueRow } from './ui/key-value-row';
 import { LabelledCell } from './ui/labelled-cell';
@@ -662,7 +667,7 @@ const ContactPage = () => {
       await submitContactForm(form);
       setSent(true);
     } catch (err) {
-      setSendError(err instanceof Error ? err.message : t('contact.errorSend'));
+      setSendError(contactErrorMessage(err, lang));
     } finally {
       setSending(false);
     }

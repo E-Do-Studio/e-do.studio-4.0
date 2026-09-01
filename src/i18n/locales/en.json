@@ -343,6 +343,7 @@
     "closures": "Closures",
     "companyBrand": "Company or brand*",
     "directions": "Directions",
+    "errorRateLimited": "Too many messages sent. Please try again in a few minutes.",
     "errorSend": "Failed to send message",
     "findUs": "Find us",
     "hours": "Hours",

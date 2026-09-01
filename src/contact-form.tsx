@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import type { ContactFormData, Lang } from './types';
 import { submitContactForm } from './lib/contact';
+import { getT } from './i18n';
 import { useT } from './i18n/use-t';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,21 @@ export const INITIAL_FORM: ContactFormData = {
   telephone: '',
   societe: '',
   message: '',
+  website: '',
+  formLoadedAt: 0,
+};
+
+/**
+ * Traduit les codes machine de la fonction Edge en message affichable.
+ *
+ * `getT` et non `useT` : l'appelant est un gestionnaire de soumission, pas un
+ * rendu — il n'a pas de hook à sa disposition.
+ */
+export const contactErrorMessage = (err: unknown, lang: Lang): string => {
+  const t = getT(lang);
+  const code = err instanceof Error ? err.message : '';
+  if (code === 'rate_limited') return t('contact.errorRateLimited');
+  return t('contact.errorSend');
 };
 
 interface ContactFormProps {
@@ -37,6 +53,19 @@ export const ContactForm = ({
   sendError,
 }: ContactFormProps) => {
   const t = useT();
+
+  // Horodaté au montage et non dans `INITIAL_FORM` : cette constante est
+  // évaluée à l'import, donc côté SSR sur l'horloge du serveur — l'écart
+  // mesuré serait celui du rendu, pas celui de la saisie.
+  //
+  // Dépendances volontairement vides : le tampon marque le montage. Le
+  // relancer à chaque frappe repousserait l'origine et laisserait passer les
+  // soumissions instantanées que le contrôle est censé rejeter.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: cf. ci-dessus
+  useEffect(() => {
+    if (!form.formLoadedAt) setForm({ ...form, formLoadedAt: Date.now() });
+  }, []);
+
   return (
     <form
       onSubmit={submit}
@@ -53,6 +82,22 @@ export const ContactForm = ({
       // revient à une bande.
       className="grid grid-cols-2 grid-rows-[var(--spacing-col-head)_repeat(3,var(--spacing-col-row))_minmax(0,1fr)_var(--form-foot)] gap-px bg-border [--form-foot:var(--spacing-band)] app:h-full app:[--form-foot:calc(2*var(--spacing-band)+1px)]"
     >
+      {/* Leurre anti-bot — hors écran plutôt qu'en `display:none`, que beaucoup
+          de robots savent ignorer. Jamais focusable, jamais annoncé. */}
+      <div
+        className="absolute left-[-9999px] h-0 w-0 overflow-hidden"
+        aria-hidden="true"
+      >
+        <input
+          type="text"
+          name="website"
+          tabIndex={-1}
+          autoComplete="off"
+          value={form.website ?? ''}
+          onChange={(event) => setForm({ ...form, website: event.target.value })}
+        />
+      </div>
+
       {/* `<h2>` et non `<h1>` : la page porte déjà le sien (contact-page).
           Le formulaire est aussi embarqué dans la galerie et le tunnel, où
           un second `<h1>` doublonnait à chaque fois.
@@ -207,7 +252,6 @@ export const EmbeddedContactForm = ({
   continueLabel,
   className,
 }: EmbeddedContactFormProps) => {
-  const t = useT();
   const [form, setForm] = useState<ContactFormData>(INITIAL_FORM);
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
@@ -221,7 +265,7 @@ export const EmbeddedContactForm = ({
       await submitContactForm(form);
       setSent(true);
     } catch (err) {
-      setSendError(err instanceof Error ? err.message : t('contact.errorSend'));
+      setSendError(contactErrorMessage(err, lang));
     } finally {
       setSending(false);
     }

@@ -12,3 +12,4 @@ bun.lock
 /*.png
 supabase/.temp/
 .tanstack/
+package-lock.json

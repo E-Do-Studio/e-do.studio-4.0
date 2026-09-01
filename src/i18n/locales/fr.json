@@ -343,6 +343,7 @@
     "closures": "Fermetures",
     "companyBrand": "Société ou marque*",
     "directions": "Itinéraire",
+    "errorRateLimited": "Trop de messages envoyés. Merci de réessayer dans quelques minutes.",
     "errorSend": "Erreur lors de l'envoi",
     "findUs": "Nous trouver",
     "hours": "Horaires",
