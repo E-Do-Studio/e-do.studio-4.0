@@ -56,7 +56,6 @@
     "accessoryType": "Type d'accessoire",
     "add": "Ajouter",
     "addASession": "Ajouter une session",
-    "addAnotherProductSession": "Ajouter une autre session produit",
     "andConjunction": "et",
     "arrivalTime": "Heure d'arrivée",
     "back": "Retour",
@@ -108,7 +107,6 @@
     "date": "Date",
     "dates": "Dates",
     "day": "jour",
-    "dayAbbrev": "j",
     "dayUnavailable": "indisponible",
     "dayUnit_many": "jours",
     "dayUnit_one": "jour",
@@ -151,7 +149,6 @@
     "glassesSunglassesDesc": "Lunettes, solaires.",
     "halfDay": "Demi-journée",
     "halfDay4h": "½ journée (4h)",
-    "halfDayAbbrev": "½ j",
     "hourly": "Heure",
     "hourly2": "À l'heure",
     "hoursCount_many": "{{count}} heures",
@@ -198,12 +195,12 @@
     "packshotsOnModelProductPagesDesc": "Packshots, on-model, fiches produit.",
     "pastDay": "date passée",
     "pastTimeSlot": "Créneau passé",
+    "perHour": "par heure",
     "phone": "Téléphone *",
     "photo": "Photo",
     "pickADate": "Choisir une date",
     "pinned": "Piqué",
     "pinnedOnVerticalBoardDesc": "Épinglé sur panneau vertical.",
-    "plusHalfDayAbbrev": " + ½ j",
     "postProdOptional": "Post-production (optionnel)",
     "postProduction": "Post-production",
     "postProductionByEDo": "Post-production par E-DO ?",
@@ -283,7 +280,6 @@
     "viewsItem": "Vues / article *",
     "viewsPerProduct": "Vues par produit",
     "visit": "Visite",
-    "visit2": "visite",
     "weekendFullDayOnly": "Week-end : journée complète uniquement",
     "yes": "Oui",
     "yesVideo": "Oui + vidéo",
@@ -331,6 +327,7 @@
     "postProd": "Post-prod",
     "postProdLong": "Post-production",
     "prevImage": "Image précédente",
+    "requestQuoteOr": "Demander un devis ou",
     "reset": "Réinitialiser",
     "resetZoom": "Réinitialiser le zoom",
     "send": "Envoyer",
@@ -384,7 +381,6 @@
   "discoveryPage": {
     "backToJournal": "Retour journal",
     "categories": "Catégories",
-    "close": "Fermer",
     "emailPlaceholder": "votre@email.com",
     "morePosts": "Plus d'articles",
     "nextArticle": "Article suivant",
@@ -392,8 +388,7 @@
     "noFeaturedPostHint": "Le premier article du journal arrive bientôt.",
     "noPosts": "Aucun article",
     "readArticle": "Lire l'article",
-    "srTitle": "Discovery — Blog & actualités",
-    "studioOpen": "Studio ouvert 7j/7"
+    "srTitle": "Discovery — Blog & actualités"
   },
   "galleryPage": {
     "categories": "Catégories",
@@ -406,15 +401,13 @@
     "tryAnotherFilter": "Essayez un autre filtre."
   },
   "home": {
-    "comingSoon": "Bientôt disponible",
     "freeProductionPhotovideo": "Production libre, photo & vidéo",
+    "journal": "Journal",
     "monSatHours": "Lun–Sam, 10—18",
-    "requestQuoteOr": "Demander un devis ou",
     "retouchPhotoVideo": "Retouche photo & vidéo",
     "srTitle": "Studio photo et vidéo professionnel à Paris",
     "studioHeadline": "Le studio qui alimente votre e-commerce.",
-    "studioSubtitle": "Photo, vidéo et retouche — du créateur indépendant à la maison de luxe.",
-    "tellMeMore": "Dites-m'en plus"
+    "studioSubtitle": "Photo, vidéo et retouche — du créateur indépendant à la maison de luxe."
   },
   "legalPage": {
     "allRightsReserved": "RCS Bobigny 891 710 857, 69 boulevard Victor Hugo, 93400 Saint-Ouen-sur-Seine. Tous droits réservés.",

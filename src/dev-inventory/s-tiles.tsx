@@ -174,38 +174,6 @@ export const SectionTiles = () => (
         </Specimen>
 
         <Specimen
-          source="step-configurator.tsx:378-402"
-          tone="copie"
-          note="min-h-22 sm:min-h-18 · px-4 sm:px-3 py-4 sm:py-2.5 · titre text-sm · marqueur ● SEUL, poussé en bas par mt-auto — la flèche de survol n'existe pas ici. font-[inherit] annule la police de la base."
-          frameClassName="bg-border p-px"
-        >
-          <div className="grid grid-cols-2 gap-px">
-            {[true, false].map((on) => (
-              <Button
-                key={String(on)}
-                variant="cell"
-                size="cell"
-                aria-pressed={on}
-                className={cn(
-                  'flex min-h-22 min-w-0 cursor-pointer flex-col gap-1.5 px-4 py-4 text-left font-[inherit] text-foreground sm:min-h-18 sm:px-3 sm:py-2.5',
-                  on ? 'dark bg-background' : 'bg-background',
-                )}
-              >
-                <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-                  01
-                </span>
-                <span className="text-sm font-normal">Face + dos</span>
-                {on && (
-                  <span className="mt-auto text-base leading-none text-primary">
-                    ●
-                  </span>
-                )}
-              </Button>
-            ))}
-          </div>
-        </Specimen>
-
-        <Specimen
           source="book-picker.tsx:22-80 (PickerTile)"
           tone="copie"
           note="min-h-40 · px-6 py-7 md:px-8 md:py-8 — un 4e padding · titre text-xl · pas de numéro, pas de pastille : la flèche seule."

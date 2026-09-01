@@ -41,8 +41,7 @@ const LUCIDE = [
 const GLYPHS: { g: string; where: string; Icon: typeof ArrowRight }[] = [
   {
     g: '→',
-    where:
-      'newsletter-cell.tsx:60 · step-configurator.tsx:153 · shared.tsx:63,143',
+    where: 'newsletter-cell.tsx:60 · shared.tsx:63,143',
     Icon: ArrowRight,
   },
   {
@@ -59,7 +58,7 @@ const GLYPHS: { g: string; where: string; Icon: typeof ArrowRight }[] = [
   { g: '↺', where: 'ui/mobile-nav-strip.tsx:273', Icon: RotateCcw },
   {
     g: '●',
-    where: 'book/shared.tsx:60,140 · step-configurator.tsx:394',
+    where: 'book/shared.tsx:60,140',
     Icon: Circle,
   },
   { g: '×', where: 'steps/session-tabs.tsx:104', Icon: X },

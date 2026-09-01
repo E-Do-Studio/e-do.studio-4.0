@@ -2,8 +2,10 @@ import { ArrowLeft } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useLoaderData, useNavigate } from '@tanstack/react-router';
+import { cn } from '@/lib/utils';
 import { renderMarkdown } from './lib/render-markdown';
 import { DiscoveryCoverMedia } from './discovery/discovery-cover';
+import { hasCover } from './discovery/cover';
 import { ArticleTeaserCell } from './discovery/article-teaser-cell';
 import { GalleryLightbox } from './gallery-lightbox';
 import type { GalleryMedia } from './lib/strapi';
@@ -93,6 +95,8 @@ export const DiscoveryPostPage = () => {
   const backToIndex = () =>
     navigate({ to: '/$lang/discovery', params: { lang } });
 
+  const cover = hasCover(post);
+
   return (
     <>
       {/* `<main class="contents">` : voir home-page. */}
@@ -127,81 +131,112 @@ export const DiscoveryPostPage = () => {
                   tous les articles, ce n'est pas un champ que la rédaction
                   renseigne. Une valeur constante n'apprend rien. Elle reste
                   dans le JSON-LD, où schema.org attend un auteur. */}
-              {/* Deux valeurs, deux cellules de la rangée : c'est le `gap-3.5`
-                  du parent qui les sépare. `HoverMarquee` ne peut pas s'en
-                  charger — il pose ses enfants dans une piste interne et
-                  mesure `scrollWidth - clientWidth` sur un `whitespace-nowrap`,
-                  qu'un `flex` sur son enveloppe fausserait. */}
-              <MonoLabel tone="muted">{post.read}</MonoLabel>
+              {/* Sans la durée de lecture : « 4 MIN » était une estimation
+                  fabriquée par `strapi.ts` — le nombre de mots divisé par 200 —
+                  posée entre la catégorie et la date. Trois valeurs alignées
+                  dans une bande, dont une inventée, se lisent comme la chaîne au
+                  point médian que ce dépôt bannit ailleurs. Le champ est parti
+                  du modèle, pas seulement de l'affichage.
+
+                  `HoverMarquee` ne peut pas porter le `gap` du parent — il pose
+                  ses enfants dans une piste interne et mesure
+                  `scrollWidth - clientWidth` sur un `whitespace-nowrap`, qu'un
+                  `flex` sur son enveloppe fausserait. */}
               <HoverMarquee className="font-mono text-xs tracking-widest text-muted-foreground">
                 {post.date[lang]}
               </HoverMarquee>
             </div>
           </div>
 
-          <div className="row-start-3 grid min-h-0 grid-cols-1 gap-px bg-border overflow-y-auto app:grid-cols-[1.1fr_1fr] app:overflow-hidden">
-            <div className="relative min-h-64 bg-foreground app:min-h-0">
-              <DiscoveryCoverMedia
-                post={post}
-                lang={lang}
-                sizes="(min-width: 768px) 55vw, 100vw"
-                priority
-                controls
-                className="absolute inset-0 h-full w-full object-cover"
-              />
-            </div>
+          {/* Sans cover, pas de colonne de cover : l'article prend toute la
+              largeur et se lit en une colonne. La réserve grise a du sens dans
+              une vignette de 48px, où elle tient l'alignement de la liste ;
+              étalée sur la moitié d'un écran, elle ne tiendrait rien du tout —
+              elle occuperait la moitié de la page pour dire qu'il manque une
+              image. */}
+          <div
+            className={cn(
+              'row-start-3 grid min-h-0 grid-cols-1 overflow-y-auto app:overflow-hidden',
+              // `gap-px bg-border` ne peint QUE la gouttière entre les deux
+              // colonnes. Sans cover il n'y a plus de gouttière, et l'aplat
+              // débordait de part et d'autre de la colonne de lecture centrée :
+              // un article en noir sur les deux tiers de l'écran.
+              cover
+                ? 'gap-px bg-border app:grid-cols-[1.1fr_1fr]'
+                : 'bg-background',
+            )}
+          >
+            {cover && (
+              <div className="relative min-h-64 bg-foreground app:min-h-0">
+                <DiscoveryCoverMedia
+                  post={post}
+                  lang={lang}
+                  sizes="(min-width: 768px) 55vw, 100vw"
+                  priority
+                  controls
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              </div>
+            )}
             {/* Ni méta en tête ni signature en pied : la bande de la rangée 2
                 porte déjà la catégorie, la durée, l'auteur et la date, et elle
                 reste à l'écran pendant que l'article défile dans sa cellule.
                 Les répéter ne renseignait personne. */}
-            <article className="flex min-h-0 flex-col gap-5 overflow-y-auto bg-background px-6 py-8 md:px-12 md:py-10">
-              {/* `flow` : la cellule de l'article porte déjà son retrait, celui
+            {/* La mesure est portée par le bloc de texte, pas par la cellule :
+                l'aplat blanc doit remplir sa colonne — sinon c'est la gouttière
+                noire de la grille qui apparaît sur les côtés — mais le texte,
+                lui, s'arrête à 36rem.
+
+                Mesuré, dans cette police et à ce corps : 74 caractères par ligne
+                à 1440 avec cover, 86 sans, et 81 à 2560 même une fois plafonné à
+                42rem. 36rem donne 68 en moyenne (63 à 75 selon le paragraphe),
+                dans la plage lisible de 60 à 75. La mesure se vérifie en comptant
+                des caractères, pas en choisissant un palier de largeur. */}
+            <article className="flex min-h-0 w-full flex-col overflow-y-auto bg-background px-6 py-8 md:px-12 md:py-10">
+              <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-5">
+                {/* `flow` : la cellule de l'article porte déjà son retrait, celui
                   de `lg` s'y ajouterait. Le chapô reste hors du composant — ce
                   n'en est pas un, c'est le chapeau de l'article, qui se lit au
                   corps du texte et non en gris réduit. */}
-              <SectionIntro size="flow" title={post.title[lang]} />
-              {post.sub[lang] && (
-                <p className="m-0 text-pretty text-base font-normal leading-relaxed text-foreground">
-                  {post.sub[lang]}
-                </p>
-              )}
-              {bodyHtml && (
-                <div
-                  ref={bodyRef}
-                  onClick={onBodyClick}
-                  onKeyDown={onBodyKeyDown}
-                  className="article-prose prose prose-sm m-0 max-w-none text-foreground"
-                  dangerouslySetInnerHTML={{ __html: bodyHtml }}
-                />
-              )}
-              {nextPost && (
-                <aside className="mt-auto flex flex-col gap-2.5">
-                  <Separator className="mb-3.5" />
-                  <MonoLabel tone="primary">
-                    {t('discoveryPage.nextArticle')}
-                  </MonoLabel>
-                  <ArticleTeaserCell
-                    post={nextPost}
-                    lang={lang}
-                    onOpen={() =>
-                      navigate({
-                        to: '/$lang/discovery/$slug',
-                        params: { lang, slug: nextPost.slug },
-                      })
-                    }
+                <SectionIntro size="flow" title={post.title[lang]} />
+                {post.sub[lang] && (
+                  <p className="m-0 text-pretty text-base font-normal leading-relaxed text-foreground">
+                    {post.sub[lang]}
+                  </p>
+                )}
+                {bodyHtml && (
+                  <div
+                    ref={bodyRef}
+                    onClick={onBodyClick}
+                    onKeyDown={onBodyKeyDown}
+                    className="article-prose prose prose-sm m-0 max-w-none text-foreground"
+                    dangerouslySetInnerHTML={{ __html: bodyHtml }}
                   />
-                </aside>
-              )}
-              <Separator className="mt-2" />
-              <footer className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-end">
-                <Button
-                  onClick={backToIndex}
-                  variant="cell"
-                  className="dark h-10 bg-background px-6 hover:text-primary"
-                >
-                  {t('discoveryPage.close')}
-                </Button>
-              </footer>
+                )}
+                {nextPost && (
+                  <aside className="mt-auto flex flex-col gap-2.5">
+                    <Separator className="mb-3.5" />
+                    <MonoLabel tone="primary">
+                      {t('discoveryPage.nextArticle')}
+                    </MonoLabel>
+                    <ArticleTeaserCell
+                      post={nextPost}
+                      lang={lang}
+                      onOpen={() =>
+                        navigate({
+                          to: '/$lang/discovery/$slug',
+                          params: { lang, slug: nextPost.slug },
+                        })
+                      }
+                    />
+                  </aside>
+                )}
+                {/* Plus de pied « Fermer » : la bande de la rangée 2 porte
+                  « Retour journal », elle reste à l'écran pendant que l'article
+                  défile, et elle dit où l'on revient. Le bouton noir posé en bas
+                  à droite était la seconde sortie de la même pièce, sous un
+                  troisième filet. */}
+              </div>
             </article>
           </div>
         </main>

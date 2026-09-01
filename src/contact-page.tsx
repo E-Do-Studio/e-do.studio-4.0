@@ -309,7 +309,12 @@ const MetroLine = ({ line, label, className }: MetroLineProps) => (
   <div className="flex items-center gap-2 whitespace-nowrap">
     <span
       className={cn(
-        'inline-flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full text-xs font-bold',
+        // Carré, y compris pour un numéro de ligne de métro : la RATP les
+        // dessine ronds, ce système ne dessine rien de rond. `--radius` vaut 0
+        // et `rounded-full` est le seul rayon qui l'ignore, en posant 9999px en
+        // dur — deux disques colorés au milieu d'une page entièrement réglée à
+        // l'équerre se lisaient comme un emprunt à une autre charte.
+        'inline-flex h-4.5 w-4.5 shrink-0 items-center justify-center text-xs font-bold',
         className,
       )}
     >

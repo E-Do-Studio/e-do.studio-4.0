@@ -180,25 +180,6 @@ export const SectionOverlays = () => (
             </Button>
           </div>
         </Specimen>
-
-        <Specimen
-          source="step-configurator.tsx:126-156"
-          tone="copie"
-          note="Copie du précédent, mais à md: au lieu de lg:, et le ButtonGroup remplacé par un <div className=&quot;flex items-stretch border-t …&quot;> écrit à la main."
-          frameClassName="p-0"
-        >
-          <div className="flex items-stretch gap-3 border-b border-border bg-muted px-4 py-2.5">
-            <span className="flex-1 text-sm">Configurateur</span>
-            <div className="flex items-stretch border-t border-border">
-              <Button
-                variant="ghost"
-                className="h-auto py-1 normal-case tracking-normal"
-              >
-                Choisir manuellement →
-              </Button>
-            </div>
-          </div>
-        </Specimen>
       </SpecimenGrid>
     </Subsection>
   </Section>

@@ -27,9 +27,11 @@ const StepPlateau = ({ lang, selected, togglePlateau }: StepPlateauProps) => {
         <StepHeading number="01" title={t('booking.stageFallback')} />
         <MonoLabel tone="muted">{t('booking.multiSelectPossible')}</MonoLabel>
       </StepBand>
-      {/* `border-b` : c'était la seule grille du tunnel à ne pas se fermer. Les
-          onze grilles du configurateur la portent, celle-ci s'arrêtait dans le
-          blanc. */}
+      {/* `gap-px bg-border` seul : la gouttière ENTRE les tuiles, et rien
+          d'autre. La fermeture appartient à la barre d'actions, qui seule sait
+          qu'il y a un après — les grilles du configurateur portaient les deux
+          sur le même nœud, et les deux filets sortaient à 2px dès que le
+          contenu remplissait sa zone. */}
       <div className="grid w-full flex-1 auto-rows-fr grid-cols-1 gap-px bg-border @md:grid-cols-2 @2xl:grid-cols-3">
         {BOOK_PLATEAUX.map((px, i) => {
           const on = selected.includes(px.k);

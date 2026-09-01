@@ -302,10 +302,23 @@ const ProjectLabel = ({
     'outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-foreground relative flex cursor-pointer flex-col items-center justify-between overflow-hidden  bg-background px-2 py-2 md:px-2.5 md:py-3.5 text-left font-sans no-underline text-inherit';
   const content = (
     <>
+      {/* `text-[9px]` sous `md` : la colonne mobile ne laisse que 32px au
+          libellé, et le `text-xs` de `MonoLabel` — chasse fixe, `tracking-widest`
+          — y coûte près de 8px par caractère. « Live » en occupait 31 et sortait
+          quand même en « LI… », deux lettres et des points de suspension. Là
+          l'échappatoire prévue ne peut rien : `HoverMarquee` ne se déclenche que
+          sur un pointeur fin (`(hover: hover) and (pointer: fine)`), donc jamais
+          au doigt — une troncature mobile est DÉFINITIVE, contrairement à la
+          même en desktop.
+
+          Plus petit que l'année, qui reste à `text-xs` : ce sont deux valeurs
+          muettes de part et d'autre du nom, mais une seule déborde. L'année tient
+          en quatre chiffres à n'importe quelle taille, et la réduire avec le
+          plateau aurait rétréci la cellule sans rien y gagner. */}
       <HoverMarquee
         className={cn(
           monoLabelVariants({ tone: 'muted' }),
-          'max-w-full self-start transition-colors group-hover:text-primary',
+          'max-w-full self-start text-[9px] transition-colors group-hover:text-primary md:text-xs',
         )}
       >
         {plateauLabel}

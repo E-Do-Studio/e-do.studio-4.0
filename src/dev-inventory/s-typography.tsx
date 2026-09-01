@@ -181,15 +181,6 @@ const INDEX_SIGNATURES = [
     gap: 'largeur fixe pour aligner ce que tabular-nums réglerait',
   },
   {
-    cls: 'w-7 shrink-0 font-mono text-xs font-normal uppercase tracking-widest text-primary',
-    where: 'step-configurator.tsx:98',
-    gap: 'seul numéro orange au repos, 2e largeur fixe',
-  },
-  {
-    cls: 'font-mono text-xs uppercase tracking-widest text-muted-foreground',
-    where: 'step-configurator.tsx:392',
-  },
-  {
     cls: 'font-mono text-xs uppercase leading-none tracking-widest text-muted-foreground',
     where: 'nav-menu.tsx:63,91',
   },

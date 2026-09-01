@@ -19,7 +19,6 @@ const post = (over: Partial<DiscoveryPost> = {}): DiscoveryPost => ({
   body: { fr: '', en: '' },
   // Date d'AFFICHAGE localisée : volontairement non parsable.
   date: { fr: '5 juin', en: 'June 5' },
-  read: '1 min',
   author: 'Studio',
   publishedAt: '2026-06-05T12:18:31.585Z',
   coverUrl: 'https://cdn.test/cover.jpg',

@@ -949,11 +949,6 @@ export async function fetchPostProdTypes(): Promise<PPCat[]> {
 
 const TONES: Array<'warm' | 'mono' | 'dark'> = ['warm', 'mono', 'dark'];
 
-function estimateReadingTime(text: string): number {
-  const words = text.trim().split(/\s+/).length;
-  return Math.max(1, Math.round(words / 200));
-}
-
 function resolveStrapiMediaUrl(media?: StrapiMedia | null): string | undefined {
   if (!media?.url) return undefined;
   const path = media.formats?.medium?.url ?? media.url;
@@ -1035,7 +1030,6 @@ function mapBlogPostToDiscovery(
   const catEn = pEn.categories?.[0];
   const bodyFr = pFr.body ?? '';
   const bodyEn = pEn.body ?? '';
-  const readingTime = estimateReadingTime(bodyFr || bodyEn);
   const displayDate = pFr.articleDate ?? pFr.publishedAt ?? '';
   const seo = buildSeo(pFr.seo, pEn.seo);
   return {
@@ -1048,7 +1042,6 @@ function mapBlogPostToDiscovery(
     sub: { fr: pFr.excerpt, en: pEn.excerpt },
     body: { fr: bodyFr, en: bodyEn },
     date: formatStrapiDate(displayDate),
-    read: `${readingTime} min`,
     author: 'Studio',
     coverUrl: resolveStrapiMediaUrl(pFr.coverMedia),
     coverMime: pFr.coverMedia?.mime,

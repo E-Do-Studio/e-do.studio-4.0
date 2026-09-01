@@ -12,7 +12,6 @@ const post = (id: number, cat: string, featured = false): DiscoveryPost => ({
   sub: { fr: '', en: '' },
   body: { fr: '', en: '' },
   date: { fr: '', en: '' },
-  read: '1 min',
   author: 'E-Do',
   featured,
 });

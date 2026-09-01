@@ -4,8 +4,8 @@ import { cn } from '@/lib/utils';
 import { MonoLabel } from './mono-label';
 
 // La ligne à bascule : « Post-production par E-Do », une option qu'on active ou
-// non. Deux copies existaient — `step-postprod.tsx:13` et sa réécriture dans
-// `step-configurator.tsx:485-530`.
+// non. Deux copies existaient — l'étape post-prod du tunnel et sa réécriture
+// dans le configurateur, qui posent aujourd'hui toutes deux ce composant.
 //
 // Elles ne différaient que par le marqueur : la première portait `border-l-4
 // border-l-primary` à l'état actif, la seconde rien du tout. Or `border-l-4`

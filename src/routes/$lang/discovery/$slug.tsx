@@ -17,7 +17,6 @@ export const Route = createFileRoute('/$lang/discovery/$slug')({
     ]);
     return { post, posts };
   },
-  // noIndex depuis EDO/#366 — cf. la note dans discovery/index.tsx.
   head: ({ params, loaderData }) => {
     const lang = params.lang as Lang;
     const pathname = `/discovery/${params.slug}`;
@@ -28,7 +27,6 @@ export const Route = createFileRoute('/$lang/discovery/$slug')({
       pathname,
       title: post?.seo?.[lang]?.title || post?.title?.[lang],
       description: post?.seo?.[lang]?.description || post?.sub?.[lang],
-      noIndex: true,
       jsonLd: [
         post && buildBlogPostingSchema(post, lang, pathname),
         buildPageBreadcrumb(lang, [

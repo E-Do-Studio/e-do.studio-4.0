@@ -29,7 +29,19 @@ interface BookingSidePanelProps {
   slots: Record<string, SlotState>;
 }
 
-/** Durée du créneau, en abrégé, pour le sous-titre du panneau. */
+/**
+ * Durée du créneau, sous le nom du plateau.
+ *
+ * En toutes lettres, et c'est le fond du sujet : elle s'écrivait en abrégés
+ * enchaînés — « ½ j », « 2 j + ½ j », « 1 j + 5h ». Trois valeurs collées par
+ * des signes, dans une unité (« j ») qui n'existe nulle part ailleurs sur le
+ * site, pour dire ce que la ligne de détail juste en dessous énonce déjà en
+ * clair. Une durée est une information qu'on lit, pas un code à décoder.
+ *
+ * Le reliquat s'exprime toujours en heures, jamais en « ½ journée » : coller un
+ * second nom d'unité derrière le premier rallonge la ligne sans rien préciser
+ * — « 2 jours et 4h » se lit d'un coup.
+ */
 function durationLabel(
   t: ReturnType<typeof useT>,
   p: BookPlateau,
@@ -42,19 +54,19 @@ function durationLabel(
     if (cycloMode === 'fullH') return '10h';
     return t('booking.cyclo10hEditorial');
   }
-  if (p.isVisite) return t('booking.visit2');
+  if (p.isVisite) return t('booking.visit');
   if (slotType === 'hour') return `${hours}h`;
   if (slotType === 'half') {
     const hh = Math.max(4, Math.min(7, hours || 4));
-    return hh === 4 ? t('booking.halfDayAbbrev') : `${hh}h`;
+    return hh === 4 ? t('booking.halfDay') : `${hh}h`;
   }
   const totalH = hours || 8;
   const fullDays = Math.floor(totalH / 8);
   const extraH = totalH - fullDays * 8;
-  let label = `${fullDays} ${t('booking.dayAbbrev')}`;
-  if (extraH === 4) label += t('booking.plusHalfDayAbbrev');
-  else if (extraH > 0) label += ` + ${extraH}h`;
-  return label;
+  const days = `${fullDays} ${t('booking.dayUnit', { count: fullDays })}`;
+  return extraH > 0
+    ? `${days} ${t('booking.andConjunction')} ${extraH}h`
+    : days;
 }
 
 /**

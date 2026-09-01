@@ -7,9 +7,7 @@ import {
   ItemMedia,
   ItemTitle,
 } from '@/components/ui/item';
-import { ArticleMeta } from './shared';
 import { DiscoveryCoverMedia } from './discovery-cover';
-import { hasCover } from './cover';
 import { cn } from '@/lib/utils';
 import { Empty, EmptyTitle } from '@/components/ui/empty';
 import { MonoLabel } from '../ui/mono-label';
@@ -55,9 +53,15 @@ export const MorePostsCard = ({
       {/* `ItemGroup` apporte le `role="list"` qui manquait. Deux réglages contre
           ses défauts : `gap-0` annule son `gap-4` — les lignes sont jointives,
           séparées par un filet et non par un blanc —, et le filet est posé par
-          le conteneur plutôt que par chaque ligne, sinon la dernière double la
-          gouttière de la grille au bas de la cellule. */}
-      <ItemGroup className="min-h-0 flex-1 gap-0 overflow-y-auto [&>*:not(:last-child)]:border-b [&>*:not(:last-child)]:border-b-border">
+          le conteneur plutôt que par chaque ligne.
+
+          Pas de `:not(:last-child)` : la liste se ferme, comme le rail qui lui
+          fait face (`rail-cell.tsx`, même raisonnement). L'exclusion datait du
+          temps où la cellule partageait sa colonne avec le chat et où la liste
+          la remplissait ; elle occupe maintenant deux rangées, il reste du blanc
+          sous le dernier article, et sans ce filet la liste s'y perdait au lieu
+          de s'arrêter. */}
+      <ItemGroup className="min-h-0 flex-1 gap-0 overflow-y-auto [&>*]:border-b [&>*]:border-b-border">
         {posts.map((post) => (
           <Item
             key={post.id}
@@ -74,23 +78,27 @@ export const MorePostsCard = ({
             // le texte passent à la ligne dans une colonne étroite.
             className="flex-row flex-nowrap items-center gap-3 px-5 py-3"
           >
-            {hasCover(post) && (
-              // `rounded-none` annule le `rounded-sm` d'`ItemMedia` : le rayon
-              // du site est 0 (`--radius` dans styles.css).
-              <ItemMedia
-                variant="image"
-                className="relative size-12 rounded-none"
-              >
-                <DiscoveryCoverMedia
-                  post={post}
-                  lang={lang}
-                  sizes="48px"
-                  className="absolute inset-0 h-full w-full object-cover"
-                />
-              </ItemMedia>
-            )}
+            {/* La case est rendue même sans image, et elle reste alors VIDE :
+                rien n'y est peint. Repliée, elle décalait le texte d'une ligne à
+                l'autre — la liste avait deux bords gauches ; remplie d'un aplat
+                gris, elle attirait l'œil là où il n'y a rien à voir, juste à
+                côté de vignettes qui montrent quelque chose. Ce qu'on tient ici,
+                c'est la place, pas le manque. */}
+            {/* `rounded-none` annule le `rounded-sm` d'`ItemMedia` : le rayon
+                du site est 0 (`--radius` dans styles.css). */}
+            <ItemMedia
+              variant="image"
+              className="relative size-12 rounded-none"
+            >
+              <DiscoveryCoverMedia
+                post={post}
+                lang={lang}
+                sizes="48px"
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            </ItemMedia>
             <ItemContent className="min-w-0">
-              <ArticleMeta post={post} lang={lang} muted />
+              <MonoLabel tone="muted">{post.tag[lang]}</MonoLabel>
               {/* `block w-auto` annule le `flex w-fit` d'`ItemTitle`, sans quoi
                   le titre se dimensionne à son contenu et le `line-clamp` n'a
                   plus de largeur à contraindre. */}

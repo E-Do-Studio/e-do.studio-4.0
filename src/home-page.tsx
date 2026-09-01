@@ -1,7 +1,6 @@
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useLoaderData } from '@tanstack/react-router';
-import { ArrowRight, Lock } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { lazy, Suspense } from 'react';
 import { useT } from './i18n/use-t';
 import { usePageContext } from './lib/page-context';
@@ -18,10 +17,9 @@ import { useIsDesktop } from './ui/use-is-desktop';
 import { VideoLoop } from './ui/video-loop';
 import { ordinal } from './lib/format';
 import { HoverMarquee } from './ui/hover-marquee';
-import { MonoLabel, monoLabelVariants } from './ui/mono-label';
+import { MonoLabel } from './ui/mono-label';
 import { SelectTile } from './ui/select-tile';
 import { SCREEN_TO_PATH } from './lib/screens';
-import { cn } from '@/lib/utils';
 import { CtaCell } from './ui/cta-cell';
 
 const AssistantChat = lazy(() => import('./assistant-chat'));
@@ -133,9 +131,13 @@ const HomePage = () => {
       aside={
         announcementText ? (
           <span className="flex min-w-0 items-center gap-2 font-mono text-base font-bold text-foreground">
+            {/* Carré, comme tout le reste : `--radius` vaut 0 dans ce système,
+                et `rounded-full` est le seul rayon qui échappe au jeton — il
+                pose 9999px en dur. Un rond posé au milieu de filets droits n'est
+                pas une variation, c'est un corps étranger. */}
             <span
               aria-hidden
-              className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
+              className="inline-block h-1.5 w-1.5 shrink-0 bg-primary"
             />
             {/* HoverMarquee et non `truncate` : le texte vient du CMS et peut
                   dépasser sa cellule. L'ellipse dit seulement qu'on cache ;
@@ -333,7 +335,7 @@ const HomePage = () => {
  le `hidden app:flex` ici. */}
           <CtaCell
             size="cta"
-            kicker={t('home.requestQuoteOr')}
+            kicker={t('common.requestQuoteOr')}
             title={t('common.book')}
             onClick={() => goto('book')}
             className="hidden app:flex"
@@ -387,76 +389,24 @@ const HomePage = () => {
           </Button>
         </div>
 
-        {/* ── Rangée 6 gauche : Discovery (bientôt disponible) ──
- `variant="cell"` porte déjà `bg-background text-foreground` ; le scope
- `dark` les fait basculer sur la palette sombre. La tuile réécrivait ces
- classes à la main par-dessus la variante `default`, c'est-à-dire qu'elle
- annulait l'orange qu'elle venait de demander.
- `text-left` n'est pas redondant : la feuille de style du navigateur pose
- `text-align: center` sur tout `<button>`, et la base de shadcn pose
- `whitespace-nowrap` — sans lui le titre se centre et déborde à gauche.
- Cette tuile est une bande horizontale et non une cellule empilée : sa
- géométrie reste au site d'appel, contrairement à ses voisines en
- `size="cell"`. */}
-        <Button
-          type="button"
-          disabled
-          aria-disabled="true"
-          tabIndex={-1}
-          variant="cell"
-          className="pointer-events-none cursor-not-allowed group relative col-span-2 h-20 flex justify-between gap-3 px-4 py-3 text-left dark app:col-span-3 app:col-start-1 app:col-end-4 app:row-start-6 app:h-21"
-        >
-          <svg
-            viewBox="0 0 200 84"
-            preserveAspectRatio="none"
-            className="absolute inset-0 h-full w-full opacity-20"
-          >
-            {[...Array(7)].map((_, i) => (
-              <line
-                key={'h' + i}
-                x1="0"
-                y1={i * 14}
-                x2="200"
-                y2={i * 14}
-                stroke="currentColor"
-                strokeWidth="0.3"
-              />
-            ))}
-            {[...Array(14)].map((_, i) => (
-              <line
-                key={'v' + i}
-                x1={i * 14}
-                y1="0"
-                x2={i * 14}
-                y2="84"
-                stroke="currentColor"
-                strokeWidth="0.3"
-              />
-            ))}
-          </svg>
-          <div className="relative flex min-w-0 flex-col gap-1">
-            <MonoLabel tone="muted">Discovery</MonoLabel>
-            {/* `truncate` : la base de `Button` pose `whitespace-nowrap`, que la
-              taille `cell` neutralise — mais cette tuile est une bande
-              horizontale et ne l'utilise pas. Sans troncature, le titre ne
-              peut ni se replier ni se couper, et passe sous le badge. */}
-            <div className="truncate text-xl font-normal tracking-tight leading-tight text-muted-foreground">
-              {t('home.tellMeMore')}
-            </div>
-          </div>
-          <div className="relative flex flex-shrink-0 items-center gap-2">
-            <Badge
-              variant="secondary"
-              className={cn(monoLabelVariants(), 'hidden sm:inline-flex')}
-            >
-              <Lock data-icon="inline-start" />
-              {t('home.comingSoon')}
-            </Badge>
-            <Badge variant="secondary" className="sm:hidden" aria-hidden="true">
-              <Lock />
-            </Badge>
-          </div>
-        </Button>
+        {/* ── Rangée 6 gauche : Discovery ──
+ La section est publique : plus de cadenas, plus de `disabled`, plus de
+ trame SVG en fond — une grille de traits dessinée à la main, seul décor
+ gratuit de la page, qui ne disait rien d'autre que « il n'y a rien ici ».
+ C'est le même pavé d'action que ses deux voisines de la bande, au même
+ sur-titre de catégorie et au même titre que la destination porte dans le
+ tiroir. Sans sous-titre : la rangée vaut `--spacing-cta`, où le pavé n'a
+ la place que de deux lignes — c'est le gabarit du CTA « Réserver », pas
+ celui de Cyclorama qui court sur deux rangées. */}
+        <CtaCell
+          tone="surface"
+          size="cta"
+          kicker={t('home.journal')}
+          title={t('common.discovery')}
+          href={SCREEN_TO_PATH.discovery(lang)}
+          onClick={() => goto('discovery')}
+          className="col-span-2 app:col-span-3 app:col-start-1 app:col-end-4 app:row-start-6"
+        />
 
         {/* ── Rangées 5-6 extrême droite : l'assistant. Sous le palier, c'est le
  bouton flottant qui le porte — `MobileAssistantFab`, qui disparaît

@@ -1,3 +1,4 @@
+import { cva, type VariantProps } from 'class-variance-authority';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -51,9 +52,10 @@ const FormCellContext = createContext<FormCellContextValue | null>(null);
 // exactement ce qui est arrivé au `<Textarea>` après que le `<Input>` eut été
 // traité.
 //
-// La BORDURE n'est pas neutralisée : elle reste un choix légitime par contrôle
-// (le champ quantité du configurateur en porte une). Seules les décorations
-// d'état sont reprises par la cellule.
+// Cela vaut aussi pour le CADRE, et pas seulement pour les décorations d'état :
+// aucun contrôle posé ici ne dessine le sien. Le champ quantité du configurateur
+// en portait un, et au focus les deux rectangles apparaissaient l'un dans
+// l'autre — la boîte dans une boîte que cette cellule existe pour supprimer.
 interface FormCellProps {
   label: string;
   children: ReactNode;
@@ -179,7 +181,39 @@ const FormCell = ({
   );
 };
 
-interface FormCellInputProps {
+// Le registre de la valeur saisie, pas un ajustement de style.
+//
+// `text` — une phrase qu'on lit de gauche à droite (le défaut).
+//
+// `count` — un nombre tapé au clavier : mono à corps plein, chiffres à chasse
+// fixe. `tabular-nums` fait partie de la définition d'un nombre dans ce système,
+// comme dans `Price`.
+//
+// Ce que `count` ne fait PAS, et c'est le point : dessiner un cadre. Les trois
+// champs du configurateur en portaient un — deux recopiaient la chaîne mot pour
+// mot, le troisième posait `border-border` SANS `border` et n'avait donc aucun
+// cadre du tout. Mais la cellule EST le champ : elle porte le retrait, le fond
+// et l'anneau de focus. Un cadre à l'intérieur donne exactement la boîte dans
+// une boîte que `FormCell` existe pour supprimer, et ça se voit au focus, où les
+// deux rectangles apparaissent l'un dans l'autre.
+//
+// Ni centrage non plus : la valeur se lit sous son libellé, à la même origine
+// que lui. Centrée dans une cellule large, elle flottait au milieu de rien.
+const formCellInputVariants = cva(
+  'h-auto w-full rounded-none border-0 bg-transparent p-0 font-sans text-sm tracking-tight',
+  {
+    variants: {
+      kind: {
+        text: '',
+        count: 'font-mono text-base tabular-nums',
+      },
+    },
+    defaultVariants: { kind: 'text' },
+  },
+);
+
+interface FormCellInputProps
+  extends VariantProps<typeof formCellInputVariants> {
   value: string | undefined;
   onChange: (value: string) => void;
   /**
@@ -212,6 +246,7 @@ const FormCellInput = ({
   autoComplete,
   inputMode,
   invalid,
+  kind,
   className,
 }: FormCellInputProps) => {
   const field = useContext(FormCellContext);
@@ -232,16 +267,17 @@ const FormCellInput = ({
       // L'attribut porte le sens, la cellule porte la peinture : ses
       // décorations d'état sont neutralisées par `CONTROLES_SANS_DECOR`, plus
       // haut, pour tous les contrôles à la fois.
-      className={cn(
-        'h-auto w-full rounded-none border-0 bg-transparent p-0 font-sans text-sm tracking-tight',
-        className,
-      )}
+      className={cn(formCellInputVariants({ kind }), className)}
     />
   );
 };
 
+// `kind` est retiré au passage : un texte long n'a pas de registre « nombre ».
 interface FormCellTextareaProps
-  extends Omit<FormCellInputProps, 'type' | 'inputMode' | 'autoComplete'> {
+  extends Omit<
+    FormCellInputProps,
+    'type' | 'inputMode' | 'autoComplete' | 'kind'
+  > {
   rows?: number;
   /**
    * Le textarea prend toute la hauteur que sa cellule lui donne.

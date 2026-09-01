@@ -337,45 +337,96 @@
    avec les utilitaires, donc une classe posée après elle sur le même élément
    l'emporte toujours. */
 @utility article-prose {
-  /* `font-bold` et non `font-medium` : ABC Favorit ne livre que 300/400/700.
-     Mesuré au pixel sur la police chargée, `font-weight: 500` rend exactement
-     comme 400 — le sous-titre d'article était donc identique au paragraphe qui
-     le suit, à deux pixels de corps près. La seule graisse d'emphase qui existe
-     réellement dans cette famille est 700. */
+  /* ABC Favorit ne livre que 300/400/700 : le fichier ne contient que Light,
+     Regular et Bold, et `font-weight: 500` rend exactement comme 400 — mesuré au
+     pixel sur la police chargée.
+
+     L'article se lit donc un cran plus bas que la version précédente : le corps
+     passe en 300, ce qui LIBÈRE le 400 comme graisse de titre. Les trois niveaux
+     restent distincts sans jamais toucher au gras :
+
+       titre d'article   36px / 300   (posé par `SectionIntro`)
+       titre de section   24px / 400
+       sous-titre         16px / 400
+       corps              16px / 300
+
+     Le sous-titre ne se distingue que par sa graisse, comme avant — c'est la
+     même mécanique, décalée d'un cran. Le 700 reste pour ce qu'il est : une
+     emphase dans le fil du texte, pas un niveau de titre. */
   & :is(h2, h3) {
-    @apply font-bold tracking-tight;
+    @apply font-normal tracking-tight text-balance;
   }
   /* Deux niveaux séparés par deux pixels de corps, c'est trop peu pour se voir
      dans une colonne d'article. `h2` monte d'un cran et gagne un interligne de
      titre ; `h3` reste à la taille du corps mais s'en détache par la graisse.
      L'espace au-dessus fait le reste du travail : il double entre les deux
-     niveaux, ce qui dit la subordination mieux que la taille. */
+     niveaux, ce qui dit la subordination mieux que la taille.
+
+     Un titre a AUSSI un espace en dessous, et il vaut le tiers de celui du
+     dessus. À zéro, le paragraphe était collé au titre : la ligne de base du
+     texte touchait la descendante du titre, et le bloc se lisait comme un seul
+     pavé. Le rapport compte plus que les valeurs — tant que le blanc au-dessus
+     domine, le titre reste attaché à ce qu'il coiffe plutôt qu'à ce qui le
+     précède, et il n'a pas besoin d'être collé pour ça. */
   & h2 {
-    @apply mt-8 text-2xl leading-tight;
+    @apply mt-8 mb-2.5 text-2xl leading-tight;
   }
   & h3 {
-    @apply mt-5 text-base leading-snug;
+    @apply mt-5 mb-1.5 text-base leading-snug;
   }
   & p {
-    @apply leading-relaxed;
+    @apply font-light leading-relaxed text-pretty;
+  }
+  /* Le blanc entre deux blocs de texte, écrit UNE fois.
+
+     Les paragraphes n'étaient séparés par rien — ni marge, ni retrait —, et huit
+     d'entre eux se lisaient comme un seul bloc. Le filet de séparation d'un
+     article, c'est son blanc.
+
+     La règle porte sur des voisins et non sur chaque élément : le titre garde
+     son paragraphe collé sous lui, ce qui est justement ce qui l'y rattache, et
+     le premier bloc du corps ne commence pas par une marge en l'air.
+
+     Et elle porte sur TOUS les blocs de flux, pas seulement sur `p` : une liste
+     ou une citation qui suit un paragraphe respire comme deux paragraphes entre
+     eux. Écrites élément par élément, ces marges avaient déjà divergé — 8px pour
+     une liste, 16 pour une figure, rien pour une citation, contre 16 entre deux
+     paragraphes : quatre valeurs pour un seul intervalle.
+
+     Pas de `ol` dans la liste : `render-markdown.ts` ne sait produire que des
+     listes à puces. Une règle pour une balise que le rendu ne peut pas émettre
+     est une règle qu'on ne vérifiera jamais. */
+  & :is(p, ul, blockquote, figure, .edo-img-grid)
+    + :is(p, ul, blockquote, figure, .edo-img-grid) {
+    @apply mt-4;
   }
   & a {
     @apply text-primary underline;
   }
   & ul {
-    @apply my-2 list-disc;
+    @apply list-disc;
   }
   & li {
     @apply ml-4;
   }
+  /* `render-markdown.ts` regroupe les images qui se suivent sous cette classe,
+     qui ne correspondait à AUCUNE règle : deux images d'affilée s'empilaient
+     pleine largeur, et le nom promettait une grille que personne n'avait
+     écrite. Deux colonnes, séparées par le filet du site — la même gouttière
+     que partout ailleurs, dessinée par le fond du conteneur. */
+  & .edo-img-grid {
+    @apply grid grid-cols-2 gap-px bg-border;
+  }
+  & .edo-img-grid figure {
+    @apply m-0;
+  }
+  /* Le trait de séparation demande plus d'air que l'intervalle courant : il
+     annonce une rupture, pas la suite. */
   & hr {
     @apply my-6 border-border;
   }
   & blockquote {
     @apply border-l-2 border-border pl-4 italic;
-  }
-  & figure {
-    @apply my-4;
   }
   & :is(figure img, figure video) {
     @apply block w-full;

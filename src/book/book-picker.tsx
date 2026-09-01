@@ -40,7 +40,7 @@ const PickerTile = ({
         : 'bg-background text-foreground hover:bg-muted';
   // L'aplat orange n'a pas de portée qui le décrive : `text-muted-foreground`
   // y tombe sur un gris illisible. La teinte discrète s'y dérive du premier
-  // plan de la cellule, comme le fait BookCtaCell.
+  // plan de la cellule, comme le fait `CtaCell`.
   const subtle =
     variant === 'primary'
       ? 'text-primary-foreground/75'

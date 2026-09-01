@@ -1,45 +1,28 @@
-import { lazy, Suspense, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useLoaderData, useNavigate } from '@tanstack/react-router';
 import type { DiscoveryCategory, DiscoveryPost } from './types';
 import { ArticleCard, ArticleEmptyCard } from './discovery/article-card';
-import { BookCtaCell } from './discovery/book-cta-cell';
 import { MorePostsCard } from './discovery/more-posts-card';
 import { NewsletterCell } from './discovery/newsletter-cell';
 import { filterByCategory, selectPosts } from './discovery/select-posts';
-import { cn } from '@/lib/utils';
 import { usePageContext } from './lib/page-context';
 import { useT } from './i18n/use-t';
 import { SocialClientsBar } from './social-clients-bar';
-import { MobileAssistantFab } from './ui/mobile-assistant-fab';
+import { CtaCell } from './ui/cta-cell';
 import { Rail, RailCell, RailHeader } from './ui/rail-cell';
 import { PageShell } from './ui/page-shell';
 import { MAIN_ID } from './ui/skip-link';
-import { useIsDesktop } from './ui/use-is-desktop';
-
-const AssistantChat = lazy(() => import('./assistant-chat'));
+import { SCREEN_TO_PATH } from './lib/screens';
 
 // Références stables : sans elles les mémos ci-dessous se rejouent à chaque
 // rendu de chargement.
 const EMPTY_POSTS: DiscoveryPost[] = [];
 const EMPTY_CATS: DiscoveryCategory[] = [];
 
-// Le placement de la cellule du chat, écrit une fois. Il l'était trois fois —
-// deux repliements de Suspense et le composant — et les trois chaînes avaient
-// déjà divergé sur le fond.
-//
-// Un seul palier : la cellule apparaît là où la grille bascule, et
-// `MobileAssistantFab` disparaît au même endroit. Ces deux seuils ont été
-// désaccordés (cellule à `md`, grille à `lg`), et il avait fallu décaler
-// l'apparition d'un cran pour que 768–1024px ne se retrouve pas sans cellule ET
-// sans bouton. Ils décrivent la même décision, ils portent maintenant le même
-// nom — le décalage n'a plus d'objet.
-const CHAT_CELL = 'hidden app:flex app:col-start-4 app:row-start-4 app:min-h-0';
-
 const DiscoveryPage = () => {
   const t = useT();
-  const { lang } = usePageContext();
+  const { lang, goto } = usePageContext();
   const navigate = useNavigate();
-  const isDesktop = useIsDesktop();
   const [cat, setCat] = useState('all');
 
   const { posts, categories } = useLoaderData({ from: '/$lang/discovery/' });
@@ -65,41 +48,49 @@ const DiscoveryPage = () => {
     });
 
   return (
-    <>
-      {/* Le gabarit du site : colonne du logo puis trois pistes égales, rangées
-          explicites — le même que plateaux, post-prod, galerie et mentions
-          légales. Le placement est porté par `col-start`/`row-start`, ce qui
-          libère l'ordre du DOM : il est écrit dans l'ordre de lecture mobile,
-          et pas une classe `order-*` n'est nécessaire.
+    /* Le gabarit du site : colonne du logo puis trois pistes égales, rangées
+       explicites — le même que plateaux, post-prod, galerie et mentions
+       légales. Le placement est porté par `col-start`/`row-start`, ce qui
+       libère l'ordre du DOM : il est écrit dans l'ordre de lecture mobile, et
+       pas une classe `order-*` n'est nécessaire.
 
-          Le palier est `app` et non `md` : la colonne du logo prend 240px, il
-          ne reste que 3×193px à 820px de large et la liste y retronque ses
-          titres. C'est aussi le palier que la bande d'en-tête s'est choisi — en
-          dessous elle garde le burger plutôt que les cinq destinations. */}
-      {/* `<main class="contents">` : voir home-page. */}
-      <PageShell className="app:grid-cols-[var(--spacing-logo)_repeat(3,minmax(0,1fr))] app:grid-rows-[var(--spacing-header)_var(--spacing-band)_minmax(0,1.6fr)_minmax(0,1fr)_var(--spacing-cta)]">
-        <main id={MAIN_ID} className="contents">
-          <h1 className="sr-only">
-            {t('discoveryPage.srTitle')} — E-Do Studio
-          </h1>
+       Le palier est `app` et non `md` : la colonne du logo prend 240px, il ne
+       reste que 3×193px à 820px de large et la liste y retronque ses titres.
+       C'est aussi le palier que la bande d'en-tête s'est choisi — en dessous
+       elle garde le burger plutôt que les cinq destinations. */
+    /* `<main class="contents">` : voir home-page. */
+    <PageShell className="app:grid-cols-[var(--spacing-logo)_repeat(3,minmax(0,1fr))] app:grid-rows-[var(--spacing-header)_var(--spacing-band)_minmax(0,1.6fr)_minmax(0,1fr)_var(--spacing-cta)]">
+      <main id={MAIN_ID} className="contents">
+        <h1 className="sr-only">{t('discoveryPage.srTitle')} — E-Do Studio</h1>
 
-          <SocialClientsBar className="col-span-full app:row-start-2" />
+        <SocialClientsBar className="col-span-full app:row-start-2" />
 
-          {headline ? (
-            <ArticleCard
-              post={headline}
-              lang={lang}
-              onOpen={() => openPost(headline)}
-              className="app:col-start-2 app:col-span-2 app:row-start-3 app:row-span-2"
-            />
-          ) : (
-            <ArticleEmptyCard className="app:col-start-2 app:col-span-2 app:row-start-3 app:row-span-2" />
-          )}
+        {headline ? (
+          <ArticleCard
+            post={headline}
+            lang={lang}
+            onOpen={() => openPost(headline)}
+            className="app:col-start-2 app:col-span-2 app:row-start-3 app:row-span-2"
+          />
+        ) : (
+          <ArticleEmptyCard className="app:col-start-2 app:col-span-2 app:row-start-3 app:row-span-2" />
+        )}
 
-          {/* Le rail de la galerie, tel quel. Une colonne à tous les paliers :
-              en dessous de `lg` elle s'empile au-dessus de la liste qu'elle
-              filtre, comme les cinq autres rails du site. */}
-          <Rail className="overflow-y-auto app:col-start-1 app:row-start-3 app:row-span-2 app:min-h-0">
+        {/* Le rail de la galerie, et son pied.
+
+            La colonne mesure toute la bande de contenu — 900px sur un grand
+            écran — et Discovery n'a que deux catégories, qui en occupent le
+            dixième. Un rail seul y laissait une colonne blanche de 240 × 800,
+            à côté de la couverture. `postprod-page.tsx` règle le même cas de la
+            même façon : les cellules en haut, un bloc au pied, et la colonne
+            tient par ses deux bouts.
+
+            Le pied, ici, c'est l'inscription à la lettre — elle occupait la
+            moitié de la bande d'action, où elle n'avait rien à faire face au
+            pavé de réservation. Empilée, la colonne se lit dans l'ordre :
+            filtres, puis inscription, puis la liste qu'ils filtrent. */}
+        <div className="flex min-w-0 flex-col bg-background app:col-start-1 app:row-start-3 app:row-end-6 app:min-h-0">
+          <Rail className="min-h-0 overflow-y-auto">
             <RailHeader label={t('discoveryPage.categories')} />
             {railCats.map((category) => (
               <RailCell
@@ -111,37 +102,46 @@ const DiscoveryPage = () => {
               />
             ))}
           </Rail>
+          <NewsletterCell className="mt-auto border-t border-border" />
+        </div>
 
-          <MorePostsCard
-            posts={listed}
-            total={rest.length}
-            lang={lang}
-            onOpen={openPost}
-            className="app:col-start-4 app:row-start-3"
-          />
+        {/* Deux rangées : la colonne de droite était partagée avec la cellule
+              du chat, qui ne vit plus sur cette page. Sans ce `row-span-2`, la
+              rangée 4 resterait une aire vide — c'est-à-dire un aplat de la
+              couleur des filets, la gouttière de la grille n'ayant plus rien à
+              séparer. La liste est justement ce qui manquait de hauteur : elle
+              scrolle déjà et annonce son propre décompte. */}
+        <MorePostsCard
+          posts={listed}
+          total={rest.length}
+          lang={lang}
+          onOpen={openPost}
+          className="app:col-start-4 app:row-start-3 app:row-span-2"
+        />
 
-          {/* Le chat n'est rendu qu'au-dessus de `md`, où il tient dans sa
-            cellule. En dessous il repousserait toute la page : c'est le bouton
-            flottant qui prend le relais. */}
-          {isDesktop ? (
-            <Suspense
-              fallback={
-                <div aria-hidden className={cn(CHAT_CELL, 'bg-background')} />
-              }
-            >
-              <AssistantChat lang={lang} className={CHAT_CELL} />
-            </Suspense>
-          ) : (
-            <div aria-hidden className={cn(CHAT_CELL, 'bg-background')} />
-          )}
+        {/* La bande d'action prend toute la largeur : c'est la seule action de
+            la page, et la moitié qu'elle partageait avec l'inscription faisait
+            deux demi-bandes dont aucune ne fermait la page.
 
-          <NewsletterCell className="app:col-start-1 app:col-span-2 app:row-start-5" />
-          <BookCtaCell className="app:col-start-3 app:col-span-2 app:row-start-5" />
-        </main>
-      </PageShell>
+            `CtaCell` et non la copie qui vivait dans `discovery/` : elle
+            redessinait le même sur-titre à `/75`, le même titre `text-2xl
+            font-light`, la même flèche `size-6`, et ses commentaires disaient
+            eux-mêmes qu'elle imitait le pavé de l'accueil.
 
-      <MobileAssistantFab lang={lang} />
-    </>
+            Le sur-titre y annonçait « Studio ouvert 7j/7 » — faux (l'accueil
+            affiche lun–sam) et sans objet sur un bouton de réservation. C'est
+            la phrase de l'accueil qui le remplace, la seule que ce pavé ait
+            jamais eue à dire. */}
+        <CtaCell
+          size="cta"
+          kicker={t('common.requestQuoteOr')}
+          title={t('common.book')}
+          href={SCREEN_TO_PATH.book(lang)}
+          onClick={() => goto('book')}
+          className="app:col-start-2 app:col-end-5 app:row-start-5"
+        />
+      </main>
+    </PageShell>
   );
 };
 

@@ -6,7 +6,7 @@ import {
   SheetContent,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { Lock, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { SocialLinksRow } from './ui/social-links-row';
 import { useT } from './i18n/use-t';
 import { MENU_NAV, activeNavIn } from './lib/nav';
@@ -19,7 +19,6 @@ import { MonoLabel } from './ui/mono-label';
 interface NavItemDef {
   label: string;
   href: string;
-  disabled?: boolean;
   current?: boolean;
 }
 
@@ -54,30 +53,7 @@ interface NavItemLinkProps {
 }
 
 const NavItemLink = ({ item, index, onClose, navigate }: NavItemLinkProps) => {
-  const t = useT();
-  // Avant le `if` : un hook ne se saute pas. La destination désactivée n'a de
-  // toute façon rien à précharger, et le hook ne fait rien sans survol.
   const preload = useRoutePreload(item.href);
-  if (item.disabled) {
-    return (
-      <div
-        aria-disabled="true"
-        aria-label={`${item.label} — ${t('home.comingSoon')}`}
-        className="relative flex min-h-13 cursor-not-allowed flex-col justify-between gap-1 border-b border-border px-4 py-2.5"
-      >
-        <div className="flex items-center justify-between gap-2">
-          <MonoLabel tone="muted">{ordinal(index)}</MonoLabel>
-          <MonoLabel tone="muted" className="inline-flex items-center gap-1">
-            <Lock width="9" height="9" aria-hidden="true" />
-            {t('home.comingSoon')}
-          </MonoLabel>
-        </div>
-        <span className="mt-auto text-base text-muted-foreground">
-          {item.label}
-        </span>
-      </div>
-    );
-  }
   return (
     <a
       href={item.href}
@@ -204,7 +180,6 @@ const NavMenu = ({ lang, isOpen, onClose, setLang }: NavMenuProps) => {
               item={{
                 label: t(entry.labelKey),
                 href: SCREEN_TO_PATH[entry.screen](lang),
-                disabled: entry.disabled,
                 current: entry.id === current,
               }}
               index={index}

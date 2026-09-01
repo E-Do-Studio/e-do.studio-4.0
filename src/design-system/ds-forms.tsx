@@ -13,6 +13,8 @@ export const DsForms = () => {
   const [notif, setNotif] = useState(true);
   const [heures, setHeures] = useState(3);
   const [message, setMessage] = useState('');
+  const [quantite, setQuantite] = useState('12');
+  const [vues, setVues] = useState('3');
 
   return (
     <Section
@@ -97,7 +99,7 @@ export const DsForms = () => {
 
           <Block
             name="FormCell — libellé masqué"
-            summary="hideLabel retire le libellé de l'écran sans le retirer du nom accessible. Pour les champs dont l'intitulé est déjà porté par le contexte : la newsletter, la barre de recherche."
+            summary="hideLabel retire le libellé de l'écran sans le retirer du nom accessible. Pour les champs dont l'intitulé est déjà porté par le contexte : la newsletter, la barre de recherche — un bloc qui, lui, se lit comme un formulaire. Un bandeau de section n'est pas un contexte suffisant : dans le configurateur, la cellule masquée ne montrait plus qu'un placeholder gris au bord d'une bande blanche, et se lisait comme une question repliée. C'est le libellé qui fait qu'une cellule se lit comme un champ."
             file="src/ui/form-cell.tsx"
             frameClassName="bg-border p-0"
             api={`<FormCell label="Email" hideLabel>…`}
@@ -109,6 +111,37 @@ export const DsForms = () => {
                 placeholder="Votre e-mail"
               />
             </FormCell>
+          </Block>
+
+          <Block
+            name='FormCellInput kind="count"'
+            summary="Un nombre tapé au clavier, pas une phrase : mono à corps plein, chiffres à chasse fixe — tabular-nums fait partie de la définition d'un nombre, comme dans Price. Aucun cadre et aucun centrage : la cellule EST le champ, elle porte le retrait, le fond et l'anneau de focus. Les trois champs du configurateur dessinaient le leur, et au focus les deux rectangles apparaissaient l'un dans l'autre."
+            file="src/ui/form-cell.tsx"
+            replaces="3 écritures → 1"
+            frameClassName="bg-border p-0"
+            api={`<FormCellInput kind="count" value={q} onChange={setQ}
+                inputMode="numeric" placeholder="12" />`}
+          >
+            <div className="grid gap-px sm:grid-cols-2">
+              <FormCell label="Nombre de produits">
+                <FormCellInput
+                  kind="count"
+                  value={quantite}
+                  onChange={setQuantite}
+                  inputMode="numeric"
+                  placeholder="12"
+                />
+              </FormCell>
+              <FormCell label="Vues par produit">
+                <FormCellInput
+                  kind="count"
+                  value={vues}
+                  onChange={setVues}
+                  inputMode="numeric"
+                  placeholder="3"
+                />
+              </FormCell>
+            </div>
           </Block>
 
           <Block

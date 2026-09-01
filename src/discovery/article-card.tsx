@@ -70,13 +70,24 @@ export const ArticleCard = ({
         </>
       )}
 
+      {/* Sans cover, c'est le titre qui tient la cellule — la plus grande de la
+          page. Pas de réserve ici, contrairement aux vignettes de la liste et du
+          renvoi : un aplat gris de 900px de haut ne remplace pas une image, il
+          annonce qu'il en manque une. Un titre au corps de l'affiche, lui, se
+          lit. C'est la même décision que la carte des tuiles — le texte devient
+          la surface quand il n'y a rien à montrer. */}
       <div
         className={cn(
           'flex min-w-0 flex-col gap-2 overflow-hidden px-5 py-4',
-          !cover && 'justify-center',
+          !cover && 'justify-between py-8',
         )}
       >
-        <h2 className="m-0 line-clamp-3 text-balance text-2xl font-light leading-snug tracking-tight text-foreground">
+        <h2
+          className={cn(
+            'm-0 line-clamp-3 text-balance font-light leading-snug tracking-tight text-foreground',
+            cover ? 'text-2xl' : 'text-4xl app:text-5xl',
+          )}
+        >
           {post.title[lang]}
         </h2>
         <MonoLabel className="inline-flex items-center gap-2">

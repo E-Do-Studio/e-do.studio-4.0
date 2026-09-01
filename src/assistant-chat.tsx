@@ -7,6 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { QuoteTable } from '@/ui/quote-table';
 import { MonoLabel } from '@/ui/mono-label';
+import { StatusBadge } from '@/ui/status-badge';
 import { KeyValueList, KeyValueRow } from '@/ui/key-value-row';
 import { cn } from '@/lib/utils';
 import { ArrowRight, Plus, Trash2, X } from 'lucide-react';
@@ -119,10 +120,9 @@ const AssistantHeader = ({
         <MonoLabel tone="muted">Assistant</MonoLabel>
         {mode === 'chat' && (
           <span
-            className={cn(
-              'h-1.5 w-1.5 rounded-full bg-primary',
-              loading && 'animate-pulse',
-            )}
+            // Carré : `--radius` vaut 0 et `rounded-full` est le seul rayon qui
+            // échappe au jeton, en posant 9999px en dur.
+            className={cn('h-1.5 w-1.5 bg-primary', loading && 'animate-pulse')}
           />
         )}
       </div>
@@ -136,9 +136,13 @@ const AssistantHeader = ({
             className="h-auto gap-1.5 px-1.5 py-1 tracking-wider text-muted-foreground hover:bg-transparent hover:text-foreground"
           >
             {t('assistant.history')}
-            <span className="flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-muted px-1 text-xs text-muted-foreground">
+            {/* Un compteur : `StatusBadge size="count"` existe pour ça — carré,
+                largeur minimale égale à la hauteur. Celui-ci était une pastille
+                ronde dessinée à la main, la seizième signature que ce composant
+                existe pour éviter. */}
+            <StatusBadge tone="muted" size="count">
               {historyCount}
-            </span>
+            </StatusBadge>
           </Button>
         )}
         {mode === 'chat' && (
@@ -355,11 +359,15 @@ const assistantMarkdownComponents = {
   p: ({ children }: { children?: React.ReactNode }) => (
     <p className="m-0 mb-2 text-sm leading-normal last:mb-0">{children}</p>
   ),
-  // `font-bold` : ABC Favorit ne livre que 300/400/700, et 600 rend exactement
-  // comme 700. Tout le `**gras**` émis par l'assistant tombait donc sur une
-  // graisse inexistante — l'emphase ne rendait pas du tout.
+  // Une graisse au-dessus du corps, pas trois. Le corps de la bulle est en 300
+  // (voir `ChatBubble`), l'emphase est donc en 400 — le même cran que l'article,
+  // où le sous-titre se détache d'un corps en Light sans jamais passer au gras.
+  //
+  // Le 700 qui était posé ici sortait de l'échelle du site : sur un fond clair,
+  // à 14px, il transformait chaque valeur soulignée par le modèle en bloc noir.
+  // Il en abusait, mais même bien dosé le contraste était faux.
   strong: ({ children }: { children?: React.ReactNode }) => (
-    <strong className="font-bold text-foreground">{children}</strong>
+    <strong className="font-normal text-foreground">{children}</strong>
   ),
   em: ({ children }: { children?: React.ReactNode }) => (
     <em className="italic">{children}</em>
@@ -417,6 +425,38 @@ const ALLOWED_MARKDOWN_ELEMENTS = [
   'h4',
 ];
 
+// Le modèle n'écrit pas dans la typographie du site : il pose des émojis en
+// tête de puce et en milieu de phrase, là où le reste du site n'en porte aucun.
+// La consigne du prompt le lui interdit désormais (`supabase/functions/chat`),
+// mais une consigne est une demande, pas une garantie — un modèle non
+// déterministe finira par en glisser un. Ce n'est donc pas un repli défensif
+// contre un cas impossible : c'est le cas observé, et la seule barrière qui
+// tienne sans redéploiement de la fonction.
+//
+// Les sélecteurs de variante et le liant de séquence partent avec, sinon un
+// émoji composé (👨‍👩‍👧) laisse ses jointures derrière lui.
+//
+// Le double blanc laissé derrière — « - 🎬 Discover » devient « -  Discover » —
+// est refermé, mais SEULEMENT entre deux caractères visibles : un retrait de
+// début de ligne est le marqueur d'imbrication d'une liste markdown, et
+// l'écraser transformerait une sous-liste en liste.
+// `Extended_Pictographic` ne recouvre pas que les émojis : ©, ® et ™ en font
+// partie, et un « © 2026 GRW » dans une réponse sur les mentions légales serait
+// silencieusement amputé. Testé : →, ·, —, «», €, m², °, ✓ et les guillemets
+// typographiques n'appartiennent PAS à la propriété et passent d'eux-mêmes.
+const KEEP_PICTOGRAPHIC = new Set(['©', '®', '™', '✔']);
+
+const stripEmoji = (text: string) =>
+  text
+    // Une ALTERNANCE et non une classe : le sélecteur de variante et le liant
+    // sont des caractères combinants, et une classe qui les mélange à des
+    // pictogrammes est signalée par le lint — à raison, la sémantique d'une
+    // classe sur des combinants n'est pas celle qu'on croit lire.
+    .replace(/\p{Extended_Pictographic}|\u{FE0F}|\u{200D}|\u{20E3}/gu, (c) =>
+      KEEP_PICTOGRAPHIC.has(c) ? c : '',
+    )
+    .replace(/(\S) {2,}(?=\S)/g, '$1 ');
+
 const ChatBubble = ({ role, content }: ChatBubbleProps) => {
   const isUser = role === 'user';
 
@@ -424,7 +464,11 @@ const ChatBubble = ({ role, content }: ChatBubbleProps) => {
     <div className={cn('flex', isUser ? 'justify-end' : 'justify-start')}>
       <div
         className={cn(
-          'max-w-[85%] break-words text-sm leading-normal tracking-tight',
+          // `font-light` sur la bulle et non sur chaque élément du markdown :
+          // paragraphes, listes et items en héritent, et l'emphase n'a plus
+          // qu'un cran à monter pour se voir. C'est le réglage de l'article,
+          // appliqué à la seule autre surface de texte suivi du site.
+          'max-w-[85%] break-words text-sm font-light leading-normal tracking-tight',
           isUser
             ? 'dark bg-background px-3 py-2 text-foreground whitespace-pre-wrap'
             : 'bg-transparent py-1 text-foreground',
@@ -443,7 +487,7 @@ const ChatBubble = ({ role, content }: ChatBubbleProps) => {
             unwrapDisallowed
             components={assistantMarkdownComponents}
           >
-            {content}
+            {stripEmoji(content)}
           </ReactMarkdown>
         )}
       </div>
@@ -472,7 +516,7 @@ const TypingBubble = () => {
             <span
               key={dot}
               aria-hidden
-              className="motion-safe:animate-pulse h-1 w-1 rounded-full bg-foreground"
+              className="motion-safe:animate-pulse h-1 w-1 bg-foreground"
             />
           ))}
         </div>

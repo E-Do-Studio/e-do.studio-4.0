@@ -61,7 +61,6 @@ export interface MainNavItem extends NavEntry {
 
 export interface MenuNavItem extends NavEntry {
   id: string;
-  disabled?: boolean;
 }
 
 export const MAIN_NAV: readonly MainNavItem[] = [
@@ -141,7 +140,6 @@ export const MENU_NAV: readonly MenuNavItem[] = [
     screen: 'discovery',
     labelKey: 'common.discovery',
     match: ['/discovery'],
-    disabled: true,
   },
   {
     id: 'postprod',

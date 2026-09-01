@@ -36,7 +36,6 @@ export interface DiscoveryPost {
   sub: Bilingual;
   body: Bilingual;
   date: Bilingual;
-  read: string;
   author: string;
   coverUrl?: string;
   coverMime?: string;

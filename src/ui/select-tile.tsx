@@ -169,7 +169,15 @@ export const SelectTile = ({
   children,
 }: SelectTileProps) => {
   // Rien après le sous-titre : c'est lui, avec le titre, qui forme le pied.
-  const titleClosesTile = !desc && !children && !price && !footer?.length;
+  //
+  // `!!sub` en fait partie, et ce n'est pas une précision cosmétique : un titre
+  // SEUL ne ferme rien, il est tout le contenu de la tuile. Poussé au pied, il
+  // laissait un trou de la hauteur du plancher sous le numéro — et surtout, dans
+  // une grille où certaines tuiles ont une description et d'autres non, il
+  // tombait à la hauteur des descriptions pendant que les titres voisins
+  // restaient en tête. Le catalogue des accessoires est exactement ce cas.
+  const titleClosesTile =
+    !!sub && !desc && !children && !price && !footer?.length;
   return (
     <Button
       render={

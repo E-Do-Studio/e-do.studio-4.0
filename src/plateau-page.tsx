@@ -165,25 +165,43 @@ const ThumbStrip = ({
   className,
 }: ThumbStripProps) => {
   if (items.length === 0) return null;
-  // Les bases doivent totaliser exactement 100 % pour que la dernière tuile
-  // s'aligne sur la frontière de colonne au-dessus.
-  const tileBasis = `${100 / items.length}%`;
+  // Les bases et les gouttières doivent totaliser exactement 100 % pour que la
+  // dernière tuile s'aligne sur la frontière de colonne au-dessus. Écrites en
+  // `100/n %`, elles laissaient les n-1 filets de 1px déborder — `Button` porte
+  // `shrink-0`, donc rien ne cédait et l'`overflow-hidden` de la bande rognait
+  // la dernière tuile de 5px. Mesuré.
+  const tileBasis = `calc((100% - ${items.length - 1}px) / ${items.length})`;
   // Strip occupies ~60vw on desktop (same column span as the cover) and 100vw
   // on mobile, divided by n tiles. Without this hint the browser would pick
   // the 245w `thumbnail_` derivative and stretch it — visible blur.
   const tileSizes = `(min-width: 768px) ${Math.ceil(60 / items.length)}vw, ${Math.ceil(100 / items.length)}vw`;
 
   return (
-    <div className={cn('relative h-16 app:h-full', className)}>
-      <div className="flex h-full gap-px bg-border overflow-hidden">
+    // `bg-background` : la coquille est noire et chaque cellule peint son fond
+    // (cf. `PageShell`). Cette cellule-ci ne le faisait pas — ses tuiles la
+    // couvraient entièrement tant qu'elles prenaient la hauteur de la rangée.
+    // Depuis qu'elles portent leur ratio, le reste de la rangée laissait voir le
+    // noir du conteneur : une bande noire sous les vignettes.
+    <div className={cn('relative bg-background', className)}>
+      <div className="flex gap-px bg-border overflow-hidden">
         {items.map((item, i) => {
           const isActive = i === activeIndex;
           return (
-            // La tuile prend la hauteur de la bande, pas un ratio : c'est la
-            // bande qui est mesurée, et les n tuiles s'y partagent la largeur.
+            // La tuile porte son ratio, et c'est la HAUTEUR de la bande qui s'en
+            // déduit — pas l'inverse. Écrite dans l'autre sens (`ratio="fill"`,
+            // la tuile prenant la hauteur d'une rangée mesurée), la tuile
+            // n'avait pas de forme propre : elle valait largeur/n sur la hauteur
+            // de la rangée, deux mesures qui suivent la fenêtre. Le ratio partait
+            // de 0,70 à 1280 à 1,03 à 1920, quand le CMS livre ces photos en 4/5
+            // — `object-cover` zoomait donc dedans et rognait différemment à
+            // chaque taille. Même raison qu'en post-prod, même token.
+            //
+            // La rangée 4 du bento est en `auto` pour cela : elle vaut
+            // max(bande, cellule TARIFS), et les rangées `fr` voisines cèdent la
+            // différence. La hauteur de la bande dépend donc de `n`.
             <MediaFrame
               key={`${item.url}-${i}`}
-              ratio="fill"
+              ratio="portrait"
               tone="background"
               className={cn(
                 'group p-0 opacity-60 transition-opacity',
@@ -196,6 +214,8 @@ const ThumbStrip = ({
                   onClick={() => onSelect(i)}
                   aria-label={`${item.alt[lang] || plateauName} — ${i + 1} / ${items.length}`}
                   aria-current={isActive ? 'true' : undefined}
+                  variant="cell"
+                  size="cell"
                 />
               }
             >
@@ -259,7 +279,12 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
     /* Mobile: single-column stacked, scrollable. Desktop (app+): 4-column bento */
     /* `<main class="contents">` : voir home-page — la grille impose l'en-tête
        et le contenu comme frères, le landmark ne doit pas englober le premier. */
-    <PageShell className="app:grid-cols-[var(--spacing-logo)_repeat(3,minmax(0,1fr))] app:grid-rows-[var(--spacing-header)_78px_minmax(0,1.58fr)_minmax(0,0.5fr)_minmax(0,0.52fr)]">
+    /* Rangée 4 en `auto` et non en fraction : elle est mesurée par la seule
+       cellule des tarifs — le bloc média l'enjambe sans y contribuer (voir son
+       commentaire). Une fraction lui imposerait une hauteur que son contenu ne
+       tient pas : la mention sous les tarifs du cyclorama la fait passer de 147
+       à 168. La couverture, en `flex-1`, cède ce que la rangée prend. */
+    <PageShell className="app:grid-cols-[var(--spacing-logo)_repeat(3,minmax(0,1fr))] app:grid-rows-[var(--spacing-header)_78px_minmax(0,1.58fr)_auto_minmax(0,0.52fr)]">
       <main id={MAIN_ID} className="contents">
         {/* `SelectionDrawer` rend les mêmes `RailCell` que la colonne desktop.
             Le commentaire d'origine reconnaissait ici copier le gabarit de
@@ -299,32 +324,51 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
           })}
         </Rail>
 
-        {/* Cover — current media item with prev/next arrows overlaid inside the
- image. The cover and the thumbnail strip below share `activeIndex`,
- so navigating either control keeps both in sync. */}
-        {coverItems.length > 0 && (
-          <Cover
-            items={coverItems}
-            lang={lang}
-            plateauName={p.name}
-            index={safeIndex}
-            onPrev={goPrev}
-            onNext={goNext}
-            className="app:col-start-2 app:col-span-2 app:row-start-2 app:row-span-2 app:min-h-0"
-          />
-        )}
+        {/* Cover + thumbnail strip — UNE cellule, qui enjambe les rangées 2 à 4.
+            Les deux partagent `activeIndex` : cliquer une vignette change la
+            couverture, les flèches de la couverture déplacent la vignette
+            courante.
 
-        {/* Thumbnail strip — every media item visible at once (1/n width each),
- no scroll, no arrows. Clicking a tile sets it as the cover. */}
+            Elles étaient deux cellules dans deux rangées, et c'est ce qui
+            produisait un vide. La hauteur d'une bande de n vignettes en 4/5 ne
+            dépend QUE de sa largeur — largeur/n × 5/4 — donc de la fenêtre.
+            Rien de vertical ne peut l'allonger. Face à elle, dans la même
+            rangée, la cellule des tarifs réclame la hauteur de son contenu. Les
+            deux mesures ne coïncident qu'à une largeur près (1147px, mesuré), et
+            partout ailleurs la rangée valait la plus haute des deux : le reste
+            apparaissait sous les vignettes.
+
+            Réunies, elles enjambent une piste `fr`, et un élément qui enjambe
+            une piste flexible ne contribue pas à la taille intrinsèque des
+            pistes qu'il traverse (CSS Grid §12.5). La rangée 4 est donc mesurée
+            par la seule cellule des tarifs, la bande garde son ratio exact, et
+            c'est la COUVERTURE qui absorbe la différence — elle est le seul
+            média de la page sans hauteur propre à défendre.
+
+            Contrepartie assumée : le filet entre couverture et bande ne tombe
+            plus sur la frontière de rangée, donc plus en face de celui qui
+            sépare caractéristiques et tarifs. Le bas de la bande, lui, reste
+            aligné sur la cellule description. */}
         {coverItems.length > 0 && (
-          <ThumbStrip
-            items={coverItems}
-            lang={lang}
-            plateauName={p.name}
-            activeIndex={safeIndex}
-            onSelect={setActiveIndex}
-            className="app:col-start-2 app:col-span-2 app:row-start-4 app:min-h-0"
-          />
+          <div className="flex flex-col gap-px bg-border app:col-start-2 app:col-span-2 app:row-start-2 app:row-end-5 app:min-h-0 app:overflow-hidden">
+            <Cover
+              items={coverItems}
+              lang={lang}
+              plateauName={p.name}
+              index={safeIndex}
+              onPrev={goPrev}
+              onNext={goNext}
+              className="app:min-h-0 app:flex-1"
+            />
+            <ThumbStrip
+              items={coverItems}
+              lang={lang}
+              plateauName={p.name}
+              activeIndex={safeIndex}
+              onSelect={setActiveIndex}
+              className="app:shrink-0"
+            />
+          </div>
         )}
 
         {/* Name + tagline. Hidden on mobile because the sticky picker trigger

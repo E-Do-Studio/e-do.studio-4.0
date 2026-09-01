@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 const SEGMENTS = [
   {
     source: 'steps/session-tabs.tsx:52-108',
-    note: 'Actif = portée dark sur le wrapper. Grille repeat(n,1fr) en style inline. px-3.5 py-3 pr-9.',
+    note: 'Actif = portée dark sur le wrapper. Grille repeat(n,1fr) en style inline — depuis migrée sur SegmentGroup, dont le flex-1 ne dépend pas du compte. px-3.5 py-3 pr-9.',
     render: (
       <div className="grid grid-cols-2 gap-px border-y border-border bg-border">
         {[0, 1].map((i) => (

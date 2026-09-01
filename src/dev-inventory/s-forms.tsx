@@ -179,7 +179,7 @@ export const SectionForms = () => {
 
       <Subsection
         title="Bascules"
-        note="Switch est la seule primitive de bascule installée. Deux autres motifs coexistent : aria-pressed + portée dark, et aria-pressed + bg-primary."
+        note="Switch est la seule primitive de bascule installée. Deux autres motifs coexistent : aria-pressed + portée dark, et aria-pressed + bg-primary. Les deux lignes « Post-production par E-Do » qui divergeaient ici passent désormais par ToggleRow."
       >
         <SpecimenGrid min="240px">
           <Specimen
@@ -191,55 +191,6 @@ export const SectionForms = () => {
               <Switch checked={on} onCheckedChange={setOn} />
               <Switch size="sm" checked={on} onCheckedChange={setOn} />
             </div>
-          </Specimen>
-
-          <Specimen
-            source="step-postprod.tsx:13 vs step-configurator.tsx:485-530"
-            tone="copie"
-            note="La même ligne « Post-production par E-Do », deux fois. L'une porte border-l-4 border-l-primary quand elle est active — une 2e épaisseur de liseré, le rail canonique étant border-l-2. L'autre n'a aucun marqueur."
-          >
-            <div className="flex flex-col gap-px bg-border">
-              <div className="flex items-center justify-between border-l-4 border-l-primary bg-background px-5 py-5">
-                <span className="text-sm">Post-production par E-Do</span>
-                <Switch checked readOnly />
-              </div>
-              <div className="flex items-center justify-between bg-background px-4 py-4 sm:px-3.5 sm:py-2.5">
-                <span className="text-sm">Post-production par E-Do</span>
-                <Switch checked readOnly />
-              </div>
-            </div>
-          </Specimen>
-        </SpecimenGrid>
-      </Subsection>
-
-      <Subsection
-        title="Le même champ quantité, deux fois dans le même fichier"
-        note="À 90 lignes d'écart. L'un a une bordure, l'autre non. L'un est nommé par aria-label, l'autre par un <label>."
-      >
-        <SpecimenGrid min="260px">
-          <Specimen
-            source="step-configurator.tsx:353"
-            tone="copie"
-            note="border-border posé sans border — la classe de couleur seule ne dessine aucun trait."
-          >
-            <Input
-              aria-label="Nombre de produits"
-              defaultValue="120"
-              className="h-auto min-w-0 flex-1 rounded-none border-border bg-background px-3.5 py-2.5 text-center font-mono text-base tracking-tight"
-            />
-          </Specimen>
-          <Specimen
-            source="step-configurator.tsx:440,458"
-            tone="copie"
-            note="border border-border : le trait est là. Même champ, même écran."
-          >
-            <label className="flex flex-col gap-2 bg-background">
-              <span className={LABEL_CLS}>Nombre de produits</span>
-              <input
-                defaultValue="120"
-                className="w-full min-w-0 flex-1 border border-border bg-background px-3.5 py-2.5 text-center font-mono text-base tracking-tight text-foreground"
-              />
-            </label>
           </Specimen>
         </SpecimenGrid>
       </Subsection>

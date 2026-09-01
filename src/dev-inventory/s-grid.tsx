@@ -4,7 +4,9 @@ import { Specimen, SpecimenGrid } from './specimen';
 // Le site a UN mécanisme de filet documenté — la gouttière — et l'emploie
 // partout en même temps que l'autre. `page-header.tsx:109-124` explique
 // pourquoi la gouttière est la seule qui puisse s'aligner sur les grilles de
-// page ; trois conteneurs du configurateur posent les deux à la fois.
+// page. Les conteneurs du configurateur qui posaient les deux à la fois ont
+// depuis été migrés : la gouttière coud entre les tuiles, `divide-y` entre les
+// blocs, et la barre d'actions ferme le bas.
 
 const BORDER_COLORS = [
   {
@@ -117,24 +119,6 @@ export const SectionGrid = () => (
             ))}
           </div>
         </Specimen>
-
-        <Specimen
-          source="step-configurator.tsx:339,378,436"
-          tone="casse"
-          note="Les deux sur le MÊME conteneur : gap-px bg-border border-b border-border. Le filet du bas est peint par un mécanisme, les filets internes par l'autre — exactement le désalignement d'un pixel que page-header.tsx:116 documente comme résolu."
-          frameClassName="p-0"
-        >
-          <div className="grid grid-cols-2 gap-px border-b border-border bg-border">
-            {['A', 'B'].map((c) => (
-              <div
-                key={c}
-                className="bg-background px-5 py-6 text-center text-sm"
-              >
-                {c}
-              </div>
-            ))}
-          </div>
-        </Specimen>
       </SpecimenGrid>
     </Subsection>
 
@@ -167,7 +151,7 @@ export const SectionGrid = () => (
 
     <Subsection
       title="Épaisseurs — 6 valeurs"
-      note="border-l-2 est le liseré de sélection canonique (variant rail). border-l-4 en est une seconde épaisseur, pour le même rôle, dans step-postprod.tsx."
+      note="border-l-2 était le liseré de sélection canonique (variant rail), border-l-4 une seconde épaisseur pour le même rôle. Les deux ont disparu avec la migration : l'état choisi passe par l'inversion, et le bord gauche appartient au filet de la grille."
     >
       <Specimen source="src/**" tone="copie">
         <div className="flex flex-wrap gap-4">

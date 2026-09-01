@@ -237,40 +237,6 @@ export const SectionRails = () => (
             ))}
           </nav>
         </Specimen>
-
-        <Specimen
-          source="step-configurator.tsx:90-110"
-          tone="casse"
-          note="44px · px-5 py-3 md:px-6 md:py-0 — un 5e padding · border-b-FOREGROUND : le seul filet noir pur sur une cellule de rail, tous les autres sont border-border · numéro orange au repos, avec w-7 en dur · et text-muted-foreground écrit deux fois de suite sur deux spans."
-          frameClassName="p-0"
-        >
-          <div className="flex flex-col bg-background">
-            {[
-              { num: '01', label: 'Plateau', summary: 'Live · journée' },
-              { num: '02', label: 'Vues', summary: '120 produits' },
-            ].map((q) => (
-              <Button
-                key={q.num}
-                variant="cell"
-                size="cell"
-                className="min-h-11 w-full flex-row items-center gap-3 border-b border-b-foreground px-5 py-3 md:gap-3.5 md:px-6 md:py-0"
-              >
-                <span className="w-7 shrink-0 font-mono text-xs font-normal uppercase tracking-widest text-primary">
-                  {q.num}
-                </span>
-                <span className="shrink-0 font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground">
-                  {q.label}
-                </span>
-                <span className="min-w-0 flex-1 text-balance text-right font-mono text-xs tracking-tight text-foreground">
-                  {q.summary}
-                </span>
-                <span className="shrink-0 font-mono text-xs font-normal uppercase tracking-widest text-muted-foreground">
-                  Modifier
-                </span>
-              </Button>
-            ))}
-          </div>
-        </Specimen>
       </SpecimenGrid>
     </Subsection>
 

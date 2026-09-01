@@ -1,7 +1,7 @@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { ArrowRight, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useEffect, useMemo, useRef } from 'react';
 import {
   STEP,
@@ -51,6 +51,7 @@ import { StepHeading } from '@/ui/step-heading';
 import { ordinal } from '@/lib/format';
 import { MonoLabel } from '@/ui/mono-label';
 import { StepBand } from '@/ui/step-band';
+import { CtaCell } from '@/ui/cta-cell';
 
 // Placeholder used until a plateau is picked. Module-scoped so `p` keeps a
 // stable identity across renders — inline, it was a fresh object every render
@@ -355,12 +356,12 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
                       <StepHeading
                         number="02"
                         title={t('booking.rentalDuration')}
+                        subtitle={
+                          list.length > 1
+                            ? t('booking.chooseDurationEach')
+                            : t('booking.chooseDurationSingle')
+                        }
                       />
-                      <span className="font-mono text-xs tracking-wide text-muted-foreground">
-                        {list.length > 1
-                          ? t('booking.chooseDurationEach')
-                          : t('booking.chooseDurationSingle')}
-                      </span>
                     </StepBand>
                   );
                 })()}
@@ -597,17 +598,33 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
             />
           )}
           {step === STEP.CONFIG && (
-            <div className="flex items-stretch min-h-11 shrink-0">
-              <Button
-                type="button"
-                onClick={applyConfig}
-                disabled={!canNext()}
-                className="h-auto min-w-0 flex-1 gap-2 px-5 py-3 text-xs tracking-widest md:py-0"
-              >
-                {t('booking.continueToBooking')}{' '}
-                <ArrowRight width="14" height="14" />
-              </Button>
-            </div>
+            // Une seule action, donc le PAVÉ du site et non une barre : `CtaCell`
+            // porte les trois paliers de `--spacing-cta`, la flèche et son
+            // retrait, le survol. Le configurateur avait sa propre géométrie —
+            // `min-h-11`, `px-5 py-3`, une flèche de 14px écrite en attributs.
+            // Le mode manuel garde sa barre : il y loge jusqu'à trois actions.
+            // `border-t`, comme la barre du mode manuel : la couture du bas de
+            // colonne appartient à ce qui vient APRÈS, pas au dernier bloc. On
+            // l'avait laissée au bloc au motif qu'il ferme son propre contenu —
+            // ce qui n'est vrai que des grilles de TUILES, seules à prendre la
+            // hauteur restante. Sous un bloc à champ, le contenu s'arrête à la
+            // cellule et l'aplat orange flottait au bas de plusieurs centaines de
+            // pixels de blanc, sans rien pour le poser.
+            //
+            // `-mt-px` fond les deux filets quand ils se touchent, et c'est le
+            // seul endroit d'où on peut le faire : le bloc ne sait pas s'il y a
+            // un après. Ils se touchent dans deux cas, pas un — une grille de
+            // tuiles, qui descend toujours jusqu'ici, et n'importe quel bloc dès
+            // que l'écran est trop court pour lui, ce qui est la règle en mobile.
+            // Sans ça le trait sort à 2px ; ailleurs le pavé remonte d'un pixel
+            // sur du blanc, ce qui ne se voit pas.
+            <CtaCell
+              size="cta"
+              title={t('booking.continueToBooking')}
+              onClick={applyConfig}
+              disabled={!canNext()}
+              className="-mt-px shrink-0 border-t border-border"
+            />
           )}
           {step > STEP.CONFIG && (
             <BookingFooterNav

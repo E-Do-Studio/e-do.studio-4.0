@@ -9,6 +9,7 @@ import type {
 } from '../../lib/booking-engine';
 import { EQUIPE, fmtEUR, recommendSession } from '../../lib/booking-engine';
 import { StatusBadge } from '@/ui/status-badge';
+import { Price } from '@/ui/price';
 
 interface StepTeamProps {
   lang: Lang;
@@ -99,20 +100,38 @@ const StepTeam = ({
             key={e.k}
             className="bg-background px-pad-cell py-4 flex items-center justify-between gap-5"
           >
-            <div>
-              <div className="text-sm tracking-tight flex items-center gap-2">
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <div className="flex items-center gap-2 text-sm tracking-tight">
                 <span>{e[lang]}</span>
+                {/* `muted` et non `outline` : la recommandation ANNOTE le métier,
+                    elle ne le concurrence pas. En contour, la pastille cernait
+                    de noir un libellé mono capitale à côté d'un titre de 14px en
+                    bas-de-casse — c'est elle que l'œil lisait en premier, et le
+                    métier passait pour sa légende. */}
                 {recommended[e.k] && (
-                  <StatusBadge tone="outline">
+                  <StatusBadge tone="muted">
                     {t('booking.recommended')}
                   </StatusBadge>
                 )}
               </div>
-              <div className="font-mono text-xs text-muted-foreground mt-0.5">
-                {isHourly
-                  ? `${fmtEUR(e.price)} € / h`
-                  : t('booking.rateOnRequestBasedOn')}
-              </div>
+              {/* Le tarif est un PRIX, donc `Price` : il s'écrivait
+                  `font-mono text-xs text-muted-foreground`, c'est-à-dire au
+                  registre d'une mention — alors que c'est sur lui que se prend
+                  la décision d'ajouter le poste. Il y perdait aussi
+                  `tabular-nums`, que `Price` tient pour non négociable.
+                  L'unité passe par la prop prévue et s'écrit en toutes lettres :
+                  « / h » était un symbole et une abréviation pour deux mots. */}
+              {isHourly ? (
+                <Price
+                  size="sm"
+                  value={`${fmtEUR(e.price)} €`}
+                  unit={t('booking.perHour')}
+                />
+              ) : (
+                <span className="text-xs leading-normal text-muted-foreground">
+                  {t('booking.rateOnRequestBasedOn')}
+                </span>
+              )}
             </div>
             <TeamToggle
               active={active}

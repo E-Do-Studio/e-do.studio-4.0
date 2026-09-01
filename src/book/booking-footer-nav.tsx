@@ -5,10 +5,26 @@ import { useT } from '../i18n/use-t';
 import { STEP, type StepDef } from './booking-steps';
 import type { SubmitMode } from './use-booking-submit';
 
-// Géométrie des actions de bas de tunnel. Tout le reste — mono capitales,
-// anneau de focus, curseur, état désactivé, cible tactile — vient des variantes
-// de `Button` : `variant="cell"` pour les actions sur fond de page, la variante
-// par défaut pour l'action principale, `size="touch"` pour les 44px.
+// Les actions de bas de tunnel du mode manuel : jusqu'à TROIS dans une même
+// barre, d'où une barre et non un pavé. Le configurateur, lui, n'en a qu'une et
+// passe par `CtaCell`, le pavé d'action du site.
+//
+// Tout le reste — mono capitales, anneau de focus, curseur, état désactivé,
+// cible tactile — vient des variantes de `Button` : `variant="cell"` pour les
+// actions sur fond de page, la variante par défaut pour l'action principale,
+// `size="touch"` pour les 44px.
+//
+// `border-t` sur la barre, et RIEN sous le dernier bloc de l'étape : c'est cette
+// barre, et elle seule, qui possède la couture du bas. Les deux ont coexisté, au
+// prétexte que l'une fermait la grille et l'autre ouvrait la barre. Ça ne tenait
+// que tant que le contenu restait plus court que sa zone : depuis que le dernier
+// bloc de chaque étape prend la hauteur disponible, les deux filets se touchent
+// TOUJOURS, et le trait sort à 2px. Une couture, un propriétaire — celui qui
+// sait qu'il y a un après.
+//
+// `min-h-cta` (84px) : `--spacing-cta` existe pour les bandeaux d'action en bas
+// de page, ce qu'est exactement cette barre. `min-h-tap` la réduisait à la
+// hauteur d'une cible tactile.
 //
 // Cette barre était restée à l'écart de tout ce que la bande de mode a unifié,
 // et l'écart se voyait dans la même page :
@@ -26,19 +42,6 @@ import type { SubmitMode } from './use-booking-submit';
 //
 //   — aucun filet vertical, dans un site entièrement structuré par des filets :
 //     le blanc courait sans couture du « Retour » jusqu'à l'aplat orange.
-//
-// `border-t` sur la barre, et RIEN sous le dernier bloc de l'étape : c'est
-// cette barre, et elle seule, qui possède la couture du bas.
-//
-// Les deux ont coexisté, au prétexte que l'une fermait la grille et l'autre
-// ouvrait la barre. Ça ne tenait que tant que le contenu restait plus court que
-// sa zone : depuis que le dernier bloc de chaque étape prend la hauteur
-// disponible, les deux filets se touchent TOUJOURS, et le trait sort à 2px.
-// Une couture, un propriétaire — celui qui sait qu'il y a un après.
-//
-// `min-h-cta` (84px) : `--spacing-cta` existe pour les bandeaux d'action en bas
-// de page, ce qu'est exactement cette barre. `min-h-tap` la réduisait à la
-// hauteur d'une cible tactile.
 //
 // `max-md:whitespace-normal` et `max-md:flex-1`, posés sur les actions : c'est
 // en dessous de `md`, et là seulement, qu'elles doivent se partager la largeur.

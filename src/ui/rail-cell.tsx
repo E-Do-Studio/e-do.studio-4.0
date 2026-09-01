@@ -52,12 +52,24 @@ const railCellVariants = cva(
       // Seul `tall` laisse le `min-h` gouverner : ses deux lignes ne suffisent
       // pas à remplir 72px.
       density: {
-        compact: 'min-h-rail-compact gap-2 px-4 py-1.5',
-        default: 'min-h-rail-default gap-2 px-4 py-3',
-        tall: 'min-h-rail-tall gap-1 px-4 py-3',
+        compact: 'min-h-rail-compact gap-2 py-1.5',
+        default: 'min-h-rail-default gap-2 py-3',
+        tall: 'min-h-rail-tall gap-1 py-3',
+      },
+      // Le retrait horizontal a quitté la densité, qui décide d'une HAUTEUR.
+      //
+      // `rail` (16px) est la mesure d'une colonne étroite — la galerie, le
+      // juridique, le tunnel. `cell` (20px) est `--spacing-pad-cell`, le canon
+      // du site, et c'est celui qu'il faut dès que la cellule vit dans la
+      // colonne de contenu au lieu du rail : les questions repliées du
+      // configurateur y côtoient des `StepBand`, et 4px d'écart sur le bord
+      // gauche courent alors sur toute la hauteur de l'accordéon.
+      pad: {
+        rail: 'px-4',
+        cell: 'px-pad-cell',
       },
     },
-    defaultVariants: { density: 'default' },
+    defaultVariants: { density: 'default', pad: 'rail' },
   },
 );
 
@@ -123,6 +135,7 @@ export const RailCell = ({
   active,
   dimmed,
   density,
+  pad,
   onSelect,
   href,
   className,
@@ -148,7 +161,7 @@ export const RailCell = ({
       variant="cell"
       size="cell"
       className={cn(
-        railCellVariants({ density }),
+        railCellVariants({ density, pad }),
         // L'inversion, et non un liseré. L'ancien `variant="rail"` posait une
         // barre orange de 2px sur le bord gauche — une seconde ligne, d'une
         // seconde épaisseur et d'une seconde couleur, sur un bord que le filet
@@ -203,7 +216,7 @@ export const RailCell = ({
   );
 };
 
-interface RailHeaderProps {
+interface RailHeaderProps extends Pick<RailCellProps, 'pad'> {
   label: string;
 }
 
@@ -219,8 +232,17 @@ interface RailHeaderProps {
 // Elle ne risque pas de se lire comme une rangée pour autant : capitales mono
 // muettes contre `text-sm` pleine couleur, l'écart de registre est plus large
 // depuis que le libellé a cessé d'être gris.
-export const RailHeader = ({ label }: RailHeaderProps) => (
-  <div className="flex min-h-rail-compact shrink-0 items-center border-b border-border bg-background px-4 py-1.5">
+export const RailHeader = ({ label, pad }: RailHeaderProps) => (
+  // La MÊME `cva` que la cellule qu'elle coiffe, et pas une recopie de ses
+  // mesures : c'est ce qui garantit que la bande et les rangées partagent leur
+  // palier et leur retrait, quel que soit le `pad`. Elle en portait sa propre
+  // écriture, à `pb-1 pt-2` et sans plancher — 25px contre 33 aux cellules.
+  <div
+    className={cn(
+      railCellVariants({ density: 'compact', pad }),
+      'flex shrink-0 items-center bg-background',
+    )}
+  >
     <MonoLabel tone="muted">{label}</MonoLabel>
   </div>
 );

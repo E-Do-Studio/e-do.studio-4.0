@@ -5,7 +5,6 @@ import { Item, ItemContent, ItemMedia, ItemTitle } from '@/components/ui/item';
 import { Separator } from '@/components/ui/separator';
 import { DiscoveryCoverMedia } from './discovery-cover';
 import { hasCover } from './cover';
-import { ArticleMeta } from './shared';
 import { cn } from '@/lib/utils';
 import { MonoLabel } from '../ui/mono-label';
 import { useT } from '../i18n/use-t';
@@ -50,11 +49,21 @@ export const ArticleTeaserCell = ({
         className,
       )}
     >
+      {/* Une seule carte, aucun voisin à aligner : sans image, la colonne se
+          referme au lieu de garder une case vide. C'est l'inverse du choix fait
+          dans la liste, et pour la raison inverse.
+
+          `h-auto` avant `self-stretch` : `ItemMedia` pose `size-10`, donc une
+          HAUTEUR de 40px en dur. `w-28` n'en remplace que la largeur —
+          `tailwind-merge` ne supprime `size-10` que si la classe suivante le
+          couvre entièrement — et `self-stretch` ne fait qu'étirer une boîte qui
+          n'a pas de hauteur imposée. La vignette rendait donc 112 × 40 dans une
+          cellule de 122 de haut : l'image en haut, un vide blanc dessous. */}
       {cover && (
         <>
           <ItemMedia
             variant="image"
-            className="relative w-28 self-stretch rounded-none"
+            className="relative h-auto w-28 self-stretch rounded-none"
           >
             <DiscoveryCoverMedia
               post={post}
@@ -67,7 +76,7 @@ export const ArticleTeaserCell = ({
         </>
       )}
       <ItemContent className="min-w-0 gap-1.5 px-5 py-4">
-        <ArticleMeta post={post} lang={lang} muted />
+        <MonoLabel tone="muted">{post.tag[lang]}</MonoLabel>
         <ItemTitle className="block w-auto line-clamp-2 text-balance text-base font-normal leading-snug tracking-tight text-foreground">
           {post.title[lang]}
         </ItemTitle>

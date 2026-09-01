@@ -109,10 +109,12 @@ const StrapiSectionsRenderer = ({ sections, lang }: SectionRendererProps) => (
               Art. {article.n}
             </MonoLabel>
             <div>
-              {/* Le corps juste dessous est `text-sm` : deux pixels d'écart,
-                  même famille, même casse. La graisse était le vrai repère, et
-                  `font-medium` ne rend pas dans cette famille. */}
-              <h4 className="m-0 mb-2 text-base font-bold tracking-tight text-foreground">
+              {/* Le corps juste dessous est `text-sm` ET `text-muted-foreground` :
+                  deux pixels d'écart, mais aussi un écart de couleur et de
+                  graisse. Le gras n'est plus nécessaire pour les séparer — c'est
+                  le même cran que l'article, dont le corps est passé en 300 et
+                  les titres en 400. */}
+              <h4 className="m-0 mb-2 text-base font-normal tracking-tight text-foreground">
                 {article.t}
               </h4>
               <Prose>{renderStrapiBlocks(s.body[lang])}</Prose>
@@ -123,10 +125,10 @@ const StrapiSectionsRenderer = ({ sections, lang }: SectionRendererProps) => (
       const rows = tryParseDefList(s.body[lang]);
       return (
         <section key={s.slug} className="py-6 border-b border-border">
-          {/* Même raison qu'au `h4` ci-dessus : `font-medium` ne rend pas dans
-              cette famille, et ce titre coiffe soit un corps `text-sm`, soit
-              une liste de définitions. La graisse est son seul écart. */}
-          <h3 className="mb-3.5 text-xl font-bold tracking-tight text-foreground">
+          {/* Même cran que le `h4` ci-dessus. Ce titre coiffe soit un corps
+              `text-sm` atténué, soit une liste de définitions : quatre pixels
+              d'écart et une couleur, la graisse n'a plus à s'en charger. */}
+          <h3 className="mb-3.5 text-xl font-normal tracking-tight text-foreground">
             {s.title[lang]}
           </h3>
           {rows ? (

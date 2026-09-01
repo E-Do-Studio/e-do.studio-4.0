@@ -13,7 +13,7 @@ import { SCREEN_TO_PATH } from '../lib/screens';
 import { useRoutePreload } from '../lib/use-route-preload';
 import { Wordmark } from './brand';
 import { HoverMarquee } from './hover-marquee';
-import { ArrowRight, Menu } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { useT } from '../i18n/use-t';
 
 interface PageHeaderProps {
@@ -64,24 +64,6 @@ const useRenderedPathname = () =>
   useRouterState({
     select: (s) => s.resolvedLocation?.pathname ?? s.location.pathname,
   });
-
-/**
- * Le repère de la cellule orange quand on est déjà dans le tunnel.
- *
- * Un point, pas la flèche : celle-ci promet « aller là », ce qui est faux sur
- * la page où l'on se trouve. Rendu dans une boîte `size-4`, exactement celle
- * de l'icône qu'il remplace — l'état courant ne doit pas changer la largeur
- * d'une cellule, la bande n'a que 48px de marge à 1024.
- */
-const ActiveDot = () => (
-  <span
-    aria-hidden
-    data-icon="inline-end"
-    className="flex size-4 items-center justify-center"
-  >
-    <span className="size-1.5 rounded-full bg-current" />
-  </span>
-);
 
 const NavCell = ({ item, active }: { item: MainNavItem; active: boolean }) => {
   const t = useT();
@@ -143,9 +125,12 @@ const NavCell = ({ item, active }: { item: MainNavItem; active: boolean }) => {
         !item.primary && (item.compact ? 'hidden md:flex' : 'hidden app:flex'),
       )}
     >
+      {/* Pas d'icône sur la cellule orange. Elle en portait deux, l'une pour
+          chaque état — une flèche « aller là », un point quand on y est déjà,
+          calibré sur la même boîte `size-4` pour que la largeur ne bouge pas.
+          C'était deux signes pour ce que l'aplat orange dit à lui seul : il est
+          la seule surface pleine de la bande, on ne le confond avec rien. */}
       <HoverMarquee className="min-w-0">{t(item.labelKey)}</HoverMarquee>
-      {item.primary &&
-        (active ? <ActiveDot /> : <ArrowRight data-icon="inline-end" />)}
     </Button>
   );
 };
@@ -335,6 +320,20 @@ const PageHeader = ({ note, aside, className }: PageHeaderProps) => {
         // Pas de `bg-background` ici : le fond du conteneur *est* le filet.
         'sticky top-0 z-40 flex h-header min-w-0',
         'gap-px bg-border',
+        // Le filet du bas, et lui seul, ne peut pas être une gouttière : la
+        // gouttière est une piste de la grille de page, donc elle défile avec
+        // le contenu pendant que la bande, collante, reste en haut. Passé le
+        // premier pixel de défilement, la page venait toucher l'en-tête sans
+        // aucun trait entre les deux — sur mobile, la seule plage où le
+        // document défile.
+        //
+        // Une ombre et non `border-b` : la bordure occuperait un pixel DANS la
+        // bande (box-border), la rabaissant à 55px de contenu, et surtout elle
+        // s'ajouterait à la gouttière au repos — deux pixels de noir en haut de
+        // chaque page. L'ombre peint exactement la bande 56-57, celle que la
+        // gouttière occupe déjà : invisible tant qu'on n'a pas défilé, elle
+        // prend le relais dès que la gouttière s'en va.
+        'shadow-[0_1px_0_0_var(--color-border)]',
         className,
       )}
     >
