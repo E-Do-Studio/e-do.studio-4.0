@@ -8,6 +8,7 @@ import { SocialClientsBar } from './social-clients-bar';
 import type { Bilingual } from './types';
 import { fetchPriority } from './ui/fetch-priority';
 import { ImageCrossfade } from './ui/image-crossfade';
+import { MediaFrame } from './ui/media-frame';
 import { MobileAssistantFab } from './ui/mobile-assistant-fab';
 import { PageShell } from './ui/page-shell';
 import { ResponsiveImage } from './ui/responsive-image';
@@ -76,6 +77,18 @@ const HomePage = () => {
   const { machines } = siteData;
   const { announcement, homeHero } = useLoaderData({ from: '/$lang/' });
   const announcementText = announcement?.[lang]?.trim() ?? '';
+  // Panne Strapi (`settle()` rend `null`) ou champ vide : le bandeau disparaît
+  // et la cellule retrouve sa pleine largeur, comme avant le partage.
+  // APERÇU LOCAL — à retirer avant commit. Le champ `studioPhotos` n'existe pas
+  // encore dans le Strapi de prod ; ces quatre fichiers vivent dans
+  // `public/_tmp-studio/` le temps de regarder le bandeau sur un téléphone.
+  const studioPhotos = [
+    { url: '/_tmp-studio/studio1.jpg', alt: '', width: 1600 },
+    { url: '/_tmp-studio/studio2.jpg', alt: '', width: 1600 },
+    { url: '/_tmp-studio/studio3.jpg', alt: '', width: 1600 },
+    { url: '/_tmp-studio/studio4.jpg', alt: '', width: 1600 },
+  ];
+  void homeHero?.studioPhotos;
   // SHOWREEL cell (small video tile): always video, as it was before EDO-176.
   // The multi-image rotation lives on the GALERIE cell (see below).
   const heroCmsVideo = homeHero?.videoUrl;
@@ -175,14 +188,63 @@ const HomePage = () => {
               cellule, et elle s'accumule SOUS la rangée de tuiles — mesuré, 305px
               de blanc à 1600×900. C'est ce que le commentaire ci-dessous décrit
               déjà (« le bloc de texte au-dessus absorbe ce qui reste ») ; il
-              manquait la classe qui le fait. */}
-          <SectionIntro
-            size="sm"
-            as="h2"
-            title={t('home.studioHeadline')}
-            subtitle={t('home.studioSubtitle')}
-            className="flex-1 app:min-h-0"
-          />
+              manquait la classe qui le fait. Il vit désormais sur la rangée qui
+              porte le texte ET le bandeau : c'est elle qui doit absorber. */}
+          {/* Le filet entre le texte et les photos est la gouttière de cette
+              rangée (`gap-px bg-border`), comme entre les tuiles plus bas — pas
+              une bordure posée sur l'un des deux. Il tourne avec l'axe : trait
+              vertical à partir de `md`, horizontal en dessous, où les deux
+              moitiés n'ont pas la place de cohabiter (195px chacune sur un
+              téléphone). */}
+          <div className="flex min-h-0 flex-1 flex-col gap-px bg-border md:flex-row">
+            <SectionIntro
+              size="sm"
+              as="h2"
+              title={t('home.studioHeadline')}
+              subtitle={t('home.studioSubtitle')}
+              className="flex-1 bg-background md:min-w-0 app:min-h-0"
+            />
+
+            {/* Le même carrousel que le pavé galerie, monté sur les photos du
+                studio. Rien n'est redessiné ici : `MediaFrame` donne la boîte et
+                le ratio, `ImageCrossfade` la rotation et le fondu.
+
+                `sizes` mesure une MOITIÉ de cellule : la cellule vaut 6/12 à
+                partir d'`app`, donc 25vw ; entre `md` et `app` elle court sur
+                toute la largeur, donc 50vw ; en dessous, le bandeau est seul sur
+                sa ligne.
+
+                Le 4/3 court jusqu'à `app`, pas jusqu'à `md` : entre les deux
+                paliers la cellule prend toute la largeur mais le texte n'y tient
+                que sur deux lignes, et un cadre en `aspect-auto` s'alignait sur
+                cette hauteur — mesuré, une meurtrière de 450×155. C'est le cadre
+                qui donne sa hauteur à la rangée tant que la grille bento ne
+                l'impose pas.
+
+                Pas de `priority` : la cellule voisine (galerie) porte déjà
+                l'image LCP de la page, et deux images prioritaires se disputent
+                la même bande passante. */}
+            {studioPhotos.length > 0 && (
+              <MediaFrame
+                ratio="photo"
+                tone="background"
+                className="md:w-1/2 md:shrink-0 app:aspect-auto"
+              >
+                <ImageCrossfade
+                  images={studioPhotos.map((p) => ({
+                    url: p.url,
+                    width: p.width,
+                    // Le texte alt est celui du fichier Strapi. Le repli ne
+                    // numérote pas la vue, contrairement au pavé galerie : le
+                    // rang d'une photo dans un fondu n'apprend rien à qui
+                    // l'écoute, là où « 3 / 5 » situe au moins un ensemble.
+                    alt: p.alt || t('home.studioPhotoAlt'),
+                  }))}
+                  sizes="(min-width: 1024px) 25vw, (min-width: 768px) 50vw, 100vw"
+                />
+              </MediaFrame>
+            )}
+          </div>
 
           {/* Les filets entre tuiles sont la gouttière de la grille, pas des
             bordures posées sur chaque tuile : plus de calcul de bordure selon
@@ -258,6 +320,7 @@ const HomePage = () => {
                 url: p.url,
                 alt: p.alt || `${t('common.gallery')} — ${i + 1}`,
               }))}
+              sizes="(min-width: 1024px) 50vw, 100vw"
               priority
             />
           ) : galleryHasCmsPosters ? (

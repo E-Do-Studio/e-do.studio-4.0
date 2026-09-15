@@ -993,19 +993,35 @@ function splitVariantUrl(
 // Build a `srcset` covering thumbnail/small/medium/large for a Strapi-served
 // image URL. Returns `undefined` for URLs that don't match (SVG, external,
 // unrecognized extension) so the caller can skip the attribute entirely.
+//
+// `originalWidth` ajoute le fichier d'origine comme plus grand candidat. Les
+// dérivées Strapi plafonnent à 1000px (`large`, réglage par défaut du plugin
+// upload, non surchargé dans `strapi/config/plugins.ts`) — au-delà, le
+// navigateur n'a rien d'autre à agrandir. Deux cas y touchent le plafond :
+// un écran à 3× (390 CSS px de large en demandent 1170), et un cadre en
+// `object-cover` PLUS ÉTROIT que la photo, qui agrandit l'image au-delà de sa
+// boîte pour la remplir — un 16/9 dans un cadre 4/3 la grossit de 1,33×, et
+// `sizes` ne le dit pas, puisqu'il décrit la boîte et non l'image.
 export function buildStrapiSrcset(
   url: string | undefined | null,
+  originalWidth?: number | null,
 ): string | undefined {
   if (!url) return undefined;
   const parts = splitVariantUrl(url);
   if (!parts) return undefined;
   const { dir, stem, query } = parts;
-  return [
+  const candidates = [
     `${dir}thumbnail_${stem}${query} 245w`,
     `${dir}small_${stem}${query} 500w`,
     `${dir}medium_${stem}${query} 750w`,
     `${dir}large_${stem}${query} 1000w`,
-  ].join(', ');
+  ];
+  // `stem` est le nom SANS préfixe de format : le candidat reconstruit est le
+  // fichier d'origine, que l'appelant ait passé celui-ci ou une dérivée.
+  if (originalWidth && originalWidth > 1000) {
+    candidates.push(`${dir}${stem}${query} ${originalWidth}w`);
+  }
+  return candidates.join(', ');
 }
 
 // Largest derivative (`large_*`, ~1000px wide, typically 30–60 KB) used as
@@ -1906,16 +1922,33 @@ export async function fetchGalleryCategories(): Promise<GalleryCategory[]> {
 interface StrapiHomeHero {
   video?: StrapiMedia | null;
   poster?: StrapiMedia[] | null;
+  studioPhotos?: StrapiMedia[] | null;
 }
 
 export interface HomeHeroPoster {
   url: string;
   alt: string;
+  /** Largeur du fichier d'origine — cf. `buildStrapiSrcset`. */
+  width?: number | null;
 }
 
 export interface HomeHero {
   videoUrl?: string;
   posters: HomeHeroPoster[];
+  /** Moitié droite du bandeau e-commerce : les vues du studio lui-même. */
+  studioPhotos: HomeHeroPoster[];
+}
+
+function heroPosterList(
+  items: StrapiMedia[] | null | undefined,
+): HomeHeroPoster[] {
+  return (items ?? [])
+    .map((m): HomeHeroPoster | null => {
+      const url = resolveRawMediaUrl(m);
+      if (!url) return null;
+      return { url, alt: m.alternativeText ?? '', width: m.width };
+    })
+    .filter((p): p is HomeHeroPoster => p !== null);
 }
 
 export async function fetchHomeHero(): Promise<HomeHero | null> {
@@ -1923,22 +1956,20 @@ export async function fetchHomeHero(): Promise<HomeHero | null> {
     const res = await fetchStrapi<{ data: StrapiHomeHero | null }>(
       'home-hero',
       {
-        populate: 'video,poster',
+        // Les photos du studio vivent sur le MÊME single-type que le showreel
+        // et la galerie : elles voyagent dans cette requête plutôt que dans la
+        // leur. Une seconde entrée d'API pour trois images du même écran aurait
+        // doublé l'aller-retour du chargeur d'accueil sans rien séparer.
+        populate: 'video,poster,studioPhotos',
         locale: 'fr',
       },
     );
     const data = res?.data;
     if (!data) return null;
-    const posters: HomeHeroPoster[] = (data.poster ?? [])
-      .map((m) => {
-        const url = resolveRawMediaUrl(m);
-        if (!url) return null;
-        return { url, alt: m.alternativeText ?? '' };
-      })
-      .filter((p): p is HomeHeroPoster => p !== null);
     return {
       videoUrl: resolveRawMediaUrl(data.video),
-      posters,
+      posters: heroPosterList(data.poster),
+      studioPhotos: heroPosterList(data.studioPhotos),
     };
   } catch {
     return null;
