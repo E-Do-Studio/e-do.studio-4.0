@@ -79,7 +79,16 @@ const HomePage = () => {
   const announcementText = announcement?.[lang]?.trim() ?? '';
   // Panne Strapi (`settle()` rend `null`) ou champ vide : le bandeau disparaît
   // et la cellule retrouve sa pleine largeur, comme avant le partage.
-  const studioPhotos = homeHero?.studioPhotos ?? [];
+  // APERÇU LOCAL — à retirer avant commit. Le champ `studioPhotos` n'existe pas
+  // encore dans le Strapi de prod ; ces quatre fichiers vivent dans
+  // `public/_tmp-studio/` le temps de regarder le bandeau sur un téléphone.
+  const studioPhotos = [
+    { url: '/_tmp-studio/studio1.jpg', alt: '', width: 1600 },
+    { url: '/_tmp-studio/studio2.jpg', alt: '', width: 1600 },
+    { url: '/_tmp-studio/studio3.jpg', alt: '', width: 1600 },
+    { url: '/_tmp-studio/studio4.jpg', alt: '', width: 1600 },
+  ];
+  void homeHero?.studioPhotos;
   // SHOWREEL cell (small video tile): always video, as it was before EDO-176.
   // The multi-image rotation lives on the GALERIE cell (see below).
   const heroCmsVideo = homeHero?.videoUrl;
@@ -187,12 +196,7 @@ const HomePage = () => {
               vertical à partir de `md`, horizontal en dessous, où les deux
               moitiés n'ont pas la place de cohabiter (195px chacune sur un
               téléphone). */}
-          {/* `md:flex-row-reverse` et non un échange dans le JSX : sous le
-              palier, la pile doit continuer à s'ouvrir sur le titre. Inverser
-              l'ordre du DOM aurait posé une photo pleine largeur AVANT la phrase
-              qui nomme la page, sur le seul écran où elle est déjà seule à
-              l'annoncer. L'axe s'inverse, la lecture non. */}
-          <div className="flex min-h-0 flex-1 flex-col gap-px bg-border md:flex-row-reverse">
+          <div className="flex min-h-0 flex-1 flex-col gap-px bg-border md:flex-row">
             <SectionIntro
               size="sm"
               as="h2"
