@@ -13,3 +13,6 @@ bun.lock
 supabase/.temp/
 .tanstack/
 package-lock.json
+
+# Aperçu local des photos studio avant leur mise en CMS — jamais committé.
+public/_tmp-studio/
