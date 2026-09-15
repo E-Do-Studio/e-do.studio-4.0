@@ -4,8 +4,8 @@
   "info": {
     "singularName": "home-hero",
     "pluralName": "home-heroes",
-    "displayName": "Home · Showreel + Galerie",
-    "description": "Vidéo en boucle de la cellule SHOWREEL + image(s) du grand carré GALERIE sur la home.",
+    "displayName": "Home · Showreel + Galerie + Studio",
+    "description": "Vidéo en boucle de la cellule SHOWREEL + image(s) du grand carré GALERIE + photos du studio, sur la home.",
     "icon": "play"
   },
   "options": {
@@ -25,6 +25,13 @@
       "required": false,
       "allowedTypes": ["images"],
       "description": "Image(s) de la cellule GALERIE (le grand carré à droite de la home). 0 image → image statique par défaut (gallery-hero). 1 image → image fixe issue du CMS. ≥ 2 images → fondu enchaîné automatique (10s par image, fondu ~900ms). Texte alt lu sur chaque média (champ `alternativeText`)."
+    },
+    "studioPhotos": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": ["images"],
+      "description": "Photos du studio, moitié droite de la cellule « Le studio qui alimente votre e-commerce » sur la home. 0 image → la cellule reprend toute sa largeur, sans cadre vide. 1 image → image fixe. ≥ 2 images → fondu enchaîné automatique (5s par image, fondu ~900ms). Cadrage paysage : le cadre est en 4/3 jusqu'au grand écran, où il suit la hauteur de sa cellule. Texte alt lu sur chaque média (champ `alternativeText`)."
     }
   },
   "pluginOptions": {

@@ -6,10 +6,19 @@ import { ResponsiveImage } from './responsive-image';
 interface ImageCrossfadeSlide {
   url: string;
   alt: string;
+  /** Largeur du fichier d'origine — cf. `buildStrapiSrcset`. */
+  width?: number | null;
 }
 
 interface ImageCrossfadeProps {
   images: ImageCrossfadeSlide[];
+  /**
+   * Ce que la cellule mesure réellement, transmis tel quel à chaque
+   * diapositive. Il était figé à `100vw` ici : le pavé galerie n'occupe la
+   * largeur de la fenêtre que sous le palier, et le bandeau studio n'en prend
+   * qu'un quart — les deux téléchargeaient la dérivée de l'écran entier.
+   */
+  sizes: string;
   className?: string;
   slideMs?: number;
   fadeMs?: number;
@@ -21,6 +30,7 @@ const DEFAULT_FADE_MS = 900;
 
 const ImageCrossfade = ({
   images,
+  sizes,
   className,
   slideMs = DEFAULT_SLIDE_MS,
   fadeMs = DEFAULT_FADE_MS,
@@ -46,7 +56,8 @@ const ImageCrossfade = ({
       <ResponsiveImage
         src={only.url}
         alt={only.alt}
-        sizes="100vw"
+        sizes={sizes}
+        originalWidth={only.width}
         priority={priority}
         className={cn('pointer-events-none', className)}
       />
@@ -80,7 +91,8 @@ const ImageCrossfade = ({
             <ResponsiveImage
               src={img.url}
               alt={active ? img.alt : ''}
-              sizes="100vw"
+              sizes={sizes}
+              originalWidth={img.width}
               priority={priority && isFirst}
             />
           </div>

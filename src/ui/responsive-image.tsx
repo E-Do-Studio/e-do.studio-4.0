@@ -12,6 +12,11 @@ type Props = {
   sizes: string;
   // True for above-the-fold/LCP images — eager + fetchpriority high.
   priority?: boolean;
+  // Largeur du fichier d'origine, quand elle dépasse le plafond de 1000px des
+  // dérivées Strapi. Omise, l'image s'arrête à `large` comme avant — à ne
+  // passer que là où le cadre a réellement besoin de plus (écran dense, cadre
+  // qui recadre), pas partout : le fichier d'origine pèse dix fois `large`.
+  originalWidth?: number | null;
   // `cover` recadre, `contain` montre l'image entière et laisse le fond du
   // cadre autour. Un seul appelant demande `contain` : le carrousel plateau,
   // dont certaines pièces sont des plans larges à ne pas rogner.
@@ -35,6 +40,7 @@ export function ResponsiveImage({
   alt,
   sizes,
   priority,
+  originalWidth,
   fit = 'cover',
   className,
   onClick,
@@ -57,7 +63,7 @@ export function ResponsiveImage({
 
   if (!src) return null;
   const resolvedSrc = getStrapiLargeUrl(src) ?? src;
-  const srcSet = buildStrapiSrcset(src);
+  const srcSet = buildStrapiSrcset(src, originalWidth);
   return (
     <img
       ref={fadeIn}
