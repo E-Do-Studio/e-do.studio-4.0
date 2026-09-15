@@ -79,16 +79,7 @@ const HomePage = () => {
   const announcementText = announcement?.[lang]?.trim() ?? '';
   // Panne Strapi (`settle()` rend `null`) ou champ vide : le bandeau disparaît
   // et la cellule retrouve sa pleine largeur, comme avant le partage.
-  // APERÇU LOCAL — à retirer avant commit. Le champ `studioPhotos` n'existe pas
-  // encore dans le Strapi de prod ; ces quatre fichiers vivent dans
-  // `public/_tmp-studio/` le temps de regarder le bandeau sur un téléphone.
-  const studioPhotos = [
-    { url: '/_tmp-studio/studio1.jpg', alt: '', width: 1600 },
-    { url: '/_tmp-studio/studio2.jpg', alt: '', width: 1600 },
-    { url: '/_tmp-studio/studio3.jpg', alt: '', width: 1600 },
-    { url: '/_tmp-studio/studio4.jpg', alt: '', width: 1600 },
-  ];
-  void homeHero?.studioPhotos;
+  const studioPhotos = homeHero?.studioPhotos ?? [];
   // SHOWREEL cell (small video tile): always video, as it was before EDO-176.
   // The multi-image rotation lives on the GALERIE cell (see below).
   const heroCmsVideo = homeHero?.videoUrl;
@@ -196,7 +187,12 @@ const HomePage = () => {
               vertical à partir de `md`, horizontal en dessous, où les deux
               moitiés n'ont pas la place de cohabiter (195px chacune sur un
               téléphone). */}
-          <div className="flex min-h-0 flex-1 flex-col gap-px bg-border md:flex-row">
+          {/* `md:flex-row-reverse` et non un échange dans le JSX : sous le
+              palier, la pile doit continuer à s'ouvrir sur le titre. Inverser
+              l'ordre du DOM aurait posé une photo pleine largeur AVANT la phrase
+              qui nomme la page, sur le seul écran où elle est déjà seule à
+              l'annoncer. L'axe s'inverse, la lecture non. */}
+          <div className="flex min-h-0 flex-1 flex-col gap-px bg-border md:flex-row-reverse">
             <SectionIntro
               size="sm"
               as="h2"
@@ -460,9 +456,15 @@ const HomePage = () => {
  sur-titre de catégorie et au même titre que la destination porte dans le
  tiroir. Sans sous-titre : la rangée vaut `--spacing-cta`, où le pavé n'a
  la place que de deux lignes — c'est le gabarit du CTA « Réserver », pas
- celui de Cyclorama qui court sur deux rangées. */}
+ celui de Cyclorama qui court sur deux rangées.
+
+ `tone="dark"` et non une classe posée ici : la cellule inversée existe dans
+ le composant, avec la portée `dark` qui retourne les tokens pour ses enfants
+ — le sur-titre y reste lisible sans que la page ait à choisir une couleur de
+ texte. Elle est la seule de la bande basse à porter ce ton, et c'est ce qui
+ la distingue de Cyclorama et Post-production, ses deux voisines de gabarit. */}
         <CtaCell
-          tone="surface"
+          tone="dark"
           size="cta"
           kicker={t('home.journal')}
           title={t('common.discovery')}
