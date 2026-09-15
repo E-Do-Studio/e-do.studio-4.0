@@ -460,9 +460,15 @@ const HomePage = () => {
  sur-titre de catégorie et au même titre que la destination porte dans le
  tiroir. Sans sous-titre : la rangée vaut `--spacing-cta`, où le pavé n'a
  la place que de deux lignes — c'est le gabarit du CTA « Réserver », pas
- celui de Cyclorama qui court sur deux rangées. */}
+ celui de Cyclorama qui court sur deux rangées.
+
+ `tone="dark"` et non une classe posée ici : la cellule inversée existe dans
+ le composant, avec la portée `dark` qui retourne les tokens pour ses enfants
+ — le sur-titre y reste lisible sans que la page ait à choisir une couleur de
+ texte. Elle est la seule de la bande basse à porter ce ton, et c'est ce qui
+ la distingue de Cyclorama et Post-production, ses deux voisines de gabarit. */}
         <CtaCell
-          tone="surface"
+          tone="dark"
           size="cta"
           kicker={t('home.journal')}
           title={t('common.discovery')}
