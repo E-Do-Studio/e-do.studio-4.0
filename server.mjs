@@ -23,6 +23,34 @@ const fetchHandler =
   typeof handler === 'function' ? handler : handler.fetch.bind(handler);
 
 const PORT = Number(process.env.PORT) || 3000;
+
+// Même jeton public que le bundle client (il y est déjà exposé) : le passer au
+// runtime ne révèle rien. Sans lui, une page qui plante au rendu ne laissait
+// qu'une ligne dans les logs du conteneur, que personne ne lit.
+const POSTHOG_TOKEN = process.env.POSTHOG_PROJECT_TOKEN;
+const POSTHOG_HOST = process.env.POSTHOG_HOST || 'https://eu.i.posthog.com';
+
+function reportServerError(event, url, error, extra = {}) {
+  if (!POSTHOG_TOKEN) return;
+  fetch(`${POSTHOG_HOST}/i/v0/e/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    signal: AbortSignal.timeout(2000),
+    body: JSON.stringify({
+      api_key: POSTHOG_TOKEN,
+      event,
+      distinct_id: 'ssr-server',
+      properties: {
+        url,
+        message: error instanceof Error ? error.message : String(error ?? ''),
+        stack: error instanceof Error ? error.stack : undefined,
+        $process_person_profile: false,
+        $lib: 'server.mjs',
+        ...extra,
+      },
+    }),
+  }).catch(() => {});
+}
 const CLIENT_DIR = new URL('./dist/client/', import.meta.url).pathname;
 
 const MIME = {
@@ -108,6 +136,13 @@ const server = createServer(async (req, res) => {
     const headers = Object.fromEntries(response.headers);
     if (!headers['cache-control'])
       headers['Cache-Control'] = htmlCacheControl(pathname);
+    // Start rend lui-même une erreur de rendu en 500, sans lever : sans ce
+    // test, fail() ne la voyait jamais.
+    if (response.status >= 500) {
+      reportServerError('ssr_render_failed', req.url, null, {
+        status: response.status,
+      });
+    }
     res.writeHead(response.status, headers);
     if (response.body) {
       pipeSafely(Readable.fromWeb(response.body), res, req.url);
@@ -136,6 +171,7 @@ function pipeSafely(source, res, url) {
 
 function fail(res, url, error) {
   console.error('[server] échec du rendu', url, error);
+  reportServerError('ssr_render_failed', url, error);
   if (res.writableEnded || res.destroyed) return;
   if (res.headersSent) {
     res.destroy();
@@ -149,9 +185,11 @@ function fail(res, url, error) {
 // ne doit jamais emporter les requêtes en vol ni provoquer un redémarrage.
 process.on('uncaughtException', (error) => {
   console.error('[server] exception non gérée', error);
+  reportServerError('server_uncaught_exception', null, error);
 });
 process.on('unhandledRejection', (reason) => {
   console.error('[server] rejet non géré', reason);
+  reportServerError('server_uncaught_exception', null, reason);
 });
 
 server.listen(PORT, () => {

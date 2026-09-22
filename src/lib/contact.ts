@@ -1,6 +1,11 @@
 import type { ContactFormData } from '../types';
 import { submitHubspotForm, HUBSPOT_CONTACT_FORM_ID } from './hubspot-forms';
-import { capture, captureException } from './analytics';
+import {
+  capture,
+  captureException,
+  getDistinctId,
+  identify,
+} from './analytics';
 
 export async function submitContactForm(data: ContactFormData): Promise<void> {
   try {
@@ -40,6 +45,7 @@ export async function submitContactForm(data: ContactFormData): Promise<void> {
         elapsedMs: data.formLoadedAt
           ? Date.now() - data.formLoadedAt
           : undefined,
+        analytics: { distinct_id: getDistinctId() },
       }),
     });
 
@@ -49,7 +55,11 @@ export async function submitContactForm(data: ContactFormData): Promise<void> {
       // 'invalid_payload', …); callers localize them via contactErrorMessage.
       throw new Error(body.error ?? `Email send failed (${res.status})`);
     }
-    capture('contact_form_submitted');
+    capture('contact_form_submitted', {});
+    identify(data.email, {
+      name: data.nom.trim(),
+      company: data.societe || undefined,
+    });
   } catch (error) {
     capture('contact_form_failed', {
       reason: error instanceof Error ? error.message : 'unknown',

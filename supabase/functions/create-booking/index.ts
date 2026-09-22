@@ -20,6 +20,7 @@ import {
   type QuoteLabels,
   type SlotState,
 } from "../../../src/lib/booking-engine.ts";
+import { type AnalyticsContext, captureServer } from "../_shared/posthog.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -102,7 +103,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
 
-  let input: CreateBookingInput;
+  let input: CreateBookingInput & { analytics?: AnalyticsContext };
   try {
     input = await req.json();
   } catch {
@@ -131,11 +132,25 @@ Deno.serve(async (req) => {
   // Le devis fait foi côté serveur. Un écart avec le total transmis est
   // journalisé : c'est soit une dérive du front, soit une tentative.
   const breakdown = recomputeTotal(input);
+  const analytics = input.analytics ?? {};
+  const track = (event: string, props: Record<string, unknown> = {}) =>
+    captureServer(event, analytics.distinct_id, `booking:${reference}`, {
+      reference,
+      submit_mode: input.mode,
+      source: analytics.source ?? null,
+      funnel: analytics.funnel ?? null,
+      session_count: input.sessions.length,
+      ...props,
+    });
   const clientTotal = Number(input.quote?.total ?? 0);
   if (Math.abs(breakdown.total - clientTotal) > 0.01) {
     console.warn(
       `[create-booking] total divergent — client=${clientTotal} serveur=${breakdown.total} ref=${reference}`,
     );
+    await track("booking_total_mismatch", {
+      client_total: clientTotal,
+      server_total: breakdown.total,
+    });
   }
 
   const primary = resolved[0];
@@ -166,8 +181,16 @@ Deno.serve(async (req) => {
   if (bookingError || !booking) {
     // 23P01 = violation d'une contrainte d'exclusion : le créneau vient d'être
     // pris. C'est la garantie que le SELECT-puis-INSERT du front ne donnait pas.
-    if (bookingError?.code === "23P01") return json({ error: "slot_taken" }, 409);
+    if (bookingError?.code === "23P01") {
+      await track("booking_slot_conflict", { stage: "insert_booking" });
+      return json({ error: "slot_taken" }, 409);
+    }
     console.error("[create-booking] insert booking", bookingError);
+    await track("booking_server_error", {
+      stage: "insert_booking",
+      code: bookingError?.code ?? null,
+      message: bookingError?.message ?? null,
+    });
     return json({ error: "insert_failed" }, 500);
   }
 
@@ -197,9 +220,15 @@ Deno.serve(async (req) => {
         // La réservation est créée mais son créneau est pris : on la retire
         // plutôt que de laisser une ligne orpheline sans session.
         await supabase.from("bookings").delete().eq("id", booking.id);
+        await track("booking_slot_conflict", { stage: "insert_sessions" });
         return json({ error: "slot_taken" }, 409);
       }
       console.error("[create-booking] insert sessions", error);
+      await track("booking_server_error", {
+        stage: "insert_sessions",
+        code: error.code ?? null,
+        message: error.message,
+      });
       return json({ error: "insert_failed" }, 500);
     }
   }
@@ -212,6 +241,11 @@ Deno.serve(async (req) => {
   });
   if (quoteError) {
     console.error("[create-booking] insert quote", quoteError);
+    await track("booking_server_error", {
+      stage: "insert_quote",
+      code: quoteError.code ?? null,
+      message: quoteError.message,
+    });
     return json({ error: "insert_failed" }, 500);
   }
 
@@ -226,6 +260,11 @@ Deno.serve(async (req) => {
   // Best-effort, comme avant : le cron de réconciliation rattrape les échecs.
   fire("calendar-sync", { bookingId: booking.id, action: "create" });
   fire("send-email", { type: "booking", bookingId: booking.id });
+
+  await track("booking_created", {
+    total: breakdown.total,
+    plateaux: input.sessions.map((s) => s.plateauKey),
+  });
 
   // Uniquement ce dont la page de confirmation a besoin. Aucune donnée
   // personnelle ne repart : le front les possède déjà, il vient de les saisir.

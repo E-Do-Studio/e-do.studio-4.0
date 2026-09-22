@@ -3,7 +3,13 @@ import type {
   BookingQuoteData,
   CreateBookingInput,
 } from './booking-engine';
-import { capture, captureException } from './analytics';
+import {
+  capture,
+  captureException,
+  getDistinctId,
+  identify,
+} from './analytics';
+import type { BookingFunnel, BookingSource } from './analytics-events';
 
 export type { BookingSessionData, BookingQuoteData, CreateBookingInput };
 
@@ -34,7 +40,14 @@ export class SlotTakenError extends Error {
  */
 export async function createBooking(
   input: CreateBookingInput,
+  origin: { source: BookingSource; funnel: BookingFunnel | null },
 ): Promise<CreateBookingResult> {
+  const context = {
+    source: origin.source,
+    funnel: origin.funnel,
+    submit_mode: input.mode,
+  };
+  let status: number | undefined;
   try {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     if (!supabaseUrl) throw new Error('VITE_SUPABASE_URL manquant');
@@ -42,8 +55,15 @@ export async function createBooking(
     const res = await fetch(`${supabaseUrl}/functions/v1/create-booking`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(input),
+      // `analytics` hors de CreateBookingInput : le moteur est partagé avec
+      // Deno et n'a pas à connaître PostHog. Le distinct_id relie l'événement
+      // serveur au parcours et au replay du visiteur.
+      body: JSON.stringify({
+        ...input,
+        analytics: { distinct_id: getDistinctId(), ...origin },
+      }),
     });
+    status = res.status;
 
     // Le créneau vient d'être pris entre l'affichage et l'envoi : c'est la
     // contrainte d'exclusion en base qui tranche, pas une lecture préalable.
@@ -58,19 +78,36 @@ export async function createBooking(
 
     const result = (await res.json()) as CreateBookingResult;
     capture('booking_submitted', {
-      mode: input.mode,
+      ...context,
+      reference: result.reference ?? null,
+      plateaux: input.sessions.map((s) => s.plateauKey),
       session_count: input.sessions.length,
-      plateau_keys: input.sessions.map((s) => s.plateauKey),
       total: result.total,
+    });
+    identify(input.contact.email, {
+      first_name: input.contact.prenom,
+      last_name: input.contact.nom,
+      company: input.contact.societe || undefined,
     });
     return result;
   } catch (error) {
     if (error instanceof SlotTakenError) {
-      capture('booking_failed', { mode: input.mode, reason: 'slot_conflict' });
+      capture('booking_failed', { ...context, reason: 'slot_taken', status });
       throw error;
     }
-    capture('booking_failed', { mode: input.mode });
-    captureException(error, { source: 'booking' });
+    // Pas de statut : la requête n'a jamais obtenu de réponse (réseau coupé,
+    // fonction absente bloquée au preflight CORS).
+    capture('booking_failed', {
+      ...context,
+      reason: status === undefined ? 'network' : 'server',
+      status,
+    });
+    captureException(error, {
+      source: 'booking',
+      booking_source: origin.source,
+      funnel: origin.funnel,
+      submit_mode: input.mode,
+    });
     throw error;
   }
 }

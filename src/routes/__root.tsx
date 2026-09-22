@@ -183,7 +183,7 @@ function LangLayout() {
     : DEFAULT_LANG;
   useGoogleAnalytics(siteData.siteDefaults?.googleAnalyticsId);
   useGoogleTagManager();
-  usePostHog();
+  usePostHog(lang);
 
   const setLang = useCallback(
     (newLang: Lang) => {

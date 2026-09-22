@@ -18,7 +18,7 @@ import { useT } from './i18n/use-t';
 import { supabase } from './lib/supabase';
 import { useChatSessions, type ChatSession } from './lib/use-chat-sessions';
 import { createBooking } from './lib/bookings';
-import { capture, captureException } from './lib/analytics';
+import { capture, captureException, getDistinctId } from './lib/analytics';
 import { BOOK_PLATEAUX, type CreateBookingInput } from './lib/booking-engine';
 import { validateIdentity } from './lib/booking-schema';
 import { fmtEUR } from './lib/format';
@@ -73,7 +73,12 @@ const sendAssistantMessage = async (
   const { data, error } = await supabase.functions.invoke<ChatResponse>(
     'chat',
     {
-      body: { messages, lang, currentPage },
+      body: {
+        messages,
+        lang,
+        currentPage,
+        analytics: { distinct_id: getDistinctId() },
+      },
     },
   );
 
@@ -954,6 +959,9 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
         setSuggestions(result.suggestions ?? []);
         setCollectContact(result.collectContact ?? false);
         if (result.bookingProposal) {
+          capture('chat_booking_proposed', {
+            session_count: result.bookingProposal.sessions.length,
+          });
           setProposal(result.bookingProposal);
           setCgv(false);
           setBookingErr(null);
@@ -994,7 +1002,10 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
     setBookingBusy(true);
     setBookingErr(null);
     try {
-      const result = await createBooking({ ...proposal, mode: 'booking' });
+      const result = await createBooking(
+        { ...proposal, mode: 'booking' },
+        { source: 'chat', funnel: null },
+      );
       setProposal(null);
       setCgv(false);
       setActiveMessages([

@@ -2,6 +2,7 @@ import { useNavigate } from '@tanstack/react-router';
 import type { TFunction } from 'i18next';
 import type { RefObject } from 'react';
 import { useCallback, useMemo, useState } from 'react';
+import { capture } from '../lib/analytics';
 import { clearAvailabilityCache } from '../lib/availability';
 import type { BookPlateau, Lang, PriceBreakdown } from '../lib/booking-engine';
 import { BOOK_PLATEAUX, buildSessionsData } from '../lib/booking-engine';
@@ -18,7 +19,7 @@ import {
 } from '../lib/hubspot-forms';
 import { clearDraft } from '../lib/use-booking-draft';
 import type { BookMode } from './book-routes';
-import { STEP } from './booking-steps';
+import { STEP, stepName } from './booking-steps';
 import type { ConfirmationSessionSlot } from './confirmation-snapshot';
 import { confirmationPath } from './book-routes';
 import { saveConfirmation } from './confirmation-snapshot';
@@ -36,6 +37,8 @@ interface UseBookingSubmitArgs {
   formRef: RefObject<HTMLFormElement | null>;
   lang: Lang;
   t: TFunction;
+  funnel: BookMode;
+  step: number;
 }
 
 function useBookingSubmit({
@@ -47,6 +50,8 @@ function useBookingSubmit({
   formRef,
   lang,
   t,
+  funnel,
+  step,
 }: UseBookingSubmitArgs) {
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
@@ -83,11 +88,18 @@ function useBookingSubmit({
   const runContactValidation = useCallback(() => {
     if (!contactValidation.success) {
       setContactErrors(contactValidation.errors);
+      // Les noms des champs refusés, jamais leurs valeurs : c'est ce qui dit
+      // où le formulaire accroche (SIREN, CGV, téléphone…).
+      capture('booking_step_blocked', {
+        funnel,
+        step: stepName(step),
+        invalid_fields: Object.keys(contactValidation.errors),
+      });
       return false;
     }
     setContactErrors({});
     return true;
-  }, [contactValidation]);
+  }, [contactValidation, funnel, step]);
 
   const handleSubmit = useCallback(
     async (submitMode: SubmitMode) => {
@@ -119,16 +131,27 @@ function useBookingSubmit({
           slotIds.map((id) => slots[id]?.date).find(Boolean) ??
           null;
 
-        const result = await createBooking({
-          mode: submitMode,
-          contact,
-          projectType: configGlobal.projectType || null,
-          urgency: configGlobal.urgency || null,
-          sessions: sessionsData,
-          quote: { rows: priceBreakdown.rows, total: priceBreakdown.total },
-          preferredDate: firstDate,
-          arrivalHour: arrivalHour ?? null,
+        capture('booking_submit_attempted', {
+          funnel,
+          source: 'funnel',
+          submit_mode: submitMode,
+          plateaux: sessionsData.map((s) => s.plateauKey),
+          session_count: sessionsData.length,
+          total: priceBreakdown.total,
         });
+        const result = await createBooking(
+          {
+            mode: submitMode,
+            contact,
+            projectType: configGlobal.projectType || null,
+            urgency: configGlobal.urgency || null,
+            sessions: sessionsData,
+            quote: { rows: priceBreakdown.rows, total: priceBreakdown.total },
+            preferredDate: firstDate,
+            arrivalHour: arrivalHour ?? null,
+          },
+          { source: 'funnel', funnel },
+        );
 
         // Soumission HubSpot au mieux, depuis le navigateur pour que le cookie
         // `hubspotutk` du visiteur préserve l'Original Source du contact. Jamais
@@ -245,6 +268,7 @@ function useBookingSubmit({
       goToStep,
       formRef,
       t,
+      funnel,
     ],
   );
 

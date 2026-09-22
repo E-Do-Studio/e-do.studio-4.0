@@ -17,6 +17,7 @@ import type { BookMode } from './book-routes';
 import { STEP } from './booking-steps';
 import { PRODUCTS, catLabel, findEntry } from './catalog';
 import type { BookingState } from './use-booking-state';
+import { capture } from '../lib/analytics';
 
 /** Une session ne vaut d'être projetée en créneau que si elle est exploitable. */
 const isSeedable = (s: BookingSession) =>
@@ -153,10 +154,16 @@ function useConfigSeeding({
       vuesParArticle: '',
     }));
     setConfigApplied(true);
+    capture('booking_config_applied', {
+      project_type: configGlobal.projectType || null,
+      urgency: configGlobal.urgency || null,
+      session_count: sessions.length,
+    });
     goToStep(STEP.DURATION, 'config');
   };
 
   const skipConfig = () => {
+    capture('booking_config_skipped', {});
     setConfigApplied(false);
     setSlotIds([]);
     setSlots({});

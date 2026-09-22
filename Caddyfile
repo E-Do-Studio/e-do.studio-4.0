@@ -121,6 +121,28 @@
     # TEMP: CSP désactivée le temps de débugger le tag assistant + GTM — à réactiver.
     # header @preview Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://*.googletagmanager.com https://*.google-analytics.com https://www.googleadservices.com https://*.g.doubleclick.net https://*.hs-scripts.com https://*.hs-analytics.net https://*.hs-banner.com https://*.hsadspixel.net https://*.hsforms.net https://*.hscollectedforms.net https://*.hsappstatic.net https://*.hubspot.com https://*.i.posthog.com https://*.posthog.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https://cms.e-do.studio https://pub-9b79de66b20440cdb7e8bae53605296c.r2.dev https://*.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://*.g.doubleclick.net https://www.googleadservices.com https://www.google.com https://www.google.fr https://*.hubspot.com https://*.hsforms.com https://*.i.posthog.com https://*.posthog.com; media-src 'self' https://cms.e-do.studio https://pub-9b79de66b20440cdb7e8bae53605296c.r2.dev; connect-src 'self' https://cms.e-do.studio https://pub-9b79de66b20440cdb7e8bae53605296c.r2.dev https://*.supabase.co https://*.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://*.g.doubleclick.net https://www.googleadservices.com https://www.google.com https://www.google.fr https://*.hubspot.com https://*.hubapi.com https://*.hsforms.com https://*.hscollectedforms.net https://*.hsappstatic.net https://*.hs-analytics.net https://*.i.posthog.com https://*.posthog.com; frame-src https://www.google.com https://*.googletagmanager.com https://td.doubleclick.net https://*.hsforms.net https://*.hsforms.com; frame-ancestors https://cms.e-do.studio; base-uri 'self'; form-action 'self'; object-src 'none'; worker-src 'self' blob: data:; upgrade-insecure-requests"
 
+    # ---------- Proxy PostHog (/ph → région EU) ----------
+    # Servi depuis le domaine du site, l'analytics échappe aux bloqueurs qui
+    # filtrent `*.posthog.com` — sans lui, une part des visiteurs manquait aux
+    # funnels. `handle_path` retire le préfixe avant de proxifier.
+    #
+    # X-Forwarded-For recopié tel que reçu du proxy Coolify : sans
+    # `trusted_proxies`, Caddy le remplacerait par l'IP de ce proxy, et PostHog
+    # verrait tous les visiteurs à la même adresse — géolocalisation faussée et,
+    # en mode cookieless (hash IP + UA), des milliers de visiteurs fondus en un.
+    handle_path /ph/static/* {
+        rewrite * /static{uri}
+        reverse_proxy https://eu-assets.i.posthog.com {
+            header_up Host eu-assets.i.posthog.com
+        }
+    }
+    handle_path /ph/* {
+        reverse_proxy https://eu.i.posthog.com {
+            header_up Host eu.i.posthog.com
+            header_up X-Forwarded-For {http.request.header.X-Forwarded-For}
+        }
+    }
+
     # Le rendu est fait par TanStack Start côté serveur, à chaque requête.
     # Caddy ne sert plus de fichiers : il reste devant pour les redirections
     # 301 legacy, les en-têtes de sécurité et le mode maintenance, et passe
