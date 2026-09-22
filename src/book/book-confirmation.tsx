@@ -101,9 +101,12 @@ const ConfirmedView = ({
           conversion, celui qu'on atteint au clavier après un formulaire. */}
       <main
         id={MAIN_ID}
-        className="overflow-auto flex flex-col gap-px bg-border app:row-start-2 app:min-h-0"
+        className="flex min-h-0 min-w-0 flex-col gap-px overflow-x-hidden bg-border app:row-start-2 app:overflow-hidden"
       >
-        <div className="grid gap-px bg-border grid-cols-1 app:grid-cols-[1.6fr_1fr]">
+        {/* `minmax(0, …)` : `1fr` vaut `minmax(auto, 1fr)` et refuse de
+            rétrécir sous le min-content du chapô, ce qui élargissait toute
+            la colonne flex et faisait défiler la page. */}
+        <div className="grid min-w-0 shrink-0 gap-px bg-border grid-cols-1 app:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
           {/* Après la soumission, `navigate()` amène sur un document neuf, focus
               sur `<body>` : rien ne disait que la réservation avait abouti.
               `role="status"` annonce l'issue, et `titleRef` donne le focus au
@@ -124,7 +127,7 @@ const ConfirmedView = ({
               milieu : `<dl>` n'accepte comme enfants que `<dt>`, `<dd>` et des
               `<div>` qui les portent directement. Un div qui n'enveloppe que
               d'autres divs y est invalide. */}
-          <div className="flex min-h-44 flex-col justify-between gap-3.5 bg-background px-5 py-5 md:px-6 md:py-6">
+          <div className="flex min-h-44 min-w-0 flex-col justify-between gap-3.5 bg-background px-5 py-5 md:px-6 md:py-6">
             <KeyValueList className="gap-3.5">
               <KeyValueRow
                 orientation="stacked"
@@ -179,18 +182,18 @@ const ConfirmedView = ({
 
         <KeyValueList
           pad="none"
-          className="grid grid-cols-2 gap-px bg-border app:grid-cols-4"
+          className="grid min-w-0 shrink-0 grid-cols-2 gap-px bg-border app:grid-cols-[repeat(4,minmax(0,1fr))]"
         >
           <KeyValueRow
             orientation="stacked"
             label={t('booking.stage')}
-            className="bg-background px-5 py-3 text-base"
+            className="min-w-0 bg-background px-5 py-3 text-base"
             value={<span className="tracking-tight">{plateauLabel}</span>}
           />
           <KeyValueRow
             orientation="stacked"
             label={isMultiPlateau ? t('booking.dates') : t('booking.date')}
-            className="bg-background px-5 py-3"
+            className="min-w-0 bg-background px-5 py-3"
             value={
               snapshot.sessions && snapshot.sessions.length > 1 ? (
                 <ul className="flex flex-col gap-1 list-none p-0 m-0">
@@ -240,7 +243,7 @@ const ConfirmedView = ({
           <KeyValueRow
             orientation="stacked"
             label={t('booking.company')}
-            className="bg-background px-5 py-3"
+            className="min-w-0 bg-background px-5 py-3"
             value={
               <span className="tracking-tight">{contact.societe || '—'}</span>
             }
@@ -249,7 +252,7 @@ const ConfirmedView = ({
             orientation="stacked"
             density="tight"
             label="SIREN"
-            className="bg-background px-5 py-3"
+            className="min-w-0 bg-background px-5 py-3"
             value={
               <span className="font-mono tracking-widest">
                 {contact.siren || '—'}
@@ -261,13 +264,13 @@ const ConfirmedView = ({
         {/* Pas de `px-*` sur la cellule : les filets du tableau doivent
             toucher les bords, comme KeyValueRow le documente. Le retrait vit
             dans `QuoteTable variant="page"`. */}
-        <div className="flex flex-1 flex-col bg-background">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto bg-background">
           <MonoLabel tone="muted" className="block px-5 pt-4.5 pb-2.5 md:px-12">
             {t('booking.breakdown')}
           </MonoLabel>
           <QuoteTable
             variant="page"
-            className="flex-1"
+            className="min-w-0"
             rows={(
               snapshot.rows as { lbl: string; amt: number; onReq?: boolean }[]
             ).map((r) => ({
@@ -279,7 +282,7 @@ const ConfirmedView = ({
             totalLabel={t('booking.totalExVat')}
             total={`${fmtEUR(snapshot.total, lang)} €`}
             disclaimer={
-              <p className="m-0 text-sm leading-relaxed text-muted-foreground">
+              <p className="m-0 max-w-2xl min-w-0 text-pretty text-sm leading-relaxed text-muted-foreground">
                 {t('booking.quoteDisclaimer')}
               </p>
             }
@@ -289,13 +292,13 @@ const ConfirmedView = ({
         {/* Les boutons SONT les cellules : un aplat orange dans une case
             blanche dessine un rectangle qui ne touche aucun filet. Même
             montage que la barre du tunnel (`BookingFooterNav`). */}
-        <div className="grid min-h-cta shrink-0 grid-cols-2 gap-px bg-border">
+        <div className="grid min-h-cta min-w-0 shrink-0 grid-cols-2 gap-px bg-border">
           <Button
             type="button"
             variant="cell"
             size="touch"
             onClick={() => goto('home')}
-            className="h-full w-full justify-start px-pad-cell max-md:whitespace-normal"
+            className="h-full min-w-0 w-full justify-start px-pad-cell max-md:whitespace-normal"
           >
             <ArrowLeft data-icon="inline-start" />
             {t('booking.backHome')}
