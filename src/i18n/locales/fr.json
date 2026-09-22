@@ -375,7 +375,7 @@
   "cookieBanner": {
     "accept": "Accepter",
     "ariaLabel": "Bandeau de consentement aux cookies",
-    "bodyWithLink": "Nous utilisons des cookies pour mesurer l'audience du site. Vous pouvez accepter ou refuser. En savoir plus : <legal>politique cookies</legal>",
+    "bodyWithLink": "Nous utilisons des cookies pour mesurer l'audience du site et diagnostiquer les erreurs. Vous pouvez accepter ou refuser. En savoir plus : <legal>politique cookies</legal>",
     "reject": "Refuser",
     "title": "Cookies"
   },
@@ -441,6 +441,11 @@
     "noteBody": "Nous retouchons aussi vos images non shootées chez nous.",
     "requestQuote": "Demander un devis",
     "standard": "Standard"
+  },
+  "runtimeError": {
+    "body": "La page a rencontré un problème inattendu. Rechargez pour continuer.",
+    "reload": "Recharger",
+    "title": "Une erreur est survenue"
   },
   "seo": {
     "contactDescription": "Contactez E-Do Studio pour réserver un plateau photo ou vidéo à Paris.",

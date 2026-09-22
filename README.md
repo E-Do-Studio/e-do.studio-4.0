@@ -125,6 +125,7 @@ serveur dans `.env.example`) :
 | `VITE_PREVIEW_SECRET` | Secret partagé avec le CMS pour le mode preview |
 | `VITE_SUPABASE_URL` / `VITE_SUPABASE_KEY` | Projet Supabase + clé anon |
 | `VITE_GTM_ID` | Conteneur Google Tag Manager (non injecté si vide) |
+| `VITE_POSTHOG_PROJECT_TOKEN` / `VITE_POSTHOG_HOST` | PostHog (sessions + erreurs, EU par défaut, gated cookies) |
 | `GEMINI_API_KEY`, `CHAT_ALLOWED_ORIGIN` | Secrets Edge Function chat (jamais bundlés) |
 | `HUBSPOT_PRIVATE_APP_TOKEN` | Sync CRM (secret Edge Function) |
 | `VITE_HUBSPOT_PORTAL_ID` | Portal HubSpot — active l'envoi vers l'API Forms (attribution source) |

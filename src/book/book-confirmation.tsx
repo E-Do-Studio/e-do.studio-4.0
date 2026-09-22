@@ -174,7 +174,7 @@ const ConfirmedView = ({
               <KeyValueRow
                 orientation="stacked"
                 label={t('booking.contactLabel')}
-                className="gap-0.5"
+                className="ph-mask gap-0.5"
                 value={
                   <>
                     <span className="block tracking-tight">

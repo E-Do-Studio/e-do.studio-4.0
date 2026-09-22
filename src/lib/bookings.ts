@@ -3,6 +3,7 @@ import type {
   BookingQuoteData,
   CreateBookingInput,
 } from './booking-engine';
+import { capture, captureException } from './analytics';
 
 export type { BookingSessionData, BookingQuoteData, CreateBookingInput };
 
@@ -34,27 +35,44 @@ export class SlotTakenError extends Error {
 export async function createBooking(
   input: CreateBookingInput,
 ): Promise<CreateBookingResult> {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  if (!supabaseUrl) throw new Error('VITE_SUPABASE_URL manquant');
+  try {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    if (!supabaseUrl) throw new Error('VITE_SUPABASE_URL manquant');
 
-  const res = await fetch(`${supabaseUrl}/functions/v1/create-booking`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(input),
-  });
+    const res = await fetch(`${supabaseUrl}/functions/v1/create-booking`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input),
+    });
 
-  // Le créneau vient d'être pris entre l'affichage et l'envoi : c'est la
-  // contrainte d'exclusion en base qui tranche, pas une lecture préalable.
-  if (res.status === 409) throw new SlotTakenError();
+    // Le créneau vient d'être pris entre l'affichage et l'envoi : c'est la
+    // contrainte d'exclusion en base qui tranche, pas une lecture préalable.
+    if (res.status === 409) throw new SlotTakenError();
 
-  if (!res.ok) {
-    const detail = await res.text().catch(() => '');
-    throw new Error(
-      `create-booking ${res.status}${detail ? `: ${detail}` : ''}`,
-    );
+    if (!res.ok) {
+      const detail = await res.text().catch(() => '');
+      throw new Error(
+        `create-booking ${res.status}${detail ? `: ${detail}` : ''}`,
+      );
+    }
+
+    const result = (await res.json()) as CreateBookingResult;
+    capture('booking_submitted', {
+      mode: input.mode,
+      session_count: input.sessions.length,
+      plateau_keys: input.sessions.map((s) => s.plateauKey),
+      total: result.total,
+    });
+    return result;
+  } catch (error) {
+    if (error instanceof SlotTakenError) {
+      capture('booking_failed', { mode: input.mode, reason: 'slot_conflict' });
+      throw error;
+    }
+    capture('booking_failed', { mode: input.mode });
+    captureException(error, { source: 'booking' });
+    throw error;
   }
-
-  return (await res.json()) as CreateBookingResult;
 }
 
 /**

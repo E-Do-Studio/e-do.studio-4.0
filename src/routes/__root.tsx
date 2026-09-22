@@ -35,6 +35,7 @@ import {
 } from '../lib/structured-data';
 import { COOKIE_CONSENT_STORAGE_KEY } from '../lib/use-cookie-consent';
 import { useGoogleAnalytics } from '../lib/use-google-analytics';
+import { usePostHog } from '../lib/use-posthog';
 import {
   GTM_CONSENT_CATEGORIES,
   GTM_SCRIPT_ID,
@@ -43,6 +44,7 @@ import {
 import { NavMenu } from '../nav-menu';
 import { NotFoundPage } from '../not-found-page';
 import { PreviewBanner } from '../preview-banner';
+import { PostHogErrorBoundary } from '../posthog-error-boundary';
 import { SkipLink } from '../ui/skip-link';
 import type { Lang } from '../types';
 import appCss from '../styles.css?url';
@@ -181,6 +183,7 @@ function LangLayout() {
     : DEFAULT_LANG;
   useGoogleAnalytics(siteData.siteDefaults?.googleAnalyticsId);
   useGoogleTagManager();
+  usePostHog();
 
   const setLang = useCallback(
     (newLang: Lang) => {
@@ -233,19 +236,21 @@ function LangLayout() {
               l'hydratation. Il ne sert qu'à <Trans> — `useT()` lit la langue
               directement dans PageContext. */}
           <I18nextProvider i18n={getI18n(lang)}>
-            <PageContext.Provider value={pageContext}>
-              {/* Premier focusable du document, avant l'en-tête collant. */}
-              <SkipLink />
-              <Outlet />
-              <NavMenu
-                lang={lang}
-                setLang={setLang}
-                isOpen={menuOpen}
-                onClose={() => setMenuOpen(false)}
-              />
-              <CookieBanner lang={lang} onLegalClick={() => goto('legal')} />
-              <PreviewBanner lang={lang} />
-            </PageContext.Provider>
+            <PostHogErrorBoundary>
+              <PageContext.Provider value={pageContext}>
+                {/* Premier focusable du document, avant l'en-tête collant. */}
+                <SkipLink />
+                <Outlet />
+                <NavMenu
+                  lang={lang}
+                  setLang={setLang}
+                  isOpen={menuOpen}
+                  onClose={() => setMenuOpen(false)}
+                />
+                <CookieBanner lang={lang} onLegalClick={() => goto('legal')} />
+                <PreviewBanner lang={lang} />
+              </PageContext.Provider>
+            </PostHogErrorBoundary>
           </I18nextProvider>
         </div>
         <Scripts />

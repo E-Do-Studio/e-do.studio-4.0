@@ -8,6 +8,7 @@ import type {
 import { getT } from '../i18n';
 import type { BlockNode } from './render-blocks';
 import { getPreviewState } from './preview-mode';
+import { captureException } from './analytics';
 import { ordinal } from './format';
 
 const STRAPI_URL = import.meta.env.VITE_STRAPI_URL || 'https://cms.e-do.studio';
@@ -101,8 +102,26 @@ async function fetchStrapi<T>(
     const pending = inflight.get(key) as Promise<T> | undefined;
     if (pending) return pending;
     const p = (async () => {
-      const res = await fetch(key, { headers });
-      if (!res.ok) throw new Error(`Strapi ${path}: ${res.status}`);
+      let res: Response;
+      try {
+        res = await fetch(key, { headers });
+      } catch (error) {
+        captureException(error, {
+          source: 'strapi',
+          path,
+          reason: 'network',
+        });
+        throw error;
+      }
+      if (!res.ok) {
+        const error = new Error(`Strapi ${path}: ${res.status}`);
+        captureException(error, {
+          source: 'strapi',
+          path,
+          status: res.status,
+        });
+        throw error;
+      }
       const json = (await res.json()) as T;
       if (!preview.active) cacheSet(key, json);
       return json;
