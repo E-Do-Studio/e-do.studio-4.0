@@ -14,13 +14,12 @@ import {
   type ConfirmationSnapshot,
 } from './confirmation-snapshot';
 import type { Lang } from '../types';
-import { MONTHS, fmtEUR } from '../lib/format';
+import { MONTHS, bcp47, fmtEUR } from '../lib/format';
 import { SectionIntro } from '../ui/section-intro';
 import { QuoteTable } from '../ui/quote-table';
 import { KeyValueList, KeyValueRow } from '../ui/key-value-row';
 import { MonoLabel } from '../ui/mono-label';
 import { hourLabel } from '@/lib/format';
-import { cn } from '@/lib/utils';
 
 interface ConfirmedViewProps {
   lang: Lang;
@@ -65,10 +64,10 @@ const ConfirmedView = ({
         body: t('booking.bookingBody', { stage: plateauLabel }),
       };
     }
-    const who = snapshot.contact as { prenom?: string; nom?: string };
+    const contact = snapshot.contact as { prenom?: string; nom?: string };
     return {
       tag: t('booking.requestSent'),
-      title: t('booking.thankYou') + (who.prenom || who.nom || ''),
+      title: t('booking.thankYou') + (contact.prenom || contact.nom || ''),
       body: t('booking.cycloRequestBody'),
     };
   })();
@@ -81,168 +80,219 @@ const ConfirmedView = ({
     siren?: string;
   };
 
+  // La page arrive après un `navigate()`, focus sur `<body>`. Le porter sur le
+  // titre place le lecteur d'écran à l'endroit qui annonce l'issue.
   const titleRef = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     titleRef.current?.focus();
   }, []);
 
-  const dateValue =
-    snapshot.sessions && snapshot.sessions.length > 1 ? (
-      <ul className="m-0 flex list-none flex-col gap-1 p-0">
-        {snapshot.sessions.map((s, i) => (
-          <li
-            key={`${s.plateauKey}-${i}`}
-            className="flex flex-wrap items-baseline gap-x-2.5 text-sm tracking-tight"
-          >
-            <span className="text-muted-foreground">{s.plateauName[lang]}</span>
-            <span>
-              {s.date
-                ? `${s.date.d} ${months[s.date.m]} ${s.date.y}`
-                : t('booking.notSet')}
-            </span>
-            {s.arrivalHour != null && (
-              <span>
-                {hourLabel(s.arrivalHour)}–{hourLabel(s.arrivalHour + s.hours)}
-              </span>
-            )}
-          </li>
-        ))}
-      </ul>
-    ) : snapshot.selected ? (
-      <div className="flex flex-wrap items-baseline gap-x-2.5 text-base tracking-tight">
-        <span>
-          {snapshot.selected.d} {months[snapshot.selected.m]}{' '}
-          {snapshot.selected.y}
-        </span>
-        <span>
-          {hourLabel(snapshot.arrivalHour ?? 10)}–
-          {hourLabel(
-            (snapshot.arrivalHour ?? 10) + (snapshot.rentalHours || 0),
-          )}
-        </span>
-      </div>
-    ) : (
-      <span className="block text-base tracking-tight text-muted-foreground">
-        {t('booking.notSet')}
-      </span>
-    );
-
-  const quoteRows = (
-    snapshot.rows as { lbl: string; amt: number; onReq?: boolean }[]
-  ).map((r) => ({
-    label: r.lbl,
-    value: r.onReq ? t('booking.onRequestLower') : `${fmtEUR(r.amt, lang)} €`,
-  }));
-
   return (
-    // Même gabarit que le tunnel : le devis occupe la quatrième piste, il ne
-    // s'étale pas en document sous le titre. C'est ce document-là — méta
-    // « émis le », filet de total, vide blanc — qui faisait la page.
-    <PageShell className="app:grid-cols-[minmax(0,1fr)_300px] app:grid-rows-[var(--spacing-header)_auto_minmax(0,1fr)_var(--spacing-cta)]">
-      <main id={MAIN_ID} className="contents">
-        <SectionIntro
-          size="flow"
-          kicker={copy.tag}
-          title={copy.title}
-          titleRef={titleRef}
-          subtitle={copy.body}
-          className="bg-background px-5 py-6 md:px-12 md:py-7 app:col-start-1 app:row-start-2"
-        />
+    /* Aucune colonne déclarée, comme la branche de repli plus bas : les deux
+       états de cette page portaient deux gabarits différents pour le même
+       rendu. Celui-ci annonçait une colonne de sigle et une colonne souple que
+       le récapitulatif enjambait toutes les deux — 240px plus la gouttière plus
+       le reste font la largeur entière, exactement ce que donne la piste unique
+       de la coquille. */
+    <PageShell className="app:grid-rows-[var(--spacing-header)_minmax(0,1fr)]">
+      {/* Un vrai `<main>` et non un `<div>` : la page n'en avait aucun, donc le
+          lien d'évitement de skip-link.tsx ne trouvait pas sa cible et laissait
+          le focus sur `<body>`. C'est le dernier écran du parcours de
+          conversion, celui qu'on atteint au clavier après un formulaire. */}
+      <main
+        id={MAIN_ID}
+        className="flex min-h-0 min-w-0 flex-col gap-px overflow-x-hidden bg-border app:row-start-2 app:overflow-hidden"
+      >
+        {/* `minmax(0, …)` : `1fr` vaut `minmax(auto, 1fr)` et refuse de
+            rétrécir sous le min-content du chapô, ce qui élargissait toute
+            la colonne flex et faisait défiler la page. */}
+        <div className="grid min-w-0 shrink-0 gap-px bg-border grid-cols-1 app:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+          {/* Après la soumission, `navigate()` amène sur un document neuf, focus
+              sur `<body>` : rien ne disait que la réservation avait abouti.
+              `role="status"` annonce l'issue, et `titleRef` donne le focus au
+              titre pour que la lecture reprenne au bon endroit. */}
+          {/* `flow` : la cellule porte déjà son retrait. Le sur-titre est le
+              libellé mono du système, pas une pastille pleine — celle-ci
+              cassait le bento en dessinant un rectangle qui ne touche aucun
+              filet. */}
+          <SectionIntro
+            size="flow"
+            kicker={copy.tag}
+            title={copy.title}
+            titleRef={titleRef}
+            subtitle={copy.body}
+            className="min-h-44 bg-background px-5 pt-6 pb-6 md:px-12 md:pt-7"
+          />
+          {/* Deux `<dl>` et non un seul avec un `<div>` de groupement au
+              milieu : `<dl>` n'accepte comme enfants que `<dt>`, `<dd>` et des
+              `<div>` qui les portent directement. Un div qui n'enveloppe que
+              d'autres divs y est invalide. */}
+          <div className="flex min-h-44 min-w-0 flex-col justify-between gap-3.5 bg-background px-5 py-5 md:px-6 md:py-6">
+            <KeyValueList className="gap-3.5">
+              <KeyValueRow
+                orientation="stacked"
+                label={t('booking.reference')}
+                value={
+                  <span className="font-mono text-base tracking-widest">
+                    {ref}
+                  </span>
+                }
+              />
+              <KeyValueRow
+                orientation="stacked"
+                density="tight"
+                label={t('booking.issued')}
+                value={
+                  <span className="font-mono">
+                    {/* `hour12: false` : en-US passerait en 02:30 PM alors que
+                        les créneaux de la même page sont en 24 h (hourLabel). */}
+                    {new Date(snapshot.ts).toLocaleDateString(bcp47(lang), {
+                      day: '2-digit',
+                      month: 'short',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: false,
+                    })}
+                  </span>
+                }
+              />
+            </KeyValueList>
+            <KeyValueList>
+              <KeyValueRow
+                orientation="stacked"
+                label={t('booking.contactLabel')}
+                className="ph-mask gap-0.5"
+                value={
+                  <>
+                    <span className="block tracking-tight">
+                      {[contact.prenom, contact.nom].filter(Boolean).join(' ')}
+                    </span>
+                    {contact.email && (
+                      <span className="block text-xs text-muted-foreground">
+                        {contact.email}
+                      </span>
+                    )}
+                  </>
+                }
+              />
+            </KeyValueList>
+          </div>
+        </div>
 
         <KeyValueList
           pad="none"
-          className={cn(
-            'grid min-h-0 min-w-0 grid-cols-2 gap-px bg-border app:col-start-1 app:row-start-3',
-            !(contact.societe || contact.siren) &&
-              '[&>*:last-child]:col-span-2',
-          )}
+          className="grid min-w-0 shrink-0 grid-cols-2 gap-px bg-border app:grid-cols-[repeat(4,minmax(0,1fr))]"
         >
           <KeyValueRow
             orientation="stacked"
             label={t('booking.stage')}
-            className="h-full min-w-0 bg-background px-5 py-3 text-base"
+            className="min-w-0 bg-background px-5 py-3 text-base"
             value={<span className="tracking-tight">{plateauLabel}</span>}
           />
           <KeyValueRow
             orientation="stacked"
             label={isMultiPlateau ? t('booking.dates') : t('booking.date')}
-            className="h-full min-w-0 bg-background px-5 py-3"
-            value={dateValue}
+            className="min-w-0 bg-background px-5 py-3"
+            value={
+              snapshot.sessions && snapshot.sessions.length > 1 ? (
+                <ul className="flex flex-col gap-1 list-none p-0 m-0">
+                  {snapshot.sessions.map((s, i) => (
+                    <li
+                      key={`${s.plateauKey}-${i}`}
+                      className="flex flex-wrap items-baseline gap-x-2.5 text-sm tracking-tight"
+                    >
+                      <span className="text-muted-foreground">
+                        {s.plateauName[lang]}
+                      </span>
+                      <span>
+                        {s.date
+                          ? `${s.date.d} ${months[s.date.m]} ${s.date.y}`
+                          : t('booking.notSet')}
+                      </span>
+                      {s.arrivalHour != null && (
+                        <span>
+                          {hourLabel(s.arrivalHour)}–
+                          {hourLabel(s.arrivalHour + s.hours)}
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : snapshot.selected ? (
+                <div className="flex flex-wrap items-baseline gap-x-2.5 text-base tracking-tight">
+                  <span>
+                    {snapshot.selected.d} {months[snapshot.selected.m]}{' '}
+                    {snapshot.selected.y}
+                  </span>
+                  <span>
+                    {hourLabel(snapshot.arrivalHour ?? 10)}–
+                    {hourLabel(
+                      (snapshot.arrivalHour ?? 10) +
+                        (snapshot.rentalHours || 0),
+                    )}
+                  </span>
+                </div>
+              ) : (
+                <span className="block text-base tracking-tight text-muted-foreground">
+                  {t('booking.notSet')}
+                </span>
+              )
+            }
           />
           <KeyValueRow
             orientation="stacked"
-            label={t('booking.contactLabel')}
-            className="ph-mask h-full min-w-0 bg-background px-5 py-3"
+            label={t('booking.company')}
+            className="min-w-0 bg-background px-5 py-3"
             value={
-              <>
-                <span className="block tracking-tight">
-                  {[contact.prenom, contact.nom].filter(Boolean).join(' ')}
-                </span>
-                {contact.email && (
-                  <span className="block text-xs text-muted-foreground">
-                    {contact.email}
-                  </span>
-                )}
-              </>
+              <span className="tracking-tight">{contact.societe || '—'}</span>
             }
           />
-          {contact.societe ? (
-            <KeyValueRow
-              orientation="stacked"
-              label={t('booking.company')}
-              className="h-full min-w-0 bg-background px-5 py-3"
-              value={<span className="tracking-tight">{contact.societe}</span>}
-            />
-          ) : contact.siren ? (
-            <KeyValueRow
-              orientation="stacked"
-              density="tight"
-              label="SIREN"
-              className="h-full min-w-0 bg-background px-5 py-3"
-              value={
-                <span className="font-mono tracking-widest">
-                  {contact.siren}
-                </span>
-              }
-            />
-          ) : null}
+          <KeyValueRow
+            orientation="stacked"
+            density="tight"
+            label="SIREN"
+            className="min-w-0 bg-background px-5 py-3"
+            value={
+              <span className="font-mono tracking-widest">
+                {contact.siren || '—'}
+              </span>
+            }
+          />
         </KeyValueList>
 
-        <aside
-          aria-label={t('booking.yourQuote')}
-          className="dark flex min-h-0 min-w-0 flex-col gap-4 overflow-y-auto bg-background px-5 py-6 text-foreground app:col-start-2 app:row-span-3 app:row-start-2 app:gap-3.5 app:p-6"
-        >
-          <div>
-            <MonoLabel tone="muted">{t('booking.yourQuote')}</MonoLabel>
-            <p className="m-0 mt-2 font-mono text-xs tracking-widest text-muted-foreground">
-              {ref}
-            </p>
-            <h2 className="m-0 mt-2 text-2xl font-light tracking-tight">
-              {plateauLabel}
-            </h2>
-          </div>
-          <div className="flex min-h-0 flex-1 flex-col border-t border-border pt-3.5">
-            <MonoLabel tone="muted" className="mb-2.5 block">
-              {t('booking.breakdown')}
-            </MonoLabel>
-            <QuoteTable
-              variant="panel"
-              className="min-w-0"
-              rows={quoteRows}
-              totalLabel={t('booking.totalExVat')}
-              total={`${fmtEUR(snapshot.total, lang)} €`}
-              disclaimer={
-                <span className="font-mono text-xs tracking-wider text-muted-foreground">
-                  {t('booking.vatLine', {
-                    amount: fmtEUR(snapshot.total * 1.2, lang),
-                  })}
-                </span>
-              }
-            />
-          </div>
-        </aside>
+        {/* Pas de `px-*` sur la cellule : les filets du tableau doivent
+            toucher les bords, comme KeyValueRow le documente. Le retrait vit
+            dans `QuoteTable variant="page"`. */}
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto bg-background">
+          <MonoLabel tone="muted" className="block px-5 pt-4.5 pb-2.5 md:px-12">
+            {t('booking.breakdown')}
+          </MonoLabel>
+          <QuoteTable
+            variant="page"
+            className="min-w-0"
+            rows={(
+              snapshot.rows as { lbl: string; amt: number; onReq?: boolean }[]
+            ).map((r) => ({
+              label: r.lbl,
+              value: r.onReq
+                ? t('booking.onRequestLower')
+                : `${fmtEUR(r.amt, lang)} €`,
+            }))}
+            totalLabel={t('booking.totalExVat')}
+            total={`${fmtEUR(snapshot.total, lang)} €`}
+            disclaimer={
+              <p className="m-0 max-w-2xl min-w-0 text-pretty text-sm leading-relaxed text-muted-foreground">
+                {t('booking.quoteDisclaimer')}
+              </p>
+            }
+          />
+        </div>
 
-        <div className="grid min-h-cta min-w-0 grid-cols-2 gap-px bg-border app:col-start-1 app:row-start-4">
+        {/* Les boutons SONT les cellules : un aplat orange dans une case
+            blanche dessine un rectangle qui ne touche aucun filet. Même
+            montage que la barre du tunnel (`BookingFooterNav`). */}
+        <div className="grid min-h-cta min-w-0 shrink-0 grid-cols-2 gap-px bg-border">
           <Button
             type="button"
             variant="cell"
@@ -257,7 +307,7 @@ const ConfirmedView = ({
             type="button"
             size="touch"
             onClick={onNewRequest}
-            className="h-full min-w-0 w-full px-pad-cell max-md:whitespace-normal"
+            className="h-full w-full px-pad-cell max-md:whitespace-normal"
           >
             {t('booking.newRequest')}
             <ArrowRight data-icon="inline-end" />
@@ -294,7 +344,7 @@ const BookConfirmation = () => {
       <PageShell className="app:grid-rows-[var(--spacing-header)_minmax(0,1fr)]">
         <main
           id={MAIN_ID}
-          className="app:row-start-2 app:min-h-0 app:overflow-y-auto bg-background"
+          className="app:row-start-2 app:overflow-y-auto app:min-h-0 bg-background"
         >
           <SectionIntro
             kicker={t('bookPicker.confirmationMissingTitle')}
