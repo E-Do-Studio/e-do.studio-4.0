@@ -237,6 +237,11 @@ const HomePage = () => {
                     alt: p.alt || t('home.studioPhotoAlt'),
                   }))}
                   sizes="(min-width: 1024px) 25vw, (min-width: 768px) 50vw, 100vw"
+                  // Plus court que le défaut (5 s) : ce bandeau défile des
+                  // vues du même lieu, pas une sélection à lire. Le pavé
+                  // galerie garde le rythme lent.
+                  slideMs={2500}
+                  fadeMs={600}
                 />
               </MediaFrame>
             )}
