@@ -44,6 +44,7 @@ const LABELS: QuoteLabels = {
   electricity: "Électricité additionnelle",
   studioVisit: "Visite du studio",
   halfDay: "Demi-journée",
+  fullDayWithHours: (count: number) => (count > 1 ? "journées (8h)" : "journée (8h)"),
   proRataDay: "au prorata",
   postProduction: "Post-production",
   images: "images",
