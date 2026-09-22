@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.105.1";
 import { z } from "https://esm.sh/zod@4.4.3";
 import { syncContactForm, syncBooking } from "../_shared/hubspot.ts";
+import { captureServer } from "../_shared/posthog.ts";
 import { scoreContactSubmission } from "./spam.ts";
 import {
   buildBookingIcs,
@@ -371,16 +372,27 @@ async function handleContactRequest(
       headers: { ...cors, "Content-Type": "application/json" },
     });
 
+  // Read from `raw`, not from the parsed payload: the schema strips unknown keys.
+  const distinctId = (raw as { analytics?: { distinct_id?: string } })?.analytics
+    ?.distinct_id;
+  const track = (event: string, props: Record<string, unknown>) =>
+    captureServer(event, distinctId, `contact:${crypto.randomUUID()}`, props);
+  // The visitor is told "delivered" for spam and Turnstile failures; this is the
+  // only place a false positive on a real prospect becomes visible.
+  const reject = (reasons: string[]) => track("contact_rejected", { reasons });
+
   // Scoped to the contact type on purpose: `calendar_sync_alert` is fired by a
   // pg_cron job through pg_net, which sends no Origin header at all
   // (20260604090000_calendar_sync_lifecycle.sql). A blanket check would have
   // silently killed that alerting.
   if (!isAllowedOrigin(req)) {
+    await reject(["forbidden_origin"]);
     return json({ error: "forbidden_origin" }, 403);
   }
 
   const parsed = contactSchema.safeParse(raw);
   if (!parsed.success) {
+    await reject(["invalid_payload"]);
     return json({ error: "invalid_payload" }, 400);
   }
   const data = parsed.data;
@@ -405,12 +417,14 @@ async function handleContactRequest(
 
   if (spam) {
     await recordContactSubmission(supabase, data, ipHash, verdict.score, reasons, false);
+    await reject(reasons);
     // Answer as if delivered: the bot learns nothing about which filter fired.
     return json({ ok: true }, 200);
   }
 
   if (!(await verifyTurnstile(data.turnstileToken, ip))) {
     await recordContactSubmission(supabase, data, ipHash, verdict.score, [...reasons, "turnstile_failed"], false);
+    await reject([...reasons, "turnstile_failed"]);
     return json({ ok: true }, 200);
   }
 
@@ -426,6 +440,7 @@ async function handleContactRequest(
 
   if (!shortOk || !dailyOk) {
     await recordContactSubmission(supabase, data, ipHash, verdict.score, [...reasons, "rate_limited"], false);
+    await reject([...reasons, "rate_limited"]);
     // Surfaced to the visitor: a human retrying deserves to know why.
     return json({ error: "rate_limited" }, 429);
   }
@@ -439,6 +454,7 @@ async function handleContactRequest(
     message: data.message,
   });
   await recordContactSubmission(supabase, data, ipHash, verdict.score, reasons, true);
+  await track("contact_delivered", { spam_score: verdict.score });
 
   return json({ ok: true }, 200);
 }
@@ -467,8 +483,10 @@ Deno.serve(async (req: Request) => {
     });
   }
 
+  let emailType = "unknown";
   try {
     const payload: EmailPayload = await req.json();
+    emailType = payload.type;
 
     if (payload.type === "booking") {
       await handleBookingEmail(resendKey, fromEmail, payload.bookingId);
@@ -494,6 +512,12 @@ Deno.serve(async (req: Request) => {
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Internal server error";
     console.error("send-email error:", msg);
+    // A booking confirmation that never left is a client who believes they
+    // are booked and hears nothing back.
+    await captureServer("email_send_failed", undefined, `email:${crypto.randomUUID()}`, {
+      email_type: emailType,
+      message: msg,
+    });
     return new Response(JSON.stringify({ error: msg }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

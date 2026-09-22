@@ -11,6 +11,7 @@ import { useT } from '../i18n/use-t';
 import { configuratorPath, manualPath } from './book-routes';
 import { ContactRail, ContactRightColumn } from '../contact-page';
 import type { TeamMember } from '../lib/strapi';
+import { capture } from '../lib/analytics';
 
 interface TileProps {
   index: number;
@@ -97,8 +98,18 @@ const BookPicker = () => {
   const configHref = configuratorPath(lang, 0);
   const manualHref = manualPath(lang);
 
-  const goConfigurator = () => navigate({ to: configHref });
-  const goManual = () => navigate({ to: manualHref });
+  const goConfigurator = () => {
+    capture('booking_path_chosen', { path: 'configurator' });
+    navigate({ to: configHref });
+  };
+  const goManual = () => {
+    capture('booking_path_chosen', { path: 'manual' });
+    navigate({ to: manualHref });
+  };
+  const goContact = () => {
+    capture('booking_path_chosen', { path: 'contact' });
+    goto('contact');
+  };
 
   return (
     <PageShell className="app:grid-cols-[var(--spacing-logo)_repeat(3,minmax(0,1fr))] app:grid-rows-[var(--spacing-header)_minmax(0,1fr)]">
@@ -144,7 +155,7 @@ const BookPicker = () => {
             label={t('bookPicker.contactLabel')}
             description={t('bookPicker.contactDesc')}
             variant="surface"
-            onClick={() => goto('contact')}
+            onClick={goContact}
           />
         </div>
       </main>

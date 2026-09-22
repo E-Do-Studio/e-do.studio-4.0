@@ -1,35 +1,29 @@
 import { useEffect } from 'react';
-import { useRouterState } from '@tanstack/react-router';
 import { useCookieConsent } from './use-cookie-consent';
 import { isPreviewActive } from './preview-mode';
 import {
-  capturePageview,
   isPostHogEnabled,
-  optInPostHog,
+  registerSiteLang,
   startPostHog,
-  stopPostHog,
+  syncConsent,
 } from './analytics';
 
-export function usePostHog() {
-  const { consent } = useCookieConsent();
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
+export function usePostHog(lang: string) {
+  const { consent, ready } = useCookieConsent();
 
+  // `ready` : avant la lecture du stockage, `consent` vaut null pour tout le
+  // monde — démarrer là ferait passer un visiteur ayant accepté par le mode
+  // cookieless le temps d'un rendu.
   useEffect(() => {
+    if (!ready) return;
     if (!isPostHogEnabled()) return;
     if (isPreviewActive()) return;
-    if (consent === 'accepted') {
-      startPostHog();
-      optInPostHog();
-      return;
-    }
-    if (consent === 'rejected') stopPostHog();
-  }, [consent]);
+    startPostHog();
+    syncConsent(consent);
+  }, [consent, ready]);
 
   useEffect(() => {
-    if (!isPostHogEnabled()) return;
-    if (consent !== 'accepted') return;
-    if (!pathname) return;
-    if (isPreviewActive()) return;
-    capturePageview(pathname + window.location.search);
-  }, [consent, pathname]);
+    if (!ready) return;
+    registerSiteLang(lang);
+  }, [lang, ready]);
 }

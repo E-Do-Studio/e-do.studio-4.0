@@ -24,6 +24,10 @@ RUN pnpm build
 FROM node:22-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
+# Jeton public (déjà dans le bundle client), relu au runtime par server.mjs
+# pour remonter les échecs de rendu SSR.
+ARG VITE_POSTHOG_PROJECT_TOKEN
+ENV POSTHOG_PROJECT_TOKEN=$VITE_POSTHOG_PROJECT_TOKEN
 RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --prod --frozen-lockfile && pnpm store prune
