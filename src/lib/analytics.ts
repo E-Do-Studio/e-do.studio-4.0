@@ -4,11 +4,13 @@ import type { CookieConsent } from './use-cookie-consent';
 
 const PROJECT_TOKEN = import.meta.env.VITE_POSTHOG_PROJECT_TOKEN?.trim();
 // Proxy Caddy (/ph → eu.i.posthog.com) : sur le domaine du site, les bloqueurs
-// de pub ne coupent pas les requêtes. En dev, pas de Caddy devant Vite — on
-// garde l'hôte direct.
-const API_HOST =
-  import.meta.env.VITE_POSTHOG_HOST?.trim() ||
-  (import.meta.env.DEV ? 'https://eu.i.posthog.com' : '/ph');
+// de pub ne coupent pas les requêtes. Toujours lui en production, quelle que
+// soit la variable d'environnement : un VITE_POSTHOG_HOST resté dans la config
+// de déploiement contournerait le proxy sans que rien ne le signale. En dev,
+// pas de Caddy devant Vite — hôte direct, surchargeable (faux serveur de test).
+const API_HOST = import.meta.env.DEV
+  ? import.meta.env.VITE_POSTHOG_HOST?.trim() || 'https://eu.i.posthog.com'
+  : '/ph';
 
 let started = false;
 
