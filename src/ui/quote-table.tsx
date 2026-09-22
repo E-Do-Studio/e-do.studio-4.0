@@ -20,8 +20,10 @@ const quoteTableVariants = cva('flex flex-col', {
       /** Colonne étroite du tunnel. */
       panel: 'gap-1.5',
       /** Pleine largeur, page de confirmation : le retrait est DANS les
-          lignes, pour que les filets aillent d'un bord à l'autre. */
-      page: '',
+          lignes, pour que les filets aillent d'un bord à l'autre.
+          `min-w-0` : sans lui le paragraphe juridique (min-content = la
+          ligne entière) élargit la cellule au-delà du viewport. */
+      page: 'min-w-0',
       /** Carte compacte dans une bulle de conversation. */
       chat: 'gap-1',
     },
@@ -93,7 +95,7 @@ export const QuoteTable = ({
         <div
           key={row.label}
           className={cn(
-            'flex flex-col gap-0.5',
+            'flex min-w-0 flex-col gap-0.5',
             // `page` sépare ses postes d'un filet, pas la dernière ligne : le
             // total en pose déjà un juste en dessous, et deux traits collés
             // font un trait épais.
@@ -105,7 +107,7 @@ export const QuoteTable = ({
               : 'pb-1.5',
           )}
         >
-          <div className="flex items-baseline justify-between gap-3">
+          <div className="flex min-w-0 items-baseline justify-between gap-3">
             <dt className="min-w-0 text-xs tracking-tight text-muted-foreground">
               {row.label}
             </dt>
@@ -134,12 +136,16 @@ export const QuoteTable = ({
       role={totalLive ? 'status' : undefined}
       aria-live={totalLive ? 'polite' : undefined}
       className={cn(
-        'flex items-baseline justify-between gap-3 border-t border-border',
+        'flex min-w-0 items-baseline justify-between gap-3 border-t border-border',
         variant === 'page' ? 'px-5 py-3 md:px-12' : 'mt-2 pt-2.5',
       )}
     >
       <MonoLabel tone="muted">{totalLabel}</MonoLabel>
-      <Price value={total} size={variant === 'chat' ? 'md' : 'xl'} />
+      <Price
+        value={total}
+        size={variant === 'chat' ? 'md' : 'xl'}
+        className="shrink-0"
+      />
     </div>
 
     {disclaimer &&
@@ -156,7 +162,7 @@ export const QuoteTable = ({
       ) : (
         <div
           className={cn(
-            'flex flex-col gap-1.5',
+            'flex min-w-0 flex-col gap-1.5',
             variant === 'page' ? 'px-5 pb-5 pt-2 md:px-12' : 'mt-1.5',
           )}
         >
