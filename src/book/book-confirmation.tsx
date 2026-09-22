@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from '@tanstack/react-router';
 import { usePageContext } from '../lib/page-context';
 import { SCREEN_TO_PATH } from '../lib/screens';
-import { ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { PageShell } from '../ui/page-shell';
 import { MAIN_ID } from '../ui/skip-link';
 import { clearDraft } from '../lib/use-booking-draft';
@@ -20,7 +20,6 @@ import { QuoteTable } from '../ui/quote-table';
 import { KeyValueList, KeyValueRow } from '../ui/key-value-row';
 import { MonoLabel } from '../ui/mono-label';
 import { hourLabel } from '@/lib/format';
-import { StatusBadge } from '@/ui/status-badge';
 
 interface ConfirmedViewProps {
   lang: Lang;
@@ -54,7 +53,6 @@ const ConfirmedView = ({
     if (snapshot.mode === 'quote') {
       return {
         tag: t('booking.quoteSent'),
-        status: t('booking.quoteLabel'),
         title: t('booking.quoteOnItsWay'),
         body: t('booking.quoteBody', { stage: plateauLabel }),
       };
@@ -62,7 +60,6 @@ const ConfirmedView = ({
     if (snapshot.mode === 'booking') {
       return {
         tag: t('booking.bookingConfirmed'),
-        status: t('booking.booked'),
         title: t('booking.youreBooked'),
         body: t('booking.bookingBody', { stage: plateauLabel }),
       };
@@ -70,7 +67,6 @@ const ConfirmedView = ({
     const contact = snapshot.contact as { prenom?: string; nom?: string };
     return {
       tag: t('booking.requestSent'),
-      status: t('booking.confirmed'),
       title: t('booking.thankYou') + (contact.prenom || contact.nom || ''),
       body: t('booking.cycloRequestBody'),
     };
@@ -83,10 +79,6 @@ const ConfirmedView = ({
     societe?: string;
     siren?: string;
   };
-
-  const navBtnCls =
-    'h-auto gap-2 bg-transparent p-0 text-xs tracking-widest hover:bg-transparent hover:text-primary';
-  const navBtnOrangeCls = 'h-11 gap-2 px-6 text-xs tracking-widest';
 
   // La page arrive après un `navigate()`, focus sur `<body>`. Le porter sur le
   // titre place le lecteur d'écran à l'endroit qui annonce l'issue.
@@ -116,24 +108,17 @@ const ConfirmedView = ({
               sur `<body>` : rien ne disait que la réservation avait abouti.
               `role="status"` annonce l'issue, et `titleRef` donne le focus au
               titre pour que la lecture reprenne au bon endroit. */}
-          {/* `flow` : la cellule porte déjà son retrait. `gap-2.5` par-dessus le
-              `gap-3` de la variante — c'est l'écart d'origine, et le sur-titre
-              est ici une pastille, plus haute qu'une ligne de mono. */}
+          {/* `flow` : la cellule porte déjà son retrait. Le sur-titre est le
+              libellé mono du système, pas une pastille pleine — celle-ci
+              cassait le bento en dessinant un rectangle qui ne touche aucun
+              filet. */}
           <SectionIntro
             size="flow"
-            kicker={
-              <StatusBadge
-                render={<output />}
-                size="md"
-                className="gap-2.5 self-start"
-              >
-                {copy.status}
-              </StatusBadge>
-            }
+            kicker={copy.tag}
             title={copy.title}
             titleRef={titleRef}
             subtitle={copy.body}
-            className="min-h-44 gap-2.5 bg-background px-5 pt-6 pb-6 md:px-12 md:pt-7"
+            className="min-h-44 bg-background px-5 pt-6 pb-6 md:px-12 md:pt-7"
           />
           {/* Deux `<dl>` et non un seul avec un `<div>` de groupement au
               milieu : `<dl>` n'accepte comme enfants que `<dt>`, `<dd>` et des
@@ -158,7 +143,7 @@ const ConfirmedView = ({
                   <span className="font-mono">
                     {/* `hour12: false` : en-US passerait en 02:30 PM alors que
                         les créneaux de la même page sont en 24 h (hourLabel). */}
-                    {new Date().toLocaleDateString(bcp47(lang), {
+                    {new Date(snapshot.ts).toLocaleDateString(bcp47(lang), {
                       day: '2-digit',
                       month: 'short',
                       year: 'numeric',
@@ -192,7 +177,10 @@ const ConfirmedView = ({
           </div>
         </div>
 
-        <KeyValueList className="grid grid-cols-2 gap-px bg-border app:grid-cols-4">
+        <KeyValueList
+          pad="none"
+          className="grid grid-cols-2 gap-px bg-border app:grid-cols-4"
+        >
           <KeyValueRow
             orientation="stacked"
             label={t('booking.stage')}
@@ -249,35 +237,37 @@ const ConfirmedView = ({
               )
             }
           />
-          {contact.societe && (
-            <KeyValueRow
-              orientation="stacked"
-              label={t('booking.company')}
-              className="bg-background px-5 py-3"
-              value={<span className="tracking-tight">{contact.societe}</span>}
-            />
-          )}
-          {contact.siren && (
-            <KeyValueRow
-              orientation="stacked"
-              density="tight"
-              label="SIREN"
-              className="bg-background px-5 py-3"
-              value={
-                <span className="font-mono tracking-widest">
-                  {contact.siren}
-                </span>
-              }
-            />
-          )}
+          <KeyValueRow
+            orientation="stacked"
+            label={t('booking.company')}
+            className="bg-background px-5 py-3"
+            value={
+              <span className="tracking-tight">{contact.societe || '—'}</span>
+            }
+          />
+          <KeyValueRow
+            orientation="stacked"
+            density="tight"
+            label="SIREN"
+            className="bg-background px-5 py-3"
+            value={
+              <span className="font-mono tracking-widest">
+                {contact.siren || '—'}
+              </span>
+            }
+          />
         </KeyValueList>
 
-        <div className="bg-background px-5 md:px-12 py-4.5 pb-5 flex-1">
-          <MonoLabel tone="muted" className="mb-2.5 block">
-            {t('booking.quoteBreakdown')}
+        {/* Pas de `px-*` sur la cellule : les filets du tableau doivent
+            toucher les bords, comme KeyValueRow le documente. Le retrait vit
+            dans `QuoteTable variant="page"`. */}
+        <div className="flex flex-1 flex-col bg-background">
+          <MonoLabel tone="muted" className="block px-5 pt-4.5 pb-2.5 md:px-12">
+            {t('booking.breakdown')}
           </MonoLabel>
           <QuoteTable
             variant="page"
+            className="flex-1"
             rows={(
               snapshot.rows as { lbl: string; amt: number; onReq?: boolean }[]
             ).map((r) => ({
@@ -288,21 +278,37 @@ const ConfirmedView = ({
             }))}
             totalLabel={t('booking.totalExVat')}
             total={`${fmtEUR(snapshot.total, lang)} €`}
-            disclaimer={t('booking.quoteDisclaimer')}
+            disclaimer={
+              <p className="m-0 text-sm leading-relaxed text-muted-foreground">
+                {t('booking.quoteDisclaimer')}
+              </p>
+            }
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-px bg-border">
-          <div className="bg-background px-5 py-3 flex items-center">
-            <Button onClick={() => goto('home')} className={navBtnCls}>
-              ← {t('booking.backHome')}
-            </Button>
-          </div>
-          <div className="bg-background px-5 py-3 flex items-center justify-end">
-            <Button onClick={onNewRequest} className={navBtnOrangeCls}>
-              {t('booking.newRequest')} <ArrowRight data-icon="inline-end" />
-            </Button>
-          </div>
+        {/* Les boutons SONT les cellules : un aplat orange dans une case
+            blanche dessine un rectangle qui ne touche aucun filet. Même
+            montage que la barre du tunnel (`BookingFooterNav`). */}
+        <div className="grid min-h-cta shrink-0 grid-cols-2 gap-px bg-border">
+          <Button
+            type="button"
+            variant="cell"
+            size="touch"
+            onClick={() => goto('home')}
+            className="h-full w-full justify-start px-pad-cell max-md:whitespace-normal"
+          >
+            <ArrowLeft data-icon="inline-start" />
+            {t('booking.backHome')}
+          </Button>
+          <Button
+            type="button"
+            size="touch"
+            onClick={onNewRequest}
+            className="h-full w-full px-pad-cell max-md:whitespace-normal"
+          >
+            {t('booking.newRequest')}
+            <ArrowRight data-icon="inline-end" />
+          </Button>
         </div>
       </main>
     </PageShell>

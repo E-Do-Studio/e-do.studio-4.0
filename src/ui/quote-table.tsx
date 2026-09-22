@@ -19,8 +19,9 @@ const quoteTableVariants = cva('flex flex-col', {
     variant: {
       /** Colonne étroite du tunnel. */
       panel: 'gap-1.5',
-      /** Pleine largeur, page de confirmation. */
-      page: 'gap-2',
+      /** Pleine largeur, page de confirmation : le retrait est DANS les
+          lignes, pour que les filets aillent d'un bord à l'autre. */
+      page: '',
       /** Carte compacte dans une bulle de conversation. */
       chat: 'gap-1',
     },
@@ -97,7 +98,10 @@ export const QuoteTable = ({
             // total en pose déjà un juste en dessous, et deux traits collés
             // font un trait épais.
             variant === 'page'
-              ? cn('py-1.5', i < rows.length - 1 && 'border-b border-b-border')
+              ? cn(
+                  'px-5 py-1.5 md:px-12',
+                  i < rows.length - 1 && 'border-b border-border',
+                )
               : 'pb-1.5',
           )}
         >
@@ -129,7 +133,10 @@ export const QuoteTable = ({
     <div
       role={totalLive ? 'status' : undefined}
       aria-live={totalLive ? 'polite' : undefined}
-      className="mt-2 flex items-baseline justify-between gap-3 border-t border-border pt-2.5"
+      className={cn(
+        'flex items-baseline justify-between gap-3 border-t border-border',
+        variant === 'page' ? 'px-5 py-3 md:px-12' : 'mt-2 pt-2.5',
+      )}
     >
       <MonoLabel tone="muted">{totalLabel}</MonoLabel>
       <Price value={total} size={variant === 'chat' ? 'md' : 'xl'} />
@@ -137,11 +144,24 @@ export const QuoteTable = ({
 
     {disclaimer &&
       (typeof disclaimer === 'string' ? (
-        <MonoLabel tone="muted" lines="multi" className="mt-1.5">
+        <MonoLabel
+          tone="muted"
+          lines="multi"
+          className={cn(
+            variant === 'page' ? 'px-5 pb-5 pt-2 md:px-12' : 'mt-1.5',
+          )}
+        >
           {disclaimer}
         </MonoLabel>
       ) : (
-        <div className="mt-1.5 flex flex-col gap-1.5">{disclaimer}</div>
+        <div
+          className={cn(
+            'flex flex-col gap-1.5',
+            variant === 'page' ? 'px-5 pb-5 pt-2 md:px-12' : 'mt-1.5',
+          )}
+        >
+          {disclaimer}
+        </div>
       ))}
   </div>
 );
