@@ -111,9 +111,7 @@ export const QuoteTable = ({
             <dt className="min-w-0 text-xs tracking-tight text-muted-foreground">
               {row.label}
             </dt>
-            <dd className="m-0 max-w-full text-xs tabular-nums">
-              {row.value}
-            </dd>
+            <dd className="m-0 max-w-full text-xs tabular-nums">{row.value}</dd>
           </div>
           {row.breakdown?.map((line) => (
             <MonoLabel
