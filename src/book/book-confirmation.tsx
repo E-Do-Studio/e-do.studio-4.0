@@ -88,12 +88,9 @@ const ConfirmedView = ({
   }, []);
 
   return (
-    /* Aucune colonne déclarée, comme la branche de repli plus bas : les deux
-       états de cette page portaient deux gabarits différents pour le même
-       rendu. Celui-ci annonçait une colonne de sigle et une colonne souple que
-       le récapitulatif enjambait toutes les deux — 240px plus la gouttière plus
-       le reste font la largeur entière, exactement ce que donne la piste unique
-       de la coquille. */
+    /* Une piste, comme la branche de repli. La barre d'actions reste DANS
+       la cellule : une rangée de plus dans la coquille la peignait une
+       seconde fois, sous le bandeau déjà là. */
     <PageShell className="app:grid-rows-[var(--spacing-header)_minmax(0,1fr)]">
       {/* Un vrai `<main>` et non un `<div>` : la page n'en avait aucun, donc le
           lien d'évitement de skip-link.tsx ne trouvait pas sa cible et laissait
@@ -101,11 +98,13 @@ const ConfirmedView = ({
           conversion, celui qu'on atteint au clavier après un formulaire. */}
       <main
         id={MAIN_ID}
-        className="flex min-h-0 min-w-0 flex-col gap-px overflow-x-hidden bg-border app:row-start-2 app:overflow-hidden"
+        className="flex min-h-0 min-w-0 w-full max-w-full flex-col gap-px bg-border app:row-start-2 app:overflow-hidden"
       >
         {/* `minmax(0, …)` : `1fr` vaut `minmax(auto, 1fr)` et refuse de
             rétrécir sous le min-content du chapô, ce qui élargissait toute
             la colonne flex et faisait défiler la page. */}
+        {/* Même coupe que le hero : 1,6 / 1. SIREN occupe la piste de droite,
+            sous la référence. Quatre colonnes égales décrochaient le filet. */}
         <div className="grid min-w-0 shrink-0 gap-px bg-border grid-cols-1 app:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
           {/* Après la soumission, `navigate()` amène sur un document neuf, focus
               sur `<body>` : rien ne disait que la réservation avait abouti.
@@ -121,13 +120,13 @@ const ConfirmedView = ({
             title={copy.title}
             titleRef={titleRef}
             subtitle={copy.body}
-            className="min-h-44 bg-background px-5 pt-6 pb-6 md:px-12 md:pt-7"
+            className="min-h-44 bg-background px-5 pt-6 pb-6 md:px-12 md:pt-7 app:col-start-1 app:row-start-1"
           />
           {/* Deux `<dl>` et non un seul avec un `<div>` de groupement au
               milieu : `<dl>` n'accepte comme enfants que `<dt>`, `<dd>` et des
               `<div>` qui les portent directement. Un div qui n'enveloppe que
               d'autres divs y est invalide. */}
-          <div className="flex min-h-44 min-w-0 flex-col justify-between gap-3.5 bg-background px-5 py-5 md:px-6 md:py-6">
+          <div className="flex min-h-44 min-w-0 flex-col justify-between gap-3.5 bg-background px-5 py-5 md:px-6 md:py-6 app:col-start-2 app:row-start-1">
             <KeyValueList className="gap-3.5">
               <KeyValueRow
                 orientation="stacked"
@@ -178,93 +177,99 @@ const ConfirmedView = ({
               />
             </KeyValueList>
           </div>
+
+          <KeyValueList
+            pad="none"
+            className="grid min-w-0 grid-cols-2 gap-px bg-border app:col-start-1 app:row-start-2 app:grid-cols-3"
+          >
+            <KeyValueRow
+              orientation="stacked"
+              label={t('booking.stage')}
+              className="min-w-0 bg-background px-5 py-3 text-base"
+              value={<span className="tracking-tight">{plateauLabel}</span>}
+            />
+            <KeyValueRow
+              orientation="stacked"
+              label={isMultiPlateau ? t('booking.dates') : t('booking.date')}
+              className="min-w-0 bg-background px-5 py-3"
+              value={
+                snapshot.sessions && snapshot.sessions.length > 1 ? (
+                  <ul className="flex flex-col gap-1 list-none p-0 m-0">
+                    {snapshot.sessions.map((s, i) => (
+                      <li
+                        key={`${s.plateauKey}-${i}`}
+                        className="flex flex-wrap items-baseline gap-x-2.5 text-sm tracking-tight"
+                      >
+                        <span className="text-muted-foreground">
+                          {s.plateauName[lang]}
+                        </span>
+                        <span>
+                          {s.date
+                            ? `${s.date.d} ${months[s.date.m]} ${s.date.y}`
+                            : t('booking.notSet')}
+                        </span>
+                        {s.arrivalHour != null && (
+                          <span>
+                            {hourLabel(s.arrivalHour)}–
+                            {hourLabel(s.arrivalHour + s.hours)}
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                ) : snapshot.selected ? (
+                  <div className="flex flex-wrap items-baseline gap-x-2.5 text-base tracking-tight">
+                    <span>
+                      {snapshot.selected.d} {months[snapshot.selected.m]}{' '}
+                      {snapshot.selected.y}
+                    </span>
+                    <span>
+                      {hourLabel(snapshot.arrivalHour ?? 10)}–
+                      {hourLabel(
+                        (snapshot.arrivalHour ?? 10) +
+                          (snapshot.rentalHours || 0),
+                      )}
+                    </span>
+                  </div>
+                ) : (
+                  <span className="block text-base tracking-tight text-muted-foreground">
+                    {t('booking.notSet')}
+                  </span>
+                )
+              }
+            />
+            <KeyValueRow
+              orientation="stacked"
+              label={t('booking.company')}
+              className="col-span-2 min-w-0 bg-background px-5 py-3 app:col-span-1"
+              value={
+                <span className="tracking-tight">{contact.societe || '—'}</span>
+              }
+            />
+          </KeyValueList>
+          <KeyValueList
+            pad="none"
+            className="min-w-0 bg-background app:col-start-2 app:row-start-2"
+          >
+            <KeyValueRow
+              orientation="stacked"
+              density="tight"
+              label="SIREN"
+              className="h-full min-w-0 bg-background px-5 py-3"
+              value={
+                <span className="font-mono tracking-widest">
+                  {contact.siren || '—'}
+                </span>
+              }
+            />
+          </KeyValueList>
         </div>
 
-        <KeyValueList
-          pad="none"
-          className="grid min-w-0 shrink-0 grid-cols-2 gap-px bg-border app:grid-cols-[repeat(4,minmax(0,1fr))]"
-        >
-          <KeyValueRow
-            orientation="stacked"
-            label={t('booking.stage')}
-            className="min-w-0 bg-background px-5 py-3 text-base"
-            value={<span className="tracking-tight">{plateauLabel}</span>}
-          />
-          <KeyValueRow
-            orientation="stacked"
-            label={isMultiPlateau ? t('booking.dates') : t('booking.date')}
-            className="min-w-0 bg-background px-5 py-3"
-            value={
-              snapshot.sessions && snapshot.sessions.length > 1 ? (
-                <ul className="flex flex-col gap-1 list-none p-0 m-0">
-                  {snapshot.sessions.map((s, i) => (
-                    <li
-                      key={`${s.plateauKey}-${i}`}
-                      className="flex flex-wrap items-baseline gap-x-2.5 text-sm tracking-tight"
-                    >
-                      <span className="text-muted-foreground">
-                        {s.plateauName[lang]}
-                      </span>
-                      <span>
-                        {s.date
-                          ? `${s.date.d} ${months[s.date.m]} ${s.date.y}`
-                          : t('booking.notSet')}
-                      </span>
-                      {s.arrivalHour != null && (
-                        <span>
-                          {hourLabel(s.arrivalHour)}–
-                          {hourLabel(s.arrivalHour + s.hours)}
-                        </span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              ) : snapshot.selected ? (
-                <div className="flex flex-wrap items-baseline gap-x-2.5 text-base tracking-tight">
-                  <span>
-                    {snapshot.selected.d} {months[snapshot.selected.m]}{' '}
-                    {snapshot.selected.y}
-                  </span>
-                  <span>
-                    {hourLabel(snapshot.arrivalHour ?? 10)}–
-                    {hourLabel(
-                      (snapshot.arrivalHour ?? 10) +
-                        (snapshot.rentalHours || 0),
-                    )}
-                  </span>
-                </div>
-              ) : (
-                <span className="block text-base tracking-tight text-muted-foreground">
-                  {t('booking.notSet')}
-                </span>
-              )
-            }
-          />
-          <KeyValueRow
-            orientation="stacked"
-            label={t('booking.company')}
-            className="min-w-0 bg-background px-5 py-3"
-            value={
-              <span className="tracking-tight">{contact.societe || '—'}</span>
-            }
-          />
-          <KeyValueRow
-            orientation="stacked"
-            density="tight"
-            label="SIREN"
-            className="min-w-0 bg-background px-5 py-3"
-            value={
-              <span className="font-mono tracking-widest">
-                {contact.siren || '—'}
-              </span>
-            }
-          />
-        </KeyValueList>
-
         {/* Pas de `px-*` sur la cellule : les filets du tableau doivent
-            toucher les bords, comme KeyValueRow le documente. Le retrait vit
-            dans `QuoteTable variant="page"`. */}
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto bg-background">
+            toucher les bords. Le retrait vit dans `QuoteTable variant="page"`.
+            `overflow-x-hidden` est explicite : `overflow-y-auto` seul
+            recalcule l'axe horizontal en `auto`. */}
+        <div className="flex min-h-0 min-w-0 w-full max-w-full flex-1 flex-col overflow-x-hidden overflow-y-auto bg-background">
           <MonoLabel tone="muted" className="block px-5 pt-4.5 pb-2.5 md:px-12">
             {t('booking.breakdown')}
           </MonoLabel>
@@ -291,8 +296,9 @@ const ConfirmedView = ({
 
         {/* Les boutons SONT les cellules : un aplat orange dans une case
             blanche dessine un rectangle qui ne touche aucun filet. Même
-            montage que la barre du tunnel (`BookingFooterNav`). */}
-        <div className="grid min-h-cta min-w-0 shrink-0 grid-cols-2 gap-px bg-border">
+            montage que la barre du tunnel (`BookingFooterNav`). Un seul
+            bandeau, dernier enfant de la cellule. */}
+        <div className="grid min-h-cta min-w-0 w-full max-w-full shrink-0 grid-cols-2 gap-px bg-border">
           <Button
             type="button"
             variant="cell"
@@ -307,40 +313,13 @@ const ConfirmedView = ({
             type="button"
             size="touch"
             onClick={onNewRequest}
-            className="h-full w-full px-pad-cell max-md:whitespace-normal"
+            className="h-full min-w-0 w-full px-pad-cell max-md:whitespace-normal"
           >
             {t('booking.newRequest')}
             <ArrowRight data-icon="inline-end" />
           </Button>
         </div>
-
       </main>
-      {/* Les boutons SONT les cellules : un aplat orange dans une case
-          blanche dessine un rectangle qui ne touche aucun filet. Même
-          montage que la barre du tunnel (`BookingFooterNav`). Rangée propre
-          de la coquille, pour rester dans le viewport quand le récapitulatif
-          défile. */}
-      <div className="grid min-h-cta min-w-0 w-full max-w-full grid-cols-2 gap-px bg-border app:row-start-3">
-        <Button
-          type="button"
-          variant="cell"
-          size="touch"
-          onClick={() => goto('home')}
-          className="h-full min-w-0 w-full justify-start px-pad-cell max-md:whitespace-normal"
-        >
-          <ArrowLeft data-icon="inline-start" />
-          {t('booking.backHome')}
-        </Button>
-        <Button
-          type="button"
-          size="touch"
-          onClick={onNewRequest}
-          className="h-full min-w-0 w-full px-pad-cell max-md:whitespace-normal"
-        >
-          {t('booking.newRequest')}
-          <ArrowRight data-icon="inline-end" />
-        </Button>
-      </div>
     </PageShell>
   );
 };
