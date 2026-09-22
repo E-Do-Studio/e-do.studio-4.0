@@ -22,3 +22,6 @@ verify_jwt = false
 
 [functions.chat]
 verify_jwt = false
+
+[functions.create-booking]
+verify_jwt = false

@@ -234,6 +234,13 @@ alternates.
 - `supabase/functions/` (Deno): `chat` (Gemini + knowledge base + rate limiting),
   `create-booking`, `send-email` (+ HubSpot sync), `calendar-sync`, `ical`,
   `_shared/`.
+- Public browser-called functions (`create-booking`, `send-email`,
+  `calendar-sync`, `ical`, `chat`) **must** have `[functions.<slug>]
+  verify_jwt = false` in `supabase/config.toml`. Deploying without that
+  entry re-enables JWT at the gateway; the booking form then 401s and
+  the browser reports a CORS failure. Code on `main` is not live until
+  `supabase functions deploy <slug>` — a missing function 404s the
+  preflight and blocks every reservation.
 - Runbooks: `docs/booking-system.md`, `docs/chatbot-knowledge.md`,
   `supabase/SETUP.md`.
 

@@ -21,9 +21,10 @@ npx supabase link --project-ref xpqeechcvbyiqvqyrgvt
 npx supabase functions deploy ical
 npx supabase functions deploy send-email
 npx supabase functions deploy calendar-sync
+npx supabase functions deploy create-booking
 ```
 
-> **Important:** all three functions are called by anonymous browser clients (booking form, public iCal feed). They must keep `verify_jwt = false` — otherwise the gateway 401s the frontend fetches before they reach the function code, and no emails / calendar syncs go out.
+> **Important:** these functions are called by anonymous browser clients (booking form, public iCal feed). They must keep `verify_jwt = false` — otherwise the gateway 401s the frontend fetches before they reach the function code, and no emails / calendar syncs / bookings go out.
 
 ## 3. Subscribe in Apple Calendar
 
