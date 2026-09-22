@@ -121,13 +121,25 @@ function toWebRequest(req) {
 const POSTHOG_API = 'https://eu.i.posthog.com';
 const POSTHOG_ASSETS = 'https://eu-assets.i.posthog.com';
 // Les cookies du site n'ont rien à faire chez PostHog ; `host` et la longueur
-// sont recalculés par fetch.
+// sont recalculés par fetch. Les en-têtes « hop-by-hop » font lever fetch
+// (undici) : le proxy Coolify transmet les requêtes du navigateur en
+// `transfer-encoding: chunked`, et chacune répondait 502 — aucun événement
+// navigateur n'atteignait PostHog, alors que curl passait.
 const PH_DROPPED_REQUEST = new Set([
   'host',
   'cookie',
   'connection',
   'content-length',
   'accept-encoding',
+  'transfer-encoding',
+  'keep-alive',
+  'upgrade',
+  'expect',
+  'te',
+  'trailer',
+  'proxy-connection',
+  'x-forwarded-for',
+  'x-real-ip',
 ]);
 // fetch décompresse la réponse : la renvoyer avec son `content-encoding`
 // d'origine ferait lire au navigateur du gzip qui n'en est plus.
@@ -138,7 +150,34 @@ const PH_DROPPED_RESPONSE = new Set([
   'connection',
 ]);
 
+// Le premier maillon de X-Forwarded-For est le visiteur ; les suivants sont
+// les proxys traversés. À défaut, X-Real-IP, puis la socket.
+function clientIp(req) {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (typeof forwarded === 'string' && forwarded.trim()) {
+    return forwarded.split(',')[0].trim();
+  }
+  const real = req.headers['x-real-ip'];
+  if (typeof real === 'string' && real.trim()) return real.trim();
+  return req.socket.remoteAddress || '';
+}
+
 async function proxyPostHog(req, res, url) {
+  // Diagnostic de la chaîne d'IP derrière le proxy Coolify, qui n'est pas
+  // observable autrement. Ne renvoie au visiteur que ses propres en-têtes.
+  if (url.pathname === '/ph/_ip') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(
+      JSON.stringify({
+        'x-forwarded-for': req.headers['x-forwarded-for'] ?? null,
+        'x-real-ip': req.headers['x-real-ip'] ?? null,
+        forwarded: req.headers.forwarded ?? null,
+        socket: req.socket.remoteAddress ?? null,
+        sent: clientIp(req),
+      }),
+    );
+    return;
+  }
   const rest = url.pathname.slice('/ph'.length);
   const base = rest.startsWith('/static/') ? POSTHOG_ASSETS : POSTHOG_API;
   const headers = {};
@@ -148,8 +187,7 @@ async function proxyPostHog(req, res, url) {
   // L'IP du visiteur, pas celle du proxy : géolocalisation, et surtout le
   // hash du mode cookieless (IP + user agent), qui sans elle fondrait tous
   // les visiteurs anonymes en un seul.
-  headers['x-forwarded-for'] =
-    req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+  headers['x-forwarded-for'] = clientIp(req);
   const hasBody = req.method !== 'GET' && req.method !== 'HEAD';
   const upstream = await fetch(base + rest + url.search, {
     method: req.method,
