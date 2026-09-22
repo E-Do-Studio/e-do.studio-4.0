@@ -162,6 +162,12 @@ function clientIp(req) {
   return req.socket.remoteAddress || '';
 }
 
+async function readBody(req) {
+  const chunks = [];
+  for await (const chunk of req) chunks.push(chunk);
+  return Buffer.concat(chunks);
+}
+
 async function proxyPostHog(req, res, url) {
   // Diagnostic de la chaîne d'IP derrière le proxy Coolify, qui n'est pas
   // observable autrement. Ne renvoie au visiteur que ses propres en-têtes.
@@ -188,12 +194,15 @@ async function proxyPostHog(req, res, url) {
   // hash du mode cookieless (IP + user agent), qui sans elle fondrait tous
   // les visiteurs anonymes en un seul.
   headers['x-forwarded-for'] = clientIp(req);
+  // Corps lu en entier puis renvoyé avec sa longueur, et non relayé en flux :
+  // derrière le proxy Coolify, le flux arrivait vide chez PostHog (400
+  // « expected value »), alors qu'il passait en local. Un lot d'événements pèse
+  // quelques Ko, un morceau de replay quelques centaines.
   const hasBody = req.method !== 'GET' && req.method !== 'HEAD';
   const upstream = await fetch(base + rest + url.search, {
     method: req.method,
     headers,
-    body: hasBody ? Readable.toWeb(req) : undefined,
-    duplex: hasBody ? 'half' : undefined,
+    body: hasBody ? await readBody(req) : undefined,
     signal: AbortSignal.timeout(10_000),
   });
   const out = {};
