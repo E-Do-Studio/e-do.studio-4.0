@@ -313,7 +313,34 @@ const ConfirmedView = ({
             <ArrowRight data-icon="inline-end" />
           </Button>
         </div>
+
       </main>
+      {/* Les boutons SONT les cellules : un aplat orange dans une case
+          blanche dessine un rectangle qui ne touche aucun filet. Même
+          montage que la barre du tunnel (`BookingFooterNav`). Rangée propre
+          de la coquille, pour rester dans le viewport quand le récapitulatif
+          défile. */}
+      <div className="grid min-h-cta min-w-0 w-full max-w-full grid-cols-2 gap-px bg-border app:row-start-3">
+        <Button
+          type="button"
+          variant="cell"
+          size="touch"
+          onClick={() => goto('home')}
+          className="h-full min-w-0 w-full justify-start px-pad-cell max-md:whitespace-normal"
+        >
+          <ArrowLeft data-icon="inline-start" />
+          {t('booking.backHome')}
+        </Button>
+        <Button
+          type="button"
+          size="touch"
+          onClick={onNewRequest}
+          className="h-full min-w-0 w-full px-pad-cell max-md:whitespace-normal"
+        >
+          {t('booking.newRequest')}
+          <ArrowRight data-icon="inline-end" />
+        </Button>
+      </div>
     </PageShell>
   );
 };
