@@ -88,20 +88,22 @@ const ConfirmedView = ({
   }, []);
 
   return (
-    /* Aucune colonne déclarée, comme la branche de repli plus bas : les deux
-       états de cette page portaient deux gabarits différents pour le même
-       rendu. Celui-ci annonçait une colonne de sigle et une colonne souple que
-       le récapitulatif enjambait toutes les deux — 240px plus la gouttière plus
-       le reste font la largeur entière, exactement ce que donne la piste unique
-       de la coquille. */
-    <PageShell className="app:grid-rows-[var(--spacing-header)_minmax(0,1fr)]">
+    /* Une piste, comme la branche de repli. La troisième rangée est la barre
+       d'actions : tant qu'elle vivait dans la cellule du récapitulatif, le
+       verrou de viewport la rognait dès que le hero et les faits prenaient
+       la hauteur. Elle a la sienne, comme les autres bento. */
+    <PageShell className="app:grid-rows-[var(--spacing-header)_minmax(0,1fr)_var(--spacing-cta)]">
       {/* Un vrai `<main>` et non un `<div>` : la page n'en avait aucun, donc le
           lien d'évitement de skip-link.tsx ne trouvait pas sa cible et laissait
           le focus sur `<body>`. C'est le dernier écran du parcours de
-          conversion, celui qu'on atteint au clavier après un formulaire. */}
+          conversion, celui qu'on atteint au clavier après un formulaire.
+          `overflow-x-hidden` sans palier : un descendant en `overflow-y-auto`
+          seul recalcule l'axe horizontal en `auto` et laissait le montant
+          sortir à droite. Le défilement vertical, lui, n'existe qu'à `app`,
+          là où la rangée a une hauteur bornée. */}
       <main
         id={MAIN_ID}
-        className="flex min-h-0 min-w-0 flex-col gap-px overflow-x-hidden bg-border app:row-start-2 app:overflow-hidden"
+        className="flex min-h-0 min-w-0 w-full max-w-full flex-col gap-px overflow-x-hidden bg-border app:row-start-2 app:overflow-y-auto"
       >
         {/* `minmax(0, …)` : `1fr` vaut `minmax(auto, 1fr)` et refuse de
             rétrécir sous le min-content du chapô, ce qui élargissait toute
@@ -263,8 +265,10 @@ const ConfirmedView = ({
 
         {/* Pas de `px-*` sur la cellule : les filets du tableau doivent
             toucher les bords, comme KeyValueRow le documente. Le retrait vit
-            dans `QuoteTable variant="page"`. */}
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto bg-background">
+            dans `QuoteTable variant="page"`. Pas de défilement propre : c'est
+            `<main>` qui défile, sinon les deux scrollports se battent et
+            l'axe horizontal se rouvre. */}
+        <div className="min-w-0 w-full max-w-full bg-background">
           <MonoLabel tone="muted" className="block px-5 pt-4.5 pb-2.5 md:px-12">
             {t('booking.breakdown')}
           </MonoLabel>
@@ -289,31 +293,33 @@ const ConfirmedView = ({
           />
         </div>
 
-        {/* Les boutons SONT les cellules : un aplat orange dans une case
-            blanche dessine un rectangle qui ne touche aucun filet. Même
-            montage que la barre du tunnel (`BookingFooterNav`). */}
-        <div className="grid min-h-cta min-w-0 shrink-0 grid-cols-2 gap-px bg-border">
-          <Button
-            type="button"
-            variant="cell"
-            size="touch"
-            onClick={() => goto('home')}
-            className="h-full min-w-0 w-full justify-start px-pad-cell max-md:whitespace-normal"
-          >
-            <ArrowLeft data-icon="inline-start" />
-            {t('booking.backHome')}
-          </Button>
-          <Button
-            type="button"
-            size="touch"
-            onClick={onNewRequest}
-            className="h-full w-full px-pad-cell max-md:whitespace-normal"
-          >
-            {t('booking.newRequest')}
-            <ArrowRight data-icon="inline-end" />
-          </Button>
-        </div>
       </main>
+      {/* Les boutons SONT les cellules : un aplat orange dans une case
+          blanche dessine un rectangle qui ne touche aucun filet. Même
+          montage que la barre du tunnel (`BookingFooterNav`). Rangée propre
+          de la coquille, pour rester dans le viewport quand le récapitulatif
+          défile. */}
+      <div className="grid min-h-cta min-w-0 w-full max-w-full grid-cols-2 gap-px bg-border app:row-start-3">
+        <Button
+          type="button"
+          variant="cell"
+          size="touch"
+          onClick={() => goto('home')}
+          className="h-full min-w-0 w-full justify-start px-pad-cell max-md:whitespace-normal"
+        >
+          <ArrowLeft data-icon="inline-start" />
+          {t('booking.backHome')}
+        </Button>
+        <Button
+          type="button"
+          size="touch"
+          onClick={onNewRequest}
+          className="h-full min-w-0 w-full px-pad-cell max-md:whitespace-normal"
+        >
+          {t('booking.newRequest')}
+          <ArrowRight data-icon="inline-end" />
+        </Button>
+      </div>
     </PageShell>
   );
 };

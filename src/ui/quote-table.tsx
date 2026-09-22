@@ -107,11 +107,11 @@ export const QuoteTable = ({
               : 'pb-1.5',
           )}
         >
-          <div className="flex min-w-0 items-baseline justify-between gap-3">
+          <div className="flex w-full min-w-0 max-w-full flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
             <dt className="min-w-0 text-xs tracking-tight text-muted-foreground">
               {row.label}
             </dt>
-            <dd className="m-0 shrink-0 whitespace-nowrap text-xs tabular-nums">
+            <dd className="m-0 max-w-full text-xs tabular-nums">
               {row.value}
             </dd>
           </div>
@@ -136,7 +136,7 @@ export const QuoteTable = ({
       role={totalLive ? 'status' : undefined}
       aria-live={totalLive ? 'polite' : undefined}
       className={cn(
-        'flex min-w-0 items-baseline justify-between gap-3 border-t border-border',
+        'flex w-full min-w-0 max-w-full flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-t border-border',
         variant === 'page' ? 'px-5 py-3 md:px-12' : 'mt-2 pt-2.5',
       )}
     >
@@ -144,7 +144,7 @@ export const QuoteTable = ({
       <Price
         value={total}
         size={variant === 'chat' ? 'md' : 'xl'}
-        className="shrink-0"
+        className="max-w-full"
       />
     </div>
 

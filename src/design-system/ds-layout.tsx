@@ -168,12 +168,13 @@ const COQUILLES = [
   },
   {
     title: 'confirmation',
-    rows: 'var(--spacing-header) minmax(0,1fr)',
+    rows: 'var(--spacing-header) minmax(0,1fr) var(--spacing-cta)',
     regions: [
       { label: 'bande', area: '1/1/2/2', tone: 'band' as const },
       { label: 'récapitulatif', area: '2/1/3/2' },
+      { label: 'actions', area: '3/1/4/2', tone: 'cta' as const },
     ],
-    note: 'Même coquille que sa branche de repli, désormais. Les deux états de la page portaient deux gabarits différents pour un rendu identique.',
+    note: 'Le récapitulatif défile dans sa rangée. La barre d’actions a la sienne, sinon le verrou de viewport la rogne.',
   },
   {
     title: 'confirmation — repli',
