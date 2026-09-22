@@ -4,6 +4,7 @@ import { Sheet, SheetClose, SheetContent } from '@/components/ui/sheet';
 import { MessageCircle, X } from 'lucide-react';
 import type { Lang } from '../types';
 import { useT } from '../i18n/use-t';
+import { capture } from '../lib/analytics';
 import { MonoLabel } from './mono-label';
 
 const AssistantChat = lazy(() => import('../assistant-chat'));
@@ -27,7 +28,10 @@ export const MobileAssistantFab = ({ lang }: MobileAssistantFabProps) => {
           tombait sur l'indicateur d'accueil iOS. */}
       <Button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setOpen(true);
+          capture('chat_opened', { surface: 'mobile_fab' });
+        }}
         aria-label={t('assistant.label')}
         aria-expanded={open}
         size="icon"

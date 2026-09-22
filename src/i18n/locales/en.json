@@ -375,7 +375,7 @@
   "cookieBanner": {
     "accept": "Accept",
     "ariaLabel": "Cookie consent banner",
-    "bodyWithLink": "We use cookies to measure site audience. You can accept or refuse. Learn more: <legal>cookie policy</legal>",
+    "bodyWithLink": "We use cookies to measure site audience and diagnose errors. You can accept or refuse. Learn more: <legal>cookie policy</legal>",
     "reject": "Refuse",
     "title": "Cookies"
   },
@@ -441,6 +441,11 @@
     "noteBody": "We also retouch images not shot at our studio.",
     "requestQuote": "Request a quote",
     "standard": "Standard"
+  },
+  "runtimeError": {
+    "body": "This page hit an unexpected problem. Reload to continue.",
+    "reload": "Reload",
+    "title": "Something went wrong"
   },
   "seo": {
     "contactDescription": "Contact E-Do Studio to book a photo or video stage in Paris.",
