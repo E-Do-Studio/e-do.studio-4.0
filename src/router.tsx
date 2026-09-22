@@ -1,6 +1,7 @@
 import { createRouter } from '@tanstack/react-router';
 import { routeTree } from './routeTree.gen';
 import { NotFoundPage } from './not-found-page';
+import { RouteErrorScreen } from './posthog-error-boundary';
 
 // TanStack Start impose une fabrique : une instance neuve par invocation, le
 // rendu côté serveur ne pouvant pas partager un routeur entre requêtes.
@@ -14,6 +15,7 @@ export function getRouter() {
     routeTree,
     scrollRestoration: true,
     defaultNotFoundComponent: NotFoundPage,
+    defaultErrorComponent: RouteErrorScreen,
   });
 }
 

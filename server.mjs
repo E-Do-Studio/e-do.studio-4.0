@@ -23,6 +23,35 @@ const fetchHandler =
   typeof handler === 'function' ? handler : handler.fetch.bind(handler);
 
 const PORT = Number(process.env.PORT) || 3000;
+
+// Même jeton public que le bundle client (il y est déjà exposé) : le passer au
+// runtime ne révèle rien. Sans lui, une page qui plante au rendu ne laissait
+// qu'une ligne dans les logs du conteneur, que personne ne lit.
+const POSTHOG_TOKEN =
+  process.env.POSTHOG_PROJECT_TOKEN || process.env.VITE_POSTHOG_PROJECT_TOKEN;
+const POSTHOG_HOST = process.env.POSTHOG_HOST || 'https://eu.i.posthog.com';
+
+function reportServerError(event, url, error, extra = {}) {
+  if (!POSTHOG_TOKEN) return;
+  fetch(`${POSTHOG_HOST}/i/v0/e/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    signal: AbortSignal.timeout(2000),
+    body: JSON.stringify({
+      api_key: POSTHOG_TOKEN,
+      event,
+      distinct_id: 'ssr-server',
+      properties: {
+        url,
+        message: error instanceof Error ? error.message : String(error ?? ''),
+        stack: error instanceof Error ? error.stack : undefined,
+        $process_person_profile: false,
+        $lib: 'server.mjs',
+        ...extra,
+      },
+    }),
+  }).catch(() => {});
+}
 const CLIENT_DIR = new URL('./dist/client/', import.meta.url).pathname;
 
 const MIME = {
@@ -85,9 +114,77 @@ function toWebRequest(req) {
   });
 }
 
+// Proxy PostHog (/ph → région EU). Ici et non dans le Caddyfile : en
+// production, Coolify route directement vers ce process — le Caddy du dépôt
+// n'est pas déployé (les 301 legacy y répondent 404). Servi depuis le domaine
+// du site, l'analytics échappe aux bloqueurs qui filtrent `*.posthog.com`.
+const POSTHOG_API = 'https://eu.i.posthog.com';
+const POSTHOG_ASSETS = 'https://eu-assets.i.posthog.com';
+// Les cookies du site n'ont rien à faire chez PostHog ; `host` et la longueur
+// sont recalculés par fetch.
+const PH_DROPPED_REQUEST = new Set([
+  'host',
+  'cookie',
+  'connection',
+  'content-length',
+  'accept-encoding',
+]);
+// fetch décompresse la réponse : la renvoyer avec son `content-encoding`
+// d'origine ferait lire au navigateur du gzip qui n'en est plus.
+const PH_DROPPED_RESPONSE = new Set([
+  'content-encoding',
+  'content-length',
+  'transfer-encoding',
+  'connection',
+]);
+
+async function proxyPostHog(req, res, url) {
+  const rest = url.pathname.slice('/ph'.length);
+  const base = rest.startsWith('/static/') ? POSTHOG_ASSETS : POSTHOG_API;
+  const headers = {};
+  for (const [k, v] of Object.entries(req.headers)) {
+    if (!PH_DROPPED_REQUEST.has(k) && typeof v === 'string') headers[k] = v;
+  }
+  // L'IP du visiteur, pas celle du proxy : géolocalisation, et surtout le
+  // hash du mode cookieless (IP + user agent), qui sans elle fondrait tous
+  // les visiteurs anonymes en un seul.
+  headers['x-forwarded-for'] =
+    req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+  const hasBody = req.method !== 'GET' && req.method !== 'HEAD';
+  const upstream = await fetch(base + rest + url.search, {
+    method: req.method,
+    headers,
+    body: hasBody ? Readable.toWeb(req) : undefined,
+    duplex: hasBody ? 'half' : undefined,
+    signal: AbortSignal.timeout(10_000),
+  });
+  const out = {};
+  for (const [k, v] of upstream.headers) {
+    if (!PH_DROPPED_RESPONSE.has(k)) out[k] = v;
+  }
+  res.writeHead(upstream.status, out);
+  if (!upstream.body) return res.end();
+  const body = Readable.fromWeb(upstream.body);
+  body.on('error', () => res.destroy());
+  res.on('close', () => body.destroy());
+  body.pipe(res);
+}
+
 const server = createServer(async (req, res) => {
   try {
-    const { pathname } = new URL(req.url, 'http://localhost');
+    const url = new URL(req.url, 'http://localhost');
+    const { pathname } = url;
+
+    if (pathname.startsWith('/ph/')) {
+      // Une panne PostHog n'est pas une panne du site : pas de fail(), qui la
+      // compterait comme un échec de rendu et déclencherait l'alerte SSR.
+      await proxyPostHog(req, res, url).catch((error) => {
+        console.error('[server] proxy PostHog', req.url, error);
+        if (!res.headersSent) res.writeHead(502).end();
+        else res.destroy();
+      });
+      return;
+    }
 
     const filePath = await resolveStatic(pathname);
     if (filePath) {
@@ -108,6 +205,13 @@ const server = createServer(async (req, res) => {
     const headers = Object.fromEntries(response.headers);
     if (!headers['cache-control'])
       headers['Cache-Control'] = htmlCacheControl(pathname);
+    // Start rend lui-même une erreur de rendu en 500, sans lever : sans ce
+    // test, fail() ne la voyait jamais.
+    if (response.status >= 500) {
+      reportServerError('ssr_render_failed', req.url, null, {
+        status: response.status,
+      });
+    }
     res.writeHead(response.status, headers);
     if (response.body) {
       pipeSafely(Readable.fromWeb(response.body), res, req.url);
@@ -136,6 +240,7 @@ function pipeSafely(source, res, url) {
 
 function fail(res, url, error) {
   console.error('[server] échec du rendu', url, error);
+  reportServerError('ssr_render_failed', url, error);
   if (res.writableEnded || res.destroyed) return;
   if (res.headersSent) {
     res.destroy();
@@ -149,9 +254,11 @@ function fail(res, url, error) {
 // ne doit jamais emporter les requêtes en vol ni provoquer un redémarrage.
 process.on('uncaughtException', (error) => {
   console.error('[server] exception non gérée', error);
+  reportServerError('server_uncaught_exception', null, error);
 });
 process.on('unhandledRejection', (reason) => {
   console.error('[server] rejet non géré', reason);
+  reportServerError('server_uncaught_exception', null, reason);
 });
 
 server.listen(PORT, () => {

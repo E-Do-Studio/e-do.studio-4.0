@@ -20,6 +20,7 @@ import { QuoteTable } from '../ui/quote-table';
 import { KeyValueList, KeyValueRow } from '../ui/key-value-row';
 import { MonoLabel } from '../ui/mono-label';
 import { hourLabel } from '@/lib/format';
+import { capture } from '../lib/analytics';
 
 interface ConfirmedViewProps {
   lang: Lang;
@@ -335,7 +336,12 @@ const BookConfirmation = () => {
     const snap = loadConfirmation();
     setSnapshot(snap);
     setHydrated(true);
-    if (snap) clearDraft();
+    if (!snap) return;
+    clearDraft();
+    capture('booking_confirmation_viewed', {
+      submit_mode: snap.mode,
+      total: snap.total,
+    });
   }, []);
 
   const onNewRequest = () => {

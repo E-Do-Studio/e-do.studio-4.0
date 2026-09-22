@@ -1,11 +1,12 @@
 import { useNavigate, useSearch } from '@tanstack/react-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useT } from '../i18n/use-t';
+import { capture } from '../lib/analytics';
 import type { Lang } from '../lib/booking-engine';
 import type { BookingDraft } from '../lib/use-booking-draft';
 import type { BookMode } from './book-routes';
 import { pathForStep } from './book-routes';
-import { STEP, stepsFor } from './booking-steps';
+import { STEP, stepName, stepsFor } from './booking-steps';
 
 interface UseBookingStepsArgs {
   draft: BookingDraft | null;
@@ -90,6 +91,21 @@ function useBookingSteps({
 
   const mode: BookMode =
     configApplied || step === STEP.CONFIG ? 'config' : 'manual';
+
+  // Un événement par étape affichée, et non le pageview : le mode manuel ne
+  // change que `?step=N`, et le funnel doit se lire en noms d'étape identiques
+  // dans les deux tunnels. La ref coupe les rendus répétés de la même étape.
+  const lastViewed = useRef<string | null>(null);
+  useEffect(() => {
+    const key = `${mode}:${step}`;
+    if (lastViewed.current === key) return;
+    lastViewed.current = key;
+    capture('booking_step_viewed', {
+      funnel: mode,
+      step: stepName(step),
+      step_index: stepsFor(mode, t).findIndex((s) => s.n === step),
+    });
+  }, [mode, step, t]);
 
   return { step, setStep, goToStep, mode, steps: stepsFor(mode, t) };
 }

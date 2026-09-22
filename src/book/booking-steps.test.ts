@@ -5,6 +5,7 @@ import {
   STEP,
   canGoNext,
   resolveSlotList,
+  stepName,
   stepProgress,
   stepsFor,
 } from './booking-steps';
@@ -204,5 +205,17 @@ describe('stepProgress', () => {
     expect(p.filter((s) => s.clickable).map((s) => s.n)).toEqual([
       STEP.PLATEAU,
     ]);
+  });
+});
+
+describe('stepName', () => {
+  it('nomme chaque étape des deux tunnels', () => {
+    const all = [...stepsFor('config', t), ...stepsFor('manual', t)];
+    for (const s of all) expect(stepName(s.n)).toMatch(/^[a-z]+$/);
+  });
+
+  it('garde des noms distincts', () => {
+    const names = Object.values(STEP).map(stepName);
+    expect(new Set(names).size).toBe(names.length);
   });
 });

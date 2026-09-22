@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.105.1";
 import { z } from "https://esm.sh/zod@4.4.3";
+import { captureServer } from "../_shared/posthog.ts";
 import {
   type AvailabilityIntent,
   type PlateauKey,
@@ -61,6 +62,7 @@ const bodySchema = z.object({
   messages: z.array(messageSchema).min(1).max(40),
   lang: z.enum(["fr", "en"]).optional(),
   currentPage: z.string().max(200).regex(/^\/[a-z0-9/_-]*$/i).optional(),
+  analytics: z.object({ distinct_id: z.string().max(200).optional() }).optional(),
 });
 
 type Lang = "fr" | "en";
@@ -844,6 +846,9 @@ Deno.serve(async (req: Request) => {
     return jsonResponse({ error: "invalid_input" }, 400, cors);
   }
 
+  const track = (event: string, props: Record<string, unknown>) =>
+    captureServer(event, parsed.analytics?.distinct_id, `chat:${crypto.randomUUID()}`, props);
+
   const trimmedMessages = parsed.messages.slice(-HISTORY_TURN_LIMIT).map((m) => ({
     role: m.role,
     content: m.content.trim(),
@@ -865,10 +870,16 @@ Deno.serve(async (req: Request) => {
   const ipHash = await hashIp(ip);
 
   const shortOk = await checkAndIncrement(supabase, ipHash, "short", SHORT_WINDOW_MS, SHORT_WINDOW_LIMIT);
-  if (!shortOk) return jsonResponse({ error: "rate_limited" }, 429, cors);
+  if (!shortOk) {
+    await track("chat_rate_limited", { window: "short" });
+    return jsonResponse({ error: "rate_limited" }, 429, cors);
+  }
 
   const dailyOk = await checkAndIncrement(supabase, ipHash, "daily", DAILY_WINDOW_MS, DAILY_WINDOW_LIMIT);
-  if (!dailyOk) return jsonResponse({ error: "rate_limited" }, 429, cors);
+  if (!dailyOk) {
+    await track("chat_rate_limited", { window: "daily" });
+    return jsonResponse({ error: "rate_limited" }, 429, cors);
+  }
 
   const fallbackLang: Lang = parsed.lang ?? "fr";
   const lang = detectLastUserLang(trimmedMessages, fallbackLang);
@@ -890,6 +901,12 @@ Deno.serve(async (req: Request) => {
     retrievedBlock = formatChunksForPrompt(chunks);
   } catch (err) {
     console.error("retrieval failed", err);
+    // The bot still answers, from the baseline facts only — degraded answers
+    // with no visible error, which only this event reveals.
+    await track("chat_server_error", {
+      stage: "retrieval",
+      message: err instanceof Error ? err.message : String(err),
+    });
   }
 
   const now = new Date();
@@ -959,6 +976,11 @@ Deno.serve(async (req: Request) => {
   } catch (e) {
     const code = e instanceof Error && e.message === "upstream" ? "upstream" : "internal";
     const status = code === "upstream" ? 502 : 500;
+    await track("chat_server_error", {
+      stage: "llm",
+      code,
+      message: e instanceof Error ? e.message : String(e),
+    });
     return jsonResponse({ error: code }, status, cors);
   }
 });

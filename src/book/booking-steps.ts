@@ -5,6 +5,7 @@ import type {
   SlotState,
 } from '../lib/booking-engine';
 import { isSessionValid } from '../lib/booking-engine';
+import type { BookingStepName } from '../lib/analytics-events';
 import type { BookMode } from './book-routes';
 
 /**
@@ -24,6 +25,24 @@ const STEP = {
   CONTACT: 5,
   DATE: 6,
 } as const;
+
+/**
+ * Le nom stable d'une étape, pour l'analytics. L'indice ne suffit pas : il ne
+ * dit rien dans un funnel PostHog, et il a déjà été renuméroté une fois.
+ */
+const STEP_NAMES: Record<number, BookingStepName> = {
+  [STEP.CONFIG]: 'config',
+  [STEP.PLATEAU]: 'plateau',
+  [STEP.DURATION]: 'duration',
+  [STEP.TEAM]: 'team',
+  [STEP.POSTPROD]: 'postprod',
+  [STEP.CONTACT]: 'contact',
+  [STEP.DATE]: 'date',
+};
+
+function stepName(n: number): BookingStepName {
+  return STEP_NAMES[n];
+}
 
 interface StepDef {
   n: number;
@@ -137,5 +156,5 @@ function stepProgress(
   });
 }
 
-export { STEP, canGoNext, resolveSlotList, stepProgress, stepsFor };
+export { STEP, canGoNext, resolveSlotList, stepName, stepProgress, stepsFor };
 export type { CanGoNextArgs, StepDef, StepProgress };

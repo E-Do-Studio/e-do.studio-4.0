@@ -190,6 +190,8 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
     formRef: contentScrollRef,
     lang,
     t,
+    funnel: mode,
+    step,
   });
 
   const months = MONTHS[lang];
