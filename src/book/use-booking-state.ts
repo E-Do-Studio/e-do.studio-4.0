@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import type {
   BookingSession,
   ConfigGlobal,
@@ -80,20 +80,26 @@ interface UseBookingStateArgs {
  * à chaque étape (une route par étape) : le brouillon est la seule continuité.
  */
 function useBookingState({ forcedStep, forceManual }: UseBookingStateArgs) {
-  const [draft] = useState(() => loadDraft());
+  // Le brouillon n'est PAS lu au premier rendu : il vit dans localStorage, que
+  // le serveur ne voit pas. Le lire ici faisait diverger le premier rendu
+  // client du HTML serveur, et React jetait tout l'arbre (erreur #418, vue en
+  // production sur /fr/reserver/manuel). Il est restauré juste après le
+  // montage, une fois l'hydratation faite.
+  // Faux tant que la restauration n'a pas eu lieu, qu'il y ait un brouillon ou
+  // non : ce qui dépend de l'étape retrouvée (l'événement d'étape vue) attend
+  // ce signal pour ne pas compter deux étapes par visite reprise.
+  const [draftRestored, setDraftRestored] = useState(false);
   const [today] = useState(() => new Date());
 
-  const [configGlobal, setConfigGlobal] = useState<ConfigGlobal>(() =>
-    draft
-      ? (draft.configGlobal as ConfigGlobal)
-      : { projectType: 'ecom', urgency: 'flex', postprod: false },
-  );
-  const [configSessions, setConfigSessions] = useState<BookingSession[]>(() =>
-    draft ? (draft.configSessions as BookingSession[]) : [makeBlankSession()],
-  );
-  const [activeSessionIdx, setActiveSessionIdx] = useState(() =>
-    draft ? draft.activeSessionIdx : 0,
-  );
+  const [configGlobal, setConfigGlobal] = useState<ConfigGlobal>({
+    projectType: 'ecom',
+    urgency: 'flex',
+    postprod: false,
+  });
+  const [configSessions, setConfigSessions] = useState<BookingSession[]>(() => [
+    makeBlankSession(),
+  ]);
+  const [activeSessionIdx, setActiveSessionIdx] = useState(0);
   const [configApplied, setConfigApplied] = useState(() => {
     if (forceManual) return false;
     // Les routes-étapes au-delà du choix de plateau n'existent qu'en mode
@@ -105,56 +111,64 @@ function useBookingState({ forcedStep, forceManual }: UseBookingStateArgs) {
     ) {
       return true;
     }
-    return draft ? draft.configApplied : false;
+    return false;
   });
 
-  const [plateau, setPlateau] = useState<string | null>(
-    () => draft?.plateau ?? null,
-  );
-  const [slotIds, setSlotIds] = useState<string[]>(() =>
-    draft ? draft.slotIds : plateau ? [plateau] : [],
-  );
-  const [slots, setSlots] = useState<Record<string, SlotState>>(() => {
-    if (draft) return draft.slots as Record<string, SlotState>;
-    if (!plateau) return {};
-    return { [plateau]: makeSlotState(plateau) };
-  });
+  const [plateau, setPlateau] = useState<string | null>(null);
+  const [slotIds, setSlotIds] = useState<string[]>([]);
+  const [slots, setSlots] = useState<Record<string, SlotState>>({});
 
-  const view = initialView(draft, today);
+  const view = initialView(null, today);
   const [viewY, setViewY] = useState(view.y);
   const [viewM, setViewM] = useState(view.m);
-  const [selected, setSelected] = useState<DateSelection | null>(
-    () => draft?.selected ?? null,
-  );
-  const [arrivalHour, setArrivalHour] = useState(() =>
-    draft ? draft.arrivalHour : 10,
-  );
-  const [dateIdx, setDateIdx] = useState(() => (draft ? draft.dateIdx : 0));
+  const [selected, setSelected] = useState<DateSelection | null>(null);
+  const [arrivalHour, setArrivalHour] = useState(10);
+  const [dateIdx, setDateIdx] = useState(0);
 
-  const [slotType, setSlotType] = useState(() =>
-    draft ? draft.slotType : 'hour',
-  );
-  const [hours, setHours] = useState(() => (draft ? draft.hours : 1));
-  const [cycloMode, setCycloMode] = useState(() =>
-    draft ? draft.cycloMode : 'halfH',
-  );
-  const [paint, setPaint] = useState(() => (draft ? draft.paint : false));
-  const [kwh, setKwh] = useState(() => (draft ? draft.kwh : 0));
-  const [team, setTeam] = useState<TeamState>(() =>
-    draft ? (draft.team as TeamState) : {},
-  );
-  const [pp, setPp] = useState<Record<string, unknown>>(() =>
-    draft ? draft.pp : {},
-  );
+  const [slotType, setSlotType] = useState('hour');
+  const [hours, setHours] = useState(1);
+  const [cycloMode, setCycloMode] = useState('halfH');
+  const [paint, setPaint] = useState(false);
+  const [kwh, setKwh] = useState(0);
+  const [team, setTeam] = useState<TeamState>({});
+  const [pp, setPp] = useState<Record<string, unknown>>({});
 
-  const [contact, setContact] = useState<ContactState>(() =>
-    draft
-      ? {
-          ...(draft.contact as unknown as ContactState),
-          cgvAccepted: cgvConsentGivenThisSession,
-        }
-      : blankContact(),
-  );
+  const [contact, setContact] = useState<ContactState>(() => blankContact());
+
+  // Restauration du brouillon, après hydratation. `useLayoutEffect` et non
+  // `useEffect` : l'écran ne doit pas peindre une étape vide avant de peindre
+  // la sélection retrouvée.
+  useLayoutEffect(() => {
+    const saved = loadDraft();
+    setDraftRestored(true);
+    if (!saved) return;
+    setConfigGlobal(saved.configGlobal as ConfigGlobal);
+    setConfigSessions(saved.configSessions as BookingSession[]);
+    setActiveSessionIdx(saved.activeSessionIdx);
+    // Le mode manuel et les routes-étapes tranchent déjà `configApplied` ; le
+    // brouillon ne parle que des cas qu'elles laissent ouverts.
+    setConfigApplied((current) => current || saved.configApplied);
+    setPlateau(saved.plateau);
+    setSlotIds(saved.slotIds);
+    setSlots(saved.slots as Record<string, SlotState>);
+    const savedView = initialView(saved, today);
+    setViewY(savedView.y);
+    setViewM(savedView.m);
+    setSelected(saved.selected);
+    setArrivalHour(saved.arrivalHour);
+    setDateIdx(saved.dateIdx);
+    setSlotType(saved.slotType);
+    setHours(saved.hours);
+    setCycloMode(saved.cycloMode);
+    setPaint(saved.paint);
+    setKwh(saved.kwh);
+    setTeam(saved.team as TeamState);
+    setPp(saved.pp);
+    setContact({
+      ...(saved.contact as unknown as ContactState),
+      cgvAccepted: cgvConsentGivenThisSession,
+    });
+  }, []);
   useEffect(() => {
     cgvConsentGivenThisSession = contact.cgvAccepted;
   }, [contact.cgvAccepted]);
@@ -193,7 +207,7 @@ function useBookingState({ forcedStep, forceManual }: UseBookingStateArgs) {
   };
 
   return {
-    draft,
+    draftRestored,
     today,
     configGlobal,
     setConfigGlobal,
