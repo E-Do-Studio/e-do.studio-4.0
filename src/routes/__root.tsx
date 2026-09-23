@@ -95,7 +95,11 @@ function gtmBootstrap(id: string): string {
     `try{if(localStorage.getItem('${COOKIE_CONSENT_STORAGE_KEY}')==='accepted')g('consent','update',{${granted}})}catch(e){}`,
     `w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});`,
     `var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';`,
-    `j.id='${GTM_SCRIPT_ID}';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;`,
+    // `crossOrigin` : sans lui, une erreur levée dans gtm.js n'arrive au
+    // navigateur que sous la forme « Script error. », sans fichier ni ligne —
+    // deux de ces erreurs aveugles ont été remontées depuis l'accueil.
+    // googletagmanager.com renvoie bien l'en-tête CORS pour notre domaine.
+    `j.id='${GTM_SCRIPT_ID}';j.async=true;j.crossOrigin='anonymous';j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;`,
     `f.parentNode.insertBefore(j,f);`,
     `})(window,document,'script','dataLayer','${safeId}');`,
   ].join('');
