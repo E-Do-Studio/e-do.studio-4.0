@@ -30,6 +30,9 @@ export function useGoogleAnalytics(googleAnalyticsId: string | undefined) {
     const script = document.createElement('script');
     script.id = SCRIPT_ID;
     script.async = true;
+    // Même raison que le bootstrap GTM : sans `crossOrigin`, une erreur de
+    // gtag.js remonte en « Script error. » sans aucun détail.
+    script.crossOrigin = 'anonymous';
     script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gaId)}`;
     document.head.appendChild(script);
 
