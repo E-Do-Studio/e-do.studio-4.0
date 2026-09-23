@@ -112,7 +112,7 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
     mode,
     steps: STEPS,
   } = useBookingSteps({
-    draft: state.draft,
+    draftRestored: state.draftRestored,
     forcedStep,
     forceManual,
     lang,

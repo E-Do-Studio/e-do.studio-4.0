@@ -3,13 +3,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useT } from '../i18n/use-t';
 import { capture } from '../lib/analytics';
 import type { Lang } from '../lib/booking-engine';
-import type { BookingDraft } from '../lib/use-booking-draft';
 import type { BookMode } from './book-routes';
 import { pathForStep } from './book-routes';
 import { STEP, stepName, stepsFor } from './booking-steps';
 
 interface UseBookingStepsArgs {
-  draft: BookingDraft | null;
+  /** Vrai une fois le brouillon lu (ou son absence constatée). */
+  draftRestored: boolean;
   forcedStep?: number;
   forceManual?: boolean;
   lang: Lang;
@@ -25,7 +25,7 @@ interface UseBookingStepsArgs {
  * ramène l'utilisateur là où il était.
  */
 function useBookingSteps({
-  draft,
+  draftRestored,
   forcedStep,
   forceManual,
   lang,
@@ -43,7 +43,6 @@ function useBookingSteps({
   const [step, setStep] = useState<number>(() => {
     if (forceManual && manualStepQuery != null) return manualStepQuery;
     if (forcedStep != null) return forcedStep;
-    if (draft) return draft.step;
     return STEP.PLATEAU;
   });
 
@@ -97,6 +96,7 @@ function useBookingSteps({
   // dans les deux tunnels. La ref coupe les rendus répétés de la même étape.
   const lastViewed = useRef<string | null>(null);
   useEffect(() => {
+    if (!draftRestored) return;
     const key = `${mode}:${step}`;
     if (lastViewed.current === key) return;
     lastViewed.current = key;
@@ -105,7 +105,7 @@ function useBookingSteps({
       step: stepName(step),
       step_index: stepsFor(mode, t).findIndex((s) => s.n === step),
     });
-  }, [mode, step, t]);
+  }, [mode, step, t, draftRestored]);
 
   return { step, setStep, goToStep, mode, steps: stepsFor(mode, t) };
 }
