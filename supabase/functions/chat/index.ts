@@ -74,7 +74,7 @@ const BASELINE_FACTS_FR = `# E-DO Studio — repères essentiels
 - 5 plateaux + cyclorama 30 m² (Broncolor). Tarifs publics dès 450 €/jour HT, cyclo demi-journée 650 €, journée 880 €.
 - Post-production intégrée (retouche, détourage, colorimétrie, montage vidéo).
 - Email : contact@e-do.studio · Téléphone : +33 1 44 04 11 49.
-- Ouvert **lundi–vendredi 10 h – 18 h**. **Week-end (samedi + dimanche) sur demande uniquement, avec majoration 25 % sur le tarif plateau.**
+- Ouvert **lundi–vendredi 9 h – 18 h** ; le **cyclorama se réserve jusqu'à 19 h** (journée de 10 h). **Week-end (samedi + dimanche) sur demande uniquement, avec majoration 25 % sur le tarif plateau.**
 - Visite découverte gratuite ~1 h sur rendez-vous, **du lundi au vendredi** (pas de visite le week-end).
 - Formulaire de contact en texte libre (nom, téléphone, email, société, message) — il n'y a pas de sélecteur de sujet.
 - Pages clés : ${SITE_URL}/fr/cyclorama · ${SITE_URL}/fr/plateau/horizontal · ${SITE_URL}/fr/plateau/vertical · ${SITE_URL}/fr/plateau/eclipse · ${SITE_URL}/fr/plateau/live · ${SITE_URL}/fr/post-production · ${SITE_URL}/fr/galerie · ${SITE_URL}/fr/discovery · ${SITE_URL}/fr/contact · ${SITE_URL}/fr/reserver`;
@@ -84,7 +84,7 @@ const BASELINE_FACTS_EN = `# E-DO Studio — essentials
 - 5 stages + 30 m² cyclorama (Broncolor). Public rates from €450/day, cyclorama half-day €650, full day €880 (excl. VAT).
 - Integrated post-production (retouching, clipping, color, video editing).
 - Email: contact@e-do.studio · Phone: +33 1 44 04 11 49.
-- Open **Monday–Friday 10am – 6pm**. **Weekends (Saturday + Sunday) on request only, with a 25% surcharge on the stage rate.**
+- Open **Monday–Friday 9am – 6pm**; the **cyclorama can be booked until 7pm** (10-hour day). **Weekends (Saturday + Sunday) on request only, with a 25% surcharge on the stage rate.**
 - Free ~1h discovery tour by appointment, **Monday to Friday only** (no tours on weekends).
 - Contact form is free-form (name, phone, email, company, message) — there is no topic selector.
 - Key pages: ${SITE_URL}/en/cyclorama · ${SITE_URL}/en/plateau/horizontal · ${SITE_URL}/en/plateau/vertical · ${SITE_URL}/en/plateau/eclipse · ${SITE_URL}/en/plateau/live · ${SITE_URL}/en/post-production · ${SITE_URL}/en/galerie · ${SITE_URL}/en/discovery · ${SITE_URL}/en/contact · ${SITE_URL}/en/book`;
@@ -271,8 +271,8 @@ function describePage(path: string | undefined, lang: Lang): PageHint | null {
       en: { label: "Booking", hint: "Booking page — focus on availability / rates / configurator steps." },
     }],
     [/^\/contact/, {
-      fr: { label: "Contact", hint: "Page Contact — privilégie horaires (lun-ven 10-18, week-end sur demande +25 %), adresse, visite gratuite lun-ven. Le formulaire est en texte libre, sans sélecteur de sujet." },
-      en: { label: "Contact", hint: "Contact page — focus on hours (Mon-Fri 10-6, weekend on request +25%), address, free tour Mon-Fri. The form is free-form, with no topic selector." },
+      fr: { label: "Contact", hint: "Page Contact — privilégie horaires (lun-ven 9-18, cyclorama jusqu'à 19 h, week-end sur demande +25 %), adresse, visite gratuite lun-ven. Le formulaire est en texte libre, sans sélecteur de sujet." },
+      en: { label: "Contact", hint: "Contact page — focus on hours (Mon-Fri 9-6, cyclorama until 7pm, weekend on request +25%), address, free tour Mon-Fri. The form is free-form, with no topic selector." },
     }],
   ];
   for (const [re, val] of map) {
@@ -327,7 +327,7 @@ Answer visitor questions precisely using the KNOWLEDGE BASE below. Your goal is 
 # Tools available
 - **check_availability**(windowStart, windowEnd, plateauKey?, durationHours?) — Query the studio's live booking calendar. **Call this whenever the user asks about dates, free slots, planning a shoot, or whether a specific window is available.** Never invent slot data; always call the tool first. Resolve relative dates ("vendredi", "next week", "demain après-midi") using the current Paris time stated above as reference before calling — never propose a slot earlier today than the current hour. If the user asks for "afternoon" or "matin", call the tool for the full day then filter the proposed slots in your reply (≥ 13h for afternoon, ≤ 12h for morning). \`plateauKey\` is one of: ${PLATEAU_KEYS.join(", ")}. \`durationHours\` defaults to 1; use 4 for "demi-journée / half-day", 8 for "journée / full day". Cap your window to ${MAX_WINDOW_DAYS} days max; default ${DEFAULT_WINDOW_DAYS} days if unspecified.
 
-- **prepare_booking**(sessions, contact?) — The ONLY way to quote a booking price and to start a real reservation. Pass every product session the user described (product, method, submethod, views or viewsCount, quantity, postprod) plus, once known, each session's date (YYYY-MM-DD) and arrivalHour (9–19), and the contact (prenom, nom, email, tel). It returns the AUTHORITATIVE price — never compute or guess prices yourself — and what is still missing. Re-call it as you gather details.
+- **prepare_booking**(sessions, contact?) — The ONLY way to quote a booking price and to start a real reservation. Pass every product session the user described (product, method, submethod, views or viewsCount, quantity, postprod) plus, once known, each session's date (YYYY-MM-DD) and arrivalHour (9–18; the session must end by 18, or 19 for the cyclorama), and the contact (prenom, nom, email, tel). It returns the AUTHORITATIVE price — never compute or guess prices yourself — and what is still missing. Re-call it as you gather details.
 
 # Booking flow (natural-language reservation)
 The visitor can reserve entirely in this chat. Drive it conversationally, one or two questions at a time:

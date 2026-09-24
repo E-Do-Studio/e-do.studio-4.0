@@ -639,7 +639,7 @@ async function seedSiteSettings() {
       fullAddress: "Parc d'activités Victor Hugo, Bât 6.7, 69 boulevard Victor Hugo, 93400 Saint-Ouen",
       googleMapsUrl: 'https://maps.google.com/?q=69+boulevard+Victor+Hugo+93400+Saint-Ouen',
       mapsEmbedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2622.0!2d2.3345!3d48.9122!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2z69+boulevard+Victor+Hugo+93400+Saint-Ouen!5e0!3m2!1sfr!2sfr!4v1',
-      hours: 'Lun–Ven 10:00–18:00',
+      hours: 'Lun–Ven 09:00–18:00',
       weekendHours: 'Sam–Dim sur demande',
       defaultSeoTitle: 'E-Do Studio — Photo & Vidéo E-commerce',
       defaultSeoDescription: 'Studio photo et vidéo e-commerce à Saint-Ouen : packshot, on-model, ghost, still life, 360° et post-production.',
@@ -665,7 +665,7 @@ async function seedSiteSettings() {
     {
       siteTitle: 'E-Do Studio',
       siteDescription: 'E-commerce photo & video studio in Saint-Ouen. Packshot, on-model, ghost, still life production and art direction.',
-      hours: 'Mon–Fri 10:00–18:00',
+      hours: 'Mon–Fri 09:00–18:00',
       weekendHours: 'Sat–Sun on request',
       defaultSeoTitle: 'E-Do Studio — E-commerce Photo & Video',
       defaultSeoDescription: 'E-commerce photo and video studio in Saint-Ouen: packshot, on-model, ghost, still life, 360° and post-production.',

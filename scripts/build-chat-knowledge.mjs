@@ -190,7 +190,7 @@ function buildIdentityChunks(siteFr, siteEn) {
 - Email : ${email}
 - Téléphone : ${phone}
 - Adresse : ${fullAddress}
-- Ouvert **lundi–vendredi 10 h – 18 h**. **Week-end (samedi + dimanche) sur demande uniquement, avec majoration 25 % sur le tarif plateau.**
+- Ouvert **lundi–vendredi 9 h – 18 h** ; le **cyclorama se réserve jusqu'à 19 h** (journée de 10 h). **Week-end (samedi + dimanche) sur demande uniquement, avec majoration 25 % sur le tarif plateau.**
 - Visite découverte gratuite ~1 h sur rendez-vous, **du lundi au vendredi** (pas de visite le week-end).
 - Formulaire de contact en texte libre (nom, téléphone, email, société, message) — **il n'y a pas de sélecteur de sujet**.
 - Pages clés : ${keyPages.join(' · ')}`
@@ -198,7 +198,7 @@ function buildIdentityChunks(siteFr, siteEn) {
 - Email: ${email}
 - Phone: ${phone}
 - Address: ${fullAddress}
-- Open **Monday–Friday 10am – 6pm**. **Weekends (Saturday + Sunday) on request only, with a 25% surcharge on the stage rate.**
+- Open **Monday–Friday 9am – 6pm**; the **cyclorama can be booked until 7pm** (10-hour day). **Weekends (Saturday + Sunday) on request only, with a 25% surcharge on the stage rate.**
 - Free ~1h discovery tour by appointment, **Monday to Friday only** (no tours on weekends).
 - Contact form is free-form (name, phone, email, company, message) — **there is no topic selector**.
 - Key pages: ${keyPages.join(' · ')}`;

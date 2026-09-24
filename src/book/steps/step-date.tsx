@@ -4,9 +4,8 @@ import { cn } from '@/lib/utils';
 import { useT } from '../../i18n/use-t';
 import { isHourBlocked, useAvailability } from '../../lib/availability';
 import type { BookPlateau, DateSelection } from '../../lib/booking-engine';
+import { STUDIO_OPEN_HOUR, closingHourFor } from '../../lib/booking-engine';
 import {
-  STUDIO_CLOSE,
-  STUDIO_OPEN,
   useArrivalHourGuard,
   useFirstFreeDay,
 } from './use-calendar-defaults';
@@ -100,6 +99,7 @@ const StepDate = ({
     d: now.getDate(),
   };
   const currentHour = now.getHours();
+  const closeHour = closingHourFor(plateau);
 
   const isSelected = (d: number) =>
     !!selected &&
@@ -122,6 +122,7 @@ const StepDate = ({
     currentHour,
     arrivalHour,
     rentalHours,
+    closeHour,
     setArrivalHour,
   });
   useFirstFreeDay({
@@ -134,6 +135,7 @@ const StepDate = ({
     today,
     currentHour,
     rentalHours,
+    closeHour,
     setSelected,
   });
 
@@ -423,14 +425,23 @@ const StepDate = ({
         // `bg-border` : la gouttière était peinte en blanc sur blanc, donc
         // invisible — rien ne séparait deux créneaux voisins. C'est le seul
         // endroit du site où elle ne peignait pas le filet.
-        className="w-full shrink-0 grid-cols-5 bg-border @xl:grid-cols-10"
+        //
+        // Autant de colonnes que de créneaux : 10 pour le cyclorama (9h–18h),
+        // 9 pour les plateaux (9h–17h), sinon une case vide reste en bout de
+        // ligne.
+        className={cn(
+          'w-full shrink-0 bg-border',
+          closeHour - STUDIO_OPEN_HOUR === 10
+            ? 'grid-cols-5 @xl:grid-cols-10'
+            : 'grid-cols-3 @xl:grid-cols-9',
+        )}
       >
         {Array.from(
-          { length: STUDIO_CLOSE - STUDIO_OPEN },
-          (_, i) => i + STUDIO_OPEN,
+          { length: closeHour - STUDIO_OPEN_HOUR },
+          (_, i) => i + STUDIO_OPEN_HOUR,
         ).map((h) => {
           const on = arrivalHour === h;
-          const endsTooLate = h + rentalHours > STUDIO_CLOSE;
+          const endsTooLate = h + rentalHours > closeHour;
           const pastHour = isSelectedToday && h <= currentHour;
           const booked = isHourBlocked(selectedDayBooked, h, rentalHours);
           const disabled = endsTooLate || pastHour || booked;

@@ -2,9 +2,7 @@ import { useEffect } from 'react';
 import type { AvailabilityState } from '../../lib/availability';
 import { isHourBlocked } from '../../lib/availability';
 import type { DateSelection } from '../../lib/booking-engine';
-
-const STUDIO_OPEN = 9;
-const STUDIO_CLOSE = 19;
+import { STUDIO_OPEN_HOUR } from '../../lib/booking-engine';
 
 interface ArrivalHourGuardArgs {
   selected: DateSelection | null;
@@ -14,6 +12,8 @@ interface ArrivalHourGuardArgs {
   currentHour: number;
   arrivalHour: number;
   rentalHours: number;
+  /** Heure de fermeture du plateau (le cyclorama ferme plus tard). */
+  closeHour: number;
   setArrivalHour: (hour: number) => void;
 }
 
@@ -31,13 +31,14 @@ function useArrivalHourGuard({
   currentHour,
   arrivalHour,
   rentalHours,
+  closeHour,
   setArrivalHour,
 }: ArrivalHourGuardArgs) {
-  const maxStart = STUDIO_CLOSE - rentalHours;
+  const maxStart = closeHour - rentalHours;
 
   useEffect(() => {
     if (arrivalHour > maxStart) {
-      setArrivalHour(Math.max(STUDIO_OPEN, Math.min(10, maxStart)));
+      setArrivalHour(Math.max(STUDIO_OPEN_HOUR, Math.min(10, maxStart)));
     }
   }, [maxStart, arrivalHour, setArrivalHour]);
 
@@ -47,8 +48,8 @@ function useArrivalHourGuard({
       (isSelectedToday && h <= currentHour) ||
       isHourBlocked(bookedHours, h, rentalHours);
     if (!isBlocked(arrivalHour)) return;
-    for (let h = STUDIO_OPEN; h <= maxStart; h++) {
-      if (!isBlocked(h) && h + rentalHours <= STUDIO_CLOSE) {
+    for (let h = STUDIO_OPEN_HOUR; h <= maxStart; h++) {
+      if (!isBlocked(h) && h + rentalHours <= closeHour) {
         setArrivalHour(h);
         return;
       }
@@ -78,6 +79,7 @@ interface FirstFreeDayArgs {
   today: { y: number; m: number; d: number };
   currentHour: number;
   rentalHours: number;
+  closeHour: number;
   setSelected: (date: DateSelection) => void;
 }
 
@@ -98,6 +100,7 @@ function useFirstFreeDay({
   today,
   currentHour,
   rentalHours,
+  closeHour,
   setSelected,
 }: FirstFreeDayArgs) {
   useEffect(() => {
@@ -107,7 +110,7 @@ function useFirstFreeDay({
     const daysInMonth = new Date(viewY, viewM + 1, 0).getDate();
     const hasValidArrival = (d: number) => {
       const booked = bookedHoursMap[d];
-      for (let h = STUDIO_OPEN; h <= STUDIO_CLOSE - rentalHours; h++) {
+      for (let h = STUDIO_OPEN_HOUR; h <= closeHour - rentalHours; h++) {
         if (d === today.d && h <= currentHour) continue;
         if (isHourBlocked(booked, h, rentalHours)) continue;
         return true;
@@ -132,6 +135,7 @@ function useFirstFreeDay({
     viewY,
     viewM,
     rentalHours,
+    closeHour,
     today.y,
     today.m,
     today.d,
@@ -140,4 +144,4 @@ function useFirstFreeDay({
   ]);
 }
 
-export { STUDIO_CLOSE, STUDIO_OPEN, useArrivalHourGuard, useFirstFreeDay };
+export { useArrivalHourGuard, useFirstFreeDay };

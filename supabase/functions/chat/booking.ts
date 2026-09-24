@@ -15,7 +15,9 @@ import {
   type QuoteLabels,
   BOOK_PLATEAUX,
   buildSessionsData,
+  closingHourFor,
   computePriceBreakdown,
+  dailyOccupancyHoursFor,
   isSessionValid,
   isValidSiren,
   planFromSessions,
@@ -70,7 +72,7 @@ const sessionSchema = z.object({
   postprod: z.boolean().optional(),
   postprodVideo: z.boolean().optional(),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  arrivalHour: z.number().int().min(9).max(19).optional(),
+  arrivalHour: z.number().int().min(9).max(18).optional(),
 });
 
 const contactSchema = z.object({
@@ -180,6 +182,21 @@ export function prepareBooking(rawArgs: Record<string, any>, lang: Lang): Prepar
   }));
   const global = { projectType: bookingSessions[0]?.projectType ?? "ecom", urgency: "flex", postprod: false };
   const plan = planFromSessions(planInputs, global);
+
+  // Same closing rule as the booking page: 18h, 19h for the cyclorama.
+  plan.slotIds.forEach((id) => {
+    const st = plan.slots[id];
+    if (st?.arrivalHour == null) return;
+    const n = (st.configSessionIdx ?? 0) + 1;
+    const px = BOOK_PLATEAUX.find((p) => p.k === st.plateauKey);
+    const end = st.arrivalHour + dailyOccupancyHoursFor(st, px);
+    const close = closingHourFor(px);
+    if (end > close) {
+      missing.push(lang === "fr"
+        ? `session ${n} : heure d'arrivée plus tôt (finirait à ${end}h, fermeture à ${close}h)`
+        : `session ${n}: earlier arrival hour (would end at ${end}h, closing at ${close}h)`);
+    }
+  });
   const labels = QUOTE_LABELS[lang];
   const breakdown = computePriceBreakdown({
     plateau: plan.plateau,
@@ -289,7 +306,7 @@ export const PREPARE_BOOKING_TOOL = {
             postprod: { type: "boolean", description: "True if the client wants E-DO post-production." },
             postprodVideo: { type: "boolean", description: "True if video editing is wanted." },
             date: { type: "string", description: "Session date, YYYY-MM-DD. Resolve relative dates before calling." },
-            arrivalHour: { type: "integer", minimum: 9, maximum: 19, description: "Arrival hour, 24h (studio open 9–19)." },
+            arrivalHour: { type: "integer", minimum: 9, maximum: 19, description: "Arrival hour, 24h. Studio open 9–18; the cyclorama books until 19. The session must end by closing time." },
           },
           required: ["product", "quantity"],
         },

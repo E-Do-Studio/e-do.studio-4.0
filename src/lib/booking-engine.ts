@@ -395,6 +395,24 @@ export const packshotRate = (entry: CfgEntry, views: string[]) => {
 /** Une journée complète, en heures — l'unité du tarif `rates.full`. */
 export const HOURS_PER_FULL_DAY = 8;
 
+// Horaires d'ouverture, en heures pleines. Le studio ferme à 18h ; seul le
+// cyclorama se réserve jusqu'à 19h, pour que sa journée de 10h tienne (9h–19h).
+export const STUDIO_OPEN_HOUR = 9;
+export const STUDIO_CLOSE_HOUR = 18;
+export const CYCLO_CLOSE_HOUR = 19;
+
+export function closingHourFor(
+  plateau: Pick<BookPlateau, 'isCyclo'> | null | undefined,
+): number {
+  return plateau?.isCyclo ? CYCLO_CLOSE_HOUR : STUDIO_CLOSE_HOUR;
+}
+
+export function closingHourForKey(
+  plateauKey: string | null | undefined,
+): number {
+  return closingHourFor(BOOK_PLATEAUX.find((p) => p.k === plateauKey));
+}
+
 // Durée TOTALE facturée d'un créneau, en heures. C'est le nombre qui facture
 // l'équipe (computePriceBreakdown) et celui qu'on persiste sur la réservation.
 // Une journée complète sur deux jours vaut 16, pas 8 — `hours` fait foi.

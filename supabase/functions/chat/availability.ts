@@ -12,6 +12,11 @@
 //     via the supabase-js builder and the date window is built from validated
 //     primitives only.
 
+import {
+  STUDIO_OPEN_HOUR,
+  closingHourForKey,
+} from "../../../src/lib/booking-engine.ts";
+
 // ─── Types ────────────────────────────────────────────────────────────────
 
 export type Lang = "fr" | "en";
@@ -60,8 +65,6 @@ export interface AvailabilityResult {
 
 // ─── Constants ────────────────────────────────────────────────────────────
 
-export const STUDIO_OPEN_HOUR = 9;
-export const STUDIO_CLOSE_HOUR = 19;
 export const DEFAULT_WINDOW_DAYS = 14;
 export const MAX_WINDOW_DAYS = 60;
 export const MAX_SLOTS_RETURNED = 6;
@@ -344,9 +347,9 @@ export function computeFreeSlots(
     const totalHours = r.booking_sessions.reduce((s, x) => s + (x.hours || 0), 0);
     if (totalHours <= 0) continue;
     const arr = r.arrival_hour;
-    const end = Math.min(STUDIO_CLOSE_HOUR, arr + totalHours);
     const sessionsByPlateau = new Set(r.booking_sessions.map((s) => s.plateau_key));
     for (const p of sessionsByPlateau) {
+      const end = Math.min(closingHourForKey(p), arr + totalHours);
       const k = key(r.preferred_date, p);
       let set = occupied.get(k);
       if (!set) { set = new Set(); occupied.set(k, set); }
@@ -358,8 +361,9 @@ export function computeFreeSlots(
   for (const date of dayRange(opts.from, opts.to)) {
     for (const p of plateaus) {
       const occ = occupied.get(key(date, p)) ?? new Set<number>();
+      const closeHour = closingHourForKey(p);
       // Walk the hours, emit each maximal free [start, start+minHours) anchor.
-      for (let start = STUDIO_OPEN_HOUR; start + minHours <= STUDIO_CLOSE_HOUR; start++) {
+      for (let start = STUDIO_OPEN_HOUR; start + minHours <= closeHour; start++) {
         let fits = true;
         for (let h = start; h < start + minHours; h++) {
           if (occ.has(h)) { fits = false; break; }
