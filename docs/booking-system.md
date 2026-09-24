@@ -39,7 +39,7 @@
 | `total_estimate` | numeric(12,2) | Devis total estimé |
 | `notes` | text | Informations complémentaires |
 | `preferred_date` | date | Date souhaitée |
-| `arrival_hour` | int | Heure d'arrivée (9–19) |
+| `arrival_hour` | int | Heure d'arrivée (9–17, 9–18 pour le cyclorama) |
 | `created_at` | timestamptz | Date de création |
 | `updated_at` | timestamptz | Mise à jour auto (trigger) |
 
@@ -215,7 +215,7 @@ if (!result.success) {
 ### Règles métier clés
 
 - **Weekends** : bloqués pour les réservations < 8h (journée complète requise)
-- **Horaires** : arrivée entre 9h et 19h, fin max à 19h
+- **Horaires** : ouverture 9h, fin max à 18h — 19h pour le cyclorama (`closingHourFor` dans `booking-engine.ts`)
 - **Cyclorama** : demi-journée = 5h, journée = 10h (différent des autres plateaux : 4h / 8h)
 - **Devis dynamique** : recalculé à chaque changement d'option, affiché dans le SidePanel
 

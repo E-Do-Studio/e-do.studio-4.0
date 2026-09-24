@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   BOOK_PLATEAUX,
   CYCLO_EXTRAS,
+  STUDIO_OPEN_HOUR,
+  closingHourFor,
+  closingHourForKey,
   computePriceBreakdown,
   dailyOccupancyHoursFor,
   fmtEUR,
@@ -263,12 +266,36 @@ describe('rentalHoursFor — durée totale facturée', () => {
   });
 });
 
+describe('closingHourFor — horaires de réservation', () => {
+  it('ferme les plateaux à 18h', () => {
+    for (const k of ['live', 'eclipse', 'horizontal', 'vertical', 'visite']) {
+      expect(closingHourForKey(k)).toBe(18);
+    }
+  });
+
+  it('laisse le cyclorama réservable jusqu\'à 19h', () => {
+    expect(closingHourForKey('cyclorama')).toBe(19);
+  });
+
+  it('fait tenir une journée de cyclorama dans ses horaires', () => {
+    const cyclo = BOOK_PLATEAUX.find((p) => p.k === 'cyclorama')!;
+    expect(
+      STUDIO_OPEN_HOUR + rentalHoursFor(slot({ cycloMode: 'fullH' }), cyclo),
+    ).toBeLessThanOrEqual(closingHourFor(cyclo));
+  });
+
+  it('retombe sur 18h pour un plateau inconnu', () => {
+    expect(closingHourForKey(undefined)).toBe(18);
+    expect(closingHourForKey('inconnu')).toBe(18);
+  });
+});
+
 describe('dailyOccupancyHoursFor — occupation sur une seule journée', () => {
   const live = BOOK_PLATEAUX.find((p) => p.k === 'live')!;
   const cyclo = BOOK_PLATEAUX.find((p) => p.k === 'cyclorama')!;
 
   // useAvailability cherche un créneau libre de N heures consécutives entre 9h
-  // et 19h. Au-delà de 10h sa boucle ne s'exécute jamais et elle déclare la
+  // et 18h. Au-delà de 9h sa boucle ne s'exécute jamais et elle déclare la
   // journée complète : une réservation de 2 jours rendait TOUTES les dates
   // indisponibles, y compris sur une journée vide.
   it('plafonne une réservation multi-jours à une journée ouvrable', () => {
@@ -284,7 +311,7 @@ describe('dailyOccupancyHoursFor — occupation sur une seule journée', () => {
     for (const hours of [8, 9, 16, 24, 40]) {
       expect(
         dailyOccupancyHoursFor(slot({ slotType: 'full', hours }), live),
-      ).toBeLessThanOrEqual(10);
+      ).toBeLessThanOrEqual(closingHourFor(live) - STUDIO_OPEN_HOUR);
     }
   });
 

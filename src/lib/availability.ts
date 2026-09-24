@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { STUDIO_OPEN_HOUR, closingHourForKey } from './booking-engine';
 import { supabase } from './supabase';
 
 export type AvailabilityState = 'free' | 'unavailable';
@@ -10,20 +11,21 @@ interface SessionAvailabilityRow {
   bookings: { status: string } | null;
 }
 
-const STUDIO_OPEN = 9;
-const STUDIO_CLOSE = 19;
-
 const dayCache = new Map<string, Record<number, AvailabilityState>>();
 
 export function clearAvailabilityCache(): void {
   dayCache.clear();
 }
 
-function getOccupiedHours(arrivalHour: number, totalHours: number): number[] {
+function getOccupiedHours(
+  arrivalHour: number,
+  totalHours: number,
+  closeHour: number,
+): number[] {
   const hours: number[] = [];
   for (
     let h = arrivalHour;
-    h < arrivalHour + totalHours && h < STUDIO_CLOSE;
+    h < arrivalHour + totalHours && h < closeHour;
     h++
   ) {
     hours.push(h);
@@ -34,8 +36,13 @@ function getOccupiedHours(arrivalHour: number, totalHours: number): number[] {
 function isDayFullyBooked(
   occupiedHours: Set<number>,
   rentalHours: number,
+  closeHour: number,
 ): boolean {
-  for (let start = STUDIO_OPEN; start <= STUDIO_CLOSE - rentalHours; start++) {
+  for (
+    let start = STUDIO_OPEN_HOUR;
+    start <= closeHour - rentalHours;
+    start++
+  ) {
     let fits = true;
     for (let h = start; h < start + rentalHours; h++) {
       if (occupiedHours.has(h)) {
@@ -120,6 +127,7 @@ export function useAvailability(
           }
         }
 
+        const closeHour = closingHourForKey(plateauKey);
         const occupiedPerDay: Record<number, Set<number>> = {};
         if (sessData) {
           for (const session of sessData as unknown as SessionAvailabilityRow[]) {
@@ -134,6 +142,7 @@ export function useAvailability(
             for (const h of getOccupiedHours(
               session.arrival_hour,
               session.hours,
+              closeHour,
             )) {
               occupiedPerDay[day].add(h);
             }
@@ -147,7 +156,7 @@ export function useAvailability(
             result[d] = 'unavailable';
           } else {
             const occupied = occupiedPerDay[d] || new Set();
-            result[d] = isDayFullyBooked(occupied, rentalHours)
+            result[d] = isDayFullyBooked(occupied, rentalHours, closeHour)
               ? 'unavailable'
               : 'free';
           }

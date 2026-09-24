@@ -156,8 +156,8 @@ Deno.test("computeFreeSlots returns full grid when no bookings exist", () => {
     plateauKey: "cyclorama",
     minHours: 4,
   });
-  // Studio is 9..19 with min=4h → anchors 9,13 (next stride after the first
-  // emitted anchor advances by minHours). At minimum 2 anchors per day.
+  // The cyclorama books 9..19 with min=4h → anchors 9,13 (next stride after
+  // the first emitted anchor advances by minHours). At minimum 2 anchors per day.
   assert(slots.length >= 2);
   for (const s of slots) {
     assertEquals(s.plateau_key, "cyclorama");
@@ -165,6 +165,15 @@ Deno.test("computeFreeSlots returns full grid when no bookings exist", () => {
     assertEquals(s.duration_hours, 4);
     assert(s.start_hour >= 9 && s.end_hour <= 19);
   }
+});
+
+Deno.test("computeFreeSlots closes stages at 18 and the cyclorama at 19", () => {
+  const range = { from: "2026-06-04", to: "2026-06-04", minHours: 1 };
+  const stage = computeFreeSlots([], { ...range, plateauKey: "horizontal" });
+  const cyclo = computeFreeSlots([], { ...range, plateauKey: "cyclorama" });
+  assertEquals(Math.max(...stage.map((s) => s.end_hour)), 18);
+  assertEquals(Math.max(...cyclo.map((s) => s.end_hour)), 19);
+  assertEquals(Math.min(...stage.map((s) => s.start_hour)), 9);
 });
 
 Deno.test("computeFreeSlots excludes overlapping booked hours", () => {
