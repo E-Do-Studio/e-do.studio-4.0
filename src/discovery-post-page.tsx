@@ -219,16 +219,7 @@ export const DiscoveryPostPage = () => {
                     <MonoLabel tone="primary">
                       {t('discoveryPage.nextArticle')}
                     </MonoLabel>
-                    <ArticleTeaserCell
-                      post={nextPost}
-                      lang={lang}
-                      onOpen={() =>
-                        navigate({
-                          to: '/$lang/discovery/$slug',
-                          params: { lang, slug: nextPost.slug },
-                        })
-                      }
-                    />
+                    <ArticleTeaserCell post={nextPost} lang={lang} />
                   </aside>
                 )}
                 {/* Plus de pied « Fermer » : la bande de la rangée 2 porte

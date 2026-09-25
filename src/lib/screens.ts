@@ -100,6 +100,10 @@ export const SCREEN_TO_PATH: Record<string, (lang: Lang) => string> = {
   legal: (l) => `/${l}/legal`,
 };
 
+/** Un article Discovery : même segment dans les deux langues. */
+export const discoveryPostPath = (lang: Lang, slug: string) =>
+  `${SCREEN_TO_PATH.discovery(lang)}/${slug}`;
+
 /** Chemins du tunnel de réservation, dérivés de la même table. */
 export const BOOK_PATHS = {
   picker: (l: Lang) => at('bookPicker', l),

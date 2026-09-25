@@ -67,6 +67,7 @@ function baselineJsonLd(lang: Lang, site: Partial<SiteData> | undefined) {
       hours: site?.studioHours,
       business: site?.businessInfo,
       socials: site?.socialLinks,
+      machines: site?.machines,
     }),
     buildWebSiteSchema(lang),
   ]);
