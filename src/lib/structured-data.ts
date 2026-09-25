@@ -8,9 +8,10 @@ import type {
   GalleryProject,
   GalleryCategory,
 } from './strapi';
-import type { DiscoveryPost } from '../types';
+import type { DiscoveryPost, MachineInfo } from '../types';
 import { getT } from '../i18n';
 import { bcp47 } from './format';
+import { SCREEN_TO_PATH } from './screens';
 
 const SITE_URL = 'https://e-do.studio';
 const ORGANIZATION_ID = `${SITE_URL}/#organization`;
@@ -92,12 +93,72 @@ function toCountryCode(country?: string): string {
   return /^france$/i.test(country.trim()) ? 'FR' : country;
 }
 
+// Le point de l'adresse du studio, géocodé au numéro par la Base Adresse
+// Nationale (api-adresse.data.gouv.fr). Le CMS a bien des champs latitude /
+// longitude, mais sur le composant `address`, que la rédaction n'a jamais
+// rempli : ce sont les champs à plat qui servent.
+//
+// Émis seulement tant que la rue du CMS est celle-ci : un déménagement saisi
+// dans Strapi ne doit pas laisser Google sur l'ancien point, qu'il confronte à
+// l'adresse et à Maps.
+const STUDIO_GEO = {
+  street: '69 boulevard victor hugo',
+  latitude: 48.90888,
+  longitude: 2.32913,
+};
+
+function buildGeo(street?: string): JsonLdNode | undefined {
+  if (street?.trim().toLowerCase() !== STUDIO_GEO.street) return undefined;
+  return {
+    '@type': 'GeoCoordinates',
+    latitude: STUDIO_GEO.latitude,
+    longitude: STUDIO_GEO.longitude,
+  };
+}
+
+// Le cyclorama a son propre écran, les autres machines vivent sous /plateau.
+function machinePath(slug: string, lang: Lang): string | undefined {
+  return (SCREEN_TO_PATH[slug] ?? SCREEN_TO_PATH[`plateau-${slug}`])?.(lang);
+}
+
+// Les prestations, rattachées à l'établissement sur TOUTES les pages — accueil
+// compris, qui n'a pas de nœud Service à lui. Chaque entrée pointe par `@id`
+// vers le nœud Service complet (tarifs, description) émis par sa propre page.
+function buildServiceCatalog(
+  lang: Lang,
+  machines: MachineInfo[],
+): JsonLdNode | undefined {
+  const services = machines.flatMap((m) => {
+    const path = machinePath(m.slug, lang);
+    if (!path) return [];
+    return [{ name: m[lang].t, url: `${SITE_URL}${path}` }];
+  });
+  services.push({
+    name: getT(lang)('seo.postprodServiceType'),
+    url: `${SITE_URL}${SCREEN_TO_PATH.postprod(lang)}`,
+  });
+  return {
+    '@type': 'OfferCatalog',
+    name: getT(lang)('seo.serviceCatalogName'),
+    itemListElement: services.map((s) => ({
+      '@type': 'Offer',
+      itemOffered: {
+        '@type': 'Service',
+        '@id': `${s.url}#service`,
+        name: s.name,
+        url: s.url,
+      },
+    })),
+  };
+}
+
 export interface BuildOrganizationArgs {
   lang: Lang;
   contact?: ContactInfo | null;
   hours?: StudioHours | null;
   business?: SiteBusinessInfo | null;
   socials?: { href: string }[] | null;
+  machines?: MachineInfo[] | null;
 }
 
 export function buildLocalBusinessSchema({
@@ -106,6 +167,7 @@ export function buildLocalBusinessSchema({
   hours,
   business,
   socials,
+  machines,
 }: BuildOrganizationArgs): JsonLdNode {
   const description = getT(lang)('seo.localBusinessDescription');
   const address = contact?.address;
@@ -152,6 +214,7 @@ export function buildLocalBusinessSchema({
     vatID: business?.vatNumber,
     taxID: business?.siret,
     address: postalAddress,
+    geo: buildGeo(address?.street),
     areaServed: { '@type': 'Country', name: 'France' },
     knowsAbout: [
       'photographie',
@@ -163,6 +226,7 @@ export function buildLocalBusinessSchema({
       'packshot',
     ],
     openingHoursSpecification: buildOpeningHoursSpec(hours),
+    hasOfferCatalog: buildServiceCatalog(lang, machines ?? []),
     contactPoint: contactPoints,
     sameAs,
     inLanguage: bcp47(lang),

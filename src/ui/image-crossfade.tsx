@@ -37,8 +37,26 @@ const ImageCrossfade = ({
   priority = false,
 }: ImageCrossfadeProps) => {
   const [index, setIndex] = useState(0);
+  // Nombre de diapositives montées, depuis la première. Elles étaient toutes
+  // rendues d'emblée, empilées dans le cadre : toutes « visibles » pour le
+  // navigateur, donc toutes téléchargées au chargement, en concurrence avec la
+  // seule qui s'affiche. Sur mobile, le bandeau studio est l'image LCP de
+  // l'accueil, et ses quatre photos partaient ensemble (issue #401).
+  //
+  // La suivante est montée à mi-parcours de la diapositive courante : elle a
+  // le temps d'arriver avant son fondu. Une diapositive montée le reste.
+  const [mounted, setMounted] = useState(1);
   const reducedMotion = usePrefersReducedMotion();
   const count = images.length;
+
+  useEffect(() => {
+    if (count < 2 || reducedMotion) return;
+    const ahead = window.setTimeout(
+      () => setMounted((m) => Math.min(count, Math.max(m, index + 2))),
+      slideMs / 2,
+    );
+    return () => window.clearTimeout(ahead);
+  }, [count, index, slideMs, reducedMotion]);
 
   useEffect(() => {
     if (count < 2 || reducedMotion) return;
@@ -69,7 +87,7 @@ const ImageCrossfade = ({
       className={cn('pointer-events-none absolute inset-0', className)}
       aria-hidden={false}
     >
-      {images.map((img, i) => {
+      {images.slice(0, mounted).map((img, i) => {
         const isFirst = i === 0;
         const active = i === index;
         return (

@@ -1,3 +1,4 @@
+import { useNavigate } from '@tanstack/react-router';
 import { ArrowRight } from 'lucide-react';
 import type { DiscoveryPost, Lang } from '../types';
 import { Button } from '@/components/ui/button';
@@ -8,11 +9,11 @@ import { hasCover } from './cover';
 import { cn } from '@/lib/utils';
 import { MonoLabel } from '../ui/mono-label';
 import { useT } from '../i18n/use-t';
+import { discoveryPostPath } from '../lib/screens';
 
 interface ArticleTeaserCellProps {
   post: DiscoveryPost;
   lang: Lang;
-  onOpen: () => void;
   className?: string;
 }
 
@@ -27,19 +28,26 @@ interface ArticleTeaserCellProps {
 // pas de gouttière dont hériter, et le `<div className="border border-border">`
 // qui enrobait la carte était le seul endroit du site où un filet de cellule
 // était dessiné par un élément d'enrobage.
+//
+// Une ancre, comme la carte de l'index : c'est le seul lien d'un article vers
+// un autre.
 export const ArticleTeaserCell = ({
   post,
   lang,
-  onOpen,
   className,
 }: ArticleTeaserCellProps) => {
   const t = useT();
+  const navigate = useNavigate();
   const cover = hasCover(post);
+  const href = discoveryPostPath(lang, post.slug);
   return (
     <Item
       variant="outline"
-      render={<Button type="button" variant="cell" size="cell" />}
-      onClick={onOpen}
+      render={<Button variant="cell" size="cell" render={<a href={href} />} />}
+      onClick={(e: React.MouseEvent) => {
+        e.preventDefault();
+        navigate({ to: href });
+      }}
       // `flex-row` contre le `flex-col` de `size="cell"`, `flex-nowrap` contre
       // le `flex-wrap` d'`itemVariants`, `items-stretch` pour que la vignette
       // prenne toute la hauteur, `p-0` parce que les deux moitiés posent

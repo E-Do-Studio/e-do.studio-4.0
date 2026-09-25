@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, notFound, redirect } from '@tanstack/react-router';
 import { PlateauSlugPage } from '../../../plateau-page';
 import { settle } from '../../../lib/route-data';
 import { fetchPlateaux } from '../../../lib/strapi';
@@ -11,7 +11,26 @@ import {
 import { getT } from '../../../i18n';
 
 export const Route = createFileRoute('/$lang/plateau/$slug')({
-  loader: async () => ({ plateaux: await settle(fetchPlateaux()) }),
+  // Le cyclorama a sa propre URL : celle-ci en était le doublon, indexable et
+  // canonique vers elle-même.
+  beforeLoad: ({ params }) => {
+    if (params.slug === 'cyclorama')
+      throw redirect({
+        to: '/$lang/cyclorama',
+        params: { lang: params.lang },
+        statusCode: 301,
+      });
+  },
+  // Un slug que Strapi ne connaît pas est un vrai 404. Sans ce garde, toute
+  // URL /plateau/<n'importe quoi> rendait le cyclorama en 200, avec le titre de
+  // l'accueil et une canonical vers elle-même. Une panne Strapi (`null`), elle,
+  // garde le rendu dégradé : répondre 404 sur un plateau qui existe le ferait
+  // désindexer.
+  loader: async ({ params }) => {
+    const plateaux = await settle(fetchPlateaux());
+    if (plateaux && !plateaux[params.slug]) throw notFound();
+    return { plateaux };
+  },
   head: ({ params, loaderData }) => {
     const lang = params.lang as Lang;
     const pathname = `/plateau/${params.slug}`;

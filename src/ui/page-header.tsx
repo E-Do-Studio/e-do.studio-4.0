@@ -381,7 +381,14 @@ const PageHeader = ({ note, aside, className }: PageHeaderProps) => {
         <Button
           variant="header"
           size="header"
-          onClick={() => goto('home')}
+          // Une ancre, comme les cellules de navigation : c'était le seul
+          // chemin de toute page intérieure vers l'accueil, et un `<button>`
+          // ne l'offrait pas aux moteurs.
+          render={<a href={SCREEN_TO_PATH.home(lang)} />}
+          onClick={(e) => {
+            e.preventDefault();
+            goto('home');
+          }}
           aria-label="E-Do Studio home"
           // `p-2` l'emporte sur le `px-5` de `size="header"` : la carte de
           // conflits de tailwind-merge va de `p` vers `px`, pas l'inverse.
