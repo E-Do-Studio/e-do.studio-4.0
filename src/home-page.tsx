@@ -6,7 +6,6 @@ import { useT } from './i18n/use-t';
 import { usePageContext } from './lib/page-context';
 import { SocialClientsBar } from './social-clients-bar';
 import type { Bilingual } from './types';
-import { fetchPriority } from './ui/fetch-priority';
 import { ImageCrossfade } from './ui/image-crossfade';
 import { MediaFrame } from './ui/media-frame';
 import { MobileAssistantFab } from './ui/mobile-assistant-fab';
@@ -217,9 +216,14 @@ const HomePage = () => {
                 qui donne sa hauteur à la rangée tant que la grille bento ne
                 l'impose pas.
 
-                Pas de `priority` : la cellule voisine (galerie) porte déjà
-                l'image LCP de la page, et deux images prioritaires se disputent
-                la même bande passante. */}
+                `priority` sur la première photo : c'est l'image LCP de
+                l'accueil sous le palier — la pile s'ouvre sur ce bandeau, le
+                pavé galerie ne vient qu'après les tuiles machines, hors du
+                premier écran. Mesuré au Lighthouse mobile : la photo arrivait
+                en `lazy`, derrière la galerie préchargée, et le LCP de /fr
+                était à 2,8 s au p75 (issue #401). Au-dessus du palier, c'est la
+                galerie qui l'emporte, et ce bandeau-ci ne coûte qu'une dérivée
+                de 25vw. */}
             {studioPhotos.length > 0 && (
               <MediaFrame
                 ratio="photo"
@@ -237,6 +241,7 @@ const HomePage = () => {
                     alt: p.alt || t('home.studioPhotoAlt'),
                   }))}
                   sizes="(min-width: 1024px) 25vw, (min-width: 768px) 50vw, 100vw"
+                  priority
                   // Plus court que le défaut (5 s) : ce bandeau défile des
                   // vues du même lieu, pas une sélection à lire. Le pavé
                   // galerie garde le rythme lent.
@@ -341,7 +346,7 @@ const HomePage = () => {
                 alt=""
                 width={1280}
                 height={986}
-                {...fetchPriority(true)}
+                fetchPriority="high"
                 decoding="async"
                 className="pointer-events-none absolute inset-0 h-full w-full object-cover"
               />
@@ -436,7 +441,7 @@ const HomePage = () => {
                 <img
                   src="/showreel-preview.webp"
                   alt=""
-                  {...fetchPriority(true)}
+                  fetchPriority="high"
                   decoding="async"
                   className="pointer-events-none absolute inset-0 h-full w-full object-cover"
                 />
