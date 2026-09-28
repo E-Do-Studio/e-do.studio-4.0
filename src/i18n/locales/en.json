@@ -451,13 +451,15 @@
   },
   "seo": {
     "contactDescription": "Contact E-Do Studio to book a photo or video stage in Paris.",
+    "cycloramaServiceType": "Cyclorama rental",
     "discoveryBlogName": "Discovery — E-Do Studio Journal",
     "galleryName": "Gallery — E-Do Studio Paris",
     "localBusinessDescription": "Professional photo and video studio in Paris. Cyclorama, shooting stages and post-production services for fashion, cosmetics, jewelry and food brands.",
     "postprodCatalogName": "Post-production services",
     "postprodDescription": "Retouching, color grading, editing and express delivery. E-Do Studio in Paris.",
     "postprodServiceType": "Photo & video post-production",
-    "serviceCatalogName": "E-Do Studio services"
+    "serviceCatalogName": "E-Do Studio services",
+    "stageServiceType": "Photo & video stage rental"
   },
   "validation": {
     "cgv": "You must accept the terms and conditions",

@@ -451,13 +451,15 @@
   },
   "seo": {
     "contactDescription": "Contactez E-Do Studio pour réserver un plateau photo ou vidéo à Paris.",
+    "cycloramaServiceType": "Location de cyclorama",
     "discoveryBlogName": "Discovery — Journal E-Do Studio",
     "galleryName": "Galerie — E-Do Studio Paris",
     "localBusinessDescription": "Studio photo et vidéo professionnel à Paris. Cyclorama, plateaux de prise de vue et services de post-production pour marques de mode, cosmétique, joaillerie et food.",
     "postprodCatalogName": "Prestations post-production",
     "postprodDescription": "Retouche, colorimétrie, montage et livraison express. Studio E-Do à Paris.",
     "postprodServiceType": "Post-production photo et vidéo",
-    "serviceCatalogName": "Prestations E-Do Studio"
+    "serviceCatalogName": "Prestations E-Do Studio",
+    "stageServiceType": "Location de plateau photo et vidéo"
   },
   "validation": {
     "cgv": "Vous devez accepter les CGV",

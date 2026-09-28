@@ -4,6 +4,7 @@ import {
   buildBlogSchema,
   buildLocalBusinessSchema,
   buildPageBreadcrumb,
+  buildPlateauServiceSchema,
   buildWebSiteSchema,
 } from './structured-data';
 import type { DiscoveryPost } from '../types';
@@ -132,6 +133,12 @@ describe('buildLocalBusinessSchema', () => {
     expect(s.sameAs).toEqual(['https://instagram.com/edostudio']);
   });
 
+  it('se déclare comme studio photo, sous-type de LocalBusiness', () => {
+    const s = buildLocalBusinessSchema({ lang: 'fr', contact } as never);
+    expect(s['@type']).toEqual(['Organization', 'PhotographyBusiness']);
+    expect(s['@id']).toBe('https://e-do.studio/#organization');
+  });
+
   it('porte la langue de la page', () => {
     expect(
       buildLocalBusinessSchema({ lang: 'en', contact } as never).inLanguage,
@@ -252,6 +259,40 @@ describe('buildPageBreadcrumb', () => {
   it('traduit le maillon d’accueil', () => {
     const s = buildPageBreadcrumb('en', []);
     expect((s.itemListElement as { name: string }[])[0].name).toBe('Home');
+  });
+});
+
+describe('buildPlateauServiceSchema', () => {
+  const plateau = { name: 'Horizontal', rates: [] };
+
+  it('est offert par l’établissement, en Île-de-France', () => {
+    const s = buildPlateauServiceSchema({
+      plateau,
+      slug: 'horizontal',
+      lang: 'fr',
+      pathname: '/plateau/horizontal',
+    } as never);
+    expect(s['@id']).toBe('https://e-do.studio/fr/plateau/horizontal#service');
+    expect(s.provider).toEqual({ '@id': 'https://e-do.studio/#organization' });
+    expect(s.areaServed).toEqual([
+      { '@type': 'City', name: 'Paris' },
+      { '@type': 'AdministrativeArea', name: 'Île-de-France' },
+    ]);
+  });
+
+  it('traduit le type de service selon la page', () => {
+    const args = { plateau, pathname: '/cyclorama' };
+    expect(
+      buildPlateauServiceSchema({
+        ...args,
+        slug: 'cyclorama',
+        lang: 'fr',
+      } as never).serviceType,
+    ).toBe('Location de cyclorama');
+    expect(
+      buildPlateauServiceSchema({ ...args, slug: 'live', lang: 'en' } as never)
+        .serviceType,
+    ).toBe('Photo & video stage rental');
   });
 });
 

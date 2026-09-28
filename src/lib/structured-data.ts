@@ -200,7 +200,9 @@ export function buildLocalBusinessSchema({
       : undefined;
   return compact({
     '@context': 'https://schema.org',
-    '@type': ['Organization', 'LocalBusiness'],
+    // PhotographyBusiness est un sous-type de LocalBusiness : le nœud reste
+    // éligible aux résultats locaux, avec la catégorie juste en plus.
+    '@type': ['Organization', 'PhotographyBusiness'],
     '@id': ORGANIZATION_ID,
     name: business?.legalName || 'E-Do Studio',
     alternateName: 'E-Do Studio',
@@ -333,12 +335,20 @@ export function buildPlateauServiceSchema({
     '@context': 'https://schema.org',
     '@type': 'Service',
     '@id': `${pageUrl(lang, pathname)}#service`,
-    serviceType:
-      slug === 'cyclorama' ? 'Cyclorama rental' : 'Photo & video stage rental',
+    serviceType: getT(lang)(
+      slug === 'cyclorama'
+        ? 'seo.cycloramaServiceType'
+        : 'seo.stageServiceType',
+    ),
     name,
     description,
     url: pageUrl(lang, pathname),
-    areaServed: { '@type': 'Country', name: 'France' },
+    // Un plateau se loue sur place : la zone réelle est celle d'où l'on vient
+    // au studio, pas la France entière que déclare l'établissement.
+    areaServed: [
+      { '@type': 'City', name: 'Paris' },
+      { '@type': 'AdministrativeArea', name: 'Île-de-France' },
+    ],
     provider: { '@id': ORGANIZATION_ID },
     offers: offers.length > 0 ? offers : undefined,
     image: plateau.media?.find((m) => m.kind === 'image')?.url,
