@@ -386,10 +386,6 @@
     "categories": "Catégories",
     "emailPlaceholder": "votre@email.com",
     "faq": {
-      "delivery": {
-        "answer": "Les shootings ont lieu au studio, à Saint-Ouen. La post-production ne dépend pas du lieu : nous retouchons aussi des images qui n'ont pas été shootées chez nous.",
-        "question": "Livrez-vous hors d'Île-de-France ?"
-      },
       "formats": {
         "answer": "JPG, PNG, TIFF et RAW pour la photo, MP4 et MOV pour la vidéo.",
         "question": "Quels formats de fichiers sont livrés ?"
@@ -397,6 +393,10 @@
       "photographer": {
         "answer": "Oui. Le studio fournit le plateau, les machines, la lumière et l'opérateur technique. Photographe, styliste ou modèle peuvent être fournis sur demande.",
         "question": "Peut-on venir sans photographe ?"
+      },
+      "quote": {
+        "answer": "Depuis la page Réserver : choisissez le plateau et les créneaux, laissez vos coordonnées, puis « Recevoir mon devis ». Le devis détaillé arrive par e-mail sous 24 h (jours ouvrés). Pour un projet sur-mesure, écrivez-nous depuis la page contact.",
+        "question": "Comment obtenir un devis ?"
       },
       "title": "Questions fréquentes",
       "turnaround": {

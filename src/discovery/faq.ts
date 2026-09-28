@@ -9,7 +9,7 @@ const FAQ_IDS = [
   'formats',
   'turnaround',
   'visit',
-  'delivery',
+  'quote',
 ] as const;
 
 export function discoveryFaq(t: TFunction): FaqEntry[] {
