@@ -11,6 +11,7 @@ import { useT } from '../i18n/use-t';
 import {
   loadConfirmation,
   clearConfirmation,
+  confirmationViewedProps,
   type ConfirmationSnapshot,
 } from './confirmation-snapshot';
 import type { Lang } from '../types';
@@ -336,12 +337,10 @@ const BookConfirmation = () => {
     const snap = loadConfirmation();
     setSnapshot(snap);
     setHydrated(true);
-    if (!snap) return;
-    clearDraft();
-    capture('booking_confirmation_viewed', {
-      submit_mode: snap.mode,
-      total: snap.total,
-    });
+    capture('booking_confirmation_viewed', confirmationViewedProps(snap));
+    // Sans snapshot, rien ne prouve qu'une réservation a abouti : un brouillon
+    // en cours doit survivre à une visite directe de cette page.
+    if (snap) clearDraft();
   }, []);
 
   const onNewRequest = () => {
