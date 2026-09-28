@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useLoaderData, useParams } from '@tanstack/react-router';
+import { useLoaderData, useNavigate, useParams } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { CarouselNav } from './ui/carousel-nav';
 import { Rail, RailCell } from './ui/rail-cell';
@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 import { VideoLoop } from './ui/video-loop';
 import { usePageContext } from './lib/page-context';
 import { captureCta } from './lib/analytics';
+import { manualPath } from './book/book-routes';
 import type { PlateauSpec } from './lib/strapi';
 import { useT } from './i18n/use-t';
 import type { Lang } from './types';
@@ -251,6 +252,7 @@ interface PlateauPageProps {
 const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
   const t = useT();
   const { lang, goto } = usePageContext();
+  const navigate = useNavigate();
   const [activeIndex, setActiveIndex] = useState(0);
   if (!plateaux) return null;
   const p = plateaux[slug] || plateaux.cyclorama;
@@ -489,12 +491,11 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
             </>
           }
           title={t('common.bookThisStage')}
+          // Droit au tunnel manuel, plateau coché : l'aiguillage configurateur
+          // ou manuel n'a plus d'objet quand le visiteur a déjà choisi.
           onClick={() => {
             captureCta('book_stage', slug);
-            try {
-              localStorage.setItem('', slug);
-            } catch {}
-            goto('book');
+            navigate({ to: manualPath(lang), search: { plateau: slug } });
           }}
           className="app:col-start-4 app:row-start-5"
         />
