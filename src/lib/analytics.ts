@@ -143,11 +143,18 @@ export function registerSiteLang(lang: string): void {
   withClient((posthog) => posthog.register({ site_lang: lang }));
 }
 
+// Pas de garde `started` ici, contrairement aux autres appels : au premier
+// chargement d'une page, les effets de la page passent AVANT `startPostHog()`,
+// que `usePostHog` n'appelle qu'une fois le consentement lu, au rendu suivant
+// l'hydratation. Un événement émis au montage était donc jeté — c'est ainsi
+// que `booking_confirmation_viewed` restait à zéro sur toute confirmation
+// rechargée ou ouverte directement (#421). Il attend maintenant le SDK dans
+// la file, comme ceux émis pendant son chargement.
 export function capture<K extends AnalyticsEvent>(
   event: K,
   properties: AnalyticsEvents[K],
 ): void {
-  if (!started) return;
+  if (!PROJECT_TOKEN) return;
   withClient((posthog) => posthog.capture(event, properties));
 }
 

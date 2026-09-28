@@ -63,7 +63,14 @@ export interface AnalyticsEvents {
     reason: 'slot_taken' | 'network' | 'server';
     status?: number;
   };
-  booking_confirmation_viewed: { submit_mode: SubmitMode; total: number };
+  // `snapshot_present: false` : page affichée sans récapitulatif (onglet
+  // neuf, lien direct, stockage de session indisponible). Mode et total sont
+  // alors inconnus, pas nuls.
+  booking_confirmation_viewed: {
+    submit_mode: SubmitMode | null;
+    total: number;
+    snapshot_present: boolean;
+  };
   contact_form_submitted: Record<string, never>;
   contact_form_failed: { reason: string };
   contact_form_blocked: { invalid_fields: string[] };

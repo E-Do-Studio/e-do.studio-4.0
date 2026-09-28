@@ -1,3 +1,5 @@
+import type { AnalyticsEvents } from '../lib/analytics-events';
+
 const KEY = 'edo-booking-confirmation';
 
 export type ConfirmationMode = 'request' | 'quote' | 'booking';
@@ -57,4 +59,18 @@ export function clearConfirmation(): void {
   try {
     sessionStorage.removeItem(KEY);
   } catch {}
+}
+
+// Propriétés de `booking_confirmation_viewed`. L'événement part à chaque
+// affichage, récapitulatif ou non. Le snapshot vit en sessionStorage : il
+// survit à un rechargement, mais pas à un nouvel onglet ni à un lien direct,
+// et le conditionner rendait ces affichages invisibles.
+export function confirmationViewedProps(
+  snapshot: ConfirmationSnapshot | null,
+): AnalyticsEvents['booking_confirmation_viewed'] {
+  return {
+    submit_mode: snapshot?.mode ?? null,
+    total: snapshot?.total ?? 0,
+    snapshot_present: snapshot !== null,
+  };
 }
