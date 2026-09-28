@@ -146,58 +146,80 @@ const BookingFooterNav = ({
         };
   })();
 
+  // Ce qui manque, quand l'action principale est grisée. Le bouton désactivé
+  // ne disait pas pourquoi : sans plateau choisi, « Continuer » restait gris et
+  // muet, et PostHog relevait des clics répétés dessus (issue #404).
+  const blockedReason =
+    primary.disabled && !saving
+      ? step === STEP.PLATEAU
+        ? t('booking.nextBlockedStage')
+        : step === STEP.DATE
+          ? t('booking.nextBlockedDate')
+          : null
+      : null;
+
   return (
-    <div className="flex shrink-0 flex-col border-t border-border bg-background md:min-h-cta md:flex-row md:items-stretch">
-      <Button
-        type="button"
-        variant="cell"
-        size="touch"
-        onClick={goBack}
-        disabled={idx <= 0 && onFirstSub}
-        className="min-w-0 justify-start px-pad-cell md:flex-1"
-      >
-        <ArrowLeft data-icon="inline-start" />
-        {t('booking.back')}
-      </Button>
-      {/* Le filet entre les actions vient de `*+*` : posé sur chaque bouton, le
+    <>
+      {blockedReason && (
+        <p
+          role="status"
+          className="m-0 shrink-0 border-t border-border bg-background px-pad-cell py-2 text-sm text-muted-foreground"
+        >
+          {blockedReason}
+        </p>
+      )}
+      <div className="flex shrink-0 flex-col border-t border-border bg-background md:min-h-cta md:flex-row md:items-stretch">
+        <Button
+          type="button"
+          variant="cell"
+          size="touch"
+          onClick={goBack}
+          disabled={idx <= 0 && onFirstSub}
+          className="min-w-0 justify-start px-pad-cell md:flex-1"
+        >
+          <ArrowLeft data-icon="inline-start" />
+          {t('booking.back')}
+        </Button>
+        {/* Le filet entre les actions vient de `*+*` : posé sur chaque bouton, le
           premier en porterait un contre le bord gauche de l'écran en mobile.
           `md:border-l` sépare le groupe du « Retour », et seulement à partir du
           moment où ils partagent une ligne. */}
-      <div className="flex items-stretch border-t border-border md:w-fit md:border-l md:border-t-0 [&>*+*]:border-l [&>*+*]:border-border">
-        {/* Le cyclorama se facture sur devis : pas de demande de devis séparée. */}
-        {step >= STEP.CONTACT && !isCyclo && (
-          // Volontairement cliquable même quand le contact est incomplet :
-          // la soumission renvoie alors sur l'étape contact pour montrer ce
-          // qui manque. Sans ça, le bouton semblerait ne rien faire.
-          // L'atténuation dit qu'il reste quelque chose à remplir.
+        <div className="flex items-stretch border-t border-border md:w-fit md:border-l md:border-t-0 [&>*+*]:border-l [&>*+*]:border-border">
+          {/* Le cyclorama se facture sur devis : pas de demande de devis séparée. */}
+          {step >= STEP.CONTACT && !isCyclo && (
+            // Volontairement cliquable même quand le contact est incomplet :
+            // la soumission renvoie alors sur l'étape contact pour montrer ce
+            // qui manque. Sans ça, le bouton semblerait ne rien faire.
+            // L'atténuation dit qu'il reste quelque chose à remplir.
+            <Button
+              type="button"
+              variant="cell"
+              size="touch"
+              onClick={() => onSubmit('quote')}
+              disabled={saving}
+              title={t('booking.noDateHeld')}
+              className={cn(
+                'min-w-0 px-pad-cell max-md:flex-1 max-md:whitespace-normal',
+                !contactValid && 'opacity-30',
+              )}
+            >
+              {saving ? t('booking.sending') : t('booking.receiveMyQuote')}
+              <ArrowRight data-icon="inline-end" />
+            </Button>
+          )}
           <Button
             type="button"
-            variant="cell"
             size="touch"
-            onClick={() => onSubmit('quote')}
-            disabled={saving}
-            title={t('booking.noDateHeld')}
-            className={cn(
-              'min-w-0 px-pad-cell max-md:flex-1 max-md:whitespace-normal',
-              !contactValid && 'opacity-30',
-            )}
+            onClick={primary.onClick}
+            disabled={primary.disabled}
+            className="min-w-0 px-pad-cell max-md:flex-1 max-md:whitespace-normal"
           >
-            {saving ? t('booking.sending') : t('booking.receiveMyQuote')}
+            {primary.label}
             <ArrowRight data-icon="inline-end" />
           </Button>
-        )}
-        <Button
-          type="button"
-          size="touch"
-          onClick={primary.onClick}
-          disabled={primary.disabled}
-          className="min-w-0 px-pad-cell max-md:flex-1 max-md:whitespace-normal"
-        >
-          {primary.label}
-          <ArrowRight data-icon="inline-end" />
-        </Button>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

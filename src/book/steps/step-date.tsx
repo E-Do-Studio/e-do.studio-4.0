@@ -1,14 +1,11 @@
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useT } from '../../i18n/use-t';
 import { isHourBlocked, useAvailability } from '../../lib/availability';
 import type { BookPlateau, DateSelection } from '../../lib/booking-engine';
 import { STUDIO_OPEN_HOUR, closingHourFor } from '../../lib/booking-engine';
-import {
-  useArrivalHourGuard,
-  useFirstFreeDay,
-} from './use-calendar-defaults';
+import { useArrivalHourGuard, useFirstFreeDay } from './use-calendar-defaults';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { cva } from 'class-variance-authority';
 import { hourLabel } from '@/lib/format';
@@ -86,6 +83,12 @@ const StepDate = ({
   refreshKey = 0,
 }: StepDateProps) => {
   const t = useT();
+  // La raison du dernier jour ou créneau refusé au clic. Un clic sur une case
+  // hachurée ne faisait rien de visible : le motif n'existait que dans le nom
+  // accessible, et PostHog relevait des clics morts et répétés sur cet écran
+  // (issue #404). Un choix valide l'efface.
+  const [dayHint, setDayHint] = useState<string | null>(null);
+  const [hourHint, setHourHint] = useState<string | null>(null);
   const {
     availMap,
     bookedHoursMap,
@@ -218,9 +221,12 @@ const StepDate = ({
       </div>
 
       <div className="grid w-full shrink-0 grid-cols-7 border-b border-border">
-        {days.map((d) => (
+        {days.map((d, i) => (
           <div
-            key={d}
+            // La position, pas l'initiale : « M » vaut mardi ET mercredi, et la
+            // clé en double faisait avertir React à chaque rendu du calendrier.
+            // biome-ignore lint/suspicious/noArrayIndexKey: les sept jours ne bougent jamais
+            key={i}
             className={cn(
               monoLabelVariants({ tone: 'muted' }),
               // Un cran du rail, comme les bandes au-dessus. `py-2.5` la
@@ -281,12 +287,15 @@ const StepDate = ({
           // garde la case dans l'ordre de tabulation, le clic est neutralisé
           // en JS, et la raison entre dans le nom.
           const blocked = past || av === 'unavailable';
+          // Le week-end avant l'indisponibilité : `av` vaut `unavailable` pour
+          // tout week-end bloqué, et la branche générique masquait la seule
+          // raison qui dise quoi faire (réserver la journée entière).
           const dayReason = past
             ? t('booking.pastDay')
-            : av === 'unavailable'
-              ? t('booking.dayUnavailable')
-              : weekendBlocked
-                ? t('booking.weekendFullDayOnly')
+            : weekendBlocked
+              ? t('booking.weekendFullDayOnly')
+              : av === 'unavailable'
+                ? t('booking.dayUnavailable')
                 : partial
                   ? t('booking.calPartial')
                   : t('booking.freeLower');
@@ -306,7 +315,12 @@ const StepDate = ({
               aria-pressed={sel}
               aria-label={dayLabel}
               onClick={() => {
-                if (blocked) return;
+                if (blocked) {
+                  setDayHint(`${d} ${months[viewM]} — ${dayReason}`);
+                  return;
+                }
+                setDayHint(null);
+                setHourHint(null);
                 setSelected({ y: viewY, m: viewM, d });
               }}
               className={cn(
@@ -395,6 +409,14 @@ const StepDate = ({
           {t('booking.calUnavailableLegend')}
         </span>
       </MonoLabel>
+      {dayHint && (
+        <p
+          role="status"
+          className="m-0 shrink-0 border-b border-border bg-background px-pad-cell py-2 text-sm"
+        >
+          {dayHint}
+        </p>
+      )}
 
       <div className="flex shrink-0 flex-wrap items-center gap-3 border-b border-border bg-background px-pad-cell py-2.5 md:gap-5">
         {/* Le jour choisi, rappelé ici. La grille des heures vit sous le
@@ -465,7 +487,12 @@ const StepDate = ({
               selected={on}
               unavailable={disabled}
               label={hourTitle}
-              onSelect={() => setArrivalHour(h)}
+              onSelect={() => {
+                setDayHint(null);
+                setHourHint(null);
+                setArrivalHour(h);
+              }}
+              onUnavailableSelect={() => setHourHint(hourTitle)}
               className={cn(
                 // Même correction que les cases du calendrier : `aspect-[1.5]`
                 // rendait la hauteur proportionnelle à la largeur, soit 127px
@@ -481,6 +508,14 @@ const StepDate = ({
           );
         })}
       </SegmentGroup>
+      {hourHint && (
+        <p
+          role="status"
+          className="m-0 shrink-0 border-b border-border bg-background px-pad-cell py-2 text-sm"
+        >
+          {hourHint}
+        </p>
+      )}
     </div>
   );
 };

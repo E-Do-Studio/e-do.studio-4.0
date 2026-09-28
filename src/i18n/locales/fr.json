@@ -175,6 +175,8 @@
     "multiSelectPossible": "Sélection multiple possible",
     "multiStageProject": "Projet multi-plateaux ({{count}} sessions).",
     "newRequest": "Nouvelle demande",
+    "nextBlockedDate": "Choisissez une date et une heure d’arrivée pour continuer.",
+    "nextBlockedStage": "Choisissez un plateau pour continuer.",
     "no": "Non",
     "noDateHeld": "Sans bloquer de date",
     "noStageSelected": "Aucun plateau sélectionné — revenez à l'étape 01.",

@@ -175,6 +175,8 @@
     "multiSelectPossible": "Multi-select possible",
     "multiStageProject": "Multi-stage project ({{count}} sessions).",
     "newRequest": "New request",
+    "nextBlockedDate": "Pick a date and an arrival time to continue.",
+    "nextBlockedStage": "Pick a stage to continue.",
     "no": "No",
     "noDateHeld": "No date held",
     "noStageSelected": "No stage selected — go back to step 01.",
