@@ -27,6 +27,7 @@ import { KeyValueList, KeyValueRow } from './ui/key-value-row';
 import { LabelledCell } from './ui/labelled-cell';
 import { HeadlineCell } from './ui/headline-cell';
 import { CtaCell } from './ui/cta-cell';
+import { useAfterLoad } from './ui/use-after-load';
 
 const METRO_COLOR_BY_LINE: Record<string, string> = {
   '13': 'bg-metro-13 text-black',
@@ -561,6 +562,7 @@ interface ContactMapProps {
 
 const ContactMap = ({ contact, className }: ContactMapProps) => {
   const t = useT();
+  const mapReady = useAfterLoad();
   const c = contact;
   const showFallback = !c;
   const embedUrl = forceMapPlanView(
@@ -583,7 +585,7 @@ const ContactMap = ({ contact, className }: ContactMapProps) => {
         <div className="absolute inset-0 flex items-center justify-center p-6">
           <UnavailableNote />
         </div>
-      ) : (
+      ) : mapReady ? (
         <iframe
           src={embedUrl}
           className="absolute inset-0 h-full w-full "
@@ -591,7 +593,7 @@ const ContactMap = ({ contact, className }: ContactMapProps) => {
           referrerPolicy="no-referrer-when-downgrade"
           title={t('contact.mapTitle')}
         />
-      )}
+      ) : null}
     </section>
   );
 };

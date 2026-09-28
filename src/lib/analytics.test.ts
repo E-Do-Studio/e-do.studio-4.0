@@ -16,6 +16,8 @@ async function loadAnalytics(token: string) {
     removeEventListener: vi.fn(),
     requestIdleCallback: (fn: () => void) => fn(),
   });
+  // Page déjà chargée : `afterLoad` passe directement au repos.
+  vi.stubGlobal('document', { readyState: 'complete' });
   vi.resetModules();
   return import('./analytics');
 }

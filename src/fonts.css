@@ -1,0 +1,72 @@
+/* Polices de marque ABC Favorit (sans) et ABC Favorit Mono, auto-hébergées.
+
+   Hors de styles.css, et chargées après l'affichage (cf. fontsBootstrap dans
+   routes/__root.tsx) : ~180 Ko de polices se disputaient la bande passante
+   avec l'image LCP. La licence Dinamo interdit de modifier les fichiers — pas
+   de sous-ensemble de glyphes possible, seul le moment du chargement se règle.
+   Le texte s'affiche d'abord dans « ABC Favorit Fallback » (styles.css), calée
+   sur les métriques de ces fichiers pour que rien ne bouge à la bascule. */
+
+@font-face {
+  font-family: "ABC Favorit";
+  src: url("/fonts/ABCFavorit-Light.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "ABC Favorit";
+  src: url("/fonts/ABCFavorit-Regular_1.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "ABC Favorit";
+  src: url("/fonts/ABCFavorit-RegularItalic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "ABC Favorit";
+  src: url("/fonts/ABCFavorit-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "ABC Favorit Mono";
+  src: url("/fonts/ABCFavoritMono-Book.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "ABC Favorit Mono";
+  src: url("/fonts/ABCFavoritMono-BookItalic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "ABC Favorit Mono";
+  src: url("/fonts/ABCFavoritMono-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "ABC Favorit Mono";
+  src: url("/fonts/ABCFavoritMono-BoldItalic.woff2") format("woff2");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}

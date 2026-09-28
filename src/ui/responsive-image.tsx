@@ -71,7 +71,9 @@ export function ResponsiveImage({
       sizes={sizes}
       alt={alt}
       loading={priority ? 'eager' : 'lazy'}
-      decoding="async"
+      // Pas de décodage asynchrone pour l'image prioritaire : il reportait sa
+      // peinture d'une image au moins après son arrivée, donc le LCP.
+      decoding={priority ? 'auto' : 'async'}
       // La prop React 19, et non l'attribut `fetchpriority` en minuscules du
       // contournement React 18 : React 19 ne reconnaît que la forme camelCase,
       // et c'est d'elle qu'il tire la priorité du `<link rel="preload">` qu'il

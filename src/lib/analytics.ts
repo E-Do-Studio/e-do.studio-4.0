@@ -1,6 +1,7 @@
 import type { PostHog } from 'posthog-js';
 import type { AnalyticsEvent, AnalyticsEvents } from './analytics-events';
 import type { CookieConsent } from './use-cookie-consent';
+import { afterLoad } from './after-load';
 
 const PROJECT_TOKEN = import.meta.env.VITE_POSTHOG_PROJECT_TOKEN?.trim();
 // Proxy géré par PostHog sur un sous-domaine du site : les bloqueurs de pub
@@ -45,15 +46,6 @@ if (typeof window !== 'undefined' && PROJECT_TOKEN) {
   window.addEventListener('unhandledrejection', onEarlyRejection);
 }
 
-// Au repos, avec un plafond : sur un téléphone chargé, le fil principal peut
-// ne jamais se libérer, et un SDK qui n'arrive pas ne mesure rien. Safari n'a
-// pas `requestIdleCallback` : un délai fixe y tient lieu de repos.
-const whenIdle = (fn: () => void) => {
-  if (typeof window.requestIdleCallback === 'function')
-    window.requestIdleCallback(fn, { timeout: 3000 });
-  else window.setTimeout(fn, 1500);
-};
-
 export function isPostHogEnabled(): boolean {
   return Boolean(PROJECT_TOKEN);
 }
@@ -73,7 +65,7 @@ export function startPostHog(): void {
   if (started || !PROJECT_TOKEN) return;
   if (typeof window === 'undefined') return;
   started = true;
-  whenIdle(() => {
+  afterLoad(() => {
     import('posthog-js')
       .then(({ default: posthog }) => initPostHog(posthog, PROJECT_TOKEN))
       .catch((error) => {

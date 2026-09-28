@@ -112,6 +112,9 @@ export const DiscoveryPostPage = () => {
           <div className="row-start-2 flex gap-px bg-border">
             <Button
               onClick={backToIndex}
+              // Sous `sm`, le libellé est masqué et la flèche seule ne nommait
+              // pas le bouton.
+              aria-label={t('discoveryPage.backToJournal')}
               variant="header"
               // Sans `size`, cette cellule héritait `h-8` de `size="default"` et
               // flottait dans sa rangée de `--spacing-band`, laissant passer 12px

@@ -66,57 +66,65 @@ export const MorePostsCard = ({
         {posts.map((post) => {
           const href = discoveryPostPath(lang, post.slug);
           return (
-            <Item
-              key={post.id}
-              // La ligne est une vraie ancre : `render` compose la cellule
-              // cliquable du site avec la structure `Item`, au lieu de rendre un
-              // `<div>` à `onClick` — qui ne serait ni focusable, ni activable au
-              // clavier, ni annoncé comme une action. Et une ancre plutôt qu'un
-              // `<button>` : c'est par cette liste que les moteurs atteignent
-              // les articles.
-              render={
-                <Button variant="cell" size="cell" render={<a href={href} />} />
-              }
-              onClick={(e: React.MouseEvent) => {
-                e.preventDefault();
-                navigate({ to: href });
-              }}
-              // Deux annulations, chacune contre une cva différente :
-              // `flex-row` contre le `flex-col` de `size="cell"` — la cellule
-              // bento empile, la ligne de liste juxtapose — et `flex-nowrap`
-              // contre le `flex-wrap` d'`itemVariants`, sans quoi la vignette et
-              // le texte passent à la ligne dans une colonne étroite.
-              className="flex-row flex-nowrap items-center gap-3 px-5 py-3"
-            >
-              {/* La case est rendue même sans image, et elle reste alors VIDE :
+            // `role="listitem"` sur une enveloppe : l'`Item` est rendu en
+            // ancre (`render`), qui perdait le rôle — la liste n'avait plus
+            // aucun élément aux yeux des lecteurs d'écran.
+            <div key={post.id} role="listitem">
+              <Item
+                // La ligne est une vraie ancre : `render` compose la cellule
+                // cliquable du site avec la structure `Item`, au lieu de rendre un
+                // `<div>` à `onClick` — qui ne serait ni focusable, ni activable au
+                // clavier, ni annoncé comme une action. Et une ancre plutôt qu'un
+                // `<button>` : c'est par cette liste que les moteurs atteignent
+                // les articles.
+                render={
+                  <Button
+                    variant="cell"
+                    size="cell"
+                    render={<a href={href} />}
+                  />
+                }
+                onClick={(e: React.MouseEvent) => {
+                  e.preventDefault();
+                  navigate({ to: href });
+                }}
+                // Deux annulations, chacune contre une cva différente :
+                // `flex-row` contre le `flex-col` de `size="cell"` — la cellule
+                // bento empile, la ligne de liste juxtapose — et `flex-nowrap`
+                // contre le `flex-wrap` d'`itemVariants`, sans quoi la vignette et
+                // le texte passent à la ligne dans une colonne étroite.
+                className="flex-row flex-nowrap items-center gap-3 px-5 py-3"
+              >
+                {/* La case est rendue même sans image, et elle reste alors VIDE :
                 rien n'y est peint. Repliée, elle décalait le texte d'une ligne à
                 l'autre — la liste avait deux bords gauches ; remplie d'un aplat
                 gris, elle attirait l'œil là où il n'y a rien à voir, juste à
                 côté de vignettes qui montrent quelque chose. Ce qu'on tient ici,
                 c'est la place, pas le manque. */}
-              {/* `rounded-none` annule le `rounded-sm` d'`ItemMedia` : le rayon
+                {/* `rounded-none` annule le `rounded-sm` d'`ItemMedia` : le rayon
                 du site est 0 (`--radius` dans styles.css). */}
-              <ItemMedia
-                variant="image"
-                className="relative size-12 rounded-none"
-              >
-                <DiscoveryCoverMedia
-                  post={post}
-                  lang={lang}
-                  sizes="48px"
-                  className="absolute inset-0 h-full w-full object-cover"
-                />
-              </ItemMedia>
-              <ItemContent className="min-w-0">
-                <MonoLabel tone="muted">{post.tag[lang]}</MonoLabel>
-                {/* `block w-auto` annule le `flex w-fit` d'`ItemTitle`, sans quoi
+                <ItemMedia
+                  variant="image"
+                  className="relative size-12 rounded-none"
+                >
+                  <DiscoveryCoverMedia
+                    post={post}
+                    lang={lang}
+                    sizes="48px"
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                </ItemMedia>
+                <ItemContent className="min-w-0">
+                  <MonoLabel tone="muted">{post.tag[lang]}</MonoLabel>
+                  {/* `block w-auto` annule le `flex w-fit` d'`ItemTitle`, sans quoi
                   le titre se dimensionne à son contenu et le `line-clamp` n'a
                   plus de largeur à contraindre. */}
-                <ItemTitle className="block w-auto line-clamp-2 text-sm font-normal leading-snug tracking-tight text-foreground">
-                  {post.title[lang]}
-                </ItemTitle>
-              </ItemContent>
-            </Item>
+                  <ItemTitle className="block w-auto line-clamp-2 text-sm font-normal leading-snug tracking-tight text-foreground">
+                    {post.title[lang]}
+                  </ItemTitle>
+                </ItemContent>
+              </Item>
+            </div>
           );
         })}
 

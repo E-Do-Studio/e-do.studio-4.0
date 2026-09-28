@@ -51,10 +51,25 @@ function readStoredConsent(): ConsentState | null {
   return null;
 }
 
+// Injecte le conteneur s'il n'est pas déjà là — l'amorçage en ligne l'a posé
+// pour un visiteur ayant accepté lors d'une visite précédente.
+function loadContainer(gtmId: string) {
+  if (document.getElementById(GTM_SCRIPT_ID)) return;
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' });
+  const script = document.createElement('script');
+  script.id = GTM_SCRIPT_ID;
+  script.async = true;
+  script.crossOrigin = 'anonymous';
+  script.src = `https://www.googletagmanager.com/gtm.js?id=${encodeURIComponent(gtmId)}`;
+  document.head.appendChild(script);
+}
+
 /**
- * Ne charge PAS GTM : le conteneur et le Consent Mode par défaut sont amorcés en
- * ligne dans le <head>, avant l'hydratation (cf. gtmBootstrap dans __root).
- * Ce hook ne fait que relayer les changements de consentement ultérieurs.
+ * Le Consent Mode par défaut est amorcé en ligne dans le <head> (cf.
+ * gtmBootstrap dans __root), qui n'injecte le conteneur que si le consentement
+ * est déjà acquis. Ce hook relaie les changements ultérieurs, et charge le
+ * conteneur au premier « Accepter ».
  */
 export function useGoogleTagManager() {
   const gtmId = import.meta.env.VITE_GTM_ID?.trim();
@@ -68,7 +83,9 @@ export function useGoogleTagManager() {
     const onConsentChange = () =>
       afterNextPaint(() => {
         const next = readStoredConsent();
-        if (next) pushConsentUpdate(next);
+        if (!next) return;
+        pushConsentUpdate(next);
+        if (next === 'granted') loadContainer(gtmId);
       });
     window.addEventListener(COOKIE_CONSENT_EVENT, onConsentChange);
     window.addEventListener('storage', onConsentChange);

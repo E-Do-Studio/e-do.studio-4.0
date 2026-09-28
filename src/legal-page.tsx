@@ -114,9 +114,9 @@ const StrapiSectionsRenderer = ({ sections, lang }: SectionRendererProps) => (
                   graisse. Le gras n'est plus nécessaire pour les séparer — c'est
                   le même cran que l'article, dont le corps est passé en 300 et
                   les titres en 400. */}
-              <h4 className="m-0 mb-2 text-base font-normal tracking-tight text-foreground">
+              <h3 className="m-0 mb-2 text-base font-normal tracking-tight text-foreground">
                 {article.t}
-              </h4>
+              </h3>
               <Prose>{renderStrapiBlocks(s.body[lang])}</Prose>
             </div>
           </article>
@@ -125,12 +125,13 @@ const StrapiSectionsRenderer = ({ sections, lang }: SectionRendererProps) => (
       const rows = tryParseDefList(s.body[lang]);
       return (
         <section key={s.slug} className="py-6 border-b border-border">
-          {/* Même cran que le `h4` ci-dessus. Ce titre coiffe soit un corps
+          {/* `h2` sous le `h1` de SectionIntro — c'était un `h3`, un niveau
+              sauté. Même cran que le `h3` d'article ci-dessus. Ce titre coiffe soit un corps
               `text-sm` atténué, soit une liste de définitions : quatre pixels
               d'écart et une couleur, la graisse n'a plus à s'en charger. */}
-          <h3 className="mb-3.5 text-xl font-normal tracking-tight text-foreground">
+          <h2 className="mb-3.5 text-xl font-normal tracking-tight text-foreground">
             {s.title[lang]}
-          </h3>
+          </h2>
           {rows ? (
             // `pad="none"` : le retrait vient déjà du conteneur de la page
             // (`px-5 md:px-10`), commun à la prose et à cette liste.
