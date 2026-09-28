@@ -84,6 +84,11 @@ export async function createBooking(
       session_count: input.sessions.length,
       total: result.total,
     });
+    // Relie la réservation au parcours d'origine (campagne, organique). Ne
+    // part qu'après un consentement explicite, garde tenue par `identify` :
+    // en cookieless, l'identité est un hash serveur sans continuité, et
+    // l'e-mail ne quitte pas le navigateur sans accord. Une réservation d'un
+    // visiteur qui a refusé ou ignoré la bannière reste donc anonyme.
     identify(input.contact.email, {
       first_name: input.contact.prenom,
       last_name: input.contact.nom,

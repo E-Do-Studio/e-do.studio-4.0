@@ -23,6 +23,17 @@ export type BookingStepName =
   | 'contact'
   | 'date';
 
+/** `tel`, `email`, ou le domaine visé sans `www.` (`instagram.com`…). */
+export type OutboundTarget = 'tel' | 'email' | (string & {});
+export type CtaId =
+  | 'book'
+  | 'book_stage'
+  | 'cyclorama'
+  | 'postprod'
+  | 'discovery'
+  | 'plateau';
+export type ScrollDepth = 25 | 50 | 75 | 100;
+
 interface BookingContext {
   /** Nul pour le chatbot, qui n'a pas d'étapes. */
   funnel: BookingFunnel | null;
@@ -75,11 +86,23 @@ export interface AnalyticsEvents {
   contact_form_failed: { reason: string };
   contact_form_blocked: { invalid_fields: string[] };
   chat_opened: { surface: 'mobile_fab' };
-  chat_message_sent: { turn: number; page: string | null };
+  // Seule propriété en texte libre du catalogue : 80 caractères au plus,
+  // e-mails et numéros masqués avant l'envoi (`questionForAnalytics`).
+  chat_question_asked: {
+    turn: number;
+    page: string | null;
+    question_truncated: string;
+  };
+  // Remplace `chat_message_sent`, qui ne partait qu'à la réception d'une
+  // réponse et comptait donc des réponses sous le nom d'un envoi.
+  chat_answer_received: { turn: number; page: string | null };
   chat_message_failed: { error: string };
   // La confirmation passe par `createBooking` : elle ressort en
   // `booking_submitted` / `booking_failed` avec `source: 'chat'`.
   chat_booking_proposed: { session_count: number };
+  outbound_click: { target: OutboundTarget };
+  cta_clicked: { cta: CtaId; pathname: string; plateau?: string };
+  scroll_depth: { depth: ScrollDepth; pathname: string };
 }
 
 export type AnalyticsEvent = keyof AnalyticsEvents;
