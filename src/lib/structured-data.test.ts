@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildBlogPostingSchema,
   buildBlogSchema,
+  buildFaqSchema,
   buildLocalBusinessSchema,
   buildPageBreadcrumb,
   buildPlateauServiceSchema,
@@ -135,8 +136,18 @@ describe('buildLocalBusinessSchema', () => {
 
   it('se déclare comme studio photo, sous-type de LocalBusiness', () => {
     const s = buildLocalBusinessSchema({ lang: 'fr', contact } as never);
-    expect(s['@type']).toEqual(['Organization', 'PhotographyBusiness']);
+    expect(s['@type']).toEqual([
+      'Organization',
+      'LocalBusiness',
+      'PhotographyBusiness',
+    ]);
     expect(s['@id']).toBe('https://e-do.studio/#organization');
+  });
+
+  it('garde les mêmes types sur la version anglaise', () => {
+    expect(
+      buildLocalBusinessSchema({ lang: 'en', contact } as never)['@type'],
+    ).toEqual(['Organization', 'LocalBusiness', 'PhotographyBusiness']);
   });
 
   it('porte la langue de la page', () => {
@@ -293,6 +304,58 @@ describe('buildPlateauServiceSchema', () => {
       buildPlateauServiceSchema({ ...args, slug: 'live', lang: 'en' } as never)
         .serviceType,
     ).toBe('Photo & video stage rental');
+  });
+});
+
+describe('buildFaqSchema', () => {
+  const entries = [
+    { question: 'Peut-on venir sans photographe ?', answer: 'Oui.' },
+    {
+      question: 'Le studio est-il accessible ?',
+      answer: 'Oui, de plain-pied.',
+    },
+  ];
+
+  it('émet une Question par entrée, avec sa réponse acceptée', () => {
+    const s = buildFaqSchema(entries, 'fr', '/discovery');
+    expect(s?.['@type']).toBe('FAQPage');
+    expect(s?.['@id']).toBe('https://e-do.studio/fr/discovery#faq');
+    expect(s?.mainEntity).toEqual([
+      {
+        '@type': 'Question',
+        name: 'Peut-on venir sans photographe ?',
+        acceptedAnswer: { '@type': 'Answer', text: 'Oui.' },
+      },
+      {
+        '@type': 'Question',
+        name: 'Le studio est-il accessible ?',
+        acceptedAnswer: { '@type': 'Answer', text: 'Oui, de plain-pied.' },
+      },
+    ]);
+  });
+
+  it('porte l’URL et la langue de la version anglaise', () => {
+    const s = buildFaqSchema(entries, 'en', '/discovery');
+    expect(s?.url).toBe('https://e-do.studio/en/discovery');
+    expect(s?.inLanguage).toBe('en-US');
+  });
+
+  it('écarte les entrées sans question ou sans réponse', () => {
+    const s = buildFaqSchema(
+      [
+        ...entries,
+        { question: ' ', answer: 'x' },
+        { question: 'y', answer: '' },
+      ],
+      'fr',
+      '/discovery',
+    );
+    expect(s?.mainEntity).toHaveLength(2);
+  });
+
+  // Un FAQPage sans question est invalide pour Google.
+  it('n’émet rien quand il n’y a aucune question', () => {
+    expect(buildFaqSchema([], 'fr', '/discovery')).toBeNull();
   });
 });
 

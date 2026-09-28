@@ -200,9 +200,9 @@ export function buildLocalBusinessSchema({
       : undefined;
   return compact({
     '@context': 'https://schema.org',
-    // PhotographyBusiness est un sous-type de LocalBusiness : le nœud reste
-    // éligible aux résultats locaux, avec la catégorie juste en plus.
-    '@type': ['Organization', 'PhotographyBusiness'],
+    // PhotographyBusiness est un sous-type de LocalBusiness ; LocalBusiness
+    // reste explicite pour les consommateurs qui ne résolvent pas la hiérarchie.
+    '@type': ['Organization', 'LocalBusiness', 'PhotographyBusiness'],
     '@id': ORGANIZATION_ID,
     name: business?.legalName || 'E-Do Studio',
     alternateName: 'E-Do Studio',
@@ -482,6 +482,41 @@ export function buildBlogPostingSchema(
     articleSection: post.tag?.[lang],
     keywords:
       [post.tag?.[lang], post.cat].filter(Boolean).join(', ') || undefined,
+  });
+}
+
+// ─── FAQPage ────────────────────────────────────────────────────────────────
+
+export interface FaqEntry {
+  question: string;
+  answer: string;
+}
+
+// Google exige que chaque Q/R balisée soit visible sur la page : ce builder ne
+// doit recevoir que ce que la page affiche réellement.
+export function buildFaqSchema(
+  entries: FaqEntry[],
+  lang: Lang,
+  pathname: string,
+): JsonLdNode | null {
+  const questions = entries
+    .filter((e) => e.question.trim() && e.answer.trim())
+    .map((e) => ({
+      '@type': 'Question',
+      name: e.question,
+      acceptedAnswer: { '@type': 'Answer', text: e.answer },
+    }));
+  // Un FAQPage sans question est invalide : mieux vaut ne rien émettre.
+  if (questions.length === 0) return null;
+  const url = pageUrl(lang, pathname);
+  return compact({
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    '@id': `${url}#faq`,
+    url,
+    inLanguage: bcp47(lang),
+    isPartOf: { '@id': WEBSITE_ID },
+    mainEntity: questions,
   });
 }
 
