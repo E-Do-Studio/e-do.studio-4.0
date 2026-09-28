@@ -4,6 +4,9 @@ const posthog = vi.hoisted(() => ({
   init: vi.fn(),
   capture: vi.fn(),
   captureException: vi.fn(),
+  get_explicit_consent_status: vi.fn(() => 'pending'),
+  opt_in_capturing: vi.fn(),
+  opt_out_capturing: vi.fn(),
 }));
 vi.mock('posthog-js', () => ({ default: posthog }));
 
@@ -112,5 +115,57 @@ describe('captureCta', () => {
     analytics.startPostHog();
     await flush();
     expect(posthog.capture).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('syncConsent', () => {
+  beforeEach(() => vi.clearAllMocks());
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
+
+  // Régression #434 : le consentement était mis en file derrière les
+  // événements émis au montage, qui partaient alors en cookieless chez un
+  // visiteur ayant accepté.
+  it('applique l’acceptation avant de rejouer la file', async () => {
+    const analytics = await loadAnalytics('phc_test');
+    analytics.capture('booking_config_skipped', {});
+    analytics.startPostHog();
+    analytics.syncConsent('accepted');
+    await flush();
+
+    expect(posthog.opt_in_capturing).toHaveBeenCalledOnce();
+    expect(posthog.opt_in_capturing.mock.invocationCallOrder[0]).toBeLessThan(
+      posthog.capture.mock.invocationCallOrder[0],
+    );
+  });
+
+  it('ne retient que le dernier état connu avant l’arrivée du SDK', async () => {
+    const analytics = await loadAnalytics('phc_test');
+    analytics.startPostHog();
+    analytics.syncConsent('accepted');
+    analytics.syncConsent('rejected');
+    await flush();
+
+    expect(posthog.opt_in_capturing).not.toHaveBeenCalled();
+    expect(posthog.opt_out_capturing).toHaveBeenCalledOnce();
+  });
+
+  it('bascule un refus ultérieur en opt-out', async () => {
+    const analytics = await loadAnalytics('phc_test');
+    analytics.startPostHog();
+    await flush();
+    analytics.syncConsent('rejected');
+    expect(posthog.opt_out_capturing).toHaveBeenCalledOnce();
+  });
+
+  it('ne touche à rien tant que le visiteur n’a pas répondu', async () => {
+    const analytics = await loadAnalytics('phc_test');
+    analytics.startPostHog();
+    analytics.syncConsent(null);
+    await flush();
+    expect(posthog.opt_in_capturing).not.toHaveBeenCalled();
+    expect(posthog.opt_out_capturing).not.toHaveBeenCalled();
   });
 });
