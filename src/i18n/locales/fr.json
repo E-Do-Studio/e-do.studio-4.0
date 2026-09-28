@@ -385,6 +385,29 @@
     "backToJournal": "Retour journal",
     "categories": "Catégories",
     "emailPlaceholder": "votre@email.com",
+    "faq": {
+      "delivery": {
+        "answer": "Les shootings ont lieu au studio, à Saint-Ouen. La post-production ne dépend pas du lieu : nous retouchons aussi des images qui n'ont pas été shootées chez nous.",
+        "question": "Livrez-vous hors d'Île-de-France ?"
+      },
+      "formats": {
+        "answer": "JPG, PNG, TIFF et RAW pour la photo, MP4 et MOV pour la vidéo.",
+        "question": "Quels formats de fichiers sont livrés ?"
+      },
+      "photographer": {
+        "answer": "Oui. Le studio fournit le plateau, les machines, la lumière et l'opérateur technique. Photographe, styliste ou modèle peuvent être fournis sur demande.",
+        "question": "Peut-on venir sans photographe ?"
+      },
+      "title": "Questions fréquentes",
+      "turnaround": {
+        "answer": "48 à 72 h pour un lot e-commerce standard, 5 à 7 jours pour une campagne ou un film avec étalonnage avancé. Les fichiers détourés automatiquement sont livrés le lendemain.",
+        "question": "Combien de temps pour recevoir les photos retouchées ?"
+      },
+      "visit": {
+        "answer": "Oui. La visite est gratuite, dure environ une heure et a lieu du lundi au vendredi, de 9 h à 18 h. Écrivez-nous pour fixer le créneau.",
+        "question": "Faut-il prendre rendez-vous pour visiter le studio ?"
+      }
+    },
     "morePosts": "Plus d'articles",
     "nextArticle": "Article suivant",
     "noFeaturedPost": "Article à la une",
@@ -451,13 +474,15 @@
   },
   "seo": {
     "contactDescription": "Contactez E-Do Studio pour réserver un plateau photo ou vidéo à Paris.",
+    "cycloramaServiceType": "Location de cyclorama",
     "discoveryBlogName": "Discovery — Journal E-Do Studio",
     "galleryName": "Galerie — E-Do Studio Paris",
     "localBusinessDescription": "Studio photo et vidéo professionnel à Paris. Cyclorama, plateaux de prise de vue et services de post-production pour marques de mode, cosmétique, joaillerie et food.",
     "postprodCatalogName": "Prestations post-production",
     "postprodDescription": "Retouche, colorimétrie, montage et livraison express. Studio E-Do à Paris.",
     "postprodServiceType": "Post-production photo et vidéo",
-    "serviceCatalogName": "Prestations E-Do Studio"
+    "serviceCatalogName": "Prestations E-Do Studio",
+    "stageServiceType": "Location de plateau photo et vidéo"
   },
   "validation": {
     "cgv": "Vous devez accepter les CGV",

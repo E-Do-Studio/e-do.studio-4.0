@@ -200,7 +200,9 @@ export function buildLocalBusinessSchema({
       : undefined;
   return compact({
     '@context': 'https://schema.org',
-    '@type': ['Organization', 'LocalBusiness'],
+    // PhotographyBusiness est un sous-type de LocalBusiness ; LocalBusiness
+    // reste explicite pour les consommateurs qui ne résolvent pas la hiérarchie.
+    '@type': ['Organization', 'LocalBusiness', 'PhotographyBusiness'],
     '@id': ORGANIZATION_ID,
     name: business?.legalName || 'E-Do Studio',
     alternateName: 'E-Do Studio',
@@ -333,12 +335,20 @@ export function buildPlateauServiceSchema({
     '@context': 'https://schema.org',
     '@type': 'Service',
     '@id': `${pageUrl(lang, pathname)}#service`,
-    serviceType:
-      slug === 'cyclorama' ? 'Cyclorama rental' : 'Photo & video stage rental',
+    serviceType: getT(lang)(
+      slug === 'cyclorama'
+        ? 'seo.cycloramaServiceType'
+        : 'seo.stageServiceType',
+    ),
     name,
     description,
     url: pageUrl(lang, pathname),
-    areaServed: { '@type': 'Country', name: 'France' },
+    // Un plateau se loue sur place : la zone réelle est celle d'où l'on vient
+    // au studio, pas la France entière que déclare l'établissement.
+    areaServed: [
+      { '@type': 'City', name: 'Paris' },
+      { '@type': 'AdministrativeArea', name: 'Île-de-France' },
+    ],
     provider: { '@id': ORGANIZATION_ID },
     offers: offers.length > 0 ? offers : undefined,
     image: plateau.media?.find((m) => m.kind === 'image')?.url,
@@ -472,6 +482,41 @@ export function buildBlogPostingSchema(
     articleSection: post.tag?.[lang],
     keywords:
       [post.tag?.[lang], post.cat].filter(Boolean).join(', ') || undefined,
+  });
+}
+
+// ─── FAQPage ────────────────────────────────────────────────────────────────
+
+export interface FaqEntry {
+  question: string;
+  answer: string;
+}
+
+// Google exige que chaque Q/R balisée soit visible sur la page : ce builder ne
+// doit recevoir que ce que la page affiche réellement.
+export function buildFaqSchema(
+  entries: FaqEntry[],
+  lang: Lang,
+  pathname: string,
+): JsonLdNode | null {
+  const questions = entries
+    .filter((e) => e.question.trim() && e.answer.trim())
+    .map((e) => ({
+      '@type': 'Question',
+      name: e.question,
+      acceptedAnswer: { '@type': 'Answer', text: e.answer },
+    }));
+  // Un FAQPage sans question est invalide : mieux vaut ne rien émettre.
+  if (questions.length === 0) return null;
+  const url = pageUrl(lang, pathname);
+  return compact({
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    '@id': `${url}#faq`,
+    url,
+    inLanguage: bcp47(lang),
+    isPartOf: { '@id': WEBSITE_ID },
+    mainEntity: questions,
   });
 }
 
