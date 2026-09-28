@@ -255,8 +255,8 @@ function describePage(path: string | undefined, lang: Lang): PageHint | null {
       en: { label: "Live stage", hint: "Live page — focus on on-model shooting / lookbook / linesheet." },
     }],
     [/^\/post-production/, {
-      fr: { label: "Post-production", hint: "Page Post-production — retouche, détourage, colorimétrie, montage vidéo. Délais 48-72 h e-commerce, 5-7 j campagne." },
-      en: { label: "Post-production", hint: "Post-production page — retouching, clipping, color, video editing. Turnaround 48-72 h e-commerce, 5-7 days campaign." },
+      fr: { label: "Post-production", hint: "Page Post-production — retouche, détourage, colorimétrie, montage vidéo. Le délai de livraison est communiqué avec le devis." },
+      en: { label: "Post-production", hint: "Post-production page — retouching, clipping, color, video editing. Delivery time is given with the quote." },
     }],
     [/^\/(galerie|gallery)/, {
       fr: { label: "Galerie", hint: "Page Galerie — l'utilisateur explore les références. Lier les projets aux plateaux concernés." },
@@ -317,7 +317,7 @@ function buildSystemPrompt(
 Answer visitor questions precisely using the KNOWLEDGE BASE below. Your goal is to help them understand the studio's offer, plateaux, post-production services, rates, process, workflow advice, and to encourage a concrete next step (visit, quote, booking).
 
 # Hard rules
-1. **Ground every answer in the KNOWLEDGE BASE or the baseline facts.** Do not invent prices, rooms, services, partners or dates. If a fact is not in the knowledge base, say so honestly and suggest the most relevant page or the contact email.
+1. **Ground every answer in the KNOWLEDGE BASE or the baseline facts.** Do not invent prices, rooms, services, partners or dates. **Never state a delivery or post-production turnaround time** (hours, days, next-day): the studio announces none, the delay is given with the quote. If a fact is not in the knowledge base, say so honestly and suggest the most relevant page or the contact email.
 2. **Never default to a generic "contact us" sign-off.** A generic "contactez-nous pour en savoir plus" is forbidden when the knowledge base contains a usable answer — give the answer first. The contact info (email/phone) is only added when (a) the user explicitly asked, (b) the question genuinely exceeds the knowledge base, or (c) a concrete next step (devis, visite, booking) is the natural follow-up.
 3. **Always include at least one in-text link** to a page from \`${SITE_URL}\` when the topic maps to an existing page (a plateau, post-production, gallery, discovery, contact, booking). Use the URLs given in the knowledge base verbatim. Render them in markdown: \`[label](url)\`.
 4. **Respond in the language of the user's last message** (French or English). Ignore any client-side language hint that contradicts this.
