@@ -1,18 +1,32 @@
 import { describe, expect, it } from 'vitest';
 import { getT } from '../i18n';
+import en from '../i18n/locales/en.json';
+import fr from '../i18n/locales/fr.json';
 import { buildFaqSchema } from '../lib/structured-data';
 import { discoveryFaq } from './faq';
 
 describe('discoveryFaq', () => {
   // `t` rend la clé brute quand elle n'existe pas : une Q/R dont le texte est
   // son propre chemin partirait telle quelle dans la page et dans le JSON-LD.
-  it.each(['fr', 'en'] as const)('résout les cinq Q/R en %s', (lang) => {
+  it.each(['fr', 'en'] as const)('résout les quatre Q/R en %s', (lang) => {
     const entries = discoveryFaq(getT(lang));
-    expect(entries).toHaveLength(5);
+    expect(entries).toHaveLength(4);
     for (const e of entries) {
       expect(e.question).not.toContain('discoveryPage.');
       expect(e.answer).not.toContain('discoveryPage.');
     }
+  });
+
+  // Une Q/R retirée de l'affichage mais laissée dans les locales resterait
+  // traduite et maintenue pour rien.
+  it.each([
+    ['fr', fr],
+    ['en', en],
+  ] as const)('n’a aucune Q/R orpheline en %s', (lang, locale) => {
+    const keys = Object.keys(locale.discoveryPage.faq).filter(
+      (k) => k !== 'title',
+    );
+    expect(keys).toHaveLength(discoveryFaq(getT(lang)).length);
   });
 
   it('n’enchaîne aucune valeur au point médian', () => {
