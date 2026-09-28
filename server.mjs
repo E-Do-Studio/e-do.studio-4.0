@@ -116,6 +116,22 @@ function toWebRequest(req) {
 
 const server = createServer(async (req, res) => {
   try {
+    // #416 : Google indexait www.e-do.studio et e-do.studio comme deux
+    // homepages concurrentes (3 116 impressions perdues côté www). Coolify
+    // route les deux hôtes vers ce conteneur : on redirige www vers le
+    // domaine nu en 301, chemin et query préservés. Derrière le proxy Coolify
+    // l'hôte original arrive dans x-forwarded-host.
+    const fwdHost = req.headers['x-forwarded-host'];
+    const host =
+      typeof fwdHost === 'string' && fwdHost
+        ? fwdHost
+        : (req.headers.host ?? '');
+    if (host.startsWith('www.')) {
+      res.writeHead(301, { Location: `https://${host.slice(4)}${req.url}` });
+      res.end();
+      return;
+    }
+
     const { pathname } = new URL(req.url, 'http://localhost');
 
     const filePath = await resolveStatic(pathname);
@@ -166,7 +182,6 @@ function pipeSafely(source, res, url) {
   };
   source.on('error', onError);
   res.on('error', onError);
-  res.on('close', () => source.destroy());
   source.pipe(res);
 }
 
