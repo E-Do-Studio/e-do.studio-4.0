@@ -116,22 +116,38 @@ function initPostHog(posthog: PostHog, token: string): void {
   window.removeEventListener('error', onEarlyError);
   window.removeEventListener('unhandledrejection', onEarlyRejection);
   client = posthog;
+  // Le consentement AVANT la file : il décide sous quelle identité partent les
+  // événements rejoués. Mis en file comme eux, il passait après ceux émis au
+  // montage de la page, qui partaient alors en cookieless chez un visiteur
+  // ayant accepté (#434, observé au banc happy-dom avec le vrai SDK).
+  if (pendingConsent !== undefined) applyConsent(posthog, pendingConsent);
+  pendingConsent = undefined;
   for (const error of earlyErrors.splice(0)) posthog.captureException(error);
   for (const fn of pending.splice(0)) fn(posthog);
 }
 
+// Dernier consentement connu avant l'arrivée du SDK. Une valeur et non une file :
+// seul le dernier état compte, et il doit passer avant les événements.
+let pendingConsent: CookieConsent | undefined;
+
+function applyConsent(posthog: PostHog, consent: CookieConsent): void {
+  // Le miroir du SDK survit aux visites : ne rejouer l'opt-in que s'il a
+  // changé, sinon chaque chargement émettrait un `$opt_in`.
+  const status = posthog.get_explicit_consent_status();
+  if (consent === 'accepted' && status !== 'granted') {
+    posthog.opt_in_capturing();
+  } else if (consent === 'rejected' && status !== 'denied') {
+    // Avec `cookieless_mode: 'on_reject'`, l'opt-out ne coupe pas la capture :
+    // il la bascule en cookieless (ni cookie ni stockage, identité hachée
+    // côté serveur), comme pour une bannière ignorée.
+    posthog.opt_out_capturing();
+  }
+}
+
 export function syncConsent(consent: CookieConsent): void {
   if (!started) return;
-  withClient((posthog) => {
-    // Le miroir du SDK survit aux visites : ne rejouer l'opt-in que s'il a
-    // changé, sinon chaque chargement émettrait un `$opt_in`.
-    const status = posthog.get_explicit_consent_status();
-    if (consent === 'accepted' && status !== 'granted') {
-      posthog.opt_in_capturing();
-    } else if (consent === 'rejected' && status !== 'denied') {
-      posthog.opt_out_capturing();
-    }
-  });
+  if (client) applyConsent(client, consent);
+  else pendingConsent = consent;
 }
 
 export function registerSiteLang(lang: string): void {
