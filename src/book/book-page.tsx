@@ -230,8 +230,30 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
       contactValid,
     });
   const handleContactNext = (nextN: number | null) => {
-    if (!runContactValidation()) return;
-    if (nextN !== null) goToStep(nextN);
+    if (runContactValidation()) {
+      if (nextN !== null) goToStep(nextN);
+      return;
+    }
+    // Le refus doit se voir là où il a lieu. Les erreurs s'affichaient sous
+    // leurs champs, mais sur mobile le formulaire dépasse l'écran : un SIREN
+    // manquant en haut ou des CGV non cochées en bas restaient hors du champ,
+    // et « Continuer » semblait ne rien faire. PostHog a relevé des clics
+    // répétés sur ce bouton, et des `booking_step_blocked` à cette étape
+    // (issue #404). On amène le premier champ fautif à l'écran, focus compris.
+    //
+    // Une image plus tard : les cellules ne portent `data-invalid` qu'une fois
+    // les erreurs rendues.
+    requestAnimationFrame(() => {
+      const cell =
+        contentScrollRef.current?.querySelector<HTMLElement>('[data-invalid]');
+      if (!cell) return;
+      cell.scrollIntoView({ block: 'center' });
+      cell
+        .querySelector<HTMLElement>(
+          ':is(input, textarea, select, [role="checkbox"]):not([type="hidden"]):not([aria-hidden="true"])',
+        )
+        ?.focus({ preventScroll: true });
+    });
   };
 
   const progress = stepProgress(STEPS, step, canNext());

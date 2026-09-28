@@ -73,6 +73,13 @@ interface SegmentItemProps {
    * Le clic est neutralisé ici, une fois, plutôt qu'au site d'appel.
    */
   unavailable?: boolean;
+  /**
+   * Appelé au clic sur un segment indisponible, pour en dire la raison à
+   * l'écran. Neutralisé sans retour, le clic était mort : le motif ne vivait
+   * que dans le nom accessible, et PostHog relevait des clics répétés sur la
+   * grille des heures (issue #404).
+   */
+  onUnavailableSelect?: () => void;
   /** Nom accessible, quand le contenu visible ne suffit pas à lui seul. */
   label?: string;
   /**
@@ -93,6 +100,7 @@ export const SegmentItem = ({
   selected,
   onSelect,
   unavailable,
+  onUnavailableSelect,
   label,
   current,
   className,
@@ -100,7 +108,7 @@ export const SegmentItem = ({
   <Button
     type="button"
     onClick={() => {
-      if (unavailable) return;
+      if (unavailable) return onUnavailableSelect?.();
       onSelect();
     }}
     aria-disabled={unavailable || undefined}
