@@ -462,6 +462,7 @@
   "validation": {
     "cgv": "Vous devez accepter les CGV",
     "email": "Adresse e-mail invalide",
+    "messageTooShort": "Au moins {{min}} caractères",
     "quantite": "Indiquez la quantité d’articles",
     "required": "Ce champ est requis",
     "siren": "Le SIREN doit contenir 9 chiffres",

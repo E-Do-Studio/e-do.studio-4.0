@@ -18,6 +18,7 @@ import {
 } from '../lib/page-context';
 import { initPreviewMode, isPreviewActive } from '../lib/preview-mode';
 import { settle } from '../lib/route-data';
+import { reloadOnStaleChunk } from '../lib/stale-chunk-reload';
 import { SCREEN_TO_PATH, translatePathname } from '../lib/screens';
 import { serializeJsonLd } from '../lib/seo-head';
 import { META } from '../lib/seo-meta';
@@ -132,7 +133,10 @@ const CRITICAL_CSS =
 // drapeau vit dans sessionStorage, inaccessible au serveur. Aucun risque de
 // servir un brouillon à un visiteur, mais le rendu serveur d'une entrée preview
 // contient le contenu publié : d'où l'invalidation ci-dessous.
-if (typeof window !== 'undefined') initPreviewMode();
+if (typeof window !== 'undefined') {
+  initPreviewMode();
+  reloadOnStaleChunk();
+}
 
 // Le SSR ayant rendu le contenu publié, on rejoue les loaders côté client dès
 // que le mode preview est actif, pour que l'éditeur voie ses brouillons sans

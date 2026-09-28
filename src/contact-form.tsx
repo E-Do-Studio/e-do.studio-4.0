@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import type { ContactFormData, Lang } from './types';
 import { submitContactForm } from './lib/contact';
+import { capture } from './lib/analytics';
+import { validateContactForm } from './lib/contact-schema';
 import { getT } from './i18n';
 import { useT } from './i18n/use-t';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -53,6 +55,39 @@ export const ContactForm = ({
   sendError,
 }: ContactFormProps) => {
   const t = useT();
+  const formRef = useRef<HTMLFormElement>(null);
+  // Les erreurs ne s'affichent qu'après une première tentative d'envoi, puis
+  // suivent la saisie : un champ corrigé perd son message sans attendre.
+  const [showErrors, setShowErrors] = useState(false);
+  const errors = showErrors ? validateContactForm(form, lang) : {};
+
+  // Le formulaire se vérifie lui-même, avant d'appeler `submit` : la page
+  // contact et la version embarquée ont chacune leur gestionnaire d'envoi, et
+  // aucune ne contrôlait rien (issue #396).
+  const onSubmit = (event: FormEvent) => {
+    const found = validateContactForm(form, lang);
+    const invalid = Object.keys(found);
+    if (invalid.length === 0) {
+      submit(event);
+      return;
+    }
+    event.preventDefault();
+    setShowErrors(true);
+    // Les noms des champs refusés, jamais leurs valeurs — le pendant de
+    // `booking_step_blocked` pour le tunnel.
+    capture('contact_form_blocked', { invalid_fields: invalid });
+    // Une image plus tard : les cellules ne portent `data-invalid` qu'une fois
+    // les erreurs rendues. Même geste que l'étape contact du tunnel.
+    requestAnimationFrame(() => {
+      const cell =
+        formRef.current?.querySelector<HTMLElement>('[data-invalid]');
+      if (!cell) return;
+      cell.scrollIntoView({ block: 'center' });
+      cell
+        .querySelector<HTMLElement>('input, textarea')
+        ?.focus({ preventScroll: true });
+    });
+  };
 
   // Horodaté au montage et non dans `INITIAL_FORM` : cette constante est
   // évaluée à l'import, donc côté SSR sur l'horloge du serveur — l'écart
@@ -68,7 +103,9 @@ export const ContactForm = ({
 
   return (
     <form
-      onSubmit={submit}
+      ref={formRef}
+      onSubmit={onSubmit}
+      noValidate
       // Le rythme de la colonne vient des tokens : le rail de contact, à côté,
       // aligne ses coutures sur le même module. Les deux mesures étaient écrites
       // en littéraux ici ET dans le rail, donc elles dérivaient séparément.
@@ -94,7 +131,9 @@ export const ContactForm = ({
           tabIndex={-1}
           autoComplete="off"
           value={form.website ?? ''}
-          onChange={(event) => setForm({ ...form, website: event.target.value })}
+          onChange={(event) =>
+            setForm({ ...form, website: event.target.value })
+          }
         />
       </div>
 
@@ -119,6 +158,7 @@ export const ContactForm = ({
 
       <FormCell
         label={t('contact.name')}
+        error={errors.nom}
         className="col-start-1 row-start-2 justify-center"
       >
         <FormCellInput
@@ -131,6 +171,7 @@ export const ContactForm = ({
       </FormCell>
       <FormCell
         label={t('contact.phonePlaceholder')}
+        error={errors.telephone}
         className="col-start-2 row-start-2 justify-center"
       >
         <FormCellInput
@@ -145,6 +186,7 @@ export const ContactForm = ({
       </FormCell>
       <FormCell
         label="Email*"
+        error={errors.email}
         className="col-span-2 row-start-3 justify-center"
       >
         <FormCellInput
@@ -159,6 +201,7 @@ export const ContactForm = ({
       </FormCell>
       <FormCell
         label={t('contact.companyBrand')}
+        error={errors.societe}
         className="col-span-2 row-start-4 justify-center"
       >
         <FormCellInput
@@ -171,6 +214,7 @@ export const ContactForm = ({
       </FormCell>
       <FormCell
         label={t('contact.yourMessage')}
+        error={errors.message}
         className="col-span-2 row-start-5 justify-start"
       >
         <FormCellTextarea

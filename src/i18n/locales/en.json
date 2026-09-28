@@ -462,6 +462,7 @@
   "validation": {
     "cgv": "You must accept the terms and conditions",
     "email": "Invalid email address",
+    "messageTooShort": "At least {{min}} characters",
     "quantite": "Enter the number of items",
     "required": "This field is required",
     "siren": "SIREN must be 9 digits",
