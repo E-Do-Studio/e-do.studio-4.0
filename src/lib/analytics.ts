@@ -1,5 +1,9 @@
 import type { PostHog } from 'posthog-js';
-import type { AnalyticsEvent, AnalyticsEvents } from './analytics-events';
+import type {
+  AnalyticsEvent,
+  AnalyticsEvents,
+  CtaId,
+} from './analytics-events';
 import type { CookieConsent } from './use-cookie-consent';
 import { afterLoad } from './after-load';
 
@@ -148,6 +152,19 @@ export function capture<K extends AnalyticsEvent>(
 ): void {
   if (!PROJECT_TOKEN) return;
   withClient((posthog) => posthog.capture(event, properties));
+}
+
+/**
+ * `cta_clicked` depuis un pavé d'action. Le chemin est lu ici plutôt que passé
+ * par l'appelant : le même CTA vit sur plusieurs pages, et c'est la page
+ * d'origine du clic qu'on veut comparer.
+ */
+export function captureCta(cta: CtaId, plateau?: string): void {
+  capture('cta_clicked', {
+    cta,
+    pathname: window.location.pathname,
+    ...(plateau ? { plateau } : {}),
+  });
 }
 
 export function captureException(

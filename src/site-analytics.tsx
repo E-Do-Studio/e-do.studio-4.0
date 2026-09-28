@@ -1,5 +1,6 @@
 import { useGoogleAnalytics } from './lib/use-google-analytics';
 import { useGoogleTagManager } from './lib/use-google-tag-manager';
+import { useOutboundClicks } from './lib/use-outbound-clicks';
 import { usePostHog } from './lib/use-posthog';
 import type { Lang } from './types';
 
@@ -21,5 +22,6 @@ export const SiteAnalytics = ({
   useGoogleAnalytics(googleAnalyticsId);
   useGoogleTagManager();
   usePostHog(lang);
+  useOutboundClicks();
   return null;
 };

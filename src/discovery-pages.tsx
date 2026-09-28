@@ -7,6 +7,8 @@ import { MorePostsCard } from './discovery/more-posts-card';
 import { NewsletterCell } from './discovery/newsletter-cell';
 import { filterByCategory, selectPosts } from './discovery/select-posts';
 import { usePageContext } from './lib/page-context';
+import { captureCta } from './lib/analytics';
+import { useScrollDepth } from './lib/use-scroll-depth';
 import { useT } from './i18n/use-t';
 import { SocialClientsBar } from './social-clients-bar';
 import { CtaCell } from './ui/cta-cell';
@@ -24,6 +26,7 @@ const DiscoveryPage = () => {
   const t = useT();
   const { lang, goto } = usePageContext();
   const [cat, setCat] = useState('all');
+  useScrollDepth();
 
   const { posts, categories } = useLoaderData({ from: '/$lang/discovery/' });
   const allPosts = posts ?? EMPTY_POSTS;
@@ -132,7 +135,10 @@ const DiscoveryPage = () => {
           kicker={t('common.requestQuoteOr')}
           title={t('common.book')}
           href={SCREEN_TO_PATH.book(lang)}
-          onClick={() => goto('book')}
+          onClick={() => {
+            captureCta('book');
+            goto('book');
+          }}
           className="app:col-start-2 app:col-end-5 app:row-start-5"
         />
       </main>

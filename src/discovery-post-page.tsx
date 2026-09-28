@@ -14,6 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import { HoverMarquee } from './ui/hover-marquee';
 import { useT } from './i18n/use-t';
 import { usePageContext } from './lib/page-context';
+import { useScrollDepth } from './lib/use-scroll-depth';
 import { NotFoundPage } from './not-found-page';
 import { PageShell } from './ui/page-shell';
 import { SectionIntro } from './ui/section-intro';
@@ -43,6 +44,8 @@ export const DiscoveryPostPage = () => {
   // never enlarged on click. Clicking a body image collects every body media in
   // document order and opens the lightbox at its index.
   const bodyRef = useRef<HTMLDivElement>(null);
+  const articleRef = useRef<HTMLElement>(null);
+  useScrollDepth(articleRef);
   const [lightbox, setLightbox] = useState<{
     media: GalleryMedia[];
     index: number;
@@ -195,7 +198,10 @@ export const DiscoveryPostPage = () => {
                 42rem. 36rem donne 68 en moyenne (63 à 75 selon le paragraphe),
                 dans la plage lisible de 60 à 75. La mesure se vérifie en comptant
                 des caractères, pas en choisissant un palier de largeur. */}
-            <article className="flex min-h-0 w-full flex-col overflow-y-auto bg-background px-6 py-8 md:px-12 md:py-10">
+            <article
+              ref={articleRef}
+              className="flex min-h-0 w-full flex-col overflow-y-auto bg-background px-6 py-8 md:px-12 md:py-10"
+            >
               <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-5">
                 {/* `flow` : la cellule de l'article porte déjà son retrait, celui
                   de `lg` s'y ajouterait. Le chapô reste hors du composant — ce

@@ -15,6 +15,7 @@ import { MediaFrame } from './ui/media-frame';
 import { cn } from '@/lib/utils';
 import { VideoLoop } from './ui/video-loop';
 import { usePageContext } from './lib/page-context';
+import { captureCta } from './lib/analytics';
 import type { PlateauSpec } from './lib/strapi';
 import { useT } from './i18n/use-t';
 import type { Lang } from './types';
@@ -489,6 +490,7 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
           }
           title={t('common.bookThisStage')}
           onClick={() => {
+            captureCta('book_stage', slug);
             try {
               localStorage.setItem('', slug);
             } catch {}

@@ -4,6 +4,7 @@ import { ArrowRight } from 'lucide-react';
 import { lazy, Suspense } from 'react';
 import { useT } from './i18n/use-t';
 import { usePageContext } from './lib/page-context';
+import { captureCta } from './lib/analytics';
 import { SocialClientsBar } from './social-clients-bar';
 import type { Bilingual } from './types';
 import { ImageCrossfade } from './ui/image-crossfade';
@@ -298,7 +299,10 @@ const HomePage = () => {
                     title={m[lang].t}
                     sub={m[lang].sub}
                     href={SCREEN_TO_PATH['plateau-' + m.slug]?.(lang)}
-                    onSelect={() => goto('plateau-' + m.slug)}
+                    onSelect={() => {
+                      captureCta('plateau', m.slug);
+                      goto('plateau-' + m.slug);
+                    }}
                     className="h-full w-full"
                   />
                 </div>
@@ -384,7 +388,10 @@ const HomePage = () => {
           title="Cyclorama"
           subtitle={t('home.freeProductionPhotovideo')}
           href={SCREEN_TO_PATH.cyclorama(lang)}
-          onClick={() => goto('cyclorama')}
+          onClick={() => {
+            captureCta('cyclorama');
+            goto('cyclorama');
+          }}
           className="col-span-1 app:col-span-3 app:col-start-4 app:col-end-7 app:row-start-5 app:row-end-7"
         />
 
@@ -406,7 +413,10 @@ const HomePage = () => {
             size="cta"
             kicker={t('common.requestQuoteOr')}
             title={t('common.book')}
-            onClick={() => goto('book')}
+            onClick={() => {
+              captureCta('book');
+              goto('book');
+            }}
             className="hidden app:flex"
           />
 
@@ -417,7 +427,10 @@ const HomePage = () => {
             title="Post-production"
             subtitle={t('home.retouchPhotoVideo')}
             href={SCREEN_TO_PATH.postprod(lang)}
-            onClick={() => goto('postprod')}
+            onClick={() => {
+              captureCta('postprod');
+              goto('postprod');
+            }}
             className="col-span-1"
           />
         </div>
@@ -479,7 +492,10 @@ const HomePage = () => {
           kicker={t('home.journal')}
           title={t('common.discovery')}
           href={SCREEN_TO_PATH.discovery(lang)}
-          onClick={() => goto('discovery')}
+          onClick={() => {
+            captureCta('discovery');
+            goto('discovery');
+          }}
           className="col-span-2 app:col-span-3 app:col-start-1 app:col-end-4 app:row-start-6"
         />
 

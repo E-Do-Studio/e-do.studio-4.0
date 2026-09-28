@@ -19,6 +19,7 @@ import { supabase } from './lib/supabase';
 import { useChatSessions, type ChatSession } from './lib/use-chat-sessions';
 import { createBooking } from './lib/bookings';
 import { capture, captureException, getDistinctId } from './lib/analytics';
+import { questionForAnalytics } from './lib/chat-question';
 import { BOOK_PLATEAUX, type CreateBookingInput } from './lib/booking-engine';
 import { validateIdentity } from './lib/booking-schema';
 import { fmtEUR } from './lib/format';
@@ -941,6 +942,14 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
     setSuggestions([]);
     setCollectContact(false);
 
+    const turn = nextMessages.filter((m) => m.role === 'user').length;
+    const page = sanitizeCurrentPage(currentPath) ?? null;
+    capture('chat_question_asked', {
+      turn,
+      page,
+      question_truncated: questionForAnalytics(trimmed),
+    });
+
     try {
       const result = await sendAssistantMessage(
         nextMessages,
@@ -948,10 +957,7 @@ const AssistantChat = ({ lang, badge, className = '' }: AssistantChatProps) => {
         sanitizeCurrentPage(currentPath),
       );
       if ('reply' in result) {
-        capture('chat_message_sent', {
-          turn: nextMessages.filter((m) => m.role === 'user').length,
-          page: sanitizeCurrentPage(currentPath) ?? null,
-        });
+        capture('chat_answer_received', { turn, page });
         setActiveMessages([
           ...nextMessages,
           { role: 'assistant', content: result.reply },
