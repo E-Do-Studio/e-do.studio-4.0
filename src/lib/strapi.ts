@@ -104,7 +104,16 @@ async function fetchStrapi<T>(
     const p = (async () => {
       let res: Response;
       try {
-        res = await fetch(key, { headers });
+        // Une seconde chance avant de conclure à la panne. Côté navigateur,
+        // ces lectures partent à chaque navigation, souvent depuis un mobile :
+        // une coupure passagère rendait la page vide ET remontait un « Failed
+        // to fetch » par langue (issues #394 et suivantes, par paires à la
+        // même seconde). Une erreur HTTP, elle, n'est pas rejouée : le CMS a
+        // répondu, et sa réponse ne changera pas une demi-seconde plus tard.
+        res = await fetch(key, { headers }).catch(async () => {
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          return fetch(key, { headers });
+        });
       } catch (error) {
         captureException(error, {
           source: 'strapi',

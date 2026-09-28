@@ -66,6 +66,7 @@ export interface AnalyticsEvents {
   booking_confirmation_viewed: { submit_mode: SubmitMode; total: number };
   contact_form_submitted: Record<string, never>;
   contact_form_failed: { reason: string };
+  contact_form_blocked: { invalid_fields: string[] };
   chat_opened: { surface: 'mobile_fab' };
   chat_message_sent: { turn: number; page: string | null };
   chat_message_failed: { error: string };
