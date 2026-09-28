@@ -386,10 +386,6 @@
     "categories": "Categories",
     "emailPlaceholder": "your@email.com",
     "faq": {
-      "delivery": {
-        "answer": "Shoots take place at the studio, in Saint-Ouen. Post-production does not depend on location: we also retouch images not shot at our studio.",
-        "question": "Do you deliver outside Île-de-France?"
-      },
       "formats": {
         "answer": "JPG, PNG, TIFF and RAW for photo, MP4 and MOV for video.",
         "question": "Which file formats do you deliver?"
@@ -398,11 +394,11 @@
         "answer": "Yes. The studio provides the stage, the machines, the lighting and the technical operator. A photographer, stylist or model can be provided on request.",
         "question": "Can we come without a photographer?"
       },
-      "title": "Frequently asked questions",
-      "turnaround": {
-        "answer": "48 to 72 hours for a standard e-commerce batch, 5 to 7 days for a campaign or a film with advanced grading. Automatically clipped files are delivered the next day.",
-        "question": "How long until we receive the retouched photos?"
+      "quote": {
+        "answer": "From the Book page: pick the stage and the time slots, leave your contact details, then “Receive my quote”. The detailed quote arrives by email within 24h (working days). For a custom project, write to us from the contact page.",
+        "question": "How do I get a quote?"
       },
+      "title": "Frequently asked questions",
       "visit": {
         "answer": "Yes. The tour is free, takes about an hour and runs Monday to Friday, 9am to 6pm. Write to us to set a time.",
         "question": "Do we need an appointment to visit the studio?"
