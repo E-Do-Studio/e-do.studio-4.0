@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useLoaderData } from '@tanstack/react-router';
 import type { DiscoveryCategory, DiscoveryPost } from './types';
 import { ArticleCard, ArticleEmptyCard } from './discovery/article-card';
+import { FaqCell } from './discovery/faq-cell';
 import { MorePostsCard } from './discovery/more-posts-card';
 import { NewsletterCell } from './discovery/newsletter-cell';
 import { filterByCategory, selectPosts } from './discovery/select-posts';
@@ -94,6 +95,9 @@ const DiscoveryPage = () => {
               />
             ))}
           </Rail>
+          {/* La FAQ occupe le blanc entre filtres et inscription ; elle défile
+              seule quand ses réponses ouvertes dépassent la colonne. */}
+          <FaqCell className="border-t border-border app:min-h-0 app:flex-1" />
           <NewsletterCell className="mt-auto border-t border-border" />
         </div>
 

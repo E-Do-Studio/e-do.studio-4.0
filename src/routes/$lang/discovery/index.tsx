@@ -9,8 +9,11 @@ import type { Lang } from '../../../types';
 import { buildSeoHead } from '../../../lib/seo-head';
 import {
   buildBlogSchema,
+  buildFaqSchema,
   buildPageBreadcrumb,
 } from '../../../lib/structured-data';
+import { discoveryFaq } from '../../../discovery/faq';
+import { getT } from '../../../i18n';
 
 export const Route = createFileRoute('/$lang/discovery/')({
   head: ({ params, loaderData }) => {
@@ -21,6 +24,7 @@ export const Route = createFileRoute('/$lang/discovery/')({
       pathname: '/discovery',
       jsonLd: [
         buildBlogSchema(loaderData?.posts ?? [], lang, '/discovery'),
+        buildFaqSchema(discoveryFaq(getT(lang)), lang, '/discovery'),
         buildPageBreadcrumb(lang, [
           { name: 'Discovery', pathname: '/discovery' },
         ]),
