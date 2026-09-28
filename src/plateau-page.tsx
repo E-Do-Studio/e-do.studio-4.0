@@ -491,9 +491,6 @@ const PlateauPage = ({ slug, plateaux }: PlateauPageProps) => {
           title={t('common.bookThisStage')}
           onClick={() => {
             captureCta('book_stage', slug);
-            try {
-              localStorage.setItem('', slug);
-            } catch {}
             goto('book');
           }}
           className="app:col-start-4 app:row-start-5"
