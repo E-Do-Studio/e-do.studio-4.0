@@ -454,7 +454,8 @@
     "localBusinessDescription": "Studio photo et vidéo professionnel à Paris. Cyclorama, plateaux de prise de vue et services de post-production pour marques de mode, cosmétique, joaillerie et food.",
     "postprodCatalogName": "Prestations post-production",
     "postprodDescription": "Retouche, colorimétrie, montage et livraison express. Studio E-Do à Paris.",
-    "postprodServiceType": "Post-production photo et vidéo"
+    "postprodServiceType": "Post-production photo et vidéo",
+    "serviceCatalogName": "Prestations E-Do Studio"
   },
   "validation": {
     "cgv": "Vous devez accepter les CGV",

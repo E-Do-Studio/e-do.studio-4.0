@@ -1,3 +1,4 @@
+import { useNavigate } from '@tanstack/react-router';
 import { ArrowRight } from 'lucide-react';
 import type { DiscoveryPost, Lang } from '../types';
 import { Button } from '@/components/ui/button';
@@ -13,11 +14,11 @@ import {
 } from '@/components/ui/empty';
 import { MonoLabel } from '../ui/mono-label';
 import { useT } from '../i18n/use-t';
+import { discoveryPostPath } from '../lib/screens';
 
 interface ArticleCardProps {
   post: DiscoveryPost;
   lang: Lang;
-  onOpen: () => void;
   className?: string;
 }
 
@@ -29,19 +30,24 @@ interface ArticleCardProps {
 // qu'ENTRE cellules. Un enfant peignant son fond masquerait par ailleurs le
 // `hover:bg-muted` que `variant="cell"` pose sur la cellule entière — un filet
 // de 1px, lui, ne masque rien.
-export const ArticleCard = ({
-  post,
-  lang,
-  onOpen,
-  className,
-}: ArticleCardProps) => {
+//
+// Une vraie ancre et non un `<button>` : l'index était la seule porte des
+// articles, et il n'en exposait aucun lien — les moteurs ne les atteignaient
+// que par le JSON-LD.
+export const ArticleCard = ({ post, lang, className }: ArticleCardProps) => {
   const t = useT();
+  const navigate = useNavigate();
   const cover = hasCover(post);
+  const href = discoveryPostPath(lang, post.slug);
   return (
     <Button
       variant="cell"
       size="cell"
-      onClick={onOpen}
+      render={<a href={href} />}
+      onClick={(e) => {
+        e.preventDefault();
+        navigate({ to: href });
+      }}
       className={cn(
         // `grid-cols-1` n'est pas décoratif, c'est la correction du défaut qui
         // rendait cette carte de travers : `size="cell"` pose `justify-start`,

@@ -21,10 +21,16 @@ export const Route = createFileRoute('/$lang/post-production')({
   // Chaque type a son propre titre : sans surcharge Strapi, il est composé
   // depuis le libellé et la tagline, pour qu'aucune catégorie ne partage la
   // meta générique de la page.
+  //
+  // Sans `?type`, la meta est celle de la page et non de la première
+  // catégorie : c'est la seule URL canonique — toutes les variantes y
+  // renvoient —, donc la seule que Google indexe. Elle s'affichait
+  // « On model — Post-production » dans les résultats, pour une page qui
+  // présente toute la post-production.
   head: ({ params, match, loaderData }) => {
     const lang = params.lang as Lang;
     const cats = loaderData?.postProdTypes ?? [];
-    const cat = cats.find((c) => c.k === match.search.type) ?? cats[0];
+    const cat = cats.find((c) => c.k === match.search.type);
     const strapiSeo = cat?.seo?.[lang];
     return buildSeoHead({
       metaKey: 'postprod',

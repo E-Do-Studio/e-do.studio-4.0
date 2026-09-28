@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { afterNextPaint } from './after-next-paint';
 import { useCookieConsent } from './use-cookie-consent';
 import { isPreviewActive } from './preview-mode';
 import {
@@ -19,7 +20,10 @@ export function usePostHog(lang: string) {
     if (!isPostHogEnabled()) return;
     if (isPreviewActive()) return;
     startPostHog();
-    syncConsent(consent);
+    // Après la peinture, pour la même raison que le `consent update` de GTM :
+    // l'opt-in démarre l'enregistrement de session, dont l'instantané complet
+    // du DOM se faisait dans la tâche du clic « Accepter ».
+    afterNextPaint(() => syncConsent(consent));
   }, [consent, ready]);
 
   useEffect(() => {

@@ -34,17 +34,15 @@ import {
   buildWebSiteSchema,
 } from '../lib/structured-data';
 import { COOKIE_CONSENT_STORAGE_KEY } from '../lib/use-cookie-consent';
-import { useGoogleAnalytics } from '../lib/use-google-analytics';
-import { usePostHog } from '../lib/use-posthog';
 import {
   GTM_CONSENT_CATEGORIES,
   GTM_SCRIPT_ID,
-  useGoogleTagManager,
 } from '../lib/use-google-tag-manager';
 import { NavMenu } from '../nav-menu';
 import { NotFoundPage } from '../not-found-page';
 import { PreviewBanner } from '../preview-banner';
 import { PostHogErrorBoundary } from '../posthog-error-boundary';
+import { SiteAnalytics } from '../site-analytics';
 import { SkipLink } from '../ui/skip-link';
 import type { Lang } from '../types';
 import appCss from '../styles.css?url';
@@ -67,6 +65,7 @@ function baselineJsonLd(lang: Lang, site: Partial<SiteData> | undefined) {
       hours: site?.studioHours,
       business: site?.businessInfo,
       socials: site?.socialLinks,
+      machines: site?.machines,
     }),
     buildWebSiteSchema(lang),
   ]);
@@ -185,9 +184,6 @@ function LangLayout() {
   const lang: Lang = VALID_LANGS.includes(langSegment as Lang)
     ? (langSegment as Lang)
     : DEFAULT_LANG;
-  useGoogleAnalytics(siteData.siteDefaults?.googleAnalyticsId);
-  useGoogleTagManager();
-  usePostHog(lang);
 
   const setLang = useCallback(
     (newLang: Lang) => {
@@ -244,6 +240,10 @@ function LangLayout() {
               <PageContext.Provider value={pageContext}>
                 {/* Premier focusable du document, avant l'en-tête collant. */}
                 <SkipLink />
+                <SiteAnalytics
+                  lang={lang}
+                  googleAnalyticsId={siteData.siteDefaults?.googleAnalyticsId}
+                />
                 <Outlet />
                 <NavMenu
                   lang={lang}

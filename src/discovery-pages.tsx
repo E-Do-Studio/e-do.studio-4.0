@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useLoaderData, useNavigate } from '@tanstack/react-router';
+import { useLoaderData } from '@tanstack/react-router';
 import type { DiscoveryCategory, DiscoveryPost } from './types';
 import { ArticleCard, ArticleEmptyCard } from './discovery/article-card';
 import { MorePostsCard } from './discovery/more-posts-card';
@@ -22,7 +22,6 @@ const EMPTY_CATS: DiscoveryCategory[] = [];
 const DiscoveryPage = () => {
   const t = useT();
   const { lang, goto } = usePageContext();
-  const navigate = useNavigate();
   const [cat, setCat] = useState('all');
 
   const { posts, categories } = useLoaderData({ from: '/$lang/discovery/' });
@@ -40,12 +39,6 @@ const DiscoveryPage = () => {
     () => cats.filter((c) => c.k === 'all' || rest.some((p) => p.cat === c.k)),
     [cats, rest],
   );
-
-  const openPost = (post: DiscoveryPost) =>
-    navigate({
-      to: '/$lang/discovery/$slug',
-      params: { lang, slug: post.slug },
-    });
 
   return (
     /* Le gabarit du site : colonne du logo puis trois pistes égales, rangées
@@ -69,7 +62,6 @@ const DiscoveryPage = () => {
           <ArticleCard
             post={headline}
             lang={lang}
-            onOpen={() => openPost(headline)}
             className="app:col-start-2 app:col-span-2 app:row-start-3 app:row-span-2"
           />
         ) : (
@@ -115,7 +107,6 @@ const DiscoveryPage = () => {
           posts={listed}
           total={rest.length}
           lang={lang}
-          onOpen={openPost}
           className="app:col-start-4 app:row-start-3 app:row-span-2"
         />
 

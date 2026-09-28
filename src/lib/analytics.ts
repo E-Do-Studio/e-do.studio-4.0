@@ -1,4 +1,4 @@
-import posthog from 'posthog-js';
+import type { PostHog } from 'posthog-js';
 import type { AnalyticsEvent, AnalyticsEvents } from './analytics-events';
 import type { CookieConsent } from './use-cookie-consent';
 
@@ -12,7 +12,47 @@ const API_HOST = import.meta.env.DEV
   ? import.meta.env.VITE_POSTHOG_HOST?.trim() || 'https://eu.i.posthog.com'
   : 'https://d.e-do.studio';
 
+// Le SDK n'est plus dans le bundle d'entrée. Importé statiquement, il y
+// pesait le quart du JavaScript (~310 Ko de source, mesuré au sourcemap), à
+// télécharger, analyser et évaluer avant l'hydratation de CHAQUE page — sur un
+// site dont l'accueil mobile avait un LCP p75 de 2,8 s et /en un INP de 858 ms
+// (issue #401). Il arrive maintenant en morceau séparé, une fois la page
+// hydratée et le fil principal au repos.
+//
+// Tout appel antérieur est mis en file et rejoué dans l'ordre à l'arrivée du
+// SDK : un `capture` ou un `captureException` émis pendant le chargement n'est
+// pas perdu, il est retardé.
 let started = false;
+let client: PostHog | null = null;
+const pending: ((ph: PostHog) => void)[] = [];
+
+function withClient(fn: (ph: PostHog) => void): void {
+  if (client) fn(client);
+  else pending.push(fn);
+}
+
+// Les erreurs non rattrapées levées AVANT l'arrivée du SDK — une erreur
+// d'hydratation, typiquement, la plus utile de toutes — ne passeraient par
+// aucun de ses gestionnaires : ils ne sont pas encore posés. On les retient
+// ici et on les lui transmet à l'initialisation ; ses propres gestionnaires
+// prennent le relais ensuite.
+const earlyErrors: unknown[] = [];
+const onEarlyError = (e: ErrorEvent) => earlyErrors.push(e.error ?? e.message);
+const onEarlyRejection = (e: PromiseRejectionEvent) =>
+  earlyErrors.push(e.reason);
+if (typeof window !== 'undefined' && PROJECT_TOKEN) {
+  window.addEventListener('error', onEarlyError);
+  window.addEventListener('unhandledrejection', onEarlyRejection);
+}
+
+// Au repos, avec un plafond : sur un téléphone chargé, le fil principal peut
+// ne jamais se libérer, et un SDK qui n'arrive pas ne mesure rien. Safari n'a
+// pas `requestIdleCallback` : un délai fixe y tient lieu de repos.
+const whenIdle = (fn: () => void) => {
+  if (typeof window.requestIdleCallback === 'function')
+    window.requestIdleCallback(fn, { timeout: 3000 });
+  else window.setTimeout(fn, 1500);
+};
 
 export function isPostHogEnabled(): boolean {
   return Boolean(PROJECT_TOKEN);
@@ -33,8 +73,19 @@ export function startPostHog(): void {
   if (started || !PROJECT_TOKEN) return;
   if (typeof window === 'undefined') return;
   started = true;
+  whenIdle(() => {
+    import('posthog-js')
+      .then(({ default: posthog }) => initPostHog(posthog, PROJECT_TOKEN))
+      .catch((error) => {
+        // Rien à rapporter ailleurs : c'est le rapporteur qui manque. Un
+        // bloqueur qui filtre le morceau, ou un réseau coupé.
+        console.error('[analytics] PostHog non chargé', error);
+      });
+  });
+}
 
-  posthog.init(PROJECT_TOKEN, {
+function initPostHog(posthog: PostHog, token: string): void {
+  posthog.init(token, {
     api_host: API_HOST,
     ui_host: 'https://eu.posthog.com',
     defaults: '2026-05-30',
@@ -66,23 +117,30 @@ export function startPostHog(): void {
       maskAllInputs: true,
     },
   });
+  window.removeEventListener('error', onEarlyError);
+  window.removeEventListener('unhandledrejection', onEarlyRejection);
+  client = posthog;
+  for (const error of earlyErrors.splice(0)) posthog.captureException(error);
+  for (const fn of pending.splice(0)) fn(posthog);
 }
 
 export function syncConsent(consent: CookieConsent): void {
   if (!started) return;
-  // Le miroir du SDK survit aux visites : ne rejouer l'opt-in que s'il a
-  // changé, sinon chaque chargement émettrait un `$opt_in`.
-  const status = posthog.get_explicit_consent_status();
-  if (consent === 'accepted' && status !== 'granted') {
-    posthog.opt_in_capturing();
-  } else if (consent === 'rejected' && status !== 'denied') {
-    posthog.opt_out_capturing();
-  }
+  withClient((posthog) => {
+    // Le miroir du SDK survit aux visites : ne rejouer l'opt-in que s'il a
+    // changé, sinon chaque chargement émettrait un `$opt_in`.
+    const status = posthog.get_explicit_consent_status();
+    if (consent === 'accepted' && status !== 'granted') {
+      posthog.opt_in_capturing();
+    } else if (consent === 'rejected' && status !== 'denied') {
+      posthog.opt_out_capturing();
+    }
+  });
 }
 
 export function registerSiteLang(lang: string): void {
   if (!started) return;
-  posthog.register({ site_lang: lang });
+  withClient((posthog) => posthog.register({ site_lang: lang }));
 }
 
 export function capture<K extends AnalyticsEvent>(
@@ -90,7 +148,7 @@ export function capture<K extends AnalyticsEvent>(
   properties: AnalyticsEvents[K],
 ): void {
   if (!started) return;
-  posthog.capture(event, properties);
+  withClient((posthog) => posthog.capture(event, properties));
 }
 
 export function captureException(
@@ -98,7 +156,7 @@ export function captureException(
   properties?: Record<string, unknown>,
 ): void {
   if (!started) return;
-  posthog.captureException(error, properties);
+  withClient((posthog) => posthog.captureException(error, properties));
 }
 
 /**
@@ -111,17 +169,22 @@ export function identify(
   properties: Record<string, string | undefined>,
 ): void {
   if (!started) return;
-  if (posthog.get_explicit_consent_status() !== 'granted') return;
   const address = email.trim().toLowerCase();
   if (!address) return;
-  posthog.identify(address, { email: address, ...properties });
+  withClient((posthog) => {
+    if (posthog.get_explicit_consent_status() !== 'granted') return;
+    posthog.identify(address, { email: address, ...properties });
+  });
 }
 
 /**
  * Transmis aux Edge Functions pour que leurs événements serveur rejoignent le
  * parcours (et le replay) du visiteur plutôt qu'une personne orpheline.
+ *
+ * Synchrone, donc `undefined` tant que le SDK n'est pas arrivé : le cas d'une
+ * soumission dans les toutes premières secondes, comme avant un refus de
+ * démarrage.
  */
 export function getDistinctId(): string | undefined {
-  if (!started) return undefined;
-  return posthog.get_distinct_id();
+  return client?.get_distinct_id();
 }

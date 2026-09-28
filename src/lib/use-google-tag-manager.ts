@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { afterNextPaint } from './after-next-paint';
 import {
   COOKIE_CONSENT_EVENT,
   COOKIE_CONSENT_STORAGE_KEY,
@@ -60,10 +61,15 @@ export function useGoogleTagManager() {
 
   useEffect(() => {
     if (!gtmId) return;
-    const onConsentChange = () => {
-      const next = readStoredConsent();
-      if (next) pushConsentUpdate(next);
-    };
+    // Après la peinture : `consent update` réveille GTM, qui déclenche dans la
+    // foulée tous les tags jusque-là bloqués (Ads, GA, HubSpot). Poussé dans
+    // le gestionnaire du clic « Accepter », tout ce travail retardait la
+    // disparition du bandeau — c'est ce délai que l'INP mesure (issue #401).
+    const onConsentChange = () =>
+      afterNextPaint(() => {
+        const next = readStoredConsent();
+        if (next) pushConsentUpdate(next);
+      });
     window.addEventListener(COOKIE_CONSENT_EVENT, onConsentChange);
     window.addEventListener('storage', onConsentChange);
     return () => {

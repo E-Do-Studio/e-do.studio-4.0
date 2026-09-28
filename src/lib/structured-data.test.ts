@@ -186,6 +186,51 @@ describe('buildLocalBusinessSchema', () => {
     } as never);
     expect(s.openingHoursSpecification).toBeUndefined();
   });
+
+  it('porte le point géographique du studio', () => {
+    const s = buildLocalBusinessSchema({ lang: 'fr', contact } as never);
+    expect(s.geo).toMatchObject({ '@type': 'GeoCoordinates' });
+  });
+
+  // Un déménagement saisi dans le CMS ne doit pas laisser Google sur l'ancien
+  // point : le couple adresse / coordonnées deviendrait contradictoire.
+  it('omet le point quand l’adresse du CMS a changé', () => {
+    const s = buildLocalBusinessSchema({
+      lang: 'fr',
+      contact: {
+        ...contact,
+        address: { ...contact.address, street: '12 rue Ailleurs' },
+      },
+    } as never);
+    expect(s.geo).toBeUndefined();
+  });
+
+  it('rattache chaque prestation à l’URL de sa page', () => {
+    const s = buildLocalBusinessSchema({
+      lang: 'en',
+      contact,
+      machines: [
+        {
+          slug: 'cyclorama',
+          fr: { t: 'Cyclorama', sub: '' },
+          en: { t: 'Cyclorama', sub: '' },
+        },
+        {
+          slug: 'live',
+          fr: { t: 'Live', sub: '' },
+          en: { t: 'Live', sub: '' },
+        },
+      ],
+    } as never);
+    const catalog = s.hasOfferCatalog as {
+      itemListElement: { itemOffered: { '@id': string; url: string } }[];
+    };
+    expect(catalog.itemListElement.map((o) => o.itemOffered['@id'])).toEqual([
+      'https://e-do.studio/en/cyclorama#service',
+      'https://e-do.studio/en/plateau/live#service',
+      'https://e-do.studio/en/post-production#service',
+    ]);
+  });
 });
 
 describe('buildPageBreadcrumb', () => {

@@ -1,7 +1,6 @@
 import { useCallback } from 'react';
 import { buildStrapiSrcset, getStrapiLargeUrl } from '../lib/strapi';
 import { cn } from '@/lib/utils';
-import { fetchPriority } from './fetch-priority';
 
 type Props = {
   src: string | undefined | null;
@@ -73,7 +72,12 @@ export function ResponsiveImage({
       alt={alt}
       loading={priority ? 'eager' : 'lazy'}
       decoding="async"
-      {...fetchPriority(priority)}
+      // La prop React 19, et non l'attribut `fetchpriority` en minuscules du
+      // contournement React 18 : React 19 ne reconnaît que la forme camelCase,
+      // et c'est d'elle qu'il tire la priorité du `<link rel="preload">` qu'il
+      // émet dans le <head>. Avec l'attribut brut, l'image LCP était bien
+      // préchargée, mais en priorité basse, derrière le JavaScript (#401).
+      fetchPriority={priority ? 'high' : undefined}
       onLoad={(e) => {
         delete e.currentTarget.dataset.loading;
       }}
