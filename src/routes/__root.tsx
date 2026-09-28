@@ -20,6 +20,7 @@ import { initPreviewMode, isPreviewActive } from '../lib/preview-mode';
 import { settle } from '../lib/route-data';
 import { reloadOnStaleChunk } from '../lib/stale-chunk-reload';
 import { SCREEN_TO_PATH, translatePathname } from '../lib/screens';
+import { AFTER_FIRST_PAINT } from '../lib/after-first-paint-inline';
 import { serializeJsonLd } from '../lib/seo-head';
 import { META } from '../lib/seo-meta';
 import {
@@ -47,6 +48,7 @@ import { SiteAnalytics } from '../site-analytics';
 import { SkipLink } from '../ui/skip-link';
 import type { Lang } from '../types';
 import appCss from '../styles.css?url';
+import fontsCss from '../fonts.css?url';
 
 const VALID_LANGS: Lang[] = ['fr', 'en'];
 const DEFAULT_LANG: Lang = 'fr';
@@ -85,23 +87,30 @@ function baselineJsonLd(lang: Lang, site: Partial<SiteData> | undefined) {
 //
 // La forme `gtag()` (push de `arguments`, pas d'un tableau littéral) est celle
 // que documente Google pour le Consent Mode.
+//
+// Le conteneur n'est injecté ici que pour un visiteur ayant DÉJÀ accepté ; pour
+// les autres, c'est useGoogleTagManager qui l'injecte au clic « Accepter ».
+// Chargé sans condition, il déclenchait HubSpot, GA et Ads avant tout
+// consentement : cookies tiers déposés d'office, et ~700 ms de blocage du
+// thread principal sur mobile, avant même la peinture de l'image LCP.
 function gtmBootstrap(id: string): string {
   const safeId = id.replace(/[^\w-]/g, '');
   const denied = GTM_CONSENT_CATEGORIES.map((c) => `${c}:'denied'`).join(',');
   const granted = GTM_CONSENT_CATEGORIES.map((c) => `${c}:'granted'`).join(',');
   return [
-    `(function(w,d,s,l,i){w[l]=w[l]||[];function g(){w[l].push(arguments)}`,
+    `(function(w,d,l,i){w[l]=w[l]||[];function g(){w[l].push(arguments)}`,
     `g('consent','default',{${denied}});`,
-    `try{if(localStorage.getItem('${COOKIE_CONSENT_STORAGE_KEY}')==='accepted')g('consent','update',{${granted}})}catch(e){}`,
+    `try{if(localStorage.getItem('${COOKIE_CONSENT_STORAGE_KEY}')!=='accepted')return}catch(e){return}`,
+    `g('consent','update',{${granted}});`,
     `w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});`,
-    `var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';`,
+    `var j=d.createElement('script');`,
     // `crossOrigin` : sans lui, une erreur levée dans gtm.js n'arrive au
     // navigateur que sous la forme « Script error. », sans fichier ni ligne —
     // deux de ces erreurs aveugles ont été remontées depuis l'accueil.
     // googletagmanager.com renvoie bien l'en-tête CORS pour notre domaine.
-    `j.id='${GTM_SCRIPT_ID}';j.async=true;j.crossOrigin='anonymous';j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;`,
-    `f.parentNode.insertBefore(j,f);`,
-    `})(window,document,'script','dataLayer','${safeId}');`,
+    `j.id='${GTM_SCRIPT_ID}';j.async=true;j.crossOrigin='anonymous';j.src='https://www.googletagmanager.com/gtm.js?id='+i;`,
+    `d.head.appendChild(j);`,
+    `})(window,document,'dataLayer','${safeId}');`,
   ].join('');
 }
 
@@ -126,7 +135,35 @@ function gtmBootstrap(id: string): string {
 // quoi la bande sous le palier garde le verrou et se retrouve rognée.
 const CRITICAL_CSS =
   'html,body,#root{margin:0;padding:0;height:100%;background:#fff;font-family:var(--font-sans);color:#141414;overflow:hidden}' +
-  '@media(max-width:1023px){html,body,#root{height:auto;min-height:100dvh;overflow:visible}body{background:#000}}';
+  '@media(max-width:1023px){html,body,#root{height:auto;min-height:100dvh;overflow:visible}body{background:#000}}' +
+  'html[data-consent] [data-cookie-banner]{display:none}';
+
+// Les polices ABC Favorit (~180 Ko, licence interdisant tout sous-ensemble)
+// arrivent après l'affichage : leurs @font-face vivent dans fonts.css, que ce
+// script insère une fois la page chargée et peinte (cf. AFTER_FIRST_PAINT).
+// Préchargées en tête, elles passaient avant l'image LCP sur une 4G lente.
+// Le texte s'affiche d'abord dans la
+// police de secours recalée (styles.css), puis bascule sans bouger.
+//
+// Aux visites suivantes, les fichiers sont en cache (immutable, un an) : le
+// drapeau `edo-fonts` fait alors insérer fonts.css tout de suite, avant la
+// première peinture — aucune bascule visible.
+function fontsBootstrap(href: string): string {
+  return [
+    `(function(h){function a(){if(document.getElementById('edo-fonts'))return;`,
+    `var l=document.createElement('link');l.id='edo-fonts';l.rel='stylesheet';l.href=h;document.head.appendChild(l);`,
+    `try{localStorage.setItem('edo-fonts','1')}catch(e){}}`,
+    `try{if(localStorage.getItem('edo-fonts')){a();return}}catch(e){}`,
+    `afterFirstPaint(a);${AFTER_FIRST_PAINT}`,
+    `})(${JSON.stringify(href)})`,
+  ].join('');
+}
+
+// Le bandeau cookies est rendu par le serveur, qui ignore le choix du
+// visiteur (cf. cookie-banner.tsx). Ce script, synchrone dans le <head>, le
+// lit avant la première peinture : un visiteur ayant déjà répondu ne voit
+// jamais le bandeau clignoter.
+const CONSENT_FLAG_SCRIPT = `try{var c=localStorage.getItem('${COOKIE_CONSENT_STORAGE_KEY}');if(c==='accepted'||c==='rejected')document.documentElement.dataset.consent=c}catch(e){}`;
 
 // Doit précéder le premier fetch Strapi côté client pour qu'il voie le drapeau
 // preview. Côté Node, getPreviewState() retombe toujours sur « inactif » — le
@@ -219,21 +256,20 @@ function LangLayout() {
   );
 
   return (
-    <html lang={lang}>
+    // `suppressHydrationWarning` : `data-consent` est posé par
+    // CONSENT_FLAG_SCRIPT avant l'hydratation, absent du rendu serveur.
+    <html lang={lang} suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
       <body>
-        {GTM_ID && (
-          <noscript>
-            <iframe
-              src={`https://www.googletagmanager.com/ns.html?id=${encodeURIComponent(GTM_ID)}`}
-              height="0"
-              width="0"
-              style={{ display: 'none', visibility: 'hidden' }}
-            />
-          </noscript>
-        )}
+        {/* Pas d'iframe <noscript> GTM : sans JavaScript, le bandeau ne peut
+            pas recueillir de consentement, donc rien à charger. Les polices,
+            elles, sont insérées par un script (fontsBootstrap) : sans lui,
+            ce lien les charge. */}
+        <noscript>
+          <link rel="stylesheet" href={fontsCss} />
+        </noscript>
         <div id="root">
           {/* L'instance dérive du même `lang` que <html lang> ci-dessus : le
               provider ne peut pas diverger du document, ni au SSR ni à
@@ -305,31 +341,16 @@ export const Route = createRootRoute({
       // l'agrégateur de styles — Tailwind y émet alors son thème par défaut,
       // qui écrase le nôtre. Cf. la doc « Tailwind CSS Integration ».
       { rel: 'stylesheet', href: appCss },
-      { rel: 'preconnect', href: 'https://cms.e-do.studio', crossOrigin: '' },
+      // Les médias Strapi sont servis par le bucket R2, pas par le CMS : c'est
+      // là que part l'image LCP de presque chaque page, et sa connexion (DNS,
+      // TCP, TLS) se négociait seulement à la découverte de l'image. Même URL
+      // que dans la config Strapi (strapi/config/middlewares.ts). Le CMS n'est
+      // appelé qu'aux navigations client : une résolution DNS suffit.
+      {
+        rel: 'preconnect',
+        href: 'https://pub-9b79de66b20440cdb7e8bae53605296c.r2.dev',
+      },
       { rel: 'dns-prefetch', href: 'https://cms.e-do.studio' },
-      // Coupes critiques : Light (titres), Regular (corps) et Mono Book
-      // (eyebrows). Les autres graisses ABC Favorit chargent à la demande.
-      {
-        rel: 'preload',
-        as: 'font',
-        type: 'font/woff2',
-        href: '/fonts/ABCFavorit-Light.woff2',
-        crossOrigin: '',
-      },
-      {
-        rel: 'preload',
-        as: 'font',
-        type: 'font/woff2',
-        href: '/fonts/ABCFavorit-Regular_1.woff2',
-        crossOrigin: '',
-      },
-      {
-        rel: 'preload',
-        as: 'font',
-        type: 'font/woff2',
-        href: '/fonts/ABCFavoritMono-Book.woff2',
-        crossOrigin: '',
-      },
       { rel: 'shortcut icon', href: '/favicon.ico' },
       {
         rel: 'icon',
@@ -356,6 +377,8 @@ export const Route = createRootRoute({
     // fait échouer l'hydratation (React bascule alors tout en rendu client).
     styles: [{ children: CRITICAL_CSS }],
     scripts: [
+      { children: fontsBootstrap(fontsCss) },
+      { children: CONSENT_FLAG_SCRIPT },
       {
         type: 'application/ld+json',
         children: baselineJsonLd(

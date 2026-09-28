@@ -5,71 +5,56 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ── Brand typefaces ────────────────────────────────────────────
-   ABC Favorit (sans) and ABC Favorit Mono, self-hosted as .woff2.
+   ABC Favorit (sans) and ABC Favorit Mono, self-hosted as .woff2. Leurs
+   @font-face vivent dans fonts.css, chargé après l'affichage.
+
+   En attendant, le texte est rendu dans une police locale recalée sur leurs
+   métriques : `size-adjust` égalise la chasse moyenne — rapport des largeurs
+   de tous les textes de fr.json et en.json, mesurées dans Chromium, crénage
+   compris, en ABC Favorit et en Arial / Courier New —, les
+   `*-override` reprennent les métriques verticales des fichiers. Sans ce
+   recalage, la bascule vers ABC Favorit re-coupait les lignes et décalait la
+   page (CLS 0.054 mesuré sur l'accueil mobile). Une face par graisse : la
+   Light est plus étroite que la Regular, la Bold plus étroite qu'Arial Bold.
    ──────────────────────────────────────────────────────────────── */
 
 @font-face {
-  font-family: "ABC Favorit";
-  src: url("/fonts/ABCFavorit-Light.woff2") format("woff2");
+  font-family: "ABC Favorit Fallback";
+  src: local("Arial");
   font-weight: 300;
-  font-style: normal;
-  font-display: swap;
+  size-adjust: 99.8%;
+  ascent-override: 95.2%;
+  descent-override: 39.1%;
+  line-gap-override: 0%;
 }
 
 @font-face {
-  font-family: "ABC Favorit";
-  src: url("/fonts/ABCFavorit-Regular_1.woff2") format("woff2");
+  font-family: "ABC Favorit Fallback";
+  src: local("Arial");
   font-weight: 400;
-  font-style: normal;
-  font-display: swap;
+  size-adjust: 102.4%;
+  ascent-override: 92.8%;
+  descent-override: 38.1%;
+  line-gap-override: 0%;
 }
 
 @font-face {
-  font-family: "ABC Favorit";
-  src: url("/fonts/ABCFavorit-RegularItalic.woff2") format("woff2");
-  font-weight: 400;
-  font-style: italic;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "ABC Favorit";
-  src: url("/fonts/ABCFavorit-Bold.woff2") format("woff2");
+  font-family: "ABC Favorit Fallback";
+  src: local("Arial Bold"), local("Arial-BoldMT");
   font-weight: 700;
-  font-style: normal;
-  font-display: swap;
+  size-adjust: 97.1%;
+  ascent-override: 97.8%;
+  descent-override: 31.9%;
+  line-gap-override: 8.2%;
 }
 
 @font-face {
-  font-family: "ABC Favorit Mono";
-  src: url("/fonts/ABCFavoritMono-Book.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "ABC Favorit Mono";
-  src: url("/fonts/ABCFavoritMono-BookItalic.woff2") format("woff2");
-  font-weight: 400;
-  font-style: italic;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "ABC Favorit Mono";
-  src: url("/fonts/ABCFavoritMono-Bold.woff2") format("woff2");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "ABC Favorit Mono";
-  src: url("/fonts/ABCFavoritMono-BoldItalic.woff2") format("woff2");
-  font-weight: 700;
-  font-style: italic;
-  font-display: swap;
+  font-family: "ABC Favorit Mono Fallback";
+  src: local("Courier New"), local("CourierNewPSMT");
+  size-adjust: 100%;
+  ascent-override: 92.7%;
+  descent-override: 26.9%;
+  line-gap-override: 14.4%;
 }
 
 /* ── Theme ──────────────────────────────────────────────────────
@@ -169,8 +154,8 @@
   --color-metro-13: var(--metro-13);
   --color-metro-14: var(--metro-14);
 
-  --font-sans: "ABC Favorit", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "ABC Favorit Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-sans: "ABC Favorit", "ABC Favorit Fallback", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "ABC Favorit Mono", "ABC Favorit Mono Fallback", ui-monospace, SFMono-Regular, Menlo, monospace;
   --font-heading: var(--font-sans);
 
   --radius-xs: calc(var(--radius) * 0.4);

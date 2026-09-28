@@ -36,6 +36,7 @@ import { cn } from '@/lib/utils';
 import { useT } from './i18n/use-t';
 import { GalleryLightbox } from './gallery-lightbox';
 import { MonoLabel, monoLabelVariants } from './ui/mono-label';
+import { useAfterLoad } from './ui/use-after-load';
 
 const PLATEAU_TO_SCREEN: Record<string, string> = {
   cyclorama: 'cyclorama',
@@ -267,12 +268,7 @@ const ProjectRow = ({
       <h2 id={`project-${project.id}`} className="sr-only">
         {ariaLabel}
       </h2>
-      <ProjectLabel
-        project={project}
-        lang={lang}
-        to={to}
-        ariaLabel={ariaLabel}
-      />
+      <ProjectLabel project={project} lang={lang} to={to} />
       {[0, 1, 2].map((imageIndex) => (
         <ProjectImage
           key={imageIndex}
@@ -290,12 +286,10 @@ const ProjectLabel = ({
   project,
   lang,
   to,
-  ariaLabel,
 }: {
   project: GalleryProject;
   lang: Lang;
   to: string | null;
-  ariaLabel: string;
 }) => {
   const plateauLabel = displayPlateau(project.plateau);
   const className =
@@ -338,7 +332,10 @@ const ProjectLabel = ({
   );
   if (to) {
     return (
-      <Link to={to} aria-label={ariaLabel} className={className}>
+      // Pas d'`aria-label` : « Marque — Plateau » ne contenait pas le texte
+      // affiché (plateau, marque, année), ce qui brouille la commande vocale
+      // (WCAG 2.5.3). Le contenu nomme déjà le lien.
+      <Link to={to} className={className}>
         {content}
       </Link>
     );
@@ -361,6 +358,7 @@ const ProjectImage = ({
 }) => {
   const t = useT();
   const reducedMotion = usePrefersReducedMotion();
+  const embedReady = useAfterLoad();
   const item = project.media[imageIndex];
 
   let inner: ReactNode;
@@ -375,7 +373,7 @@ const ProjectImage = ({
     const altText = item.alt || `${project.brand} — ${imageIndex + 1}`;
     // pointer-events-none so the click reaches the wrapping button (opens the
     // lightbox, where the iframe becomes interactive).
-    inner = (
+    inner = embedReady ? (
       <iframe
         key={item.url}
         src={item.url}
@@ -386,7 +384,7 @@ const ProjectImage = ({
         allowFullScreen
         className="absolute inset-0 h-full w-full  pointer-events-none select-none"
       />
-    );
+    ) : null;
   } else if (item.kind === 'video') {
     const altText = item.alt || `${project.brand} — ${imageIndex + 1}`;
     // VideoLoop plutôt qu'un <video autoPlay> : l'attribut déclenchait le

@@ -14,16 +14,22 @@ interface CookieBannerProps {
 
 const CookieBanner = ({ lang, onLegalClick }: CookieBannerProps) => {
   const t = useT();
-  const { consent, ready, accept, reject } = useCookieConsent();
+  const { consent, accept, reject } = useCookieConsent();
   const legalHref = SCREEN_TO_PATH.legal(lang);
 
-  // Rien tant que le stockage n'est pas lu : le serveur et le premier rendu
-  // client s'accordent, et un visiteur ayant déjà répondu ne voit plus la
-  // bannière apparaître puis disparaître.
-  if (!ready || consent !== null) return null;
+  // Rendu dès le serveur, même avant la lecture du stockage. Il n'apparaissait
+  // qu'après l'hydratation : sur mobile, son paragraphe était l'élément LCP de
+  // la moitié des pages, qui se retrouvait suspendu à tout le JavaScript.
+  //
+  // Le visiteur ayant déjà répondu ne le voit pas pour autant : l'amorçage en
+  // ligne de __root pose `data-consent` sur <html> avant la première peinture,
+  // et la CSS critique masque alors `[data-cookie-banner]` jusqu'à ce que
+  // l'hydratation le retire.
+  if (consent !== null) return null;
 
   return (
     <div
+      data-cookie-banner=""
       role="region"
       aria-label={t('cookieBanner.ariaLabel')}
       // `env(safe-area-inset-bottom)` : collée en bas de l'écran, la rangée
