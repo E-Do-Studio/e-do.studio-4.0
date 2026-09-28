@@ -1,4 +1,5 @@
 import type { Lang } from '../types';
+import { BOOK_PLATEAUX } from '../lib/booking-engine';
 import { BOOK_PATHS } from '../lib/screens';
 
 export type BookMode = 'config' | 'manual';
@@ -27,6 +28,19 @@ export function configuratorPath(lang: Lang, step: 0 | 2 | 3 | 5 | 6): string {
 
 export function manualPath(lang: Lang): string {
   return BOOK_PATHS.manual(lang);
+}
+
+/**
+ * Le plateau à présélectionner, lu dans `?plateau=` du tunnel manuel.
+ *
+ * « Réserver ce plateau » y mène avec le slug de sa page, qui est aussi la clé
+ * du plateau dans le tunnel. Une valeur inconnue — lien ancien, URL retouchée —
+ * est ignorée plutôt que d'ouvrir le tunnel sur un plateau qui n'existe pas.
+ */
+export function bookPlateauParam(value: unknown): string | null {
+  return typeof value === 'string' && BOOK_PLATEAUX.some((p) => p.k === value)
+    ? value
+    : null;
 }
 
 export function confirmationPath(lang: Lang): string {

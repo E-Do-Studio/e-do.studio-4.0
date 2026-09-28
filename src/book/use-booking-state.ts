@@ -1,3 +1,4 @@
+import { useSearch } from '@tanstack/react-router';
 import { useEffect, useLayoutEffect, useState } from 'react';
 import type {
   BookingSession,
@@ -9,6 +10,7 @@ import type {
 import { BOOK_PLATEAUX, makeBlankSession } from '../lib/booking-engine';
 import type { BookingDraft } from '../lib/use-booking-draft';
 import { loadDraft, useBookingDraftSaver } from '../lib/use-booking-draft';
+import { bookPlateauParam } from './book-routes';
 import { STEP } from './booking-steps';
 import type { ContactState } from './booking-types';
 
@@ -135,13 +137,32 @@ function useBookingState({ forcedStep, forceManual }: UseBookingStateArgs) {
 
   const [contact, setContact] = useState<ContactState>(() => blankContact());
 
+  // Lu au rendu et non dans l'effet : la synchronisation du mode manuel
+  // réécrit la query en `{ step }` dès son premier effet, et `?plateau=`
+  // aurait disparu de l'URL avant d'être lu. Il ne sert qu'une fois.
+  const preselect = bookPlateauParam(
+    (useSearch({ strict: false }) as { plateau?: unknown }).plateau,
+  );
+
   // Restauration du brouillon, après hydratation. `useLayoutEffect` et non
   // `useEffect` : l'écran ne doit pas peindre une étape vide avant de peindre
   // la sélection retrouvée.
   useLayoutEffect(() => {
     const saved = loadDraft();
     setDraftRestored(true);
-    if (!saved) return;
+    // « Réserver ce plateau » : le plateau de la page d'origine arrive coché.
+    // Un brouillon qui a déjà ses plateaux prime — il représente un travail en
+    // cours, qu'un clic sur une fiche ne doit pas écraser.
+    const applyPreselect = () => {
+      if (!preselect) return;
+      setPlateau(preselect);
+      setSlotIds([preselect]);
+      setSlots({ [preselect]: makeSlotState(preselect) });
+    };
+    if (!saved) {
+      applyPreselect();
+      return;
+    }
     setConfigGlobal(saved.configGlobal as ConfigGlobal);
     setConfigSessions(saved.configSessions as BookingSession[]);
     setActiveSessionIdx(saved.activeSessionIdx);
@@ -168,6 +189,7 @@ function useBookingState({ forcedStep, forceManual }: UseBookingStateArgs) {
       ...(saved.contact as unknown as ContactState),
       cgvAccepted: cgvConsentGivenThisSession,
     });
+    if (saved.slotIds.length === 0) applyPreselect();
   }, []);
   useEffect(() => {
     cgvConsentGivenThisSession = contact.cgvAccepted;

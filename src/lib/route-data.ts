@@ -1,3 +1,4 @@
+import { bookPlateauParam } from '../book/book-routes';
 import {
   fetchGalleryCategories,
   fetchGalleryProjects,
@@ -41,7 +42,11 @@ export const galleryValidateSearch = (
 // (le configurateur, lui, a une route par étape et ignore ce paramètre).
 export const manualStepSearch = (
   search: Record<string, unknown>,
-): { step?: number } => {
+): { step?: number; plateau?: string } => {
   const step = Number(search.step);
-  return Number.isInteger(step) ? { step } : {};
+  const plateau = bookPlateauParam(search.plateau);
+  return {
+    ...(Number.isInteger(step) ? { step } : {}),
+    ...(plateau ? { plateau } : {}),
+  };
 };
