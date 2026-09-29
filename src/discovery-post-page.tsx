@@ -10,15 +10,17 @@ import { ArticleTeaserCell } from './discovery/article-teaser-cell';
 import { GalleryLightbox } from './gallery-lightbox';
 import type { GalleryMedia } from './lib/strapi';
 import { MonoLabel } from './ui/mono-label';
-import { Separator } from '@/components/ui/separator';
 import { HoverMarquee } from './ui/hover-marquee';
 import { useT } from './i18n/use-t';
 import { usePageContext } from './lib/page-context';
 import { useScrollDepth } from './lib/use-scroll-depth';
 import { NotFoundPage } from './not-found-page';
 import { PageShell } from './ui/page-shell';
-import { SectionIntro } from './ui/section-intro';
+import { sectionTitleVariants } from './ui/section-intro';
 import { MAIN_ID } from './ui/skip-link';
+import { CtaCell } from './ui/cta-cell';
+import { captureCta } from './lib/analytics';
+import { SCREEN_TO_PATH } from './lib/screens';
 
 export const DiscoveryPostPage = () => {
   const t = useT();
@@ -44,8 +46,8 @@ export const DiscoveryPostPage = () => {
   // never enlarged on click. Clicking a body image collects every body media in
   // document order and opens the lightbox at its index.
   const bodyRef = useRef<HTMLDivElement>(null);
-  const articleRef = useRef<HTMLElement>(null);
-  useScrollDepth(articleRef);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useScrollDepth(scrollRef);
   const [lightbox, setLightbox] = useState<{
     media: GalleryMedia[];
     index: number;
@@ -103,16 +105,20 @@ export const DiscoveryPostPage = () => {
   return (
     <>
       {/* `<main class="contents">` : voir home-page. */}
-      {/* Le gabarit de rangées n'est pas gardé par `app:` — l'article garde le
-          même rythme à toutes les largeurs, bande d'en-tête, bande de retour,
-          puis le corps. Le verrou de défilement, lui, l'est : cette page était
-          la seule du site à poser `overflow-hidden` sans palier, donc à couper
-          son propre article sur mobile au lieu de le laisser défiler. */}
-      <PageShell className="grid-rows-[var(--spacing-header)_var(--spacing-band)_minmax(0,1fr)]">
+      {/* Le gabarit du site : colonne du logo puis trois pistes égales — celui
+          de l'index, des plateaux, de la post-prod. L'article avait sa propre
+          découpe, 55/45, et la bande de retour cassait à 192px : trois
+          verticales sous l'en-tête, dont aucune ne tombait sur une autre.
+
+          Sous `app`, rien n'est placé : la pile suit l'ordre du DOM et la
+          fenêtre défile. */}
+      <PageShell className="app:grid-cols-[var(--spacing-logo)_repeat(3,minmax(0,1fr))] app:grid-rows-[var(--spacing-header)_var(--spacing-band)_minmax(0,1fr)]">
         <main id={MAIN_ID} className="contents">
           {/* Retour au journal et méta de l'article, en rangée 2 — la même forme
             que l'index Discovery, dont la bande sociale occupe cette rangée. */}
-          <div className="row-start-2 flex gap-px bg-border">
+          {/* `h-band` porté par la bande elle-même : sous `app` le gabarit de
+              rangées ne s'applique plus, et rien d'autre ne la dimensionne. */}
+          <div className="col-span-full flex h-band gap-px bg-border app:row-start-2">
             <Button
               onClick={backToIndex}
               // Sous `sm`, le libellé est masqué et la flèche seule ne nommait
@@ -124,14 +130,16 @@ export const DiscoveryPostPage = () => {
               // du filet noir sous elle. Ses `gap-2.5 px-4 md:px-6` l'emportent
               // toujours.
               size="header"
-              className="flex-none gap-2.5 px-4 md:px-6"
+              // `app:w-logo` : le filet de droite tombe sur celui de la colonne
+              // du logo, au-dessus, et de la colonne de l'article, en dessous.
+              className="flex-none gap-2.5 px-4 md:px-6 app:w-logo app:justify-start app:px-5"
             >
               <ArrowLeft />
               <MonoLabel className="hidden sm:inline">
                 {t('discoveryPage.backToJournal')}
               </MonoLabel>
             </Button>
-            <div className="flex min-w-0 flex-1 items-center gap-3.5 bg-background px-4 md:px-6">
+            <div className="flex min-w-0 flex-1 items-center gap-3.5 bg-background px-4 md:px-6 app:px-8">
               <MonoLabel tone="primary">{post.tag[lang]}</MonoLabel>
               {/* Sans l'auteur : `strapi.ts` le pose en dur à « Studio » pour
                   tous les articles, ce n'est pas un champ que la rédaction
@@ -148,96 +156,97 @@ export const DiscoveryPostPage = () => {
                   ses enfants dans une piste interne et mesure
                   `scrollWidth - clientWidth` sur un `whitespace-nowrap`, qu'un
                   `flex` sur son enveloppe fausserait. */}
-              <HoverMarquee className="font-mono text-xs tracking-widest text-muted-foreground">
+              <HoverMarquee className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
                 {post.date[lang]}
               </HoverMarquee>
             </div>
           </div>
 
-          {/* Sans cover, pas de colonne de cover : l'article prend toute la
-              largeur et se lit en une colonne. La réserve grise a du sens dans
-              une vignette de 48px, où elle tient l'alignement de la liste ;
-              étalée sur la moitié d'un écran, elle ne tiendrait rien du tout —
-              elle occuperait la moitié de la page pour dire qu'il manque une
-              image. */}
-          <div
-            className={cn(
-              'row-start-3 grid min-h-0 grid-cols-1 overflow-y-auto app:overflow-hidden',
-              // `gap-px bg-border` ne peint QUE la gouttière entre les deux
-              // colonnes. Sans cover il n'y a plus de gouttière, et l'aplat
-              // débordait de part et d'autre de la colonne de lecture centrée :
-              // un article en noir sur les deux tiers de l'écran.
-              cover
-                ? 'gap-px bg-border app:grid-cols-[1.1fr_1fr]'
-                : 'bg-background',
-            )}
-          >
+          {/* La disposition de la post-prod : la colonne de gauche porte la
+              navigation, le centre se lit, la droite montre. Sans cover, le
+              texte prend les trois pistes plutôt que de laisser une colonne
+              vide — c'est le titre qui s'élargit, le corps garde sa mesure.
+
+              Dans le DOM : l'image, le texte, puis la colonne — l'ordre de la
+              pile mobile. */}
+          <article className="contents">
             {cover && (
-              <div className="relative min-h-64 bg-foreground app:min-h-0">
+              <div className="relative aspect-photo bg-muted app:col-start-4 app:row-start-3 app:aspect-auto app:min-h-0">
                 <DiscoveryCoverMedia
                   post={post}
                   lang={lang}
-                  sizes="(min-width: 768px) 55vw, 100vw"
+                  sizes="(min-width: 1024px) 30vw, 100vw"
                   priority
                   controls
                   className="absolute inset-0 h-full w-full object-cover"
                 />
               </div>
             )}
-            {/* Ni méta en tête ni signature en pied : la bande de la rangée 2
-                porte déjà la catégorie, la durée, l'auteur et la date, et elle
-                reste à l'écran pendant que l'article défile dans sa cellule.
-                Les répéter ne renseignait personne. */}
-            {/* La mesure est portée par le bloc de texte, pas par la cellule :
-                l'aplat blanc doit remplir sa colonne — sinon c'est la gouttière
-                noire de la grille qui apparaît sur les côtés — mais le texte,
-                lui, s'arrête à 36rem.
 
-                Mesuré, dans cette police et à ce corps : 74 caractères par ligne
-                à 1440 avec cover, 86 sans, et 81 à 2560 même une fois plafonné à
-                42rem. 36rem donne 68 en moyenne (63 à 75 selon le paragraphe),
-                dans la plage lisible de 60 à 75. La mesure se vérifie en comptant
-                des caractères, pas en choisissant un palier de largeur. */}
-            <article
-              ref={articleRef}
-              className="flex min-h-0 w-full flex-col overflow-y-auto bg-background px-6 py-8 md:px-12 md:py-10"
+            {/* La mesure est portée par le bloc de texte, pas par la cellule :
+                l'aplat blanc remplit sa piste, le corps s'arrête à 36rem — 68
+                caractères par ligne en moyenne dans cette police. Aligné à
+                gauche, sur le filet de la colonne, et non centré : centré, il
+                flottait entre deux marges qui ne correspondaient à rien. */}
+            <div
+              ref={scrollRef}
+              className={cn(
+                'flex min-w-0 flex-col bg-background px-6 py-8 md:px-8 md:py-10 app:row-start-3 app:min-h-0 app:overflow-y-auto',
+                cover
+                  ? 'app:col-start-2 app:col-span-2'
+                  : 'app:col-start-2 app:col-span-3',
+              )}
             >
-              <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-5">
-                {/* `flow` : la cellule de l'article porte déjà son retrait, celui
-                  de `lg` s'y ajouterait. Le chapô reste hors du composant — ce
-                  n'en est pas un, c'est le chapeau de l'article, qui se lit au
-                  corps du texte et non en gris réduit. */}
-                <SectionIntro size="flow" title={post.title[lang]} />
+              <header className="flex max-w-3xl flex-col gap-6">
+                <h1
+                  className={cn(
+                    sectionTitleVariants({ size: 'lg' }),
+                    'text-foreground app:text-5xl',
+                  )}
+                >
+                  {post.title[lang]}
+                </h1>
+                {/* Le chapô se détache par le CORPS, pas par la graisse : en
+                    16px et en 400 à côté d'un corps en 300, il se lisait comme
+                    un paragraphe en gras. */}
                 {post.sub[lang] && (
-                  <p className="m-0 text-pretty text-base font-normal leading-relaxed text-foreground">
+                  <p className="m-0 max-w-xl text-pretty text-xl font-light leading-snug text-foreground">
                     {post.sub[lang]}
                   </p>
                 )}
-                {bodyHtml && (
-                  <div
-                    ref={bodyRef}
-                    onClick={onBodyClick}
-                    onKeyDown={onBodyKeyDown}
-                    className="article-prose prose prose-sm m-0 max-w-none text-foreground"
-                    dangerouslySetInnerHTML={{ __html: bodyHtml }}
-                  />
-                )}
-                {nextPost && (
-                  <aside className="mt-auto flex flex-col gap-2.5">
-                    <Separator className="mb-3.5" />
-                    <MonoLabel tone="primary">
-                      {t('discoveryPage.nextArticle')}
-                    </MonoLabel>
-                    <ArticleTeaserCell post={nextPost} lang={lang} />
-                  </aside>
-                )}
-                {/* Plus de pied « Fermer » : la bande de la rangée 2 porte
-                  « Retour journal », elle reste à l'écran pendant que l'article
-                  défile, et elle dit où l'on revient. Le bouton noir posé en bas
-                  à droite était la seconde sortie de la même pièce, sous un
-                  troisième filet. */}
-              </div>
-            </article>
+              </header>
+              {bodyHtml && (
+                <div
+                  ref={bodyRef}
+                  onClick={onBodyClick}
+                  onKeyDown={onBodyKeyDown}
+                  className="article-prose prose prose-sm mt-10 max-w-xl text-foreground"
+                  dangerouslySetInnerHTML={{ __html: bodyHtml }}
+                />
+              )}
+            </div>
+          </article>
+
+          {/* La colonne de gauche, comme sur l'index : l'article suivant en
+              tête, la réservation au pied. Le renvoi était au bout de 2300px
+              de texte ; ici il reste à l'écran pendant la lecture. */}
+          <div className="flex min-w-0 flex-col bg-background app:col-start-1 app:row-start-3 app:min-h-0">
+            {nextPost && (
+              <ArticleTeaserCell
+                post={nextPost}
+                lang={lang}
+                className="border-b border-border"
+              />
+            )}
+            <CtaCell
+              title={t('common.book')}
+              href={SCREEN_TO_PATH.book(lang)}
+              onClick={() => {
+                captureCta('book');
+                goto('book');
+              }}
+              className="app:mt-auto"
+            />
           </div>
         </main>
       </PageShell>
