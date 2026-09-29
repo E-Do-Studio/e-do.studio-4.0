@@ -21,10 +21,8 @@ interface DiscoveryCoverMediaProps {
 // il attire l'œil exactement là où il n'y a rien à voir, et il le fait à côté de
 // vignettes qui, elles, montrent quelque chose.
 //
-// Ce qu'il faut tenir, c'est la PLACE, et elle appartient à l'appelant : la
-// liste garde sa case de 48px, vide et invisible, pour que tous ses titres
-// commencent au même endroit. Le renvoi d'article, lui, n'a aucun voisin à
-// aligner et referme sa colonne.
+// Ce qu'il faut tenir, c'est la PLACE, et elle appartient à l'appelant : le
+// renvoi d'article n'a aucun voisin à aligner et referme sa colonne.
 export const DiscoveryCoverMedia = ({
   post,
   lang,

@@ -384,7 +384,6 @@
   "discoveryPage": {
     "backToJournal": "Retour journal",
     "categories": "Catégories",
-    "emailPlaceholder": "votre@email.com",
     "faq": {
       "formats": {
         "answer": "JPG, PNG, TIFF et RAW pour la photo, MP4 et MOV pour la vidéo.",
@@ -410,7 +409,7 @@
     "noFeaturedPostHint": "Le premier article du journal arrive bientôt.",
     "noPosts": "Aucun article",
     "readArticle": "Lire l'article",
-    "srTitle": "Discovery — Blog & actualités"
+    "title": "Journal du studio"
   },
   "galleryPage": {
     "categories": "Catégories",

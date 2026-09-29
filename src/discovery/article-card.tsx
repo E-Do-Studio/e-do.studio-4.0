@@ -13,6 +13,7 @@ import {
   EmptyTitle,
 } from '@/components/ui/empty';
 import { MonoLabel } from '../ui/mono-label';
+import { sectionTitleVariants } from '../ui/section-intro';
 import { useT } from '../i18n/use-t';
 import { discoveryPostPath } from '../lib/screens';
 
@@ -63,7 +64,10 @@ export const ArticleCard = ({ post, lang, className }: ArticleCardProps) => {
     >
       {cover && (
         <>
-          <div className="relative min-h-0">
+          {/* Sous `app`, la carte n'a plus de rangée de grille pour la
+              dimensionner : sans ratio, la cover recevait ce que le titre
+              laissait de `min-h-96` — 180px de vidéo sur un téléphone. */}
+          <div className="relative aspect-video min-h-0 app:aspect-auto">
             <DiscoveryCoverMedia
               post={post}
               lang={lang}
@@ -76,29 +80,44 @@ export const ArticleCard = ({ post, lang, className }: ArticleCardProps) => {
         </>
       )}
 
-      {/* Sans cover, c'est le titre qui tient la cellule — la plus grande de la
-          page. Pas de réserve ici, contrairement aux vignettes de la liste et du
-          renvoi : un aplat gris de 900px de haut ne remplace pas une image, il
-          annonce qu'il en manque une. Un titre au corps de l'affiche, lui, se
-          lit. C'est la même décision que la carte des tuiles — le texte devient
-          la surface quand il n'y a rien à montrer. */}
+      {/* Le registre « titre de page » : c'est la plus grande cellule de la
+          page, et le seul article qu'elle met en avant. À 24px sous 600px de
+          vidéo, le titre se lisait comme une légende — rien sur l'écran n'y
+          était plus grand qu'un titre de la liste voisine.
+
+          Sans cover, `justify-between` : le titre tient alors seul la
+          cellule, et un aplat gris de 900px ne remplacerait pas une image, il
+          annoncerait qu'il en manque une. */}
       <div
         className={cn(
-          'flex min-w-0 flex-col gap-2 overflow-hidden px-5 py-4',
-          !cover && 'justify-between py-8',
+          'flex min-w-0 flex-col gap-5 overflow-hidden px-5 py-6 md:px-8 md:py-7',
+          !cover && 'justify-between',
         )}
       >
+        {/* Deux valeurs, deux éléments : la rubrique à gauche, la date en
+            face — jamais une chaîne à point médian. */}
+        <div className="flex items-baseline justify-between gap-4">
+          <MonoLabel tone="primary">{post.tag[lang]}</MonoLabel>
+          {post.date[lang] && (
+            <MonoLabel tone="muted" className="tabular-nums">
+              {post.date[lang]}
+            </MonoLabel>
+          )}
+        </div>
         <h2
           className={cn(
-            'm-0 line-clamp-3 text-balance font-light leading-snug tracking-tight text-foreground',
-            cover ? 'text-2xl' : 'text-4xl app:text-5xl',
+            sectionTitleVariants({ size: 'lg' }),
+            'line-clamp-3 text-foreground app:text-5xl',
           )}
         >
           {post.title[lang]}
         </h2>
         <MonoLabel className="inline-flex items-center gap-2">
           {t('discoveryPage.readArticle')}
-          <ArrowRight data-icon="inline-end" />
+          <ArrowRight
+            data-icon="inline-end"
+            className="transition-transform duration-150 ease-out group-hover:translate-x-1"
+          />
         </MonoLabel>
       </div>
     </Button>

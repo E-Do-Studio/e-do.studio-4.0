@@ -1,31 +1,32 @@
 import { useNavigate } from '@tanstack/react-router';
-import type { DiscoveryPost, Lang } from '../types';
+import { ArrowRight } from 'lucide-react';
+import type { DiscoveryCategory, DiscoveryPost, Lang } from '../types';
 import { Button } from '@/components/ui/button';
-import {
-  Item,
-  ItemContent,
-  ItemGroup,
-  ItemMedia,
-  ItemTitle,
-} from '@/components/ui/item';
-import { DiscoveryCoverMedia } from './discovery-cover';
+import { Item, ItemContent, ItemGroup, ItemTitle } from '@/components/ui/item';
 import { cn } from '@/lib/utils';
 import { Empty, EmptyTitle } from '@/components/ui/empty';
 import { MonoLabel } from '../ui/mono-label';
+import { SegmentGroup, SegmentItem } from '../ui/segment-group';
+import { sectionTitleVariants } from '../ui/section-intro';
 import { useT } from '../i18n/use-t';
 import { discoveryPostPath } from '../lib/screens';
 
 interface MorePostsCardProps {
-  // Déjà filtrée par la page : le filtre vit dans le rail, pas ici.
+  // Déjà filtrée par la page : l'état du filtre y vit, la cellule l'affiche.
   posts: DiscoveryPost[];
-  total: number;
+  // Vide quand il n'y a rien à choisir — voir `discovery-pages.tsx`.
+  categories: DiscoveryCategory[];
+  activeCategory: string;
+  onSelectCategory: (key: string) => void;
   lang: Lang;
   className?: string;
 }
 
 export const MorePostsCard = ({
   posts,
-  total,
+  categories,
+  activeCategory,
+  onSelectCategory,
   lang,
   className,
 }: MorePostsCardProps) => {
@@ -46,37 +47,47 @@ export const MorePostsCard = ({
           c'est celui de la cellule. */}
       <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border px-5 py-3">
         <MonoLabel tone="primary">{t('discoveryPage.morePosts')}</MonoLabel>
-        <span className="font-mono text-xs tracking-widest text-muted-foreground">
-          {posts.length}/{total}
-        </span>
+        <MonoLabel tone="muted" className="tabular-nums">
+          {posts.length}
+        </MonoLabel>
       </div>
 
-      {/* `ItemGroup` apporte le `role="list"` qui manquait. Deux réglages contre
-          ses défauts : `gap-0` annule son `gap-4` — les lignes sont jointives,
-          séparées par un filet et non par un blanc —, et le filet est posé par
-          le conteneur plutôt que par chaque ligne.
+      {/* Le filtre au-dessus de la liste qu'il filtre. Il vivait dans la
+          colonne du logo, trois cellules plus loin — et sur mobile, la FAQ
+          s'intercalait entre lui et ses résultats. */}
+      {categories.length > 0 && (
+        <SegmentGroup
+          label={t('discoveryPage.categories')}
+          className="shrink-0 border-b border-border"
+        >
+          {categories.map((category) => (
+            <SegmentItem
+              key={category.k}
+              selected={activeCategory === category.k}
+              onSelect={() => onSelectCategory(category.k)}
+              className="flex-1"
+            >
+              {category[lang]}
+            </SegmentItem>
+          ))}
+        </SegmentGroup>
+      )}
 
-          Pas de `:not(:last-child)` : la liste se ferme, comme le rail qui lui
-          fait face (`rail-cell.tsx`, même raisonnement). L'exclusion datait du
-          temps où la cellule partageait sa colonne avec le chat et où la liste
-          la remplissait ; elle occupe maintenant deux rangées, il reste du blanc
-          sous le dernier article, et sans ce filet la liste s'y perdait au lieu
-          de s'arrêter. */}
+      {/* `ItemGroup` apporte le `role="list"`. `gap-0` annule son `gap-4` :
+          les lignes sont jointives, séparées par un filet posé par le
+          conteneur. La liste se ferme sur un filet, comme le rail — sans lui
+          elle se perdait dans le blanc sous le dernier article. */}
       <ItemGroup className="min-h-0 flex-1 gap-0 overflow-y-auto [&>*]:border-b [&>*]:border-b-border">
         {posts.map((post) => {
           const href = discoveryPostPath(lang, post.slug);
           return (
             // `role="listitem"` sur une enveloppe : l'`Item` est rendu en
-            // ancre (`render`), qui perdait le rôle — la liste n'avait plus
-            // aucun élément aux yeux des lecteurs d'écran.
+            // ancre (`render`), qui perdait le rôle.
             <div key={post.id} role="listitem">
               <Item
-                // La ligne est une vraie ancre : `render` compose la cellule
-                // cliquable du site avec la structure `Item`, au lieu de rendre un
-                // `<div>` à `onClick` — qui ne serait ni focusable, ni activable au
-                // clavier, ni annoncé comme une action. Et une ancre plutôt qu'un
-                // `<button>` : c'est par cette liste que les moteurs atteignent
-                // les articles.
+                // Une vraie ancre : c'est par cette liste que les moteurs
+                // atteignent les articles, et elle est focusable et activable
+                // au clavier sans rien ajouter.
                 render={
                   <Button
                     variant="cell"
@@ -88,41 +99,43 @@ export const MorePostsCard = ({
                   e.preventDefault();
                   navigate({ to: href });
                 }}
-                // Deux annulations, chacune contre une cva différente :
-                // `flex-row` contre le `flex-col` de `size="cell"` — la cellule
-                // bento empile, la ligne de liste juxtapose — et `flex-nowrap`
-                // contre le `flex-wrap` d'`itemVariants`, sans quoi la vignette et
-                // le texte passent à la ligne dans une colonne étroite.
-                className="flex-row flex-nowrap items-center gap-3 px-5 py-3"
+                // `flex-row` contre le `flex-col` de `size="cell"`, `flex-nowrap`
+                // contre le `flex-wrap` d'`itemVariants` : la flèche reste au
+                // bout de la ligne au lieu de passer dessous.
+                className="group/post flex-row flex-nowrap items-start gap-4 px-5 py-4"
               >
-                {/* La case est rendue même sans image, et elle reste alors VIDE :
-                rien n'y est peint. Repliée, elle décalait le texte d'une ligne à
-                l'autre — la liste avait deux bords gauches ; remplie d'un aplat
-                gris, elle attirait l'œil là où il n'y a rien à voir, juste à
-                côté de vignettes qui montrent quelque chose. Ce qu'on tient ici,
-                c'est la place, pas le manque. */}
-                {/* `rounded-none` annule le `rounded-sm` d'`ItemMedia` : le rayon
-                du site est 0 (`--radius` dans styles.css). */}
-                <ItemMedia
-                  variant="image"
-                  className="relative size-12 rounded-none"
-                >
-                  <DiscoveryCoverMedia
-                    post={post}
-                    lang={lang}
-                    sizes="48px"
-                    className="absolute inset-0 h-full w-full object-cover"
-                  />
-                </ItemMedia>
-                <ItemContent className="min-w-0">
-                  <MonoLabel tone="muted">{post.tag[lang]}</MonoLabel>
-                  {/* `block w-auto` annule le `flex w-fit` d'`ItemTitle`, sans quoi
-                  le titre se dimensionne à son contenu et le `line-clamp` n'a
-                  plus de largeur à contraindre. */}
-                  <ItemTitle className="block w-auto line-clamp-2 text-sm font-normal leading-snug tracking-tight text-foreground">
+                {/* Une liste de TITRES, sans vignettes. Trois articles sur sept
+                    n'ont pas d'image exploitable : la colonne alternait
+                    vignettes et cases vides, et la case de 48px ne montrait de
+                    toute façon rien qu'on puisse reconnaître. L'image de la
+                    page, c'est la une.
+
+                    Et la date plutôt que la rubrique : « Tips » sur chaque
+                    ligne n'informait personne — c'est le filtre qui dit la
+                    rubrique, quand il y en a plusieurs. */}
+                <ItemContent className="min-w-0 gap-2">
+                  {post.date[lang] && (
+                    <MonoLabel tone="muted" className="tabular-nums">
+                      {post.date[lang]}
+                    </MonoLabel>
+                  )}
+                  {/* `block w-auto` annule le `flex w-fit` d'`ItemTitle`, sans
+                      quoi le `line-clamp` n'a plus de largeur à contraindre.
+                      `leading-tight` après le registre : sur deux lignes,
+                      `leading-none` colle les jambages aux capitales. */}
+                  <ItemTitle
+                    className={cn(
+                      sectionTitleVariants({ size: 'xs' }),
+                      'block w-auto line-clamp-2 leading-tight text-foreground',
+                    )}
+                  >
                     {post.title[lang]}
                   </ItemTitle>
                 </ItemContent>
+                <ArrowRight
+                  aria-hidden
+                  className="mt-6 size-4 shrink-0 text-muted-foreground transition-[translate,color] duration-150 ease-out group-hover/post:translate-x-1 group-hover/post:text-foreground"
+                />
               </Item>
             </div>
           );
