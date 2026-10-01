@@ -9,6 +9,8 @@
 //   - Single orange accent (#E2641A); brand black (#0d0d0d) for body
 //   - Hairlines used as horizontal row separators only — no per-cell borders
 
+import { effectiveSessionHours, sessionSlotLabel } from "../_shared/session-format.ts";
+
 export interface BookingSession {
   plateau_key: string;
   slot_type: string;
@@ -259,7 +261,7 @@ function sessionsShareOneSlot(sessions: BookingSession[], b: BookingData): boole
 
 function formatPlateauLine(s: BookingSession, b: BookingData): string {
   const slot = sessionSlot(s, b);
-  const hours = s.hours ?? 0;
+  const hours = effectiveSessionHours(s.plateau_key, s.cyclo_mode, s.hours);
   const parts: string[] = [`<strong style="font-weight:600;">${escapeHtml(s.plateau_key)}</strong>`];
   if (slot.date) parts.push(escapeHtml(dateFmt(slot.date)));
   if (slot.hour != null && hours > 0) {
@@ -267,7 +269,7 @@ function formatPlateauLine(s: BookingSession, b: BookingData): string {
     const end = `${String(slot.hour + hours).padStart(2, "0")}:00`;
     parts.push(`${start} → ${end}`);
   }
-  parts.push(`<span style="color:${C_GRAY};">${hours || "?"}h · ${escapeHtml(s.slot_type)}</span>`);
+  parts.push(`<span style="color:${C_GRAY};">${hours || "?"}h · ${escapeHtml(sessionSlotLabel(s.plateau_key, s.cyclo_mode, s.slot_type))}</span>`);
   return parts.join(" · ");
 }
 
@@ -293,7 +295,7 @@ function bookingRows(b: BookingData, sessions: BookingSession[], opts: { admin: 
   const sharedSlot = sessionsShareOneSlot(sessions, b);
   if (sessions.length > 0) {
     if (sharedSlot) {
-      const plateaux = sessions.map((s) => `${s.plateau_key} (${s.hours ?? "?"}h, ${s.slot_type})`).join(", ");
+      const plateaux = sessions.map((s) => `${s.plateau_key} (${effectiveSessionHours(s.plateau_key, s.cyclo_mode, s.hours) || "?"}h, ${sessionSlotLabel(s.plateau_key, s.cyclo_mode, s.slot_type)})`).join(", ");
       rows.push(["Plateau(x)", escapeHtml(plateaux)]);
       if (b.preferred_date) rows.push(["Date souhaitée", escapeHtml(dateFmt(b.preferred_date))]);
       if (b.arrival_hour != null) rows.push(["Heure d'arrivée", `${b.arrival_hour} h`]);
@@ -432,7 +434,7 @@ function statusChangeRows(
     if (b.client_company) rows.push(["Société", escapeHtml(b.client_company)]);
     if (b.client_brand) rows.push(["Marque", escapeHtml(b.client_brand)]);
   }
-  const plateaux = sessions.map((s) => `${s.plateau_key} (${s.hours ?? "?"}h, ${s.slot_type})`).join(", ");
+  const plateaux = sessions.map((s) => `${s.plateau_key} (${effectiveSessionHours(s.plateau_key, s.cyclo_mode, s.hours) || "?"}h, ${sessionSlotLabel(s.plateau_key, s.cyclo_mode, s.slot_type)})`).join(", ");
   if (plateaux) rows.push(["Plateau(x)", escapeHtml(plateaux)]);
   if (b.preferred_date) rows.push(["Date initiale", escapeHtml(dateFmt(b.preferred_date))]);
   if (newDate) rows.push(["Nouvelle date", `<strong style="font-weight:600;color:${C_ORANGE};">${escapeHtml(dateFmt(newDate))}</strong>`]);
@@ -493,7 +495,7 @@ export function renderStatusChangeAdmin(
   if (b.client_brand) rows.push(["Marque", escapeHtml(b.client_brand)]);
   if (b.client_siren) rows.push(["SIREN", escapeHtml(b.client_siren)]);
   if (b.client_billing_address) rows.push(["Adresse de facturation", escapeHtml(b.client_billing_address)]);
-  const plateaux = sessions.map((s) => `${s.plateau_key} (${s.hours ?? "?"}h, ${s.slot_type})`).join(", ");
+  const plateaux = sessions.map((s) => `${s.plateau_key} (${effectiveSessionHours(s.plateau_key, s.cyclo_mode, s.hours) || "?"}h, ${sessionSlotLabel(s.plateau_key, s.cyclo_mode, s.slot_type)})`).join(", ");
   if (plateaux) rows.push(["Plateau(x)", escapeHtml(plateaux)]);
   rows.push(["Motif", `<strong style="font-weight:600;color:${C_ORANGE};">${escapeHtml(labels.title)}</strong>`]);
   if (b.preferred_date) rows.push(["Date initiale", escapeHtml(dateFmt(b.preferred_date))]);
