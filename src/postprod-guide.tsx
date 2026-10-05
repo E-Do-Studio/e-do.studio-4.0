@@ -8,9 +8,10 @@ import { SectionIntro } from './ui/section-intro';
 
 // Le texte éditorial de la page (#417) : c'est lui qui la fait exister sur
 // la requête « retouche photo », la page n'ayant sinon que des libellés Strapi.
-// Il vit dans l'i18n et non dans le CMS pour être rendu même quand Strapi ne
-// répond pas, et il ne dit QUE ce que le site affiche déjà ailleurs — aucun
-// délai, aucun tarif chiffré (#428).
+// Il ne dit QUE ce qui est vérifié ailleurs sur le site (adresse, tunnel de
+// réservation) : aucun délai, aucun tarif, aucune prestation non confirmée
+// (#428). Le contenu Strapi n'en est pas une source : la catégorie « Vidéo »
+// annonçait une prestation que le studio ne propose pas.
 const SECTIONS = ['intro', 'location'] as const;
 
 const isPlainClick = (event: MouseEvent) =>
