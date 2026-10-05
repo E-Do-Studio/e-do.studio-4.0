@@ -97,14 +97,14 @@ export const META: Record<string, Record<Lang, PageMeta>> = {
   },
   postprod: {
     fr: {
-      title: 'Retouche photo e-commerce à Paris | E-Do Studio',
+      title: 'Retouche photo aux portes de Paris | E-Do Studio',
       description:
-        'Retouche photo e-commerce à Saint-Ouen, aux portes de Paris : on model, ghost, flat, accessoires, piqué et high end. Demandez un devis.',
+        'Retouche photo par E-Do Studio à Saint-Ouen, aux portes de Paris, y compris pour vos images non shootées chez nous. Demandez un devis.',
     },
     en: {
-      title: 'E-commerce Photo Retouching in Paris | E-Do Studio',
+      title: 'Photo Retouching on the Edge of Paris | E-Do Studio',
       description:
-        'E-commerce photo retouching in Saint-Ouen, on the edge of Paris: on model, ghost, flat, accessories, pinned and high end. Request a quote.',
+        'Photo retouching by E-Do Studio in Saint-Ouen, on the edge of Paris, including images not shot at our studio. Request a quote.',
     },
   },
   gallery: {

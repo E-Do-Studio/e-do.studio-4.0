@@ -458,41 +458,21 @@
     "emptyDescription": "No categories configured. Add post-production types in Strapi.",
     "from": "From",
     "guide": {
+      "booking": {
+        "body": "If you book a stage, you can add post-production to your booking: the price shown in the booking flow is an estimate, adjusted after the brief according to volume and complexity. For images produced elsewhere, request a quote.",
+        "bookStage": "Book a stage",
+        "title": "How to book your retouching"
+      },
       "intro": {
-        "title": "Photo retouching at E-Do Studio",
-        "body": "E-Do Studio is a professional photo and video studio. Alongside its shooting stages, the studio offers photo retouching. We retouch images shot on our stages, and we also retouch images not shot at our studio."
-      },
-      "packshot": {
-        "title": "E-commerce packshot retouching",
-        "body": "For product pages, we retouch flat-lay garments, pieces pinned on foam or pins, and accessories. Styled flat lay, clean cutout and controlled shadow for flat. Full removal of fixings and reshaping for pinned pieces. Work on materials, leather, metal, stones and reflections for accessories, with detail and texture preserved."
-      },
-      "ghost": {
-        "title": "Ghost mannequin",
-        "body": "For ghost mannequin, we assemble the front and back views, remove the mannequin and give the garment a natural volume. Linings, open collars and layering are handled. The service also includes clipping, background replacement, fabric cleanup and colour grading."
-      },
-      "cutout": {
-        "title": "Clipping and background replacement",
-        "body": "Clipping and background replacement are part of the on model, ghost, flat, accessories and pinned services, along with colour grading."
-      },
-      "beauty": {
-        "title": "Beauty, on-model and high-end retouching",
-        "body": "For on-model photos, retouching covers skin, make-up, hair, fabric cleanup and silhouette harmonisation. High-end retouching is tailor-made couture retouching: HD dodge & burn, compositing, matte painting. It is quoted on request."
-      },
-      "audience": {
-        "title": "Who it is for",
-        "body": "Our post-production services are for fashion, cosmetics, jewellery and food brands, from independent designers to luxury houses. You can pair retouching with a shoot at the studio, or simply send us your images."
+        "body": "E-Do Studio is a professional photo and video studio. Alongside its shooting stages, the studio offers photo retouching. We also retouch images not shot at our studio.",
+        "title": "Photo retouching at E-Do Studio"
       },
       "location": {
-        "title": "A studio in Saint-Ouen, on the edge of Paris",
-        "body": "E-Do Studio is located at 69 boulevard Victor Hugo, Saint-Ouen-sur-Seine, on the edge of Paris. You can shoot your products on one of our stages and then have us retouch them, or simply send us images produced elsewhere."
-      },
-      "booking": {
-        "title": "How to book your retouching",
-        "body": "If you shoot with us, add post-production to your stage booking: the price shown in the booking flow is an estimate, adjusted after the brief according to volume and complexity. For images produced elsewhere, request a quote. Starting prices are shown for each service; high-end retouching is quoted on request.",
-        "bookStage": "Book a stage"
+        "body": "E-Do Studio is located at 69 boulevard Victor Hugo, Saint-Ouen, on the edge of Paris.",
+        "title": "A studio in Saint-Ouen, on the edge of Paris"
       }
     },
-    "h1": "E-commerce photo retouching in Paris",
+    "h1": "Photo retouching in Saint-Ouen, on the edge of Paris",
     "note": "Note",
     "noteBody": "We also retouch images not shot at our studio.",
     "requestQuote": "Request a quote",
@@ -510,7 +490,7 @@
     "galleryName": "Gallery — E-Do Studio Paris",
     "localBusinessDescription": "Professional photo and video studio in Paris. Cyclorama, shooting stages and post-production services for fashion, cosmetics, jewelry and food brands.",
     "postprodCatalogName": "Post-production services",
-    "postprodDescription": "E-commerce photo retouching, ghost mannequin, clipping, beauty and high-end retouching. E-Do Studio in Saint-Ouen, on the edge of Paris.",
+    "postprodDescription": "Photo retouching by E-Do Studio, a photo and video studio in Saint-Ouen, on the edge of Paris.",
     "postprodServiceType": "Photo & video post-production",
     "serviceCatalogName": "E-Do Studio services",
     "stageServiceType": "Photo & video stage rental"

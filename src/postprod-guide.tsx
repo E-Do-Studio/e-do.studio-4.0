@@ -11,15 +11,7 @@ import { SectionIntro } from './ui/section-intro';
 // Il vit dans l'i18n et non dans le CMS pour être rendu même quand Strapi ne
 // répond pas, et il ne dit QUE ce que le site affiche déjà ailleurs — aucun
 // délai, aucun tarif chiffré (#428).
-const SECTIONS = [
-  'intro',
-  'packshot',
-  'ghost',
-  'cutout',
-  'beauty',
-  'audience',
-  'location',
-] as const;
+const SECTIONS = ['intro', 'location'] as const;
 
 const isPlainClick = (event: MouseEvent) =>
   !event.metaKey && !event.ctrlKey && !event.shiftKey && event.button === 0;
