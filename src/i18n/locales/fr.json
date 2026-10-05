@@ -457,6 +457,46 @@
     "category": "Catégorie",
     "emptyDescription": "Aucune catégorie configurée. Renseignez vos types de post-production dans Strapi.",
     "from": "À partir de",
+    "guide": {
+      "intro": {
+        "title": "Une agence de retouche photo au sein du studio",
+        "body": "E-Do Studio retouche les images des marques e-commerce, de mode et de luxe, du créateur indépendant à la maison de couture. Nous travaillons sur les photos shootées sur nos plateaux comme sur celles produites ailleurs : vous pouvez nous confier vos images, même si elles n'ont pas été réalisées chez nous. En photo comme en vidéo, chaque prestation répond aux besoins des fiches produit, des lookbooks et des campagnes."
+      },
+      "packshot": {
+        "title": "Retouche packshot e-commerce",
+        "body": "Pour les fiches produit, nous retouchons les vêtements à plat, les pièces piquées sur mousse ou épingles et les accessoires. Mise à plat stylée, découpe propre et ombre maîtrisée pour le flat. Nettoyage complet des fixations et remise en forme pour le piqué. Travail des matières, cuirs, métaux, pierres et reflets pour les accessoires, avec le détail et la texture préservés."
+      },
+      "ghost": {
+        "title": "Ghost mannequin",
+        "body": "Le ghost mannequin, ou mannequin invisible, montre le volume du vêtement sans rien laisser voir de ce qui le porte. Nous assemblons les vues avant et arrière, faisons disparaître le mannequin et redonnons à la pièce un volume naturel. Doublures, cols ouverts et superpositions sont gérés, puis le textile est nettoyé et la couleur étalonnée."
+      },
+      "cutout": {
+        "title": "Détourage et changement de fond",
+        "body": "Le détourage et le changement de fond font partie de chacune de nos prestations de retouche photo e-commerce : on model, ghost, flat, accessoires et piqué. Ils s'accompagnent d'un étalonnage couleur, pour que vos produits se présentent sur un fond propre et que les visuels d'une même collection restent harmonisés d'une fiche à l'autre."
+      },
+      "beauty": {
+        "title": "Retouche beauté, on model et high end",
+        "body": "Pour les photos portées, la retouche on model couvre la peau, le maquillage, les cheveux, le nettoyage textile et l'harmonisation de la silhouette. Pour les campagnes et les pièces d'exception, la retouche high end va plus loin : dodge & burn HD, compositing et matte painting. Elle se fait sur mesure et se chiffre sur devis."
+      },
+      "video": {
+        "title": "Post-production vidéo",
+        "body": "Nous prenons en charge la post-production vidéo de A à Z : détourage, montage, étalonnage, motion design et titrages, jusqu'à l'export multi-formats. Elle couvre les formats e-commerce, les réseaux sociaux, les campagnes et les films de marque."
+      },
+      "audience": {
+        "title": "Pour les marques e-commerce et les agences",
+        "body": "Nous accompagnons les marques de mode, de cosmétique, de joaillerie et d'accessoires qui alimentent leurs boutiques en ligne, ainsi que les agences et les équipes de production qui confient leur retouche à un partenaire extérieur. Vous pouvez associer la retouche à un shooting au studio, ou nous transmettre uniquement vos fichiers."
+      },
+      "location": {
+        "title": "Un studio à Saint-Ouen, aux portes de Paris",
+        "body": "E-Do Studio est installé au 69 boulevard Victor Hugo, à Saint-Ouen-sur-Seine, aux portes de Paris. Vous pouvez y photographier vos produits sur l'un de nos plateaux et nous confier ensuite leur retouche, ou simplement nous envoyer des images réalisées ailleurs."
+      },
+      "booking": {
+        "title": "Comment réserver votre retouche",
+        "body": "Si vous shootez chez nous, ajoutez la post-production à votre réservation de plateau : le prix affiché dans le tunnel de réservation est estimatif, puis ajusté après brief selon le volume et la complexité. Pour des images réalisées ailleurs, demandez un devis. Chaque prestation présentée plus haut indique son tarif de départ.",
+        "bookStage": "Réserver un plateau"
+      }
+    },
+    "h1": "Agence de retouche photo pour l'e-commerce à Paris",
     "note": "À noter",
     "noteBody": "Nous retouchons aussi vos images non shootées chez nous.",
     "requestQuote": "Demander un devis",
@@ -474,7 +514,7 @@
     "galleryName": "Galerie — E-Do Studio Paris",
     "localBusinessDescription": "Studio photo et vidéo professionnel à Paris. Cyclorama, plateaux de prise de vue et services de post-production pour marques de mode, cosmétique, joaillerie et food.",
     "postprodCatalogName": "Prestations post-production",
-    "postprodDescription": "Retouche, colorimétrie, montage et livraison express. Studio E-Do à Paris.",
+    "postprodDescription": "Retouche photo e-commerce, ghost mannequin, détourage, retouche beauté et high end, post-production vidéo. E-Do Studio à Saint-Ouen, aux portes de Paris.",
     "postprodServiceType": "Post-production photo et vidéo",
     "serviceCatalogName": "Prestations E-Do Studio",
     "stageServiceType": "Location de plateau photo et vidéo"

@@ -29,6 +29,7 @@ import { useT } from './i18n/use-t';
 import { StatusBadge } from './ui/status-badge';
 import { CtaCell } from './ui/cta-cell';
 import { Price } from './ui/price';
+import { PostprodGuide } from './postprod-guide';
 
 interface PPPrice {
   amount?: string;
@@ -356,7 +357,7 @@ const PostprodPage = () => {
         <main id={MAIN_ID} className="contents">
           {/* Single, stable page h1 — data-independent so it's present at every
  breakpoint and before Strapi resolves. The selected category is an h2. */}
-          <h1 className="sr-only">{postprodLabel}</h1>
+          <h1 className="sr-only">{t('postprod.h1')}</h1>
 
           {/* Une des trois copies littérales du même bloc barre + tiroir. */}
           <SelectionDrawer
@@ -429,66 +430,74 @@ const PostprodPage = () => {
  valeurs hors échelle — et son contenu démarrait donc 16px à droite de
  celui du CTA, dans la même colonne. Un décalage ne se voit qu'en
  franchissant la frontière entre deux cellules. */}
-          <div
-            className={cn(
-              bgCls,
-              'text-foreground p-pad-cell flex flex-col justify-between gap-6 app:col-start-2 app:row-start-2 app:overflow-y-auto app:min-h-0',
-            )}
-          >
-            <div className="flex flex-col gap-5">
-              {cat.featured && (
-                <StatusBadge>{t('postprod.standard')}</StatusBadge>
+          {/* Le panneau et le texte éditorial partagent la cellule centrale.
+ En desktop ils s'y empilent et défilent ensemble — le panneau garde au
+ moins toute la hauteur, le premier écran est donc inchangé. Sous le
+ palier, `contents` les rend à la grille de la page, et `order-last`
+ renvoie le texte après la mosaïque : il ne doit pas éloigner le CTA. */}
+          <div className="contents app:col-start-2 app:row-start-2 app:flex app:min-h-0 app:flex-col app:gap-px app:overflow-y-auto app:bg-border">
+            <div
+              className={cn(
+                bgCls,
+                'text-foreground p-pad-cell flex flex-col justify-between gap-6 app:min-h-full app:shrink-0',
               )}
-              {/* `text-3xl` — « titre de section » de l'échelle. Le panneau
+            >
+              <div className="flex flex-col gap-5">
+                {cat.featured && (
+                  <StatusBadge>{t('postprod.standard')}</StatusBadge>
+                )}
+                {/* `text-3xl` — « titre de section » de l'échelle. Le panneau
  portait `text-5xl`, réservé au titre de PAGE : c'était le seul h2 du site
  à ce corps, et il rendait au même corps que le prix juste en dessous. */}
-              <h2 className="hidden app:block m-0 text-3xl font-light leading-none tracking-tighter">
-                {cat[lang]}
-              </h2>
-              {/* La tagline vient du CMS (`description` de la prestation) et ne
+                <h2 className="hidden app:block m-0 text-3xl font-light leading-none tracking-tighter">
+                  {cat[lang]}
+                </h2>
+                {/* La tagline vient du CMS (`description` de la prestation) et ne
  vivait que dans le rail et le tiroir mobile — le panneau, qui est pourtant
  l'endroit où on lit la prestation, ne la montrait pas. Elle dit ce que la
  liste de puces en dessous ne dit pas : à qui ça s'adresse. */}
-              {cat.tagline[lang] && (
-                <p className="hidden app:block m-0 max-w-prose text-base leading-relaxed text-pretty text-muted-foreground">
-                  {cat.tagline[lang]}
-                </p>
-              )}
-              <ul className="mt-2 p-0 list-none flex flex-col gap-1.5">
-                {cat.features[lang].map((f) => (
-                  <li
-                    key={f}
-                    className="flex items-start gap-2 text-sm leading-snug"
-                  >
-                    <span className="text-primary font-mono shrink-0">+</span>
-                    <span className="min-w-0">{f}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+                {cat.tagline[lang] && (
+                  <p className="hidden app:block m-0 max-w-prose text-base leading-relaxed text-pretty text-muted-foreground">
+                    {cat.tagline[lang]}
+                  </p>
+                )}
+                <ul className="mt-2 p-0 list-none flex flex-col gap-1.5">
+                  {cat.features[lang].map((f) => (
+                    <li
+                      key={f}
+                      className="flex items-start gap-2 text-sm leading-snug"
+                    >
+                      <span className="text-primary font-mono shrink-0">+</span>
+                      <span className="min-w-0">{f}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
 
-            {/* Le prix ferme le panneau. Il ne porte plus de filet à lui : le
+              {/* Le prix ferme le panneau. Il ne porte plus de filet à lui : le
  vrai filet est la gouttière juste en dessous, celle qui le sépare du
  CTA. Un `border-t` en retrait du padding doublait ce trait, décalé. */}
-            {cat.price && (
-              <div className="flex items-baseline">
-                {cat.price.kind === 'quote' ? (
-                  // « Sur devis » n'est pas un montant : pas de `tabular-nums`
-                  // à lui appliquer, donc pas de `Price`. Il en emprunte
-                  // seulement l'échelle.
-                  <span className="text-3xl font-light leading-none tracking-tighter">
-                    {t('common.onRequest')}
-                  </span>
-                ) : (
-                  <Price
-                    size="2xl"
-                    from={cat.price.from ? t('postprod.from') : undefined}
-                    value={cat.price.amount ?? ''}
-                    unit={cat.price.unit?.[lang]}
-                  />
-                )}
-              </div>
-            )}
+              {cat.price && (
+                <div className="flex items-baseline">
+                  {cat.price.kind === 'quote' ? (
+                    // « Sur devis » n'est pas un montant : pas de `tabular-nums`
+                    // à lui appliquer, donc pas de `Price`. Il en emprunte
+                    // seulement l'échelle.
+                    <span className="text-3xl font-light leading-none tracking-tighter">
+                      {t('common.onRequest')}
+                    </span>
+                  ) : (
+                    <Price
+                      size="2xl"
+                      from={cat.price.from ? t('postprod.from') : undefined}
+                      value={cat.price.amount ?? ''}
+                      unit={cat.price.unit?.[lang]}
+                    />
+                  )}
+                </div>
+              )}
+            </div>
+            <PostprodGuide className="order-last app:order-none" />
           </div>
 
           <CtaCell
