@@ -9,7 +9,7 @@ import {
 import { X } from 'lucide-react';
 import { SocialLinksRow } from './ui/social-links-row';
 import { useT } from './i18n/use-t';
-import { MENU_NAV, activeNavIn } from './lib/nav';
+import { ETOUCH_LINK, MENU_NAV, activeNavIn } from './lib/nav';
 import { SCREEN_TO_PATH } from './lib/screens';
 import { useRoutePreload } from './lib/use-route-preload';
 import type { Lang } from './types';
@@ -188,8 +188,8 @@ const NavMenu = ({ lang, isOpen, onClose, setLang }: NavMenuProps) => {
             />
           ))}
           <NavExternalLink
-            href="https://etouch.e-do.studio"
-            label="Etouch"
+            href={ETOUCH_LINK.href}
+            label={ETOUCH_LINK.label}
             index={MENU_NAV.length}
           />
           <SocialLinksRow className="mt-auto border-t border-border" />
