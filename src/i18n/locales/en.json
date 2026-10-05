@@ -460,7 +460,7 @@
     "guide": {
       "intro": {
         "title": "Photo retouching at E-Do Studio",
-        "body": "E-Do Studio is a professional photo and video studio. Alongside its shooting stages, the studio offers photo retouching and video post-production. We retouch images shot on our stages, and we also retouch images not shot at our studio."
+        "body": "E-Do Studio is a professional photo and video studio. Alongside its shooting stages, the studio offers photo retouching. We retouch images shot on our stages, and we also retouch images not shot at our studio."
       },
       "packshot": {
         "title": "E-commerce packshot retouching",
@@ -478,10 +478,6 @@
         "title": "Beauty, on-model and high-end retouching",
         "body": "For on-model photos, retouching covers skin, make-up, hair, fabric cleanup and silhouette harmonisation. High-end retouching is tailor-made couture retouching: HD dodge & burn, compositing, matte painting. It is quoted on request."
       },
-      "video": {
-        "title": "Video post-production",
-        "body": "We handle video post-production from start to finish: cutout, editing, colour grading, motion design and titles, through to multi-format export. It covers e-commerce, social media, campaign and brand film formats."
-      },
       "audience": {
         "title": "Who it is for",
         "body": "Our post-production services are for fashion, cosmetics, jewellery and food brands, from independent designers to luxury houses. You can pair retouching with a shoot at the studio, or simply send us your images."
@@ -492,7 +488,7 @@
       },
       "booking": {
         "title": "How to book your retouching",
-        "body": "If you shoot with us, add post-production to your stage booking: the price shown in the booking flow is an estimate, adjusted after the brief according to volume and complexity. For images produced elsewhere, request a quote. Starting prices are shown for each service; high-end retouching and video are quoted on request.",
+        "body": "If you shoot with us, add post-production to your stage booking: the price shown in the booking flow is an estimate, adjusted after the brief according to volume and complexity. For images produced elsewhere, request a quote. Starting prices are shown for each service; high-end retouching is quoted on request.",
         "bookStage": "Book a stage"
       }
     },
@@ -514,7 +510,7 @@
     "galleryName": "Gallery — E-Do Studio Paris",
     "localBusinessDescription": "Professional photo and video studio in Paris. Cyclorama, shooting stages and post-production services for fashion, cosmetics, jewelry and food brands.",
     "postprodCatalogName": "Post-production services",
-    "postprodDescription": "E-commerce photo retouching, ghost mannequin, clipping, beauty and high-end retouching, video post-production. E-Do Studio in Saint-Ouen, on the edge of Paris.",
+    "postprodDescription": "E-commerce photo retouching, ghost mannequin, clipping, beauty and high-end retouching. E-Do Studio in Saint-Ouen, on the edge of Paris.",
     "postprodServiceType": "Photo & video post-production",
     "serviceCatalogName": "E-Do Studio services",
     "stageServiceType": "Photo & video stage rental"

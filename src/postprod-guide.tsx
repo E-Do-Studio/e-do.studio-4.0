@@ -17,7 +17,6 @@ const SECTIONS = [
   'ghost',
   'cutout',
   'beauty',
-  'video',
   'audience',
   'location',
 ] as const;
