@@ -459,8 +459,8 @@
     "from": "From",
     "guide": {
       "intro": {
-        "title": "A photo retouching agency inside the studio",
-        "body": "E-Do Studio retouches images for e-commerce, fashion and luxury brands, from independent designers to couture houses. We work on photos shot on our stages as well as those produced elsewhere: you can send us your images even if they were not taken at our studio. For photo and video alike, every service is built for product pages, lookbooks and campaigns."
+        "title": "Photo retouching at E-Do Studio",
+        "body": "E-Do Studio is a professional photo and video studio. Alongside its shooting stages, the studio offers photo retouching and video post-production. We retouch images shot on our stages, and we also retouch images not shot at our studio."
       },
       "packshot": {
         "title": "E-commerce packshot retouching",
@@ -468,23 +468,23 @@
       },
       "ghost": {
         "title": "Ghost mannequin",
-        "body": "Ghost mannequin, or invisible mannequin, shows a garment's volume without revealing what holds it. We assemble the front and back views, remove the mannequin and give the piece a natural volume. Linings, open collars and layering are handled, then the fabric is cleaned up and the colour graded."
+        "body": "For ghost mannequin, we assemble the front and back views, remove the mannequin and give the garment a natural volume. Linings, open collars and layering are handled. The service also includes clipping, background replacement, fabric cleanup and colour grading."
       },
       "cutout": {
         "title": "Clipping and background replacement",
-        "body": "Clipping and background replacement are part of every e-commerce photo retouching service we offer: on model, ghost, flat, accessories and pinned. They come with colour grading, so your products sit on a clean background and the visuals of a single collection stay consistent from one product page to the next."
+        "body": "Clipping and background replacement are part of the on model, ghost, flat, accessories and pinned services, along with colour grading."
       },
       "beauty": {
         "title": "Beauty, on-model and high-end retouching",
-        "body": "For on-model photos, retouching covers skin, make-up, hair, fabric cleanup and silhouette harmonisation. For campaigns and exceptional pieces, high-end retouching goes further: HD dodge & burn, compositing and matte painting. It is tailor-made and quoted on request."
+        "body": "For on-model photos, retouching covers skin, make-up, hair, fabric cleanup and silhouette harmonisation. High-end retouching is tailor-made couture retouching: HD dodge & burn, compositing, matte painting. It is quoted on request."
       },
       "video": {
         "title": "Video post-production",
         "body": "We handle video post-production from start to finish: cutout, editing, colour grading, motion design and titles, through to multi-format export. It covers e-commerce, social media, campaign and brand film formats."
       },
       "audience": {
-        "title": "For e-commerce brands and agencies",
-        "body": "We work with fashion, cosmetics, jewellery and accessories brands that run online stores, as well as agencies and production teams that hand their retouching to an outside partner. You can pair retouching with a shoot at the studio, or simply send us your files."
+        "title": "Who it is for",
+        "body": "Our post-production services are for fashion, cosmetics, jewellery and food brands, from independent designers to luxury houses. You can pair retouching with a shoot at the studio, or simply send us your images."
       },
       "location": {
         "title": "A studio in Saint-Ouen, on the edge of Paris",
@@ -492,11 +492,11 @@
       },
       "booking": {
         "title": "How to book your retouching",
-        "body": "If you shoot with us, add post-production to your stage booking: the price shown in the booking flow is an estimate, adjusted after the brief according to volume and complexity. For images produced elsewhere, request a quote. Each service presented above shows its starting price.",
+        "body": "If you shoot with us, add post-production to your stage booking: the price shown in the booking flow is an estimate, adjusted after the brief according to volume and complexity. For images produced elsewhere, request a quote. Starting prices are shown for each service; high-end retouching and video are quoted on request.",
         "bookStage": "Book a stage"
       }
     },
-    "h1": "Photo retouching agency for e-commerce in Paris",
+    "h1": "E-commerce photo retouching in Paris",
     "note": "Note",
     "noteBody": "We also retouch images not shot at our studio.",
     "requestQuote": "Request a quote",

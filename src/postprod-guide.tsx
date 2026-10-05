@@ -7,7 +7,7 @@ import { useT } from './i18n/use-t';
 import { SectionIntro } from './ui/section-intro';
 
 // Le texte éditorial de la page (#417) : c'est lui qui la fait exister sur
-// « agence retouche photo », la page n'ayant sinon que des libellés Strapi.
+// la requête « retouche photo », la page n'ayant sinon que des libellés Strapi.
 // Il vit dans l'i18n et non dans le CMS pour être rendu même quand Strapi ne
 // répond pas, et il ne dit QUE ce que le site affiche déjà ailleurs — aucun
 // délai, aucun tarif chiffré (#428).
