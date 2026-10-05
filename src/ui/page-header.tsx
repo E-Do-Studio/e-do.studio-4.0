@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { useNavigate, useRouterState } from '@tanstack/react-router';
 import {
   type MainNavItem,
+  ETOUCH_LINK,
   MAIN_NAV,
   activeNavId,
   pageLabelKey,
@@ -134,6 +135,28 @@ const NavCell = ({ item, active }: { item: MainNavItem; active: boolean }) => {
     </Button>
   );
 };
+
+// Hors du repère de navigation : ce n'est pas une destination du site, et
+// `aria-current` n'aurait aucun sens sur un lien qui sort du site.
+//
+// `app` comme les destinations, et ça tient tout juste : mesuré à 1024 en
+// français, ses 107px réduisent la cellule du nom à son seul retrait, sans
+// aucun débordement de la bande. Sous `app`, le tiroir le porte.
+const EtouchCell = () => (
+  <Button
+    variant="header"
+    size="header"
+    render={
+      <a href={ETOUCH_LINK.href} target="_blank" rel="noopener noreferrer" />
+    }
+    className="hidden flex-none no-underline app:flex"
+  >
+    {ETOUCH_LINK.label}
+    <span aria-hidden="true" className="text-muted-foreground">
+      ↗
+    </span>
+  </Button>
+);
 
 // Le filet entre deux cellules est une gouttière : le conteneur est noir, les
 // cellules peignent leur propre fond, et le `gap-px` laisse voir le noir entre
@@ -414,6 +437,8 @@ const PageHeader = ({ note, aside, className }: PageHeaderProps) => {
           <span className="hidden min-w-0 @min-[14rem]:flex">{aside}</span>
         </div>
       )}
+
+      <EtouchCell />
 
       {nav}
 

@@ -156,6 +156,15 @@ export const MENU_NAV: readonly MenuNavItem[] = [
   { id: 'legal', screen: 'legal', labelKey: 'common.legal', match: ['/legal'] },
 ];
 
+// Le portail client, hors du site : ni écran, ni chemin qui l'allume, donc hors
+// des deux tables. Déclaré une fois pour la bande et le tiroir, qui le rendent
+// tous les deux — la bande l'avait perdu quand l'accueil a rejoint la
+// navigation canonique, parce qu'il n'existait que dans le tableau de l'accueil.
+export const ETOUCH_LINK = {
+  label: 'Etouch',
+  href: 'https://etouch.e-do.studio',
+} as const;
+
 /** Retire le préfixe de langue et le slash final. `/fr` et `/fr/` donnent ''. */
 const stripLang = (pathname: string) =>
   pathname.replace(/^\/(fr|en)(?=\/|$)/, '').replace(/\/+$/, '');
