@@ -422,14 +422,45 @@
     "tryAnotherFilter": "Essayez un autre filtre."
   },
   "home": {
+    "clientsBody": "Du créateur indépendant à la maison de luxe, le studio travaille pour des marques de mode, de beauté et d'accessoires, parmi lesquelles Jean Paul Gaultier, Coperni, Carven, The Kooples, Diptyque, Rimowa et John Lobb.",
+    "clientsTitle": "Ils produisent avec nous",
     "freeProductionPhotovideo": "Production libre, photo & vidéo",
     "journal": "Journal",
     "monSatHours": "Lun–Sam, 9—18",
+    "offers": {
+      "cyclorama": {
+        "title": "Cyclorama",
+        "body": "Un cyclorama deux faces de 5 m de hauteur, éclairé par des skydomes occultables. C'est l'espace de la production libre : campagne, éditorial, film publicitaire, packshot et still life, en photo comme en vidéo."
+      },
+      "live": {
+        "title": "Plateau Live",
+        "body": "Le plateau du porté : photo et vidéo sur mannequin pour l'e-commerce, lookbooks et linesheets. Il accueille aussi la captation vidéo et la diffusion en direct de vos contenus."
+      },
+      "eclipse": {
+        "title": "Plateau Éclipse",
+        "body": "Éclipse photographie et filme les objets à 360° : accessoires, chaussures, beauté et still life. Un plateau dédié à la photo et à la vidéo e-commerce des produits qui se tournent."
+      },
+      "horizontal": {
+        "title": "Plateau Horizontal",
+        "body": "Le packshot à plat : prêt-à-porter posé à plat et compositions produits, photographiés avec détourage automatique pour alimenter les fiches produits de votre boutique en ligne."
+      },
+      "vertical": {
+        "title": "Plateau Vertical",
+        "body": "Le vêtement photographié en pleine hauteur, en ghost ou en piqué. Le détourage automatique est intégré au plateau, pour des packshots prêts pour les fiches produits de votre e-commerce."
+      },
+      "postprod": {
+        "title": "Post-production",
+        "body": "Retouche photo et montage vidéo des images produites au studio. Nous retouchons aussi les images que vous n'avez pas shootées chez nous."
+      }
+    },
+    "offersTitle": "Nos plateaux et services",
     "retouchPhotoVideo": "Retouche photo & vidéo",
-    "srTitle": "Studio photo et vidéo professionnel à Paris",
+    "seoIntro": "E-Do Studio est un studio photo et vidéo de 240 m² installé à Saint-Ouen-sur-Seine, aux portes de Paris. Les marques de mode, de cosmétique, de joaillerie et d'accessoires y produisent leurs images e-commerce, leurs campagnes et leurs films : un cyclorama deux faces pour la production libre, quatre plateaux équipés pour le packshot et le porté, et un service de post-production pour la retouche photo et vidéo. Sur place, des skydomes occultables, un quai de livraison, un parking, deux postes maquillage, deux cabines d'essayage et une cuisine équipée. Le studio est ouvert du lundi au samedi, de 9 h à 18 h, et chaque plateau se réserve en ligne ou sur devis.",
+    "seoTitle": "Studio photo & vidéo à Paris, Saint-Ouen",
+    "srTitle": "Studio photo & vidéo e-commerce à Paris",
     "studioHeadline": "Le studio qui alimente votre e-commerce.",
     "studioPhotoAlt": "Le studio e-do",
-    "studioSubtitle": "Photo, vidéo et retouche — du créateur indépendant à la maison de luxe."
+    "studioSubtitle": "Photo, vidéo et retouche à Saint-Ouen, aux portes de Paris. Du créateur indépendant à la maison de luxe."
   },
   "legalPage": {
     "allRightsReserved": "RCS Bobigny 891 710 857, 69 boulevard Victor Hugo, 93400 Saint-Ouen-sur-Seine. Tous droits réservés.",

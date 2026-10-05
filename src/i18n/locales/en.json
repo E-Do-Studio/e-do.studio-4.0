@@ -422,14 +422,45 @@
     "tryAnotherFilter": "Try another filter."
   },
   "home": {
+    "clientsBody": "From independent creators to luxury houses, the studio works for fashion, beauty and accessories brands, including Jean Paul Gaultier, Coperni, Carven, The Kooples, Diptyque, Rimowa and John Lobb.",
+    "clientsTitle": "They produce with us",
     "freeProductionPhotovideo": "Free production, photo & video",
     "journal": "Journal",
     "monSatHours": "Mon–Sat, 9—18",
+    "offers": {
+      "cyclorama": {
+        "title": "Cyclorama",
+        "body": "A two-sided cyclorama, 5 m high, lit by blackout skydomes. The space for free production: campaigns, editorial, advertising films, packshots and still life, in photo as well as video."
+      },
+      "live": {
+        "title": "Live stage",
+        "body": "The on-model stage: e-commerce photo and video on models, lookbooks and linesheets. It also hosts live video capture and live broadcasting of your content."
+      },
+      "eclipse": {
+        "title": "Eclipse stage",
+        "body": "Eclipse shoots objects in photo and video at 360°: accessories, footwear, beauty and still life. A stage dedicated to e-commerce photo and video for products that need to turn."
+      },
+      "horizontal": {
+        "title": "Horizontal stage",
+        "body": "Flat-lay packshots: flat-laid ready-to-wear and product compositions, shot with automatic clipping to feed the product pages of your online store."
+      },
+      "vertical": {
+        "title": "Vertical stage",
+        "body": "Garments shot full height, ghost or pinned. Automatic clipping is built into the stage, for packshots ready for the product pages of your e-commerce site."
+      },
+      "postprod": {
+        "title": "Post-production",
+        "body": "Photo retouching and video editing of the images produced at the studio. We also retouch images you didn't shoot with us."
+      }
+    },
+    "offersTitle": "Our stages and services",
     "retouchPhotoVideo": "Photo & video retouching",
-    "srTitle": "Professional photo and video studio in Paris",
+    "seoIntro": "E-Do Studio is a 240 m² photo and video studio in Saint-Ouen-sur-Seine, on the edge of Paris. Fashion, cosmetics, jewelry and accessories brands produce their e-commerce imagery, campaigns and films here: a two-sided cyclorama for free production, four equipped stages for packshots and on-model shoots, and a post-production service for photo and video retouching. On site: blackout skydomes, a loading dock, parking, two make-up stations, two fitting rooms and a fully equipped kitchen. The studio is open Monday to Saturday, 9 am to 6 pm, and every stage can be booked online or on quote.",
+    "seoTitle": "Photo & video studio in Paris, Saint-Ouen",
+    "srTitle": "E-commerce photo & video studio in Paris",
     "studioHeadline": "The studio that powers your e-commerce.",
     "studioPhotoAlt": "The e-do studio",
-    "studioSubtitle": "Photo, video and retouching — from independent creator to luxury house."
+    "studioSubtitle": "Photo, video and retouching in Saint-Ouen, on the edge of Paris. From independent creator to luxury house."
   },
   "legalPage": {
     "allRightsReserved": "RCS Bobigny 891 710 857, 69 boulevard Victor Hugo, 93400 Saint-Ouen-sur-Seine. All rights reserved.",

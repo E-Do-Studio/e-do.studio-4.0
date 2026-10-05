@@ -22,6 +22,7 @@ import { MonoLabel } from './ui/mono-label';
 import { SelectTile } from './ui/select-tile';
 import { SCREEN_TO_PATH } from './lib/screens';
 import { CtaCell } from './ui/cta-cell';
+import { HomeStudioText } from './home-studio-text';
 
 const AssistantChat = lazy(() => import('./assistant-chat'));
 
@@ -498,6 +499,9 @@ const HomePage = () => {
           }}
           className="col-span-2 app:col-span-3 app:col-start-1 app:col-end-4 app:row-start-6"
         />
+
+        {/* Dernière de la pile, absente du bento : cf. home-studio-text. */}
+        <HomeStudioText className="col-span-2" />
 
         {/* ── Rangées 5-6 extrême droite : l'assistant. Sous le palier, c'est le
  bouton flottant qui le porte — `MobileAssistantFab`, qui disparaît
