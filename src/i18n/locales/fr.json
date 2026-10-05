@@ -426,7 +426,6 @@
     "clientsTitle": "Ils produisent avec nous",
     "freeProductionPhotovideo": "Production libre, photo & vidéo",
     "journal": "Journal",
-    "monSatHours": "Lun–Sam, 9—18",
     "offers": {
       "cyclorama": {
         "title": "Cyclorama",
@@ -457,10 +456,10 @@
     "retouchPhotoVideo": "Retouche photo & vidéo",
     "seoIntro": "E-Do Studio est un studio photo et vidéo de 240 m² installé à Saint-Ouen, aux portes de Paris. Les marques de mode, de beauté et d'accessoires y produisent leurs images e-commerce, leurs campagnes et leurs films : un cyclorama deux faces pour la production libre, quatre plateaux équipés pour le packshot et le shooting porté, et un service de post-production. Sur place, un quai de livraison, un parking, deux postes maquillage équipés, deux cabines d'essayage et une cuisine entièrement équipée. Chaque plateau se réserve en ligne, ou sur devis.",
     "seoTitle": "Studio photo & vidéo à Paris, Saint-Ouen",
-    "srTitle": "Studio photo & vidéo e-commerce à Paris",
-    "studioHeadline": "Le studio qui alimente votre e-commerce.",
+    "studioHeadline": "Le studio photo & vidéo qui alimente votre e-commerce, à Paris.",
     "studioPhotoAlt": "Le studio e-do",
-    "studioSubtitle": "Photo, vidéo et retouche à Saint-Ouen, aux portes de Paris. Du créateur indépendant à la maison de luxe."
+    "studioSubtitle": "Photo, vidéo et retouche à Saint-Ouen, aux portes de Paris. Du créateur indépendant à la maison de luxe.",
+    "weekdayHours": "Lun–Ven, 9—18"
   },
   "legalPage": {
     "allRightsReserved": "RCS Bobigny 891 710 857, 69 boulevard Victor Hugo, 93400 Saint-Ouen-sur-Seine. Tous droits réservés.",

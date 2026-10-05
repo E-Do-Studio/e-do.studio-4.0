@@ -130,7 +130,7 @@ const HomePage = () => {
       className="grid-cols-2 app:grid-cols-12 app:grid-rows-[var(--spacing-header)_var(--spacing-band)_var(--spacing-cta)_1.1fr_1.25fr_var(--spacing-cta)]"
       note={
         <HoverMarquee>
-          <MonoLabel tone="muted">{t('home.monSatHours')}</MonoLabel>
+          <MonoLabel tone="muted">{t('home.weekdayHours')}</MonoLabel>
         </HoverMarquee>
       }
       aside={
@@ -155,8 +155,6 @@ const HomePage = () => {
       }
     >
       <main id={MAIN_ID} className="contents">
-        <h1 className="sr-only">E-Do Studio — {t('home.srTitle')}</h1>
-
         {/* ── Row 2: Social links + clients marquee ── */}
         <SocialClientsBar className="col-span-2 app:col-start-1 app:col-end-13 app:row-start-2" />
 
@@ -194,9 +192,10 @@ const HomePage = () => {
               qui nomme la page, sur le seul écran où elle est déjà seule à
               l'annoncer. L'axe s'inverse, la lecture non. */}
           <div className="flex min-h-0 flex-1 flex-col gap-px bg-border md:flex-row-reverse">
+            {/* Le `h1` de la page, et non un `h1` en `sr-only` à côté : un titre
+                visible pèse davantage pour « studio photo Paris » (#418). */}
             <SectionIntro
               size="sm"
-              as="h2"
               title={t('home.studioHeadline')}
               subtitle={t('home.studioSubtitle')}
               className="flex-1 bg-background md:min-w-0 app:min-h-0"
