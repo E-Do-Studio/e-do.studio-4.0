@@ -457,6 +457,22 @@
     "category": "Catégorie",
     "emptyDescription": "Aucune catégorie configurée. Renseignez vos types de post-production dans Strapi.",
     "from": "À partir de",
+    "guide": {
+      "booking": {
+        "body": "Si vous réservez un plateau, vous pouvez ajouter la post-production à votre réservation : le prix affiché dans le tunnel de réservation est estimatif, puis ajusté après brief selon le volume et la complexité. Pour des images réalisées ailleurs, demandez un devis.",
+        "bookStage": "Réserver un plateau",
+        "title": "Comment réserver votre retouche"
+      },
+      "intro": {
+        "body": "E-Do Studio est un studio photo et vidéo professionnel. En plus de ses plateaux de prise de vue, le studio propose la retouche photo. Nous retouchons aussi vos images non shootées chez nous.",
+        "title": "La retouche photo chez E-Do Studio"
+      },
+      "location": {
+        "body": "E-Do Studio est installé au 69 boulevard Victor Hugo, à Saint-Ouen, aux portes de Paris.",
+        "title": "Un studio à Saint-Ouen, aux portes de Paris"
+      }
+    },
+    "h1": "Retouche photo à Saint-Ouen, aux portes de Paris",
     "note": "À noter",
     "noteBody": "Nous retouchons aussi vos images non shootées chez nous.",
     "requestQuote": "Demander un devis",
@@ -474,7 +490,7 @@
     "galleryName": "Galerie — E-Do Studio Paris",
     "localBusinessDescription": "Studio photo et vidéo professionnel à Paris. Cyclorama, plateaux de prise de vue et services de post-production pour marques de mode, cosmétique, joaillerie et food.",
     "postprodCatalogName": "Prestations post-production",
-    "postprodDescription": "Retouche, colorimétrie, montage et livraison express. Studio E-Do à Paris.",
+    "postprodDescription": "Retouche photo par E-Do Studio, studio photo et vidéo à Saint-Ouen, aux portes de Paris.",
     "postprodServiceType": "Post-production photo et vidéo",
     "serviceCatalogName": "Prestations E-Do Studio",
     "stageServiceType": "Location de plateau photo et vidéo"

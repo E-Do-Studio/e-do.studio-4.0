@@ -97,14 +97,14 @@ export const META: Record<string, Record<Lang, PageMeta>> = {
   },
   postprod: {
     fr: {
-      title: 'Post-production — E-Do Studio Paris',
+      title: 'Retouche photo aux portes de Paris | E-Do Studio',
       description:
-        'Services de post-production photo et vidéo à Paris. Retouche, colorimétrie, montage vidéo et livraison express.',
+        'Retouche photo par E-Do Studio à Saint-Ouen, aux portes de Paris, y compris pour vos images non shootées chez nous. Demandez un devis.',
     },
     en: {
-      title: 'Post-production — E-Do Studio Paris',
+      title: 'Photo Retouching on the Edge of Paris | E-Do Studio',
       description:
-        'Photo and video post-production services in Paris. Retouching, color grading, video editing and express delivery.',
+        'Photo retouching by E-Do Studio in Saint-Ouen, on the edge of Paris, including images not shot at our studio. Request a quote.',
     },
   },
   gallery: {
