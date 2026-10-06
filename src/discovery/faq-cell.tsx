@@ -1,19 +1,20 @@
 import { useId } from 'react';
 import { Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useT } from '../i18n/use-t';
+import type { FaqEntry } from '../lib/structured-data';
 import { MonoLabel } from '../ui/mono-label';
-import { discoveryFaq } from './faq';
 
 interface FaqCellProps {
+  title: string;
+  /** Les Q/R affichées — les mêmes que celles que la route balise en FAQPage. */
+  entries: FaqEntry[];
   className?: string;
 }
 
 // `<details>` natif et non un accordéon piloté par un état : la réponse est
 // dans le HTML serveur et s'ouvre sans JavaScript. Le JSON-LD FAQPage de la
 // route la déclare visible, elle doit donc l'être avant l'hydratation.
-export const FaqCell = ({ className }: FaqCellProps) => {
-  const t = useT();
+export const FaqCell = ({ title, entries, className }: FaqCellProps) => {
   const titleId = useId();
 
   return (
@@ -25,11 +26,11 @@ export const FaqCell = ({ className }: FaqCellProps) => {
           cellule de la même page. */}
       <div className="flex shrink-0 items-center border-b border-border px-4 py-3">
         <h2 id={titleId}>
-          <MonoLabel tone="primary">{t('discoveryPage.faq.title')}</MonoLabel>
+          <MonoLabel tone="primary">{title}</MonoLabel>
         </h2>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
-        {discoveryFaq(t).map((entry) => (
+        {entries.map((entry) => (
           <details
             key={entry.question}
             className="group border-b border-b-border"

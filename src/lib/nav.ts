@@ -71,7 +71,9 @@ export const MAIN_NAV: readonly MainNavItem[] = [
     compact: true,
     // Les cinq écrans plateau sont une seule destination. Un préfixe les couvre
     // tous, là où énumérer SCREEN_TO_PATH en oublierait un au prochain ajout.
-    match: ['/plateau', '/cyclorama'],
+    // La page « studio photo mannequin » présente le plateau Live : elle en
+    // est une porte d'entrée, pas une destination à part.
+    match: ['/plateau', '/cyclorama', ...bothSlugs('onModel')],
   },
   {
     id: 'postprod',

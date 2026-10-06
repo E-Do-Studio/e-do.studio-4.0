@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useLoaderData } from '@tanstack/react-router';
 import type { DiscoveryCategory, DiscoveryPost } from './types';
 import { ArticleCard, ArticleEmptyCard } from './discovery/article-card';
+import { discoveryFaq } from './discovery/faq';
 import { FaqCell } from './discovery/faq-cell';
 import { MorePostsCard } from './discovery/more-posts-card';
 import { filterByCategory, selectPosts } from './discovery/select-posts';
@@ -102,7 +103,11 @@ const DiscoveryPage = () => {
             d'en-tête. Au format `band`, dans la colonne du logo, il ferme la
             page sans l'écraser. */}
         <div className="flex min-w-0 flex-col bg-background app:col-start-1 app:row-start-4 app:min-h-0">
-          <FaqCell className="app:min-h-0 app:flex-1" />
+          <FaqCell
+            title={t('discoveryPage.faq.title')}
+            entries={discoveryFaq(t)}
+            className="app:min-h-0 app:flex-1"
+          />
           <CtaCell
             title={t('common.book')}
             href={SCREEN_TO_PATH.book(lang)}

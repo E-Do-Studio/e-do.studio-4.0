@@ -18,7 +18,9 @@ import { Route as LangCycloramaRouteImport } from './routes/$lang/cyclorama'
 import { Route as LangGalerieRouteImport } from './routes/$lang/galerie'
 import { Route as LangGalleryRouteImport } from './routes/$lang/gallery'
 import { Route as LangLegalRouteImport } from './routes/$lang/legal'
+import { Route as LangOnModelPhotoStudioRouteImport } from './routes/$lang/on-model-photo-studio'
 import { Route as LangPostProductionRouteImport } from './routes/$lang/post-production'
+import { Route as LangStudioPhotoMannequinRouteImport } from './routes/$lang/studio-photo-mannequin'
 import { Route as DevDesignSystemRouteImport } from './routes/dev/design-system'
 import { Route as DevInventaireRouteImport } from './routes/dev/inventaire'
 import { Route as LangBookIndexRouteImport } from './routes/$lang/book/index'
@@ -88,11 +90,22 @@ const LangLegalRoute = LangLegalRouteImport.update({
   path: '/legal',
   getParentRoute: () => LangRouteRoute,
 } as any)
+const LangOnModelPhotoStudioRoute = LangOnModelPhotoStudioRouteImport.update({
+  id: '/on-model-photo-studio',
+  path: '/on-model-photo-studio',
+  getParentRoute: () => LangRouteRoute,
+} as any)
 const LangPostProductionRoute = LangPostProductionRouteImport.update({
   id: '/post-production',
   path: '/post-production',
   getParentRoute: () => LangRouteRoute,
 } as any)
+const LangStudioPhotoMannequinRoute =
+  LangStudioPhotoMannequinRouteImport.update({
+    id: '/studio-photo-mannequin',
+    path: '/studio-photo-mannequin',
+    getParentRoute: () => LangRouteRoute,
+  } as any)
 const DevDesignSystemRoute = DevDesignSystemRouteImport.update({
   id: '/dev/design-system',
   path: '/dev/design-system',
@@ -229,7 +242,9 @@ export interface FileRoutesByFullPath {
   '/$lang/galerie': typeof LangGalerieRoute
   '/$lang/gallery': typeof LangGalleryRoute
   '/$lang/legal': typeof LangLegalRoute
+  '/$lang/on-model-photo-studio': typeof LangOnModelPhotoStudioRoute
   '/$lang/post-production': typeof LangPostProductionRoute
+  '/$lang/studio-photo-mannequin': typeof LangStudioPhotoMannequinRoute
   '/dev/design-system': typeof DevDesignSystemRoute
   '/dev/inventaire': typeof DevInventaireRoute
   '/$lang/': typeof LangIndexRoute
@@ -263,7 +278,9 @@ export interface FileRoutesByTo {
   '/$lang/galerie': typeof LangGalerieRoute
   '/$lang/gallery': typeof LangGalleryRoute
   '/$lang/legal': typeof LangLegalRoute
+  '/$lang/on-model-photo-studio': typeof LangOnModelPhotoStudioRoute
   '/$lang/post-production': typeof LangPostProductionRoute
+  '/$lang/studio-photo-mannequin': typeof LangStudioPhotoMannequinRoute
   '/dev/design-system': typeof DevDesignSystemRoute
   '/dev/inventaire': typeof DevInventaireRoute
   '/$lang': typeof LangIndexRoute
@@ -299,7 +316,9 @@ export interface FileRoutesById {
   '/$lang/galerie': typeof LangGalerieRoute
   '/$lang/gallery': typeof LangGalleryRoute
   '/$lang/legal': typeof LangLegalRoute
+  '/$lang/on-model-photo-studio': typeof LangOnModelPhotoStudioRoute
   '/$lang/post-production': typeof LangPostProductionRoute
+  '/$lang/studio-photo-mannequin': typeof LangStudioPhotoMannequinRoute
   '/dev/design-system': typeof DevDesignSystemRoute
   '/dev/inventaire': typeof DevInventaireRoute
   '/$lang/': typeof LangIndexRoute
@@ -336,7 +355,9 @@ export interface FileRouteTypes {
     | '/$lang/galerie'
     | '/$lang/gallery'
     | '/$lang/legal'
+    | '/$lang/on-model-photo-studio'
     | '/$lang/post-production'
+    | '/$lang/studio-photo-mannequin'
     | '/dev/design-system'
     | '/dev/inventaire'
     | '/$lang/'
@@ -370,7 +391,9 @@ export interface FileRouteTypes {
     | '/$lang/galerie'
     | '/$lang/gallery'
     | '/$lang/legal'
+    | '/$lang/on-model-photo-studio'
     | '/$lang/post-production'
+    | '/$lang/studio-photo-mannequin'
     | '/dev/design-system'
     | '/dev/inventaire'
     | '/$lang'
@@ -405,7 +428,9 @@ export interface FileRouteTypes {
     | '/$lang/galerie'
     | '/$lang/gallery'
     | '/$lang/legal'
+    | '/$lang/on-model-photo-studio'
     | '/$lang/post-production'
+    | '/$lang/studio-photo-mannequin'
     | '/dev/design-system'
     | '/dev/inventaire'
     | '/$lang/'
@@ -505,11 +530,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangLegalRouteImport
       parentRoute: typeof LangRouteRoute
     }
+    '/$lang/on-model-photo-studio': {
+      id: '/$lang/on-model-photo-studio'
+      path: '/on-model-photo-studio'
+      fullPath: '/$lang/on-model-photo-studio'
+      preLoaderRoute: typeof LangOnModelPhotoStudioRouteImport
+      parentRoute: typeof LangRouteRoute
+    }
     '/$lang/post-production': {
       id: '/$lang/post-production'
       path: '/post-production'
       fullPath: '/$lang/post-production'
       preLoaderRoute: typeof LangPostProductionRouteImport
+      parentRoute: typeof LangRouteRoute
+    }
+    '/$lang/studio-photo-mannequin': {
+      id: '/$lang/studio-photo-mannequin'
+      path: '/studio-photo-mannequin'
+      fullPath: '/$lang/studio-photo-mannequin'
+      preLoaderRoute: typeof LangStudioPhotoMannequinRouteImport
       parentRoute: typeof LangRouteRoute
     }
     '/dev/design-system': {
@@ -682,7 +721,9 @@ interface LangRouteRouteChildren {
   LangGalerieRoute: typeof LangGalerieRoute
   LangGalleryRoute: typeof LangGalleryRoute
   LangLegalRoute: typeof LangLegalRoute
+  LangOnModelPhotoStudioRoute: typeof LangOnModelPhotoStudioRoute
   LangPostProductionRoute: typeof LangPostProductionRoute
+  LangStudioPhotoMannequinRoute: typeof LangStudioPhotoMannequinRoute
   LangIndexRoute: typeof LangIndexRoute
   LangBookConfirmationRoute: typeof LangBookConfirmationRoute
   LangBookContactRoute: typeof LangBookContactRoute
@@ -713,7 +754,9 @@ const LangRouteRouteChildren: LangRouteRouteChildren = {
   LangGalerieRoute: LangGalerieRoute,
   LangGalleryRoute: LangGalleryRoute,
   LangLegalRoute: LangLegalRoute,
+  LangOnModelPhotoStudioRoute: LangOnModelPhotoStudioRoute,
   LangPostProductionRoute: LangPostProductionRoute,
+  LangStudioPhotoMannequinRoute: LangStudioPhotoMannequinRoute,
   LangIndexRoute: LangIndexRoute,
   LangBookConfirmationRoute: LangBookConfirmationRoute,
   LangBookContactRoute: LangBookContactRoute,

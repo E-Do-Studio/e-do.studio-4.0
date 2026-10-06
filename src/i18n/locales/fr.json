@@ -477,6 +477,61 @@
     "filters": "Filtres",
     "reset": "Réinitialiser"
   },
+  "onModelPage": {
+    "title": "Studio photo mannequin à Paris : le plateau Live",
+    "intro": "Le plateau Live est la solution d'E-Do Studio dédiée au shooting sur modèle. Installé dans notre studio photo et vidéo de 240 m² à Saint-Ouen, aux portes de Paris, il produit un contenu e-commerce cohérent, rapide et reproductible d'une session à l'autre.",
+    "sections": {
+      "stage": {
+        "title": "Un plateau pensé pour le shooting porté",
+        "body": "Le plateau Live sert à photographier et à filmer des produits portés par un modèle. Il couvre trois usages : le shooting porté, la photo et la vidéo e-commerce, les lookbooks et les linesheets. Il est conçu pour que ce contenu reste cohérent et reproductible d'une session à l'autre : une nouvelle série s'accorde avec les précédentes.",
+        "link": "Voir le plateau Live"
+      },
+      "equipment": {
+        "title": "L'équipement du plateau Live",
+        "body": "La prise de vue est assurée par un boîtier Canon EOS R équipé d'un zoom 24–105 mm motorisé. La motorisation agit sur trois axes : la hauteur, l'inclinaison et le zoom. L'ensemble se pilote depuis une application sur iPad. L'éclairage est une LED continue à haut indice de rendu des couleurs (High-CRI), qui sert la photo comme la vidéo. Les fichiers sont livrés en JPG, PNG, TIFF et RAW pour la photo, en MP4 et MOV pour la vidéo."
+      },
+      "mannequin": {
+        "title": "Photo sur modèle ou sur mannequin ghost",
+        "body": "« Photo mannequin » désigne deux pratiques, et le studio a un plateau pour chacune. Pour un vêtement porté par un modèle, c'est le plateau Live. Pour des packshots textiles sur mannequin, sans modèle, c'est le plateau Vertical : il est particulièrement efficace pour le ghost, le piqué et les prises de vue e-commerce standardisées, avec détourage automatique des images.",
+        "link": "Voir le plateau Vertical"
+      },
+      "team": {
+        "title": "Avec ou sans photographe",
+        "body": "Vous pouvez venir avec votre équipe ou sans photographe. Le studio fournit le plateau, les machines, la lumière et l'opérateur technique. Photographe, styliste ou modèle peuvent être fournis sur demande."
+      },
+      "studio": {
+        "title": "Un studio de 240 m² à Saint-Ouen, aux portes de Paris",
+        "body": "E-Do Studio est installé au 69 boulevard Victor Hugo, à Saint-Ouen. Sur place, un quai de livraison, un parking, deux postes maquillage équipés, deux cabines d'essayage et une cuisine entièrement équipée. Le studio réunit aussi un cyclorama deux faces de 32 m² pour la photo et la vidéo sur fond blanc infini, trois autres plateaux équipés pour le packshot, et la retouche photo, que vous pouvez ajouter à votre réservation.",
+        "cyclorama": "Voir le cyclorama",
+        "postprod": "Voir la post-production"
+      },
+      "rates": {
+        "title": "Tarifs du plateau Live",
+        "body": "Le plateau Live se loue {{hour}} € HT de l'heure, {{half}} € HT la demi-journée et {{full}} € HT la journée. Ce sont les tarifs appliqués par le tunnel de réservation en ligne."
+      },
+      "booking": {
+        "title": "Réserver le plateau Live",
+        "body": "Le plateau se réserve en ligne : choisissez le plateau et vos créneaux, laissez vos coordonnées, et votre devis vous est envoyé par e-mail. Pour un projet sur-mesure, écrivez-nous depuis la page contact. Vous préférez voir le studio d'abord ? La visite est gratuite, dure environ une heure et a lieu du lundi au vendredi, de 9 h à 18 h.",
+        "book": "Réserver le plateau Live"
+      }
+    },
+    "faq": {
+      "title": "Questions fréquentes",
+      "price": {
+        "question": "Combien coûte le plateau Live ?",
+        "answer": "{{hour}} € HT de l'heure, {{half}} € HT la demi-journée et {{full}} € HT la journée."
+      },
+      "equipment": {
+        "question": "Quel matériel est fourni sur le plateau Live ?",
+        "answer": "Un Canon EOS R avec zoom 24–105 mm, motorisé sur trois axes (hauteur, inclinaison, zoom) et piloté depuis une application iPad, ainsi qu'un éclairage LED continu High-CRI."
+      },
+      "location": {
+        "question": "Où se trouve le studio ?",
+        "answer": "Au 69 boulevard Victor Hugo, à Saint-Ouen, aux portes de Paris."
+      }
+    },
+    "serviceType": "Studio photo sur mannequin"
+  },
   "plateau": {
     "rates": "Tarifs HT",
     "specs": "Caractéristiques",

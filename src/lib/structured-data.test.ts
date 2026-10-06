@@ -4,6 +4,7 @@ import {
   buildBlogSchema,
   buildFaqSchema,
   buildLocalBusinessSchema,
+  buildOnModelServiceSchema,
   buildPageBreadcrumb,
   buildPlateauServiceSchema,
   buildWebSiteSchema,
@@ -304,6 +305,33 @@ describe('buildPlateauServiceSchema', () => {
       buildPlateauServiceSchema({ ...args, slug: 'live', lang: 'en' } as never)
         .serviceType,
     ).toBe('Photo & video stage rental');
+  });
+});
+
+describe('buildOnModelServiceSchema', () => {
+  const s = buildOnModelServiceSchema({
+    lang: 'fr',
+    pathname: '/studio-photo-mannequin',
+    offers: [{ name: 'Heure', price: 185 }],
+  });
+
+  it('renvoie au Service du plateau Live', () => {
+    expect(s['@id']).toBe(
+      'https://e-do.studio/fr/studio-photo-mannequin#service',
+    );
+    expect(s.isRelatedTo).toEqual({
+      '@id': 'https://e-do.studio/fr/plateau/live#service',
+    });
+    expect(s.provider).toEqual({ '@id': 'https://e-do.studio/#organization' });
+  });
+
+  it('déclare ses tarifs hors taxes', () => {
+    const [offer] = s.offers as {
+      price: string;
+      priceSpecification: { valueAddedTaxIncluded: boolean };
+    }[];
+    expect(offer.price).toBe('185');
+    expect(offer.priceSpecification.valueAddedTaxIncluded).toBe(false);
   });
 });
 
