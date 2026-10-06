@@ -3,16 +3,21 @@ import { Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useT } from '../i18n/use-t';
 import { MonoLabel } from '../ui/mono-label';
-import { discoveryFaq } from './faq';
+import type { FaqEntry } from '../lib/structured-data';
 
 interface FaqCellProps {
+  /**
+   * Les Q/R, passées par la page : c'est la même liste que son JSON-LD
+   * FAQPage lit, pour que le balisage ne déclare rien qui ne soit à l'écran.
+   */
+  entries: FaqEntry[];
   className?: string;
 }
 
 // `<details>` natif et non un accordéon piloté par un état : la réponse est
 // dans le HTML serveur et s'ouvre sans JavaScript. Le JSON-LD FAQPage de la
 // route la déclare visible, elle doit donc l'être avant l'hydratation.
-export const FaqCell = ({ className }: FaqCellProps) => {
+export const FaqCell = ({ entries, className }: FaqCellProps) => {
   const t = useT();
   const titleId = useId();
 
@@ -29,7 +34,7 @@ export const FaqCell = ({ className }: FaqCellProps) => {
         </h2>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
-        {discoveryFaq(t).map((entry) => (
+        {entries.map((entry) => (
           <details
             key={entry.question}
             className="group border-b border-b-border"

@@ -130,6 +130,12 @@ export const MENU_NAV: readonly MenuNavItem[] = [
     match: mainItem('stages').match,
   },
   {
+    id: 'studioRental',
+    screen: 'studio-rental',
+    labelKey: 'common.studioRental',
+    match: bothSlugs('studioRental'),
+  },
+  {
     id: 'gallery',
     screen: 'gallery',
     labelKey: menuLabel('gallery'),

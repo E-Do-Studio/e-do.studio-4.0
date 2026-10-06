@@ -337,7 +337,8 @@
     "skipToContent": "Skip to content",
     "stages": "Stages",
     "zoomIn": "Zoom in",
-    "zoomOut": "Zoom out"
+    "zoomOut": "Zoom out",
+    "studioRental": "Studio rental"
   },
   "contact": {
     "byAppointment": "By appointment",
@@ -508,6 +509,60 @@
     "requestQuote": "Request a quote",
     "standard": "Standard"
   },
+  "studioRental": {
+    "h1": "Photo studio rental in Paris",
+    "intro": "E-Do Studio rents out its photo and video stages in Saint-Ouen, on the edge of Paris. Across 240 m², fashion, beauty and accessories brands have a two-sided cyclorama for free production and four equipped stages for packshots and on-model shoots. Every stage can be booked online, or on quote.",
+    "sections": {
+      "studio": {
+        "title": "A 240 m² studio on the edge of Paris",
+        "body": "The studio is at 69 boulevard Victor Hugo, Saint-Ouen, in the Victor Hugo business park (building 6.7). Come by metro, line 13 to Garibaldi or line 14 to Mairie de Saint-Ouen, or by car: access is direct and parking is on site. A 3.5 m by 4.5 m high loading dock makes it easy to bring in equipment and collections. For your crew, the studio has two equipped make-up stations, two fitting rooms and a fully equipped kitchen."
+      },
+      "cyclorama": {
+        "title": "Hiring the cyclorama",
+        "body": "The cyclorama is a 32 m² two-sided cyclo, 6.3 m long, 5.2 m wide and 5 m high, for photo and video on an infinite white backdrop. Blackout skydomes bring in natural light, or shut it out. It can be hired by the day or the week, for free production or with our team, for a campaign, an editorial, an advertising film, packshots or still life. On the technical side, it has a 63 A three-phase Marechal socket, fifteen 16 A sockets, very high-speed Wi-Fi and a built-in sound system. The 5-hour package is {{cyclo}} excl. VAT.",
+        "link": "Discover the cyclorama"
+      },
+      "stages": {
+        "title": "Four stages for packshots and on-model shoots",
+        "body": "The Live stage is our solution dedicated to on-model shooting: consistent, fast e-commerce content that is reproducible from one session to the next, for on-model shoots, e-commerce photo and video, lookbooks and linesheets. It is charged {{live}} excl. VAT per hour. The Eclipse is designed for small and medium products, shoes, bags, accessories, design objects or beauty, with a built-in turntable for 360° photo and video. Both stages are equipped with a Canon EOS R and a motorised 24–105 mm lens, controlled from an iPad app, and continuous High-CRI LED lighting. The Horizontal stage is built for flat-lay packshots, the Vertical for textile packshots on a mannequin, ghost and pinned included; both clip images automatically."
+      },
+      "team": {
+        "title": "Free production or with our team",
+        "body": "You can come with your own crew, or without a photographer: the studio provides the stage, the machines, the lighting and the technical operator. A photographer, stylist or model can be provided on request. After the shoot, the studio also offers photo retouching, including for images not shot at our studio.",
+        "link": "Post-production"
+      },
+      "booking": {
+        "title": "Booking the studio",
+        "body": "Booking is done online: pick the stage and your time slots, leave your contact details, and the quote reaches you by email. For a custom project, write to us from the contact page. The studio is open Monday to Friday, 9am to 6pm, and at weekends on request. You can also visit before booking: the tour is free, takes about an hour and is by appointment."
+      }
+    },
+    "rates": {
+      "cyclorama": "Cyclorama, 5 h",
+      "live": "Live stage, 1 h"
+    },
+    "faq": {
+      "where": {
+        "question": "Where is the studio?",
+        "answer": "At 69 boulevard Victor Hugo, 93400 Saint-Ouen, on the edge of Paris, in the Victor Hugo business park (building 6.7). Metro line 13, Garibaldi station, or line 14, Mairie de Saint-Ouen station. Parking is on site."
+      },
+      "price": {
+        "question": "How much does it cost to hire the studio?",
+        "answer": "The cyclorama is {{cyclo}} excl. VAT for 5 hours, the Live stage {{live}} excl. VAT per hour. Each stage's rates are shown on its page, and the booking flow builds your quote."
+      },
+      "photographer": {
+        "question": "Can we come without a photographer?",
+        "answer": "Yes. The studio provides the stage, the machines, the lighting and the technical operator. A photographer, stylist or model can be provided on request."
+      },
+      "visit": {
+        "question": "Can we visit the studio before booking?",
+        "answer": "Yes. The tour is free, takes about an hour and runs Monday to Friday, 9am to 6pm. Write to us to set a time."
+      },
+      "book": {
+        "question": "How do I book a stage?",
+        "answer": "Online, from the Book page: pick the stage and the time slots, leave your contact details, then “Receive my quote”. For a custom project, write to us from the contact page."
+      }
+    }
+  },
   "runtimeError": {
     "body": "This page hit an unexpected problem. Reload to continue.",
     "reload": "Reload",
@@ -523,7 +578,8 @@
     "postprodDescription": "Photo retouching by E-Do Studio, a photo and video studio in Saint-Ouen, on the edge of Paris.",
     "postprodServiceType": "Photo & video post-production",
     "serviceCatalogName": "E-Do Studio services",
-    "stageServiceType": "Photo & video stage rental"
+    "stageServiceType": "Photo & video stage rental",
+    "studioRentalDescription": "Photo and video studio rental in Saint-Ouen, on the edge of Paris: a two-sided cyclorama and four equipped stages for packshots and on-model shoots."
   },
   "validation": {
     "cgv": "You must accept the terms and conditions",
