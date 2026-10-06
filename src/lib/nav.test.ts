@@ -123,6 +123,9 @@ describe('activeNavIn(MENU_NAV)', () => {
     ['/fr/discovery', 'discovery'],
     ['/fr/discovery/un-slug', 'discovery'],
     ['/fr/plateau/live', 'stages'],
+    ['/fr/location-studio-photo-paris', 'studioRental'],
+    ['/en/photo-studio-rental-paris', 'studioRental'],
+    ['/en/location-studio-photo-paris', 'studioRental'],
   ] as const)('allume %s sur %s', (path, id) => {
     expect(activeNavIn(MENU_NAV, path)).toBe(id);
   });

@@ -337,7 +337,8 @@
     "skipToContent": "Aller au contenu",
     "stages": "Plateaux",
     "zoomIn": "Zoomer",
-    "zoomOut": "Dézoomer"
+    "zoomOut": "Dézoomer",
+    "studioRental": "Location studio"
   },
   "contact": {
     "byAppointment": "Sur rendez-vous",
@@ -563,6 +564,60 @@
     "requestQuote": "Demander un devis",
     "standard": "Standard"
   },
+  "studioRental": {
+    "h1": "Location de studio photo à Paris",
+    "intro": "E-Do Studio loue ses plateaux photo et vidéo à Saint-Ouen, aux portes de Paris. Sur 240 m², les marques de mode, de beauté et d'accessoires disposent d'un cyclorama deux faces pour la production libre et de quatre plateaux équipés pour le packshot et le shooting porté. Chaque plateau se réserve en ligne, ou sur devis.",
+    "sections": {
+      "studio": {
+        "title": "Un studio de 240 m² aux portes de Paris",
+        "body": "Le studio est installé au 69 boulevard Victor Hugo, à Saint-Ouen, dans le parc d'activités Victor Hugo (bâtiment 6.7). On y vient en métro, par la ligne 13 à la station Garibaldi ou par la ligne 14 à la station Mairie de Saint-Ouen, ou en voiture : l'accès est direct et le parking se trouve sur place. Un quai de livraison de 3,5 m sur 4,5 m de haut facilite l'arrivée du matériel et des collections. Pour les équipes, le studio compte deux postes maquillage équipés, deux cabines d'essayage et une cuisine entièrement équipée."
+      },
+      "cyclorama": {
+        "title": "Louer le cyclorama",
+        "body": "Le cyclorama est un cyclo deux faces de 32 m², long de 6,3 m, large de 5,2 m et haut de 5 m, pour la photo et la vidéo sur fond blanc infini. Des skydomes occultables apportent la lumière naturelle, ou la coupent. Il se loue à la journée ou à la semaine, en production libre ou avec notre équipe, pour une campagne, un éditorial, un film publicitaire, du packshot ou du still life. Côté technique, il dispose d'une prise Marechal 63 A triphasée, de quinze prises 16 A, du Wi-Fi très haut débit et d'un sound system intégré. Le forfait de 5 heures est à {{cyclo}} HT.",
+        "link": "Découvrir le cyclorama"
+      },
+      "stages": {
+        "title": "Quatre plateaux pour le packshot et le shooting porté",
+        "body": "Le plateau Live est notre solution dédiée au shooting sur modèle : un contenu e-commerce cohérent, rapide et reproductible d'une session à l'autre, pour le porté, la photo et la vidéo e-commerce, les lookbooks et les linesheets. L'heure y est facturée {{live}} HT. L'Eclipse est conçue pour les produits petits et moyens, chaussures, sacs, accessoires, objets design ou beauté, avec un plateau tournant intégré pour la photo et la vidéo à 360°. Ces deux plateaux sont équipés d'un Canon EOS R avec un 24–105 mm motorisé, piloté depuis une application iPad, et d'un éclairage LED High-CRI continu. Le plateau Horizontal est pensé pour les packshots à plat, le Vertical pour les packshots textiles sur mannequin, ghost et piqué compris ; tous deux détourent automatiquement les images."
+      },
+      "team": {
+        "title": "Production libre ou avec notre équipe",
+        "body": "Vous pouvez venir avec votre propre équipe, ou sans photographe : le studio fournit le plateau, les machines, la lumière et l'opérateur technique. Photographe, styliste ou modèle peuvent être fournis sur demande. Après la prise de vue, le studio propose aussi la retouche photo, y compris pour des images non shootées chez nous.",
+        "link": "La post-production"
+      },
+      "booking": {
+        "title": "Réserver le studio",
+        "body": "La réservation se fait en ligne : choisissez le plateau et vos créneaux, laissez vos coordonnées, et le devis vous parvient par e-mail. Pour un projet sur mesure, écrivez-nous depuis la page contact. Le studio est ouvert du lundi au vendredi, de 9 h à 18 h, et le week-end sur demande. Vous pouvez aussi le visiter avant de réserver : la visite est gratuite, dure environ une heure et se fait sur rendez-vous."
+      }
+    },
+    "rates": {
+      "cyclorama": "Cyclorama, 5 h",
+      "live": "Plateau Live, 1 h"
+    },
+    "faq": {
+      "where": {
+        "question": "Où se trouve le studio ?",
+        "answer": "Au 69 boulevard Victor Hugo, 93400 Saint-Ouen, aux portes de Paris, dans le parc d'activités Victor Hugo (bâtiment 6.7). Métro ligne 13, station Garibaldi, ou ligne 14, station Mairie de Saint-Ouen. Le parking est sur place."
+      },
+      "price": {
+        "question": "Combien coûte la location du studio ?",
+        "answer": "Le cyclorama se loue {{cyclo}} HT pour 5 heures, le plateau Live {{live}} HT de l'heure. Le tarif de chaque plateau est affiché sur sa page, et le tunnel de réservation établit votre devis."
+      },
+      "photographer": {
+        "question": "Peut-on venir sans photographe ?",
+        "answer": "Oui. Le studio fournit le plateau, les machines, la lumière et l'opérateur technique. Photographe, styliste ou modèle peuvent être fournis sur demande."
+      },
+      "visit": {
+        "question": "Peut-on visiter le studio avant de réserver ?",
+        "answer": "Oui. La visite est gratuite, dure environ une heure et a lieu du lundi au vendredi, de 9 h à 18 h. Écrivez-nous pour fixer le créneau."
+      },
+      "book": {
+        "question": "Comment réserver un plateau ?",
+        "answer": "En ligne, depuis la page Réserver : choisissez le plateau et les créneaux, laissez vos coordonnées, puis « Recevoir mon devis ». Pour un projet sur mesure, écrivez-nous depuis la page contact."
+      }
+    }
+  },
   "runtimeError": {
     "body": "La page a rencontré un problème inattendu. Rechargez pour continuer.",
     "reload": "Recharger",
@@ -578,7 +633,8 @@
     "postprodDescription": "Retouche photo par E-Do Studio, studio photo et vidéo à Saint-Ouen, aux portes de Paris.",
     "postprodServiceType": "Post-production photo et vidéo",
     "serviceCatalogName": "Prestations E-Do Studio",
-    "stageServiceType": "Location de plateau photo et vidéo"
+    "stageServiceType": "Location de plateau photo et vidéo",
+    "studioRentalDescription": "Location de studio photo et vidéo à Saint-Ouen, aux portes de Paris : cyclorama deux faces et quatre plateaux équipés pour le packshot et le shooting porté."
   },
   "validation": {
     "cgv": "Vous devez accepter les CGV",

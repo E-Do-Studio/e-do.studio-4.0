@@ -20,6 +20,10 @@ import type { Bilingual, Lang } from '../types';
  */
 const LOCALIZED = {
   gallery: { fr: '/galerie', en: '/gallery' },
+  studioRental: {
+    fr: '/location-studio-photo-paris',
+    en: '/photo-studio-rental-paris',
+  },
   bookPicker: { fr: '/reserver', en: '/book' },
   configurator: { fr: '/reserver/configurateur', en: '/book/configurator' },
   configStage: {
@@ -97,6 +101,7 @@ export const SCREEN_TO_PATH: Record<string, (lang: Lang) => string> = {
   discovery: (l) => `/${l}/discovery`,
   postprod: (l) => `/${l}/post-production`,
   gallery: (l) => at('gallery', l),
+  'studio-rental': (l) => at('studioRental', l),
   contact: (l) => `/${l}/contact`,
   book: (l) => at('bookPicker', l),
   legal: (l) => `/${l}/legal`,

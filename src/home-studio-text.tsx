@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button';
 import { useT } from './i18n/use-t';
 import { usePageContext } from './lib/page-context';
 import { SCREEN_TO_PATH } from './lib/screens';
@@ -38,7 +39,16 @@ const HomeStudioText = ({ className }: { className?: string }) => {
         title={t('home.seoTitle')}
         subtitle={t('home.seoIntro')}
         className="bg-background"
-      />
+      >
+        {/* Le seul lien du site vers la page de location (#422) rendu dans le
+            HTML serveur : le tiroir de navigation, lui, n'est monté qu'ouvert. */}
+        <Button
+          variant="outline"
+          render={<a href={SCREEN_TO_PATH['studio-rental'](lang)} />}
+        >
+          {t('studioRental.h1')}
+        </Button>
+      </SectionIntro>
 
       <SectionIntro
         as="h2"
