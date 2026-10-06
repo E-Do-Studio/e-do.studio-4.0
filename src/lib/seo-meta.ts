@@ -107,6 +107,18 @@ export const META: Record<string, Record<Lang, PageMeta>> = {
         'Photo retouching by E-Do Studio in Saint-Ouen, on the edge of Paris, including images not shot at our studio. Request a quote.',
     },
   },
+  'studio-rental': {
+    fr: {
+      title: 'Location studio photo Paris (Saint-Ouen) | E-Do Studio',
+      description:
+        'Studio photo et vidéo de 240 m² à louer à Saint-Ouen, aux portes de Paris : cyclorama deux faces, quatre plateaux packshot et porté, parking et quai de livraison. Réservation en ligne.',
+    },
+    en: {
+      title: 'Photo Studio Rental in Paris (Saint-Ouen) | E-Do Studio',
+      description:
+        '240 m² photo and video studio for hire in Saint-Ouen, on the edge of Paris: two-sided cyclorama, four packshot and on-model stages, parking and loading dock. Book online.',
+    },
+  },
   gallery: {
     fr: {
       title: 'Galerie — E-Do Studio Paris',
@@ -221,6 +233,11 @@ export const PRERENDER_ROUTE_PAIRS: readonly RoutePair[] = [
   { metaKey: 'discovery', fr: '/fr/discovery', en: '/en/discovery' },
   { metaKey: 'postprod', fr: '/fr/post-production', en: '/en/post-production' },
   { metaKey: 'gallery', fr: '/fr/galerie', en: '/en/gallery' },
+  {
+    metaKey: 'studio-rental',
+    fr: '/fr/location-studio-photo-paris',
+    en: '/en/photo-studio-rental-paris',
+  },
   { metaKey: 'contact', fr: '/fr/contact', en: '/en/contact' },
 ] as const;
 

@@ -355,6 +355,48 @@ export function buildPlateauServiceSchema({
   });
 }
 
+export interface StudioRentalOffer {
+  name: string;
+  price: number;
+}
+
+/**
+ * La page « location studio photo Paris » (#422) : un Service sans plateau
+ * Strapi derrière lui. Les offres sont celles que la page affiche, et rien
+ * d'autre — l'appelant les passe pour que balisage et texte ne puissent pas
+ * diverger.
+ */
+export function buildStudioRentalServiceSchema(
+  lang: Lang,
+  pathname: string,
+  offers: StudioRentalOffer[],
+): JsonLdNode {
+  const url = pageUrl(lang, pathname);
+  const t = getT(lang);
+  return compact({
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    '@id': `${url}#service`,
+    serviceType: t('seo.stageServiceType'),
+    name: t('studioRental.h1'),
+    description: t('seo.studioRentalDescription'),
+    url,
+    areaServed: [
+      { '@type': 'City', name: 'Paris' },
+      { '@type': 'AdministrativeArea', name: 'Île-de-France' },
+    ],
+    provider: { '@id': ORGANIZATION_ID },
+    offers: offers.map((o) => ({
+      '@type': 'Offer',
+      name: o.name,
+      priceCurrency: 'EUR',
+      price: String(o.price),
+      availability: 'https://schema.org/InStock',
+      url,
+    })),
+  });
+}
+
 export interface BuildPostProdServiceArgs {
   cats: PPCat[];
   lang: Lang;
