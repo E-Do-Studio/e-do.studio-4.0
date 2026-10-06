@@ -19,8 +19,10 @@ import { Route as LangGalerieRouteImport } from './routes/$lang/galerie'
 import { Route as LangGalleryRouteImport } from './routes/$lang/gallery'
 import { Route as LangLegalRouteImport } from './routes/$lang/legal'
 import { Route as LangLocationStudioPhotoParisRouteImport } from './routes/$lang/location-studio-photo-paris'
+import { Route as LangOnModelPhotoStudioRouteImport } from './routes/$lang/on-model-photo-studio'
 import { Route as LangPhotoStudioRentalParisRouteImport } from './routes/$lang/photo-studio-rental-paris'
 import { Route as LangPostProductionRouteImport } from './routes/$lang/post-production'
+import { Route as LangStudioPhotoMannequinRouteImport } from './routes/$lang/studio-photo-mannequin'
 import { Route as DevDesignSystemRouteImport } from './routes/dev/design-system'
 import { Route as DevInventaireRouteImport } from './routes/dev/inventaire'
 import { Route as LangBookIndexRouteImport } from './routes/$lang/book/index'
@@ -96,6 +98,11 @@ const LangLocationStudioPhotoParisRoute =
     path: '/location-studio-photo-paris',
     getParentRoute: () => LangRouteRoute,
   } as any)
+const LangOnModelPhotoStudioRoute = LangOnModelPhotoStudioRouteImport.update({
+  id: '/on-model-photo-studio',
+  path: '/on-model-photo-studio',
+  getParentRoute: () => LangRouteRoute,
+} as any)
 const LangPhotoStudioRentalParisRoute =
   LangPhotoStudioRentalParisRouteImport.update({
     id: '/photo-studio-rental-paris',
@@ -107,6 +114,12 @@ const LangPostProductionRoute = LangPostProductionRouteImport.update({
   path: '/post-production',
   getParentRoute: () => LangRouteRoute,
 } as any)
+const LangStudioPhotoMannequinRoute =
+  LangStudioPhotoMannequinRouteImport.update({
+    id: '/studio-photo-mannequin',
+    path: '/studio-photo-mannequin',
+    getParentRoute: () => LangRouteRoute,
+  } as any)
 const DevDesignSystemRoute = DevDesignSystemRouteImport.update({
   id: '/dev/design-system',
   path: '/dev/design-system',
@@ -244,8 +257,10 @@ export interface FileRoutesByFullPath {
   '/$lang/gallery': typeof LangGalleryRoute
   '/$lang/legal': typeof LangLegalRoute
   '/$lang/location-studio-photo-paris': typeof LangLocationStudioPhotoParisRoute
+  '/$lang/on-model-photo-studio': typeof LangOnModelPhotoStudioRoute
   '/$lang/photo-studio-rental-paris': typeof LangPhotoStudioRentalParisRoute
   '/$lang/post-production': typeof LangPostProductionRoute
+  '/$lang/studio-photo-mannequin': typeof LangStudioPhotoMannequinRoute
   '/dev/design-system': typeof DevDesignSystemRoute
   '/dev/inventaire': typeof DevInventaireRoute
   '/$lang/': typeof LangIndexRoute
@@ -280,8 +295,10 @@ export interface FileRoutesByTo {
   '/$lang/gallery': typeof LangGalleryRoute
   '/$lang/legal': typeof LangLegalRoute
   '/$lang/location-studio-photo-paris': typeof LangLocationStudioPhotoParisRoute
+  '/$lang/on-model-photo-studio': typeof LangOnModelPhotoStudioRoute
   '/$lang/photo-studio-rental-paris': typeof LangPhotoStudioRentalParisRoute
   '/$lang/post-production': typeof LangPostProductionRoute
+  '/$lang/studio-photo-mannequin': typeof LangStudioPhotoMannequinRoute
   '/dev/design-system': typeof DevDesignSystemRoute
   '/dev/inventaire': typeof DevInventaireRoute
   '/$lang': typeof LangIndexRoute
@@ -318,8 +335,10 @@ export interface FileRoutesById {
   '/$lang/gallery': typeof LangGalleryRoute
   '/$lang/legal': typeof LangLegalRoute
   '/$lang/location-studio-photo-paris': typeof LangLocationStudioPhotoParisRoute
+  '/$lang/on-model-photo-studio': typeof LangOnModelPhotoStudioRoute
   '/$lang/photo-studio-rental-paris': typeof LangPhotoStudioRentalParisRoute
   '/$lang/post-production': typeof LangPostProductionRoute
+  '/$lang/studio-photo-mannequin': typeof LangStudioPhotoMannequinRoute
   '/dev/design-system': typeof DevDesignSystemRoute
   '/dev/inventaire': typeof DevInventaireRoute
   '/$lang/': typeof LangIndexRoute
@@ -357,8 +376,10 @@ export interface FileRouteTypes {
     | '/$lang/gallery'
     | '/$lang/legal'
     | '/$lang/location-studio-photo-paris'
+    | '/$lang/on-model-photo-studio'
     | '/$lang/photo-studio-rental-paris'
     | '/$lang/post-production'
+    | '/$lang/studio-photo-mannequin'
     | '/dev/design-system'
     | '/dev/inventaire'
     | '/$lang/'
@@ -393,8 +414,10 @@ export interface FileRouteTypes {
     | '/$lang/gallery'
     | '/$lang/legal'
     | '/$lang/location-studio-photo-paris'
+    | '/$lang/on-model-photo-studio'
     | '/$lang/photo-studio-rental-paris'
     | '/$lang/post-production'
+    | '/$lang/studio-photo-mannequin'
     | '/dev/design-system'
     | '/dev/inventaire'
     | '/$lang'
@@ -430,8 +453,10 @@ export interface FileRouteTypes {
     | '/$lang/gallery'
     | '/$lang/legal'
     | '/$lang/location-studio-photo-paris'
+    | '/$lang/on-model-photo-studio'
     | '/$lang/photo-studio-rental-paris'
     | '/$lang/post-production'
+    | '/$lang/studio-photo-mannequin'
     | '/dev/design-system'
     | '/dev/inventaire'
     | '/$lang/'
@@ -538,6 +563,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangLocationStudioPhotoParisRouteImport
       parentRoute: typeof LangRouteRoute
     }
+    '/$lang/on-model-photo-studio': {
+      id: '/$lang/on-model-photo-studio'
+      path: '/on-model-photo-studio'
+      fullPath: '/$lang/on-model-photo-studio'
+      preLoaderRoute: typeof LangOnModelPhotoStudioRouteImport
+      parentRoute: typeof LangRouteRoute
+    }
     '/$lang/photo-studio-rental-paris': {
       id: '/$lang/photo-studio-rental-paris'
       path: '/photo-studio-rental-paris'
@@ -550,6 +582,13 @@ declare module '@tanstack/react-router' {
       path: '/post-production'
       fullPath: '/$lang/post-production'
       preLoaderRoute: typeof LangPostProductionRouteImport
+      parentRoute: typeof LangRouteRoute
+    }
+    '/$lang/studio-photo-mannequin': {
+      id: '/$lang/studio-photo-mannequin'
+      path: '/studio-photo-mannequin'
+      fullPath: '/$lang/studio-photo-mannequin'
+      preLoaderRoute: typeof LangStudioPhotoMannequinRouteImport
       parentRoute: typeof LangRouteRoute
     }
     '/dev/design-system': {
@@ -723,8 +762,10 @@ interface LangRouteRouteChildren {
   LangGalleryRoute: typeof LangGalleryRoute
   LangLegalRoute: typeof LangLegalRoute
   LangLocationStudioPhotoParisRoute: typeof LangLocationStudioPhotoParisRoute
+  LangOnModelPhotoStudioRoute: typeof LangOnModelPhotoStudioRoute
   LangPhotoStudioRentalParisRoute: typeof LangPhotoStudioRentalParisRoute
   LangPostProductionRoute: typeof LangPostProductionRoute
+  LangStudioPhotoMannequinRoute: typeof LangStudioPhotoMannequinRoute
   LangIndexRoute: typeof LangIndexRoute
   LangBookConfirmationRoute: typeof LangBookConfirmationRoute
   LangBookContactRoute: typeof LangBookContactRoute
@@ -756,8 +797,10 @@ const LangRouteRouteChildren: LangRouteRouteChildren = {
   LangGalleryRoute: LangGalleryRoute,
   LangLegalRoute: LangLegalRoute,
   LangLocationStudioPhotoParisRoute: LangLocationStudioPhotoParisRoute,
+  LangOnModelPhotoStudioRoute: LangOnModelPhotoStudioRoute,
   LangPhotoStudioRentalParisRoute: LangPhotoStudioRentalParisRoute,
   LangPostProductionRoute: LangPostProductionRoute,
+  LangStudioPhotoMannequinRoute: LangStudioPhotoMannequinRoute,
   LangIndexRoute: LangIndexRoute,
   LangBookConfirmationRoute: LangBookConfirmationRoute,
   LangBookContactRoute: LangBookContactRoute,

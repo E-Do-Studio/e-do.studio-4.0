@@ -478,6 +478,61 @@
     "filters": "Filters",
     "reset": "Reset"
   },
+  "onModelPage": {
+    "title": "On-model photo studio in Paris: the Live stage",
+    "intro": "The Live stage is E-Do Studio's dedicated on-model shooting solution. Set in our 240 m² photo and video studio in Saint-Ouen, on the edge of Paris, it produces consistent e-commerce content, fast to make and easy to reproduce across sessions.",
+    "sections": {
+      "stage": {
+        "title": "A stage built for on-model shooting",
+        "body": "The Live stage is where products worn by a model are photographed and filmed. It covers three uses: on-model shooting, e-commerce photo and video, lookbooks and linesheets. It is designed to keep that content consistent and reproducible from one session to the next, so a new series matches the ones before it.",
+        "link": "See the Live stage"
+      },
+      "equipment": {
+        "title": "Live stage equipment",
+        "body": "Images are captured with a Canon EOS R body fitted with a motorized 24–105 mm zoom. The motorization works on three axes: height, tilt and zoom. The whole setup is controlled from an iPad app. Lighting is continuous high-CRI LED, which serves photo and video alike. Files are delivered as JPG, PNG, TIFF and RAW for photo, and MP4 and MOV for video."
+      },
+      "mannequin": {
+        "title": "On a model or on a ghost mannequin",
+        "body": "“Mannequin photography” covers two practices, and the studio has a stage for each. For a garment worn by a model, it is the Live stage. For textile packshots on a mannequin, without a model, it is the Vertical stage: particularly efficient for ghost, pinned and standardized e-commerce shots, with automatic image clipping.",
+        "link": "See the Vertical stage"
+      },
+      "team": {
+        "title": "With or without a photographer",
+        "body": "You can come with your own crew or without a photographer. The studio provides the stage, the machines, the lighting and the technical operator. A photographer, stylist or model can be provided on request."
+      },
+      "studio": {
+        "title": "A 240 m² studio in Saint-Ouen, on the edge of Paris",
+        "body": "E-Do Studio is located at 69 boulevard Victor Hugo, Saint-Ouen. On site: a loading dock, parking, two equipped make-up stations, two fitting rooms and a fully equipped kitchen. The studio also has a 32 m² two-sided cyclorama for photo and video on an infinite white backdrop, three other stages equipped for packshots, and photo retouching, which you can add to your booking.",
+        "cyclorama": "See the cyclorama",
+        "postprod": "See post-production"
+      },
+      "rates": {
+        "title": "Live stage rates",
+        "body": "The Live stage rents for €{{hour}} per hour, €{{half}} per half day and €{{full}} per full day, excluding VAT. These are the rates applied by the online booking flow."
+      },
+      "booking": {
+        "title": "Book the Live stage",
+        "body": "The stage is booked online: pick the stage and your slots, leave your details, and your quote is sent to you by email. For a custom project, write to us from the contact page. Would you rather see the studio first? Visits are free, take about an hour and run Monday to Friday, 9 am to 6 pm.",
+        "book": "Book the Live stage"
+      }
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "price": {
+        "question": "How much does the Live stage cost?",
+        "answer": "€{{hour}} per hour, €{{half}} per half day and €{{full}} per full day, excluding VAT."
+      },
+      "equipment": {
+        "question": "What equipment comes with the Live stage?",
+        "answer": "A Canon EOS R with a 24–105 mm zoom, motorized on three axes (height, tilt, zoom) and controlled from an iPad app, plus continuous high-CRI LED lighting."
+      },
+      "location": {
+        "question": "Where is the studio?",
+        "answer": "At 69 boulevard Victor Hugo, Saint-Ouen, on the edge of Paris."
+      }
+    },
+    "serviceType": "On-model photo studio"
+  },
   "plateau": {
     "rates": "Rates excl. VAT",
     "specs": "Specifications",

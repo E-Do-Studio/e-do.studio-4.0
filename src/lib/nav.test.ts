@@ -32,6 +32,17 @@ describe('activeNavId', () => {
     expect(activeNavId(path)).toBe('stages');
   });
 
+  // Les quatre URL : comme la galerie, la page répond sous ses deux slugs dans
+  // les deux langues.
+  it.each([
+    '/fr/studio-photo-mannequin',
+    '/fr/on-model-photo-studio',
+    '/en/studio-photo-mannequin',
+    '/en/on-model-photo-studio',
+  ])('range la page studio photo mannequin sous stages (%s)', (path) => {
+    expect(activeNavId(path)).toBe('stages');
+  });
+
   // Les quatre URL, pas les deux : les routes galerie/gallery répondent dans les
   // deux langues. Un matcher bâti sur SCREEN_TO_PATH en raterait la moitié.
   it.each(['/fr/galerie', '/fr/gallery', '/en/galerie', '/en/gallery'])(

@@ -125,6 +125,7 @@ const StudioRentalPage = () => {
         </article>
 
         <FaqCell
+          title={t('discoveryPage.faq.title')}
           entries={studioRentalFaq(t, lang)}
           className="app:col-start-4 app:row-start-2 app:min-h-0"
         />

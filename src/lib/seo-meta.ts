@@ -83,6 +83,18 @@ export const META: Record<string, Record<Lang, PageMeta>> = {
         'Live stage rental at E-Do Studio. Professional live video capture and streaming space.',
     },
   },
+  'on-model': {
+    fr: {
+      title: 'Studio photo mannequin à Paris, plateau Live | E-Do Studio',
+      description:
+        'Shooting sur modèle au plateau Live, à Saint-Ouen aux portes de Paris : Canon EOS R motorisé piloté sur iPad, LED continue, photo et vidéo e-commerce. Réservation en ligne.',
+    },
+    en: {
+      title: 'On-model photo studio in Paris, Live stage | E-Do Studio',
+      description:
+        'On-model shooting on the Live stage in Saint-Ouen, on the edge of Paris: motorized Canon EOS R controlled from an iPad, continuous LED, e-commerce photo and video. Book online.',
+    },
+  },
   discovery: {
     fr: {
       title: 'Discovery — Blog & actualités — E-Do Studio',
@@ -230,6 +242,11 @@ export const PRERENDER_ROUTE_PAIRS: readonly RoutePair[] = [
     en: '/en/plateau/eclipse',
   },
   { metaKey: 'plateau-live', fr: '/fr/plateau/live', en: '/en/plateau/live' },
+  {
+    metaKey: 'on-model',
+    fr: '/fr/studio-photo-mannequin',
+    en: '/en/on-model-photo-studio',
+  },
   { metaKey: 'discovery', fr: '/fr/discovery', en: '/en/discovery' },
   { metaKey: 'postprod', fr: '/fr/post-production', en: '/en/post-production' },
   { metaKey: 'gallery', fr: '/fr/galerie', en: '/en/gallery' },

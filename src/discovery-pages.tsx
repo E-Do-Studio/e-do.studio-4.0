@@ -2,8 +2,8 @@ import { useMemo, useState } from 'react';
 import { useLoaderData } from '@tanstack/react-router';
 import type { DiscoveryCategory, DiscoveryPost } from './types';
 import { ArticleCard, ArticleEmptyCard } from './discovery/article-card';
-import { FaqCell } from './discovery/faq-cell';
 import { discoveryFaq } from './discovery/faq';
+import { FaqCell } from './discovery/faq-cell';
 import { MorePostsCard } from './discovery/more-posts-card';
 import { filterByCategory, selectPosts } from './discovery/select-posts';
 import { usePageContext } from './lib/page-context';
@@ -104,6 +104,7 @@ const DiscoveryPage = () => {
             page sans l'écraser. */}
         <div className="flex min-w-0 flex-col bg-background app:col-start-1 app:row-start-4 app:min-h-0">
           <FaqCell
+            title={t('discoveryPage.faq.title')}
             entries={discoveryFaq(t)}
             className="app:min-h-0 app:flex-1"
           />

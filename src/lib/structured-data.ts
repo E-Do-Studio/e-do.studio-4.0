@@ -397,6 +397,58 @@ export function buildStudioRentalServiceSchema(
   });
 }
 
+export interface BuildOnModelServiceArgs {
+  lang: Lang;
+  pathname: string;
+  /** Tarifs HT du plateau Live, tels que le tunnel les facture. */
+  offers: { name: string; price: number }[];
+}
+
+// La page « studio photo mannequin » présente le plateau Live : son Service
+// renvoie à celui de /plateau/live par `isRelatedTo`, pour que les deux pages
+// ne se lisent pas comme deux prestations concurrentes.
+export function buildOnModelServiceSchema({
+  lang,
+  pathname,
+  offers,
+}: BuildOnModelServiceArgs): JsonLdNode {
+  const t = getT(lang);
+  const url = pageUrl(lang, pathname);
+  return compact({
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    '@id': `${url}#service`,
+    serviceType: t('onModelPage.serviceType'),
+    name: t('onModelPage.title'),
+    description: t('onModelPage.intro'),
+    url,
+    areaServed: [
+      { '@type': 'City', name: 'Paris' },
+      { '@type': 'AdministrativeArea', name: 'Île-de-France' },
+    ],
+    provider: { '@id': ORGANIZATION_ID },
+    isRelatedTo: {
+      '@id': `${SITE_URL}${SCREEN_TO_PATH['plateau-live'](lang)}#service`,
+    },
+    offers: offers.map((o) => ({
+      '@type': 'Offer',
+      name: o.name,
+      priceCurrency: 'EUR',
+      price: String(o.price),
+      // Les tarifs du site sont HT ; sans cette mention, un moteur les lirait
+      // comme des prix publics TTC.
+      priceSpecification: {
+        '@type': 'PriceSpecification',
+        price: String(o.price),
+        priceCurrency: 'EUR',
+        valueAddedTaxIncluded: false,
+      },
+      availability: 'https://schema.org/InStock',
+      url,
+    })),
+  });
+}
+
 export interface BuildPostProdServiceArgs {
   cats: PPCat[];
   lang: Lang;
