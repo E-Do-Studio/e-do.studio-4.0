@@ -47,10 +47,14 @@ const SocialClientsBar = ({ className }: SocialClientsBarProps) => {
       {phone && (
         <Button
           variant="cell"
-          render={<a href={phoneHref} />}
+          // `draggable={false}` : un glisser sur un lien emporte le lien au lieu
+          // de sélectionner le texte. Sans lui, le numéro ne se copie pas.
+          render={<a href={phoneHref} draggable={false} />}
           // `order-first` en mobile : empilé, un numéro de téléphone se compose
           // d'un pouce, il passe donc avant le bandeau de marques.
-          className="order-first h-11 flex-row items-center justify-center gap-2 px-4 font-mono text-xs tracking-widest whitespace-nowrap no-underline app:order-none"
+          // `select-text` annule le `select-none` de la variante : le numéro
+          // doit pouvoir être copié-collé.
+          className="order-first h-11 flex-row items-center justify-center gap-2 px-4 font-mono text-xs tracking-widest whitespace-nowrap no-underline select-text app:order-none"
         >
           <Phone />
           {phone.replace(/^\+33\s?/, '0')}
