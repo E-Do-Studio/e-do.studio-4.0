@@ -573,7 +573,9 @@ const AssistantInput = ({
         disabled={loading}
         maxLength={MAX_INPUT_CHARS}
         placeholder={t('assistant.placeholder')}
-        className="h-auto flex-1 rounded-none  bg-transparent font-sans text-sm caret-primary disabled:bg-transparent"
+        // Pas de cadre autour du champ : le filet du formulaire suffit à
+        // délimiter la zone de saisie, le curseur orange signale le focus.
+        className="h-auto flex-1 rounded-none border-0 bg-transparent px-0 font-sans text-sm caret-primary focus-visible:outline-none disabled:bg-transparent"
       />
       <Button
         type="submit"
