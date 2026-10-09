@@ -65,6 +65,10 @@ UPDATE booking_sessions bs
   FROM bookings b
  WHERE b.id = bs.booking_id;
 
+-- numrange et non int4range : en production `hours` est un double precision
+-- (des sessions d'1h30 existent), là où le dépôt le déclare int. Tronquer à
+-- l'entier laisserait passer un chevauchement d'une demi-heure.
+--
 -- Si cet ALTER échoue, deux réservations futures se chevauchent déjà : les
 -- arbitrer d'abord, la migration ne tranche pas entre deux clients.
 ALTER TABLE booking_sessions
@@ -75,7 +79,7 @@ ALTER TABLE booking_sessions
   EXCLUDE USING gist (
     plateau_key WITH =,
     session_date WITH =,
-    int4range(arrival_hour, arrival_hour + hours) WITH &&
+    numrange(arrival_hour::numeric, (arrival_hour + hours)::numeric) WITH &&
   )
   WHERE (
     blocks_slot
