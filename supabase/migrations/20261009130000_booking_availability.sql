@@ -16,11 +16,13 @@ CREATE OR REPLACE FUNCTION booking_availability(
   p_from date,
   p_to date
 )
-RETURNS TABLE (session_date date, arrival_hour int, hours int)
+RETURNS TABLE (session_date date, arrival_hour numeric, hours numeric)
 LANGUAGE sql STABLE SECURITY DEFINER
 SET search_path = public
 AS $$
-  SELECT bs.session_date, bs.arrival_hour, bs.hours
+  -- numeric : en production `hours` est un double precision (des sessions
+  -- d'1h30 existent), là où le dépôt le déclare int.
+  SELECT bs.session_date, bs.arrival_hour::numeric, bs.hours::numeric
     FROM booking_sessions bs
     JOIN bookings b ON b.id = bs.booking_id
    WHERE bs.plateau_key = p_plateau_key
