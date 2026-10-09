@@ -1,4 +1,4 @@
--- Vérification de la garde anti-double-réservation (migration 20260804120000).
+-- Vérification de la garde anti-double-réservation (migration 20261009120000).
 --
 -- À coller tel quel dans le SQL Editor du projet après chaque intervention sur
 -- le schéma de réservation. Aucune trace laissée : chaque sonde s'exécute dans
@@ -21,7 +21,7 @@ BEGIN
     SELECT 1 FROM information_schema.columns
      WHERE table_name = 'booking_sessions' AND column_name = 'blocks_slot'
   ) THEN
-    RAISE EXCEPTION 'ÉCHEC : colonne booking_sessions.blocks_slot absente — migration 20260804120000 non appliquée';
+    RAISE EXCEPTION 'ÉCHEC : colonne booking_sessions.blocks_slot absente — migration 20261009120000 non appliquée';
   END IF;
   IF NOT EXISTS (
     SELECT 1 FROM pg_constraint WHERE conname = 'booking_sessions_no_overlap'
@@ -96,6 +96,12 @@ BEGIN
     VALUES ('PROBE-4', 'pending', 'probe', 'probe@invalid') RETURNING id INTO b2;
     INSERT INTO booking_sessions (booking_id, plateau_key, slot_type, hours, session_date, arrival_hour)
     VALUES (b2, '__probe__', 'hour', 2, '2099-01-01', 10);
+
+    -- Une session échue ne bloque pas : les chevauchements historiques restent.
+    INSERT INTO bookings (reference, status, client_name, client_email)
+    VALUES ('PROBE-5', 'pending', 'probe', 'probe@invalid') RETURNING id INTO b2;
+    INSERT INTO booking_sessions (booking_id, plateau_key, slot_type, hours, session_date, arrival_hour)
+    VALUES (b2, '__probe__', 'hour', 2, '2000-01-01', 10), (b2, '__probe__', 'hour', 2, '2000-01-01', 10);
 
     -- Annule toutes les sondes de ce bloc.
     RAISE EXCEPTION USING ERRCODE = 'P0001', MESSAGE = 'probe_rollback';
