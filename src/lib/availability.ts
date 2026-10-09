@@ -4,13 +4,6 @@ import { supabase } from './supabase';
 
 export type AvailabilityState = 'free' | 'unavailable';
 
-interface SessionAvailabilityRow {
-  session_date: string | null;
-  arrival_hour: number | null;
-  hours: number | null;
-  bookings: { status: string } | null;
-}
-
 const dayCache = new Map<string, Record<number, AvailabilityState>>();
 
 export function clearAvailabilityCache(): void {
@@ -96,14 +89,13 @@ export function useAvailability(
     const lastDay = new Date(year, month + 1, 0).getDate();
     const endDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
 
-    const sessionsPromise = supabase
-      .from('booking_sessions')
-      .select('session_date, arrival_hour, hours, bookings!inner(status)')
-      .eq('plateau_key', plateauKey)
-      .not('session_date', 'is', null)
-      .gte('session_date', startDate)
-      .lte('session_date', endDate)
-      .in('bookings.status', ['pending', 'confirmed']);
+    // Une fonction plutôt que la table : la clé anon n'a plus le droit de lire
+    // bookings, qui porte les coordonnées des clients.
+    const sessionsPromise = supabase.rpc('booking_availability', {
+      p_plateau_key: plateauKey,
+      p_from: startDate,
+      p_to: endDate,
+    });
 
     const blockedPromise = (supabase as any)
       .from('blocked_dates')
@@ -130,7 +122,7 @@ export function useAvailability(
         const closeHour = closingHourForKey(plateauKey);
         const occupiedPerDay: Record<number, Set<number>> = {};
         if (sessData) {
-          for (const session of sessData as unknown as SessionAvailabilityRow[]) {
+          for (const session of sessData) {
             if (
               !session.session_date ||
               session.arrival_hour == null ||
