@@ -169,7 +169,16 @@ export interface Database {
         Relationships: [];
       };
     };
-    Functions: Record<string, never>;
+    Functions: {
+      booking_availability: {
+        Args: { p_plateau_key: string; p_from: string; p_to: string };
+        Returns: {
+          session_date: string | null;
+          arrival_hour: number | null;
+          hours: number | null;
+        }[];
+      };
+    };
     Enums: {
       booking_status: BookingStatus;
     };
