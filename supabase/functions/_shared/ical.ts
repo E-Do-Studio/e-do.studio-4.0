@@ -1,6 +1,8 @@
 // Shared iCal (RFC 5545) builders for booking events.
 // Used by both the public ical feed function and outbound booking emails.
 
+import { effectiveSessionHours, sessionSlotLabel } from "./session-format.ts";
+
 export interface IcalBookingRow {
   id: string;
   reference: string;
@@ -88,7 +90,7 @@ export function buildSessionVEvent(
 
   const sessionDate = session.session_date ?? booking.preferred_date;
   const arrivalHour = session.arrival_hour ?? booking.arrival_hour;
-  const hours = session.hours ?? 0;
+  const hours = effectiveSessionHours(session.plateau_key, session.cyclo_mode, session.hours);
 
   const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
   const titlePrefix = (booking.client_company && booking.client_company.trim())
@@ -107,7 +109,7 @@ export function buildSessionVEvent(
   if (booking.client_brand) descParts.push(`Marque: ${booking.client_brand}`);
   if (booking.client_siren) descParts.push(`SIREN: ${booking.client_siren}`);
   if (booking.client_billing_address) descParts.push(`Adresse de facturation: ${booking.client_billing_address}`);
-  descParts.push(`Plateau: ${session.plateau_key} (${hours || "?"}h, ${session.slot_type})`);
+  descParts.push(`Plateau: ${session.plateau_key} (${hours || "?"}h, ${sessionSlotLabel(session.plateau_key, session.cyclo_mode, session.slot_type)})`);
   if (arrivalHour != null) descParts.push(`Heure d'arrivée: ${arrivalHour}h`);
   if (sessionDate) {
     const pd = new Date(sessionDate);
