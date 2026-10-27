@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import type { AvailabilityState } from '../../lib/availability';
 import { isHourBlocked } from '../../lib/availability';
 import type { DateSelection } from '../../lib/booking-engine';
-import { STUDIO_OPEN_HOUR } from '../../lib/booking-engine';
 
 interface ArrivalHourGuardArgs {
   selected: DateSelection | null;
@@ -12,14 +11,17 @@ interface ArrivalHourGuardArgs {
   currentHour: number;
   arrivalHour: number;
   rentalHours: number;
-  /** Heure de fermeture du plateau (le cyclorama ferme plus tard). */
+  /** Heures d'ouverture et de fermeture du plateau (le cyclorama ouvre plus
+   *  tôt et ferme plus tard). */
+  openHour: number;
   closeHour: number;
   setArrivalHour: (hour: number) => void;
 }
 
 /**
- * Ramène l'heure d'arrivée sur un créneau tenable : ni au-delà de la fermeture
- * compte tenu de la durée, ni sur une heure déjà réservée ou déjà passée.
+ * Ramène l'heure d'arrivée sur un créneau tenable : ni avant l'ouverture du
+ * plateau, ni au-delà de la fermeture compte tenu de la durée, ni sur une heure
+ * déjà réservée ou déjà passée.
  *
  * Aucun des deux effets ne boucle : après correction la condition d'entrée est
  * fausse.
@@ -31,16 +33,18 @@ function useArrivalHourGuard({
   currentHour,
   arrivalHour,
   rentalHours,
+  openHour,
   closeHour,
   setArrivalHour,
 }: ArrivalHourGuardArgs) {
   const maxStart = closeHour - rentalHours;
 
   useEffect(() => {
-    if (arrivalHour > maxStart) {
-      setArrivalHour(Math.max(STUDIO_OPEN_HOUR, Math.min(10, maxStart)));
+    // Un brouillon restauré peut porter 9h sur un plateau qui ouvre à 10h.
+    if (arrivalHour > maxStart || arrivalHour < openHour) {
+      setArrivalHour(Math.max(openHour, Math.min(10, maxStart)));
     }
-  }, [maxStart, arrivalHour, setArrivalHour]);
+  }, [openHour, maxStart, arrivalHour, setArrivalHour]);
 
   useEffect(() => {
     if (!selected) return;
@@ -48,7 +52,7 @@ function useArrivalHourGuard({
       (isSelectedToday && h <= currentHour) ||
       isHourBlocked(bookedHours, h, rentalHours);
     if (!isBlocked(arrivalHour)) return;
-    for (let h = STUDIO_OPEN_HOUR; h <= maxStart; h++) {
+    for (let h = openHour; h <= maxStart; h++) {
       if (!isBlocked(h) && h + rentalHours <= closeHour) {
         setArrivalHour(h);
         return;
@@ -62,6 +66,7 @@ function useArrivalHourGuard({
     bookedHours,
     isSelectedToday,
     arrivalHour,
+    openHour,
     maxStart,
     currentHour,
     rentalHours,
@@ -79,6 +84,7 @@ interface FirstFreeDayArgs {
   today: { y: number; m: number; d: number };
   currentHour: number;
   rentalHours: number;
+  openHour: number;
   closeHour: number;
   setSelected: (date: DateSelection) => void;
 }
@@ -100,6 +106,7 @@ function useFirstFreeDay({
   today,
   currentHour,
   rentalHours,
+  openHour,
   closeHour,
   setSelected,
 }: FirstFreeDayArgs) {
@@ -110,7 +117,7 @@ function useFirstFreeDay({
     const daysInMonth = new Date(viewY, viewM + 1, 0).getDate();
     const hasValidArrival = (d: number) => {
       const booked = bookedHoursMap[d];
-      for (let h = STUDIO_OPEN_HOUR; h <= closeHour - rentalHours; h++) {
+      for (let h = openHour; h <= closeHour - rentalHours; h++) {
         if (d === today.d && h <= currentHour) continue;
         if (isHourBlocked(booked, h, rentalHours)) continue;
         return true;
@@ -135,6 +142,7 @@ function useFirstFreeDay({
     viewY,
     viewM,
     rentalHours,
+    openHour,
     closeHour,
     today.y,
     today.m,

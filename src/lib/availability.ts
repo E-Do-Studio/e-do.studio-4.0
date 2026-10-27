@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { STUDIO_OPEN_HOUR, closingHourForKey } from './booking-engine';
+import { closingHourForKey, openingHourForKey } from './booking-engine';
 import { supabase } from './supabase';
 
 export type AvailabilityState = 'free' | 'unavailable';
@@ -29,10 +29,11 @@ function getOccupiedHours(
 function isDayFullyBooked(
   occupiedHours: Set<number>,
   rentalHours: number,
+  openHour: number,
   closeHour: number,
 ): boolean {
   for (
-    let start = STUDIO_OPEN_HOUR;
+    let start = openHour;
     start <= closeHour - rentalHours;
     start++
   ) {
@@ -119,6 +120,7 @@ export function useAvailability(
           }
         }
 
+        const openHour = openingHourForKey(plateauKey);
         const closeHour = closingHourForKey(plateauKey);
         const occupiedPerDay: Record<number, Set<number>> = {};
         if (sessData) {
@@ -148,7 +150,12 @@ export function useAvailability(
             result[d] = 'unavailable';
           } else {
             const occupied = occupiedPerDay[d] || new Set();
-            result[d] = isDayFullyBooked(occupied, rentalHours, closeHour)
+            result[d] = isDayFullyBooked(
+              occupied,
+              rentalHours,
+              openHour,
+              closeHour,
+            )
               ? 'unavailable'
               : 'free';
           }
