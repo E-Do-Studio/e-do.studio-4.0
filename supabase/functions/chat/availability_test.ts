@@ -167,13 +167,14 @@ Deno.test("computeFreeSlots returns full grid when no bookings exist", () => {
   }
 });
 
-Deno.test("computeFreeSlots closes stages at 18 and the cyclorama at 19", () => {
+Deno.test("computeFreeSlots books stages 10..18 and the cyclorama 9..19", () => {
   const range = { from: "2026-06-04", to: "2026-06-04", minHours: 1 };
   const stage = computeFreeSlots([], { ...range, plateauKey: "horizontal" });
   const cyclo = computeFreeSlots([], { ...range, plateauKey: "cyclorama" });
   assertEquals(Math.max(...stage.map((s) => s.end_hour)), 18);
   assertEquals(Math.max(...cyclo.map((s) => s.end_hour)), 19);
-  assertEquals(Math.min(...stage.map((s) => s.start_hour)), 9);
+  assertEquals(Math.min(...stage.map((s) => s.start_hour)), 10);
+  assertEquals(Math.min(...cyclo.map((s) => s.start_hour)), 9);
 });
 
 Deno.test("computeFreeSlots excludes overlapping booked hours", () => {
@@ -206,7 +207,7 @@ Deno.test("computeFreeSlots scopes occupation to the right plateau", () => {
     ],
     { from: "2026-06-04", to: "2026-06-04", plateauKey: "horizontal", minHours: 4 },
   );
-  assert(slots.some((s) => s.start_hour === 9), "horizontal stage should still be free at 9h");
+  assert(slots.some((s) => s.start_hour === 10), "horizontal stage should still be free at 10h");
 });
 
 // ─── Intent detection ──────────────────────────────────────────────────────

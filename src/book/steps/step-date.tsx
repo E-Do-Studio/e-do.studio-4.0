@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { useT } from '../../i18n/use-t';
 import { isHourBlocked, useAvailability } from '../../lib/availability';
 import type { BookPlateau, DateSelection } from '../../lib/booking-engine';
-import { STUDIO_OPEN_HOUR, closingHourFor } from '../../lib/booking-engine';
+import { closingHourFor, openingHourFor } from '../../lib/booking-engine';
 import { useArrivalHourGuard, useFirstFreeDay } from './use-calendar-defaults';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { cva } from 'class-variance-authority';
@@ -102,6 +102,7 @@ const StepDate = ({
     d: now.getDate(),
   };
   const currentHour = now.getHours();
+  const openHour = openingHourFor(plateau);
   const closeHour = closingHourFor(plateau);
 
   const isSelected = (d: number) =>
@@ -125,6 +126,7 @@ const StepDate = ({
     currentHour,
     arrivalHour,
     rentalHours,
+    openHour,
     closeHour,
     setArrivalHour,
   });
@@ -138,6 +140,7 @@ const StepDate = ({
     today,
     currentHour,
     rentalHours,
+    openHour,
     closeHour,
     setSelected,
   });
@@ -449,18 +452,18 @@ const StepDate = ({
         // endroit du site où elle ne peignait pas le filet.
         //
         // Autant de colonnes que de créneaux : 10 pour le cyclorama (9h–18h),
-        // 9 pour les plateaux (9h–17h), sinon une case vide reste en bout de
+        // 8 pour les plateaux (10h–17h), sinon une case vide reste en bout de
         // ligne.
         className={cn(
           'w-full shrink-0 bg-border',
-          closeHour - STUDIO_OPEN_HOUR === 10
+          closeHour - openHour === 10
             ? 'grid-cols-5 @xl:grid-cols-10'
-            : 'grid-cols-3 @xl:grid-cols-9',
+            : 'grid-cols-4 @xl:grid-cols-8',
         )}
       >
         {Array.from(
-          { length: closeHour - STUDIO_OPEN_HOUR },
-          (_, i) => i + STUDIO_OPEN_HOUR,
+          { length: closeHour - openHour },
+          (_, i) => i + openHour,
         ).map((h) => {
           const on = arrivalHour === h;
           const endsTooLate = h + rentalHours > closeHour;

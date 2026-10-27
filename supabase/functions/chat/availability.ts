@@ -13,8 +13,8 @@
 //     primitives only.
 
 import {
-  STUDIO_OPEN_HOUR,
   closingHourForKey,
+  openingHourForKey,
 } from "../../../src/lib/booking-engine.ts";
 
 // ─── Types ────────────────────────────────────────────────────────────────
@@ -363,7 +363,7 @@ export function computeFreeSlots(
       const occ = occupied.get(key(date, p)) ?? new Set<number>();
       const closeHour = closingHourForKey(p);
       // Walk the hours, emit each maximal free [start, start+minHours) anchor.
-      for (let start = STUDIO_OPEN_HOUR; start + minHours <= closeHour; start++) {
+      for (let start = openingHourForKey(p); start + minHours <= closeHour; start++) {
         let fits = true;
         for (let h = start; h < start + minHours; h++) {
           if (occ.has(h)) { fits = false; break; }

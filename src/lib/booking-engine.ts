@@ -395,16 +395,30 @@ export const packshotRate = (entry: CfgEntry, views: string[]) => {
 /** Une journée complète, en heures — l'unité du tarif `rates.full`. */
 export const HOURS_PER_FULL_DAY = 8;
 
-// Horaires d'ouverture, en heures pleines. Le studio ferme à 18h ; seul le
-// cyclorama se réserve jusqu'à 19h, pour que sa journée de 10h tienne (9h–19h).
-export const STUDIO_OPEN_HOUR = 9;
+// Horaires de réservation, en heures pleines. Les plateaux se réservent de 10h
+// à 18h ; seul le cyclorama ouvre à 9h et ferme à 19h, pour que sa journée de
+// 10h tienne (9h–19h).
+export const STUDIO_OPEN_HOUR = 10;
 export const STUDIO_CLOSE_HOUR = 18;
+export const CYCLO_OPEN_HOUR = 9;
 export const CYCLO_CLOSE_HOUR = 19;
+
+export function openingHourFor(
+  plateau: Pick<BookPlateau, 'isCyclo'> | null | undefined,
+): number {
+  return plateau?.isCyclo ? CYCLO_OPEN_HOUR : STUDIO_OPEN_HOUR;
+}
 
 export function closingHourFor(
   plateau: Pick<BookPlateau, 'isCyclo'> | null | undefined,
 ): number {
   return plateau?.isCyclo ? CYCLO_CLOSE_HOUR : STUDIO_CLOSE_HOUR;
+}
+
+export function openingHourForKey(
+  plateauKey: string | null | undefined,
+): number {
+  return openingHourFor(BOOK_PLATEAUX.find((p) => p.k === plateauKey));
 }
 
 export function closingHourForKey(
@@ -447,6 +461,20 @@ export function dailyOccupancyHoursFor(
   const total = rentalHoursFor(slot, plateau);
   if (plateau?.isCyclo) return total;
   return Math.min(total, HOURS_PER_FULL_DAY);
+}
+
+// Un créneau tient s'il commence à l'ouverture du plateau ou après, et finit à
+// sa fermeture ou avant. Sans heure d'arrivée (devis), rien à vérifier.
+export function fitsBookingHours(
+  slot: SlotState,
+  plateau: BookPlateau | null | undefined,
+): boolean {
+  if (slot.arrivalHour == null) return true;
+  return (
+    slot.arrivalHour >= openingHourFor(plateau) &&
+    slot.arrivalHour + dailyOccupancyHoursFor(slot, plateau) <=
+      closingHourFor(plateau)
+  );
 }
 
 export const computePostprodPrice = (session: BookingSession) => {

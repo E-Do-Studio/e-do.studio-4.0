@@ -2,15 +2,17 @@ import { describe, expect, it } from 'vitest';
 import {
   BOOK_PLATEAUX,
   CYCLO_EXTRAS,
-  STUDIO_OPEN_HOUR,
   closingHourFor,
   closingHourForKey,
   computePriceBreakdown,
   dailyOccupancyHoursFor,
+  fitsBookingHours,
   fmtEUR,
   isSessionValid,
   isValidSiren,
   makeBlankSession,
+  openingHourFor,
+  openingHourForKey,
   rentalHoursFor,
   type QuoteLabels,
   type SlotState,
@@ -266,27 +268,88 @@ describe('rentalHoursFor — durée totale facturée', () => {
   });
 });
 
-describe('closingHourFor — horaires de réservation', () => {
-  it('ferme les plateaux à 18h', () => {
+describe('openingHourFor / closingHourFor — horaires de réservation', () => {
+  it('réserve les plateaux de 10h à 18h', () => {
     for (const k of ['live', 'eclipse', 'horizontal', 'vertical', 'visite']) {
+      expect(openingHourForKey(k)).toBe(10);
       expect(closingHourForKey(k)).toBe(18);
     }
   });
 
-  it('laisse le cyclorama réservable jusqu\'à 19h', () => {
+  it('réserve le cyclorama de 9h à 19h', () => {
+    expect(openingHourForKey('cyclorama')).toBe(9);
     expect(closingHourForKey('cyclorama')).toBe(19);
   });
 
-  it('fait tenir une journée de cyclorama dans ses horaires', () => {
+  it('fait tenir une journée complète dans les horaires de chaque plateau', () => {
     const cyclo = BOOK_PLATEAUX.find((p) => p.k === 'cyclorama')!;
+    const live = BOOK_PLATEAUX.find((p) => p.k === 'live')!;
     expect(
-      STUDIO_OPEN_HOUR + rentalHoursFor(slot({ cycloMode: 'fullH' }), cyclo),
-    ).toBeLessThanOrEqual(closingHourFor(cyclo));
+      openingHourFor(cyclo) +
+        rentalHoursFor(slot({ cycloMode: 'fullH' }), cyclo),
+    ).toBe(closingHourFor(cyclo));
+    expect(
+      openingHourFor(live) +
+        rentalHoursFor(slot({ slotType: 'full', hours: 8 }), live),
+    ).toBe(closingHourFor(live));
   });
 
-  it('retombe sur 18h pour un plateau inconnu', () => {
+  it('retombe sur 10h–18h pour un plateau inconnu', () => {
+    expect(openingHourForKey(undefined)).toBe(10);
     expect(closingHourForKey(undefined)).toBe(18);
+    expect(openingHourForKey('inconnu')).toBe(10);
     expect(closingHourForKey('inconnu')).toBe(18);
+  });
+});
+
+describe('fitsBookingHours — créneau dans les horaires du plateau', () => {
+  const live = BOOK_PLATEAUX.find((p) => p.k === 'live')!;
+  const cyclo = BOOK_PLATEAUX.find((p) => p.k === 'cyclorama')!;
+
+  it('refuse un plateau à 9h, accepte le cyclorama à 9h', () => {
+    expect(
+      fitsBookingHours(
+        slot({ slotType: 'hour', hours: 2, arrivalHour: 9 }),
+        live,
+      ),
+    ).toBe(false);
+    expect(
+      fitsBookingHours(slot({ cycloMode: 'fullH', arrivalHour: 9 }), cyclo),
+    ).toBe(true);
+  });
+
+  it('refuse un créneau qui finit après la fermeture', () => {
+    expect(
+      fitsBookingHours(
+        slot({ slotType: 'hour', hours: 2, arrivalHour: 17 }),
+        live,
+      ),
+    ).toBe(false);
+    expect(
+      fitsBookingHours(slot({ cycloMode: 'fullH', arrivalHour: 10 }), cyclo),
+    ).toBe(false);
+    expect(
+      fitsBookingHours(slot({ cycloMode: 'halfH', arrivalHour: 14 }), cyclo),
+    ).toBe(true);
+  });
+
+  it('accepte une journée de plateau à 10h, multi-jours compris', () => {
+    expect(
+      fitsBookingHours(
+        slot({ slotType: 'full', hours: 16, arrivalHour: 10 }),
+        live,
+      ),
+    ).toBe(true);
+    expect(
+      fitsBookingHours(
+        slot({ slotType: 'full', hours: 8, arrivalHour: 11 }),
+        live,
+      ),
+    ).toBe(false);
+  });
+
+  it("n'a rien à vérifier sans heure d'arrivée", () => {
+    expect(fitsBookingHours(slot({ slotType: 'full' }), live)).toBe(true);
   });
 });
 
@@ -294,8 +357,8 @@ describe('dailyOccupancyHoursFor — occupation sur une seule journée', () => {
   const live = BOOK_PLATEAUX.find((p) => p.k === 'live')!;
   const cyclo = BOOK_PLATEAUX.find((p) => p.k === 'cyclorama')!;
 
-  // useAvailability cherche un créneau libre de N heures consécutives entre 9h
-  // et 18h. Au-delà de 9h sa boucle ne s'exécute jamais et elle déclare la
+  // useAvailability cherche un créneau libre de N heures consécutives entre
+  // 10h et 18h. Au-delà de 8h sa boucle ne s'exécute jamais et elle déclare la
   // journée complète : une réservation de 2 jours rendait TOUTES les dates
   // indisponibles, y compris sur une journée vide.
   it('plafonne une réservation multi-jours à une journée ouvrable', () => {
@@ -311,7 +374,7 @@ describe('dailyOccupancyHoursFor — occupation sur une seule journée', () => {
     for (const hours of [8, 9, 16, 24, 40]) {
       expect(
         dailyOccupancyHoursFor(slot({ slotType: 'full', hours }), live),
-      ).toBeLessThanOrEqual(closingHourFor(live) - STUDIO_OPEN_HOUR);
+      ).toBeLessThanOrEqual(closingHourFor(live) - openingHourFor(live));
     }
   });
 

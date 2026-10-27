@@ -15,7 +15,9 @@
 // quoi afficher la confirmation — jamais la ligne complète.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.105.1";
 import {
+  BOOK_PLATEAUX,
   computePriceBreakdown,
+  fitsBookingHours,
   type CreateBookingInput,
   type QuoteLabels,
   type SlotState,
@@ -128,6 +130,28 @@ Deno.serve(async (req) => {
     date: s.date ? dateToIso(s.date) : fallbackDate,
     arrivalHour: s.arrivalHour ?? input.arrivalHour,
   }));
+
+  // Mêmes horaires que le calendrier : 10h–18h, 9h–19h pour le cyclorama. Le
+  // front ne propose rien d'autre ; une heure hors plage vient d'un brouillon
+  // périmé ou d'un appel forgé, et ne doit pas atterrir dans le planning.
+  const outsideHours = resolved.find(({ session: s, arrivalHour }) =>
+    !fitsBookingHours(
+      {
+        plateauKey: s.plateauKey,
+        slotType: s.slotType,
+        hours: s.hours,
+        cycloMode: s.cycloMode,
+        arrivalHour: arrivalHour ?? undefined,
+      },
+      BOOK_PLATEAUX.find((p) => p.k === s.plateauKey),
+    )
+  );
+  if (outsideHours) {
+    console.warn(
+      `[create-booking] hors horaires — plateau=${outsideHours.session.plateauKey} arrivée=${outsideHours.arrivalHour}h`,
+    );
+    return json({ error: "outside_opening_hours" }, 400);
+  }
 
   // Le devis fait foi côté serveur. Un écart avec le total transmis est
   // journalisé : c'est soit une dérive du front, soit une tentative.
