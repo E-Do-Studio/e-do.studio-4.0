@@ -429,34 +429,28 @@
     "journal": "Journal",
     "offers": {
       "cyclorama": {
-        "title": "Cyclorama",
-        "body": "Un cyclo deux faces de 32 m² pour la photo et la vidéo sur fond blanc infini, avec lumière naturelle par skydomes occultables. À la journée ou à la semaine, en production libre ou avec notre équipe : campagne, éditorial, film publicitaire, packshot et still life."
+        "title": "Cyclorama"
       },
       "live": {
-        "title": "Plateau Live",
-        "body": "Notre solution dédiée au shooting sur modèle. Elle produit un contenu e-commerce cohérent, rapide et reproductible d'une session à l'autre : shooting porté, photo et vidéo e-commerce, lookbooks et linesheets."
+        "title": "Plateau Live"
       },
       "eclipse": {
-        "title": "Plateau Eclipse",
-        "body": "Conçu pour les produits petits et moyens : chaussures, sacs, accessoires, objets design ou beauté. Son plateau tournant intégré permet la photo et la vidéo à 360°, pour l'e-commerce comme pour le still life."
+        "title": "Plateau Eclipse"
       },
       "horizontal": {
-        "title": "Plateau Horizontal",
-        "body": "Conçu pour les packshots à plat : des flat lays précis et cohérents, adaptés aux vêtements, aux accessoires et aux compositions produits, avec détourage automatique des images."
+        "title": "Plateau Horizontal"
       },
       "vertical": {
-        "title": "Plateau Vertical",
-        "body": "Pensé pour les packshots textiles sur mannequin : particulièrement efficace pour le ghost, le piqué et les prises de vue e-commerce standardisées, avec détourage automatique des images."
+        "title": "Plateau Vertical"
       },
       "postprod": {
-        "title": "Post-production",
-        "body": "Retouche on model, ghost, flat, accessoires et piqué, retouche high end et vidéo sur demande : détourage, changement de fond, étalonnage couleur, nettoyage textile. Nous retouchons aussi vos images non shootées chez nous."
+        "title": "Post-production"
       }
     },
-    "offersTitle": "Nos plateaux et services",
     "retouchPhotoVideo": "Retouche photo & vidéo",
-    "seoIntro": "E-Do Studio est un studio photo et vidéo de 240 m² installé à Saint-Ouen, aux portes de Paris. Les marques de mode, de beauté et d'accessoires y produisent leurs images e-commerce, leurs campagnes et leurs films : un cyclorama deux faces pour la production libre, quatre plateaux équipés pour le packshot et le shooting porté, et un service de post-production. Sur place, un quai de livraison, un parking, deux postes maquillage équipés, deux cabines d'essayage et une cuisine entièrement équipée. Chaque plateau se réserve en ligne, ou sur devis.",
+    "seoIntro": "E-Do Studio est un studio photo et vidéo de 240 m² installé à Saint-Ouen, aux portes de Paris. Chaque plateau se réserve en ligne, ou sur devis.",
     "seoTitle": "Studio photo & vidéo à Paris, Saint-Ouen",
+    "studioArticle": "Inside E-Do Studio",
     "studioHeadline": "Le studio photo & vidéo qui alimente votre e-commerce, à Paris.",
     "studioPhotoAlt": "Le studio e-do",
     "studioSubtitle": "Photo, vidéo et retouche à Saint-Ouen, aux portes de Paris. Du créateur indépendant à la maison de luxe.",
