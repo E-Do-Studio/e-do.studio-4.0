@@ -14,6 +14,7 @@ import type {
 import type { Lang, ContactFormData } from './types';
 import { usePageContext } from './lib/page-context';
 import { submitContactForm } from './lib/contact';
+import { mapsLink } from './lib/maps-link';
 import { useT } from './i18n/use-t';
 import { bcp47 } from './lib/format';
 import {
@@ -35,25 +36,6 @@ interface ContactRailProps {
   lang: Lang;
   contact: ContactInfo | null;
   hours: StudioHoursData | null;
-}
-
-/**
- * L'URL d'itinéraire du pavé de bas de colonne.
- *
- * `googleMapsUrl` est renseigné côté CMS mais n'avait **aucun consommateur dans
- * toute l'application** — d'où le repli construit sur l'adresse : sans lui, le
- * pavé disparaîtrait en silence dès que le champ n'est pas rempli, ce qui est
- * précisément le genre d'absence qu'on ne remarque jamais.
- */
-function mapsLink(contact: ContactInfo | null): string | null {
-  if (!contact) return null;
-  if (contact.googleMapsUrl) return contact.googleMapsUrl;
-  const query =
-    contact.fullAddress ||
-    [contact.address.street, contact.address.zip].filter(Boolean).join(' ');
-  return query
-    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`
-    : null;
 }
 
 // Une colonne flex, et non une grille : la grille figeait des hauteurs

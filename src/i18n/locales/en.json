@@ -329,7 +329,6 @@
     "postProd": "Post-prod",
     "postProdLong": "Post-production",
     "prevImage": "Previous image",
-    "requestQuoteOr": "Request a quote or",
     "reset": "Reset",
     "resetZoom": "Reset zoom",
     "send": "Send",
@@ -448,9 +447,6 @@
       }
     },
     "retouchPhotoVideo": "Photo & video retouching",
-    "seoIntro": "E-Do Studio is a 240 m² photo and video studio in Saint-Ouen, on the edge of Paris. Every stage can be booked online, or on quote.",
-    "seoTitle": "Photo & video studio in Paris, Saint-Ouen",
-    "studioArticle": "Inside E-Do Studio",
     "studioHeadline": "The Paris photo & video studio that powers your e-commerce.",
     "studioPhotoAlt": "The e-do studio",
     "studioSubtitle": "Photo, video and retouching in Saint-Ouen, on the edge of Paris. From independent creator to luxury house.",
@@ -644,7 +640,6 @@
   "footer": {
     "nav": "Site map",
     "onModel": "On-model photo studio",
-    "studio": "The studio",
-    "tagline": "Photo, video and retouching in Saint-Ouen, on the edge of Paris."
+    "studio": "The studio"
   }
 }

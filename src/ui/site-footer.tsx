@@ -4,7 +4,6 @@ import { ETOUCH_LINK } from '../lib/nav';
 import { usePageContext } from '../lib/page-context';
 import { SCREEN_TO_PATH } from '../lib/screens';
 import { LEGAL_DOCUMENT_KEYS, LEGAL_DOCUMENT_LABELS } from '../lib/strapi';
-import { Wordmark } from './brand';
 import { ContactMap } from './contact-map';
 import { CtaCell } from './cta-cell';
 import { FindUsSection } from './find-us-section';
@@ -74,15 +73,7 @@ const SiteFooter = () => {
 
   return (
     <footer className="dark col-span-full flex flex-col gap-px bg-border text-foreground app:hidden">
-      <div className="flex flex-col items-start gap-4 bg-background px-5 py-6">
-        <Wordmark size={32} />
-        <p className="m-0 text-sm leading-snug text-muted-foreground">
-          {t('footer.tagline')}
-        </p>
-      </div>
       <CtaCell
-        size="cta"
-        kicker={t('common.requestQuoteOr')}
         title={t('common.book')}
         href={SCREEN_TO_PATH.book(lang)}
         onClick={() => captureCta('book')}
