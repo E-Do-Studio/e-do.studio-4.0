@@ -26,7 +26,9 @@ const Wordmark = ({ size = 40 }: WordmarkProps) => {
       decoding="async"
       // aspect-ratio + object-contain guard against parents that would otherwise stretch the bitmap.
       style={{ aspectRatio: `${width} / ${height}` }}
-      className={`${sizeMap[size] ?? 'h-10'} block w-auto max-w-full shrink-0 object-contain`}
+      // `dark:invert` : le fichier est un logo noir, sans version claire. Dans
+      // une portée `dark` (le pied de page), c'est lui qui le rend blanc.
+      className={`${sizeMap[size] ?? 'h-10'} block w-auto max-w-full shrink-0 object-contain dark:invert`}
     />
   );
 };

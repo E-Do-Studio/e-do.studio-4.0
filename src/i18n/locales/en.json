@@ -646,5 +646,11 @@
     "tel": "Invalid phone number",
     "typesArticles": "Select at least one item type",
     "vues": "Enter the number of views per item"
+  },
+  "footer": {
+    "nav": "Site map",
+    "onModel": "On-model photo studio",
+    "studio": "The studio",
+    "tagline": "Photo, video and retouching in Saint-Ouen, on the edge of Paris."
   }
 }

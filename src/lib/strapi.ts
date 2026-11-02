@@ -1678,7 +1678,7 @@ export interface LegalDocumentMeta {
   updated: string;
 }
 
-const LEGAL_DOCUMENT_LABELS: Record<
+export const LEGAL_DOCUMENT_LABELS: Record<
   LegalDocumentKey,
   { fr: string; en: string }
 > = {

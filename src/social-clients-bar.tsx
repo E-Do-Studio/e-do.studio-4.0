@@ -1,8 +1,7 @@
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Phone } from 'lucide-react';
 import { usePageContext } from './lib/page-context';
 import { MarqueeCell } from './ui/marquee-cell';
+import { PhoneCell } from './ui/phone-cell';
 import { SocialLinksRow } from './ui/social-links-row';
 
 interface SocialClientsBarProps {
@@ -44,21 +43,14 @@ const SocialClientsBar = ({ className }: SocialClientsBarProps) => {
       <div className="flex h-11 min-w-0 items-center overflow-hidden bg-background">
         <MarqueeCell size={20} />
       </div>
-      {phone && (
-        <Button
-          variant="cell"
-          // `draggable={false}` : un glisser sur un lien emporte le lien au lieu
-          // de sélectionner le texte. Sans lui, le numéro ne se copie pas.
-          render={<a href={phoneHref} draggable={false} />}
-          // `order-first` en mobile : empilé, un numéro de téléphone se compose
-          // d'un pouce, il passe donc avant le bandeau de marques.
-          // `select-text` annule le `select-none` de la variante : le numéro
-          // doit pouvoir être copié-collé.
-          className="order-first h-11 flex-row items-center justify-center gap-2 px-4 font-mono text-xs tracking-widest whitespace-nowrap no-underline select-text app:order-none"
-        >
-          <Phone />
-          {phone.replace(/^\+33\s?/, '0')}
-        </Button>
+      {phone && phoneHref && (
+        // `order-first` en mobile : empilé, un numéro de téléphone se compose
+        // d'un pouce, il passe donc avant le bandeau de marques.
+        <PhoneCell
+          phone={phone}
+          phoneHref={phoneHref}
+          className="order-first app:order-none"
+        />
       )}
     </div>
   );

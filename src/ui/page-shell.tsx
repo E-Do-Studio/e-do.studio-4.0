@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { PageHeader, type PageHeaderProps } from './page-header';
+import { SiteFooter } from './site-footer';
 
 interface PageShellProps extends Pick<PageHeaderProps, 'note' | 'aside'> {
   /**
@@ -17,6 +18,12 @@ interface PageShellProps extends Pick<PageHeaderProps, 'note' | 'aside'> {
    * `--spacing-logo` qui bouge et les cinq copies suivent.
    */
   className?: string;
+  /**
+   * `false` sur les pages qui rendent déjà le rail de contact (contact, choix
+   * du plateau) : le pied de page y répéterait l'adresse, les horaires et la
+   * carte juste au-dessus de lui.
+   */
+  footer?: boolean;
   children: ReactNode;
 }
 
@@ -38,6 +45,7 @@ export const PageShell = ({
   note,
   aside,
   className,
+  footer = true,
   children,
 }: PageShellProps) => (
   <div
@@ -66,5 +74,6 @@ export const PageShell = ({
       className="col-span-full app:row-start-1"
     />
     {children}
+    {footer && <SiteFooter />}
   </div>
 );

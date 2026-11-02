@@ -646,5 +646,11 @@
     "tel": "Numéro de téléphone invalide",
     "typesArticles": "Sélectionnez au moins un type d’article",
     "vues": "Indiquez le nombre de vues par article"
+  },
+  "footer": {
+    "nav": "Plan du site",
+    "onModel": "Studio photo mannequin",
+    "studio": "Le studio",
+    "tagline": "Photo, vidéo et retouche à Saint-Ouen, aux portes de Paris."
   }
 }
