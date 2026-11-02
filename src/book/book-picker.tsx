@@ -112,7 +112,10 @@ const BookPicker = () => {
   };
 
   return (
-    <PageShell className="app:grid-cols-[var(--spacing-logo)_repeat(3,minmax(0,1fr))] app:grid-rows-[var(--spacing-header)_minmax(0,1fr)]">
+    <PageShell
+      footer={false}
+      className="app:grid-cols-[var(--spacing-logo)_repeat(3,minmax(0,1fr))] app:grid-rows-[var(--spacing-header)_minmax(0,1fr)]"
+    >
       <main
         id={MAIN_ID}
         className="flex flex-col overflow-auto bg-background app:col-start-2 app:col-span-2 app:row-start-2"
