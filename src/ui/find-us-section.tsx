@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import { useT } from '../i18n/use-t';
+import { mapsLink } from '../lib/maps-link';
 import type { ContactInfo } from '../lib/strapi';
 import type { Lang } from '../types';
 import { HeadlineCell } from './headline-cell';
@@ -85,11 +86,20 @@ const FindUsSection = ({ lang, contact, className }: FindUsSectionProps) => {
           // — et les deux « réponses » du rail, l'adresse et le téléphone,
           // partagent alors un seul registre.
           size="xs"
+          // L'adresse ouvre l'itinéraire : c'est la seule chose qu'on fait d'une
+          // adresse depuis un téléphone.
           headline={
             <address className="not-italic">
-              {c?.address.street}
-              <br />
-              {c?.address.zip}
+              <a
+                href={mapsLink(c) ?? undefined}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-foreground underline decoration-1 underline-offset-4"
+              >
+                {c?.address.street}
+                <br />
+                {c?.address.zip}
+              </a>
             </address>
           }
           details={addressDetails.map((line) => (
