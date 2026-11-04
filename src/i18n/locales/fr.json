@@ -523,6 +523,67 @@
     },
     "serviceType": "Studio photo sur mannequin"
   },
+  "packshotPage": {
+    "title": "Studio packshot à Paris : trois plateaux pour l'e-commerce",
+    "intro": "E-Do Studio réunit trois plateaux dédiés au packshot e-commerce : Horizontal pour les produits à plat, Vertical pour le ghost et le piqué, Eclipse pour les chaussures, les accessoires et la photo 360°. Ils sont installés dans notre studio photo et vidéo de 240 m² à Saint-Ouen, aux portes de Paris.",
+    "sections": {
+      "horizontal": {
+        "title": "Horizontal : le packshot à plat",
+        "body": "Le plateau Horizontal est conçu pour les packshots à plat : des flat lays précis et cohérents, adaptés aux vêtements, aux accessoires et aux compositions produits. La prise de vue est assurée par un Canon EOS R équipé d'un zoom 24–105 mm motorisé, piloté depuis une application iPad, sous un éclairage LED continu High-CRI, avec détourage automatique des images. Il se loue {{hHour}} € HT de l'heure, {{hHalf}} € HT la demi-journée et {{hFull}} € HT la journée.",
+        "link": "Voir le plateau Horizontal"
+      },
+      "vertical": {
+        "title": "Vertical : le ghost et le piqué",
+        "body": "Le plateau Vertical est pensé pour les packshots textiles. Il est particulièrement efficace pour le ghost, le piqué et les prises de vue e-commerce standardisées. Il est équipé d'un Canon EOS R avec zoom 70–200 mm motorisé, piloté sur iPad, d'un éclairage LED continu High-CRI et du détourage automatique. Il se loue {{vHour}} € HT de l'heure, {{vHalf}} € HT la demi-journée et {{vFull}} € HT la journée.",
+        "link": "Voir le plateau Vertical"
+      },
+      "eclipse": {
+        "title": "Eclipse : chaussures, accessoires et 360°",
+        "body": "Le plateau Eclipse est conçu pour les produits petits et moyens : chaussures, sacs, accessoires, objets design ou beauté. Son plateau tournant intégré permet la photo et la vidéo à 360°. Il est équipé d'un Canon EOS R avec zoom 24–105 mm, motorisé sur quatre axes (hauteur, inclinaison, zoom et rotation) et piloté sur iPad, sous un éclairage LED continu High-CRI. Il se loue {{eHour}} € HT de l'heure, {{eHalf}} € HT la demi-journée et {{eFull}} € HT la journée.",
+        "link": "Voir le plateau Eclipse"
+      },
+      "formats": {
+        "title": "Les formats livrés",
+        "body": "Les photos sont livrées en JPG, PNG, TIFF et RAW. Sur le plateau Eclipse, la vidéo est livrée en MP4 et MOV."
+      },
+      "team": {
+        "title": "Avec ou sans photographe",
+        "body": "Vous pouvez venir avec votre équipe ou sans photographe. Le studio fournit le plateau, les machines, la lumière et l'opérateur technique. Photographe, styliste ou modèle peuvent être fournis sur demande, et la retouche photo peut être ajoutée à votre réservation."
+      },
+      "onModel": {
+        "title": "Et pour le porté ?",
+        "body": "Pour un vêtement porté par un modèle, en photo comme en vidéo, c'est le plateau Live, présenté sur notre page studio photo mannequin.",
+        "link": "Voir le studio photo mannequin"
+      },
+      "studio": {
+        "title": "Un studio de 240 m² à Saint-Ouen, aux portes de Paris",
+        "body": "E-Do Studio est installé au 69 boulevard Victor Hugo, à Saint-Ouen. Sur place, un quai de livraison, un parking, deux postes maquillage équipés, deux cabines d'essayage et une cuisine entièrement équipée. Le studio réunit aussi un cyclorama deux faces de 32 m² pour la photo et la vidéo sur fond blanc infini, et la post-production.",
+        "cyclorama": "Voir le cyclorama",
+        "postprod": "Voir la post-production"
+      },
+      "booking": {
+        "title": "Réserver un plateau packshot",
+        "body": "Les plateaux se réservent en ligne : choisissez le plateau et vos créneaux, laissez vos coordonnées, et votre devis vous est envoyé par e-mail. Pour un projet sur-mesure, écrivez-nous depuis la page contact. Vous préférez voir le studio d'abord ? La visite est gratuite, dure environ une heure et a lieu du lundi au vendredi, de 9 h à 18 h.",
+        "book": "Réserver un plateau"
+      }
+    },
+    "faq": {
+      "title": "Questions fréquentes",
+      "price": {
+        "question": "Combien coûte un plateau packshot ?",
+        "answer": "Horizontal : {{hHour}} € HT de l'heure, {{hHalf}} € HT la demi-journée, {{hFull}} € HT la journée. Vertical : {{vHour}} € HT de l'heure, {{vHalf}} € HT la demi-journée, {{vFull}} € HT la journée. Eclipse : {{eHour}} € HT de l'heure, {{eHalf}} € HT la demi-journée, {{eFull}} € HT la journée."
+      },
+      "which": {
+        "question": "Quel plateau choisir pour mes packshots ?",
+        "answer": "Horizontal pour les produits à plat, Vertical pour les vêtements en ghost ou en piqué, Eclipse pour les chaussures, sacs, accessoires, objets design ou beauté, et pour la photo 360°."
+      },
+      "cutout": {
+        "question": "Les images sont-elles détourées ?",
+        "answer": "Oui : les plateaux Horizontal et Vertical intègrent un détourage automatique des images."
+      }
+    },
+    "serviceType": "Studio packshot e-commerce"
+  },
   "plateau": {
     "rates": "Tarifs HT",
     "specs": "Caractéristiques",
@@ -640,6 +701,7 @@
   "footer": {
     "nav": "Plan du site",
     "onModel": "Studio photo mannequin",
-    "studio": "Le studio"
+    "studio": "Le studio",
+    "packshot": "Studio packshot"
   }
 }

@@ -73,7 +73,12 @@ export const MAIN_NAV: readonly MainNavItem[] = [
     // tous, là où énumérer SCREEN_TO_PATH en oublierait un au prochain ajout.
     // La page « studio photo mannequin » présente le plateau Live : elle en
     // est une porte d'entrée, pas une destination à part.
-    match: ['/plateau', '/cyclorama', ...bothSlugs('onModel')],
+    match: [
+      '/plateau',
+      '/cyclorama',
+      ...bothSlugs('onModel'),
+      ...bothSlugs('packshot'),
+    ],
   },
   {
     id: 'postprod',

@@ -523,6 +523,67 @@
     },
     "serviceType": "On-model photo studio"
   },
+  "packshotPage": {
+    "title": "Packshot studio in Paris: three stages for e-commerce",
+    "intro": "E-Do Studio has three stages dedicated to e-commerce packshots: Horizontal for flat products, Vertical for ghost and pinned shots, Eclipse for shoes, accessories and 360° photography. They are located in our 240 m² photo and video studio in Saint-Ouen, on the edge of Paris.",
+    "sections": {
+      "horizontal": {
+        "title": "Horizontal: flat-lay packshots",
+        "body": "The Horizontal stage is designed for flat packshots: precise, consistent flat lays for clothing, accessories and product compositions. Shots are taken with a Canon EOS R and a motorized 24–105 mm zoom, controlled from an iPad app, under continuous High-CRI LED lighting, with automatic image cut-out. It rents for €{{hHour}} excl. VAT per hour, €{{hHalf}} excl. VAT per half day and €{{hFull}} excl. VAT per day.",
+        "link": "See the Horizontal stage"
+      },
+      "vertical": {
+        "title": "Vertical: ghost and pinned shots",
+        "body": "The Vertical stage is built for apparel packshots. It is especially efficient for ghost, pinned and standardized e-commerce shots. It has a Canon EOS R with a motorized 70–200 mm zoom controlled from an iPad, continuous High-CRI LED lighting and automatic cut-out. It rents for €{{vHour}} excl. VAT per hour, €{{vHalf}} excl. VAT per half day and €{{vFull}} excl. VAT per day.",
+        "link": "See the Vertical stage"
+      },
+      "eclipse": {
+        "title": "Eclipse: shoes, accessories and 360°",
+        "body": "The Eclipse stage is designed for small and medium products: shoes, bags, accessories, design objects or beauty. Its built-in turntable enables 360° photo and video. It has a Canon EOS R with a 24–105 mm zoom, motorized on four axes (height, tilt, zoom and rotation) and controlled from an iPad, under continuous High-CRI LED lighting. It rents for €{{eHour}} excl. VAT per hour, €{{eHalf}} excl. VAT per half day and €{{eFull}} excl. VAT per day.",
+        "link": "See the Eclipse stage"
+      },
+      "formats": {
+        "title": "Delivered formats",
+        "body": "Photos are delivered as JPG, PNG, TIFF and RAW. On the Eclipse stage, video is delivered as MP4 and MOV."
+      },
+      "team": {
+        "title": "With or without a photographer",
+        "body": "You can come with your own crew or without a photographer. The studio provides the stage, the machines, the lighting and the technical operator. A photographer, stylist or model can be provided on request, and photo retouching can be added to your booking."
+      },
+      "onModel": {
+        "title": "What about on-model shots?",
+        "body": "For clothing worn by a model, in photo or video, use the Live stage, presented on our on-model photo studio page.",
+        "link": "See the on-model photo studio"
+      },
+      "studio": {
+        "title": "A 240 m² studio in Saint-Ouen, on the edge of Paris",
+        "body": "E-Do Studio is located at 69 boulevard Victor Hugo, Saint-Ouen. On site: a loading dock, parking, two equipped make-up stations, two fitting rooms and a fully equipped kitchen. The studio also has a 32 m² two-sided cyclorama for photo and video on an infinite white backdrop, and post-production.",
+        "cyclorama": "See the cyclorama",
+        "postprod": "See post-production"
+      },
+      "booking": {
+        "title": "Book a packshot stage",
+        "body": "Stages are booked online: pick the stage and your slots, leave your details, and your quote is sent to you by email. For a custom project, write to us from the contact page. Would you rather see the studio first? Visits are free, take about an hour and run Monday to Friday, 9 am to 6 pm.",
+        "book": "Book a stage"
+      }
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "price": {
+        "question": "How much does a packshot stage cost?",
+        "answer": "Horizontal: €{{hHour}} excl. VAT per hour, €{{hHalf}} per half day, €{{hFull}} per day. Vertical: €{{vHour}} excl. VAT per hour, €{{vHalf}} per half day, €{{vFull}} per day. Eclipse: €{{eHour}} excl. VAT per hour, €{{eHalf}} per half day, €{{eFull}} per day."
+      },
+      "which": {
+        "question": "Which stage should I choose for my packshots?",
+        "answer": "Horizontal for flat products, Vertical for ghost or pinned clothing, Eclipse for shoes, bags, accessories, design objects or beauty, and for 360° photography."
+      },
+      "cutout": {
+        "question": "Are the images cut out?",
+        "answer": "Yes: the Horizontal and Vertical stages include automatic image cut-out."
+      }
+    },
+    "serviceType": "E-commerce packshot studio"
+  },
   "plateau": {
     "rates": "Rates excl. VAT",
     "specs": "Specifications",
@@ -640,6 +701,7 @@
   "footer": {
     "nav": "Site map",
     "onModel": "On-model photo studio",
-    "studio": "The studio"
+    "studio": "The studio",
+    "packshot": "Packshot studio"
   }
 }

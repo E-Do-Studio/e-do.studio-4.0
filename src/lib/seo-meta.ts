@@ -95,6 +95,18 @@ export const META: Record<string, Record<Lang, PageMeta>> = {
         'On-model shooting on the Live stage in Saint-Ouen, on the edge of Paris: motorized Canon EOS R controlled from an iPad, continuous LED, e-commerce photo and video. Book online.',
     },
   },
+  packshot: {
+    fr: {
+      title: 'Studio packshot e-commerce à Paris | E-Do Studio',
+      description:
+        'Trois plateaux packshot à Saint-Ouen, aux portes de Paris : à plat (Horizontal), ghost et piqué (Vertical), chaussures, accessoires et 360° (Eclipse). Détourage automatique. Réservation en ligne.',
+    },
+    en: {
+      title: 'E-commerce packshot studio in Paris | E-Do Studio',
+      description:
+        'Three packshot stages in Saint-Ouen, on the edge of Paris: flat lay (Horizontal), ghost and pinned (Vertical), shoes, accessories and 360° (Eclipse). Automatic cut-out. Book online.',
+    },
+  },
   discovery: {
     fr: {
       title: 'Discovery — Blog & actualités — E-Do Studio',
@@ -246,6 +258,11 @@ export const PRERENDER_ROUTE_PAIRS: readonly RoutePair[] = [
     metaKey: 'on-model',
     fr: '/fr/studio-photo-mannequin',
     en: '/en/on-model-photo-studio',
+  },
+  {
+    metaKey: 'packshot',
+    fr: '/fr/studio-packshot-paris',
+    en: '/en/packshot-studio-paris',
   },
   { metaKey: 'discovery', fr: '/fr/discovery', en: '/en/discovery' },
   { metaKey: 'postprod', fr: '/fr/post-production', en: '/en/post-production' },
