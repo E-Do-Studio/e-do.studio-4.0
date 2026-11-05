@@ -46,6 +46,7 @@ const LOCALIZED = {
   bookConfirmation: { fr: '/reserver/confirmation', en: '/book/confirmation' },
   bookContact: { fr: '/reserver/contact', en: '/book/contact' },
   onModel: { fr: '/studio-photo-mannequin', en: '/on-model-photo-studio' },
+  packshot: { fr: '/studio-packshot-paris', en: '/packshot-studio-paris' },
 } satisfies Record<string, Bilingual<string>>;
 
 type LocalizedKey = keyof typeof LOCALIZED;
@@ -98,6 +99,7 @@ export const SCREEN_TO_PATH: Record<string, (lang: Lang) => string> = {
   'plateau-eclipse': (l) => `/${l}/plateau/eclipse`,
   'plateau-live': (l) => `/${l}/plateau/live`,
   'on-model': (l) => at('onModel', l),
+  packshot: (l) => at('packshot', l),
   discovery: (l) => `/${l}/discovery`,
   postprod: (l) => `/${l}/post-production`,
   gallery: (l) => at('gallery', l),

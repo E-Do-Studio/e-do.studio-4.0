@@ -105,6 +105,10 @@ const SiteFooter = () => {
               href: SCREEN_TO_PATH['on-model'](lang),
             },
             {
+              label: t('footer.packshot'),
+              href: SCREEN_TO_PATH.packshot(lang),
+            },
+            {
               label: t('common.postProdLong'),
               href: SCREEN_TO_PATH.postprod(lang),
             },

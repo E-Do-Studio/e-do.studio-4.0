@@ -397,6 +397,52 @@ export function buildStudioRentalServiceSchema(
   });
 }
 
+export interface BuildPackshotServiceArgs {
+  lang: Lang;
+  pathname: string;
+  /** Tarifs HT des plateaux packshot, tels que le tunnel les facture. */
+  offers: { name: string; price: number }[];
+}
+
+export function buildPackshotServiceSchema({
+  lang,
+  pathname,
+  offers,
+}: BuildPackshotServiceArgs): JsonLdNode {
+  const t = getT(lang);
+  const url = pageUrl(lang, pathname);
+  return compact({
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    '@id': `${url}#service`,
+    serviceType: t('packshotPage.serviceType'),
+    name: t('packshotPage.title'),
+    description: t('packshotPage.intro'),
+    url,
+    areaServed: [
+      { '@type': 'City', name: 'Paris' },
+      { '@type': 'AdministrativeArea', name: 'Île-de-France' },
+    ],
+    provider: { '@id': ORGANIZATION_ID },
+    isRelatedTo: (['plateau-horizontal', 'plateau-vertical', 'plateau-eclipse'] as const).map(
+      (screen) => ({ '@id': `${SITE_URL}${SCREEN_TO_PATH[screen](lang)}#service` }),
+    ),
+    offers: offers.map((o) => ({
+      '@type': 'Offer',
+      name: o.name,
+      priceCurrency: 'EUR',
+      price: String(o.price),
+      // Tarifs HT : sans cette mention, un moteur les lirait comme TTC.
+      priceSpecification: {
+        '@type': 'PriceSpecification',
+        price: String(o.price),
+        priceCurrency: 'EUR',
+        valueAddedTaxIncluded: false,
+      },
+    })),
+  });
+}
+
 export interface BuildOnModelServiceArgs {
   lang: Lang;
   pathname: string;
