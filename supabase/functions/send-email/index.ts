@@ -140,6 +140,9 @@ interface ResendAttachment {
 }
 
 interface SendEmailOptions {
+  // The sender (RESEND_FROM_EMAIL) is not the studio's mailbox: every email
+  // to a client sets this to STUDIO_EMAIL so « Répondre » reaches
+  // contact@e-do.studio; the studio's copies set it to the client.
   replyTo?: string;
   attachments?: ResendAttachment[];
 }
@@ -668,7 +671,7 @@ async function handleBookingEmail(
       booking.client_email,
       `Votre réservation ${booking.reference} — E-Do Studio`,
       renderBookingClient(b, bookingSessions, quote),
-      { attachments: icsAttachment ? [icsAttachment] : undefined },
+      { replyTo: STUDIO_EMAIL, attachments: icsAttachment ? [icsAttachment] : undefined },
     ),
     sendResendEmail(
       resendKey,
@@ -708,6 +711,7 @@ async function handleContactEmail(
       payload.email,
       `Votre message a bien été reçu — E-Do Studio`,
       renderContactClient(payload.nom),
+      { replyTo: STUDIO_EMAIL },
     ),
     sendResendEmail(
       resendKey,
@@ -810,7 +814,7 @@ async function handleBookingStatusChangeEmail(
       booking.client_email,
       statusChangeSubject(payload.reason, booking.reference),
       renderStatusChangeClient(b, bookingSessions, quote, payload.reason, newDate, adminMessage),
-      { attachments: clientIcsAttachment ? [clientIcsAttachment] : undefined },
+      { replyTo: STUDIO_EMAIL, attachments: clientIcsAttachment ? [clientIcsAttachment] : undefined },
     ),
     sendResendEmail(
       resendKey,

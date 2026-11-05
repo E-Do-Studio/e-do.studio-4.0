@@ -384,25 +384,28 @@ export function renderContactAdmin(
   return emailWrap("Contact", null, body);
 }
 
-const STATUS_CHANGE_LABELS: Record<StatusChangeReason, { title: string; intro: string }> = {
+// `intro` takes the booking reference so the client reads which booking
+// changed (« La réservation EDO-R-0042 a été annulée. »).
+const STATUS_CHANGE_LABELS: Record<StatusChangeReason, { title: string; intro: (ref: string) => string }> = {
   report: {
     title: "Réservation reportée",
-    intro: "Votre réservation a été reportée à une nouvelle date. Retrouvez ci-dessous le récapitulatif mis à jour.",
+    intro: () => "Votre réservation a été reportée à une nouvelle date. Retrouvez ci-dessous le récapitulatif mis à jour.",
   },
   rejet: {
-    title: "Réservation non retenue",
-    intro: "Nous sommes au regret de vous informer que nous ne sommes pas en mesure de donner suite à votre demande pour cette date. N'hésitez pas à nous recontacter pour trouver une alternative.",
+    title: "Réservation annulée",
+    intro: (ref) =>
+      `La réservation ${ref} a été annulée. Nous sommes au regret de ne pas pouvoir donner suite à votre demande pour cette date. N'hésitez pas à nous recontacter pour trouver une alternative.`,
   },
   autre: {
     title: "Mise à jour de votre réservation",
-    intro: "Votre réservation a fait l'objet d'une modification. Retrouvez ci-dessous les informations actualisées.",
+    intro: () => "Votre réservation a fait l'objet d'une modification. Retrouvez ci-dessous les informations actualisées.",
   },
 };
 
 export function statusChangeSubject(reason: StatusChangeReason, ref: string): string {
   const subjectByReason: Record<StatusChangeReason, string> = {
     report: `Réservation ${ref} reportée — E-Do Studio`,
-    rejet: `Réservation ${ref} non retenue — E-Do Studio`,
+    rejet: `Réservation annulée — ${ref} — E-Do Studio`,
     autre: `Mise à jour réservation ${ref} — E-Do Studio`,
   };
   return subjectByReason[reason];
@@ -453,7 +456,7 @@ export function renderStatusChangeClient(
   const labels = STATUS_CHANGE_LABELS[reason];
   const greeting = intro(
     `<p style="margin:0 0 14px;font-size:16px;line-height:1.5;color:${C_BLACK};">Bonjour <strong style="font-weight:600;">${escapeHtml(b.client_name)}</strong>,</p>
-    <p style="margin:0;font-size:14px;line-height:1.65;color:${C_GRAY};">${escapeHtml(labels.intro)}</p>`,
+    <p style="margin:0;font-size:14px;line-height:1.65;color:${C_GRAY};">${escapeHtml(labels.intro(b.reference))}</p>`,
   );
   const messageBlock = adminMessage
     ? calloutBlock("Message de l'équipe", escapeHtml(adminMessage))
