@@ -619,7 +619,12 @@ function mergeLocalizedItems(
   });
 }
 
-function mediaListToItems(items: StrapiMedia[] | undefined): MediaItem[] {
+// Les vidéos passent devant les images quel que soit l'ordre de saisie dans
+// Strapi : la première vue du carrousel d'une machine est toujours la vidéo
+// (consigne studio du 06/11). Le tri est stable, chaque groupe garde son ordre.
+export function mediaListToItems(
+  items: StrapiMedia[] | undefined,
+): MediaItem[] {
   if (!items) return [];
   const out: MediaItem[] = [];
   for (const m of items) {
@@ -639,7 +644,10 @@ function mediaListToItems(items: StrapiMedia[] | undefined): MediaItem[] {
       out.push({ kind: 'image', url, previewUrl, alt, width, height });
     }
   }
-  return out;
+  return [
+    ...out.filter((m) => m.kind === 'video'),
+    ...out.filter((m) => m.kind === 'image'),
+  ];
 }
 
 function formatRowAmount(
