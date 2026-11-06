@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { activeNavId, pageLabelKey } from '../lib/nav';
 import { SCREEN_TO_PATH } from '../lib/screens';
 import { formatDim } from './format-dim';
-import { DEFAULT_ZONE, parseZone, ZONES } from './zones';
+import { parseZone, ZONES } from './zones';
 
 describe('parseZone', () => {
   it('retient une zone connue', () => {
@@ -10,9 +10,9 @@ describe('parseZone', () => {
   });
 
   it.each([undefined, '', 'atelier', 42])(
-    'retombe sur la zone par défaut (%s)',
+    'ne désigne aucune zone (%s)',
     (value) => {
-      expect(parseZone(value)).toBe(DEFAULT_ZONE);
+      expect(parseZone(value)).toBeNull();
     },
   );
 

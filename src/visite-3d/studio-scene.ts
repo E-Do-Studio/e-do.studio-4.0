@@ -52,7 +52,7 @@ export interface StudioScene {
   setMeasuring: (on: boolean) => void;
   clearMeasures: () => void;
   setCut: (height: number) => void;
-  setActiveZone: (id: ZoneId) => void;
+  setActiveZone: (id: ZoneId | null) => void;
   dispose: () => void;
 }
 
@@ -586,6 +586,14 @@ export function createStudioScene(opts: StudioSceneOptions): StudioScene {
     );
   // Éléments arasés à la hauteur de coupe.
   const tall: { m: THREE.Mesh; y0: number; h: number }[] = [];
+  // Normale sortante (nx, nz) et milieu de chaque pan de mur.
+  const walls: {
+    group: THREE.Group;
+    mx: number;
+    mz: number;
+    nx: number;
+    nz: number;
+  }[] = [];
 
   // ---- Maquette (cotes issues du scan et du relevé Polycam)
   const outline: [number, number][] = [
@@ -644,17 +652,43 @@ export function createStudioScene(opts: StudioSceneOptions): StudioScene {
       const n2 = [e2[1] / l2, -e2[0] / l2];
       outer.push([p[0] + t * (n1[0] + n2[0]), p[1] + t * (n1[1] + n2[1])]);
     }
-    const sh = new THREE.Shape(outer.map(([x, z]) => new THREE.Vector2(x, -z)));
-    sh.holes.push(
-      new THREE.Path(pts.map(([x, z]) => new THREE.Vector2(x, -z))),
-    );
-    const wg = new THREE.ExtrudeGeometry(sh, { depth: H, bevelEnabled: false });
-    wg.rotateX(-Math.PI / 2);
-    wg.translate(0, -H / 2, 0);
-    const uv = wg.attributes.uv;
-    for (let k = 0; k < uv.count; k++)
-      uv.setXY(k, uv.getX(k) / 2, uv.getY(k) / 2);
-    tall.push({ m: add(wg, MAT.plaster, 0, H / 2, 0), y0: 0, h: H });
+    // Un pan par côté du contour, chacun dans son groupe : en vue 3D, les pans
+    // tournés vers la caméra se masquent pour qu'aucun mur ne bouche la vue
+    // (voir `updateWalls`). Le groupe porte ce masquage, le maillage garde
+    // celui de la coupe.
+    for (let k = 0; k < n; k++) {
+      const k2 = (k + 1) % n;
+      const quad = [pts[k], pts[k2], outer[k2], outer[k]];
+      const sh = new THREE.Shape(
+        quad.map(([x, z]) => new THREE.Vector2(x, -z)),
+      );
+      const wg = new THREE.ExtrudeGeometry(sh, {
+        depth: H,
+        bevelEnabled: false,
+      });
+      wg.rotateX(-Math.PI / 2);
+      wg.translate(0, -H / 2, 0);
+      const uv = wg.attributes.uv;
+      for (let j = 0; j < uv.count; j++)
+        uv.setXY(j, uv.getX(j) / 2, uv.getY(j) / 2);
+      const group = new THREE.Group();
+      target.add(group);
+      tall.push({
+        m: add(wg, MAT.plaster, 0, H / 2, 0, { to: group }),
+        y0: 0,
+        h: H,
+      });
+      const ex = pts[k2][0] - pts[k][0];
+      const ez = pts[k2][1] - pts[k][1];
+      const l = Math.hypot(ex, ez);
+      walls.push({
+        group,
+        mx: (pts[k][0] + pts[k2][0]) / 2,
+        mz: (pts[k][1] + pts[k2][1]) / 2,
+        nx: ez / l,
+        nz: -ex / l,
+      });
+    }
   }
 
   // Toiture : poutres béton, bac acier nervuré (visible par-dessous seulement),
@@ -688,8 +722,19 @@ export function createStudioScene(opts: StudioSceneOptions): StudioScene {
   // 6 m de large, 5 m de haut.
   {
     const CY = { x0: 0.9, x1: 5.9, z0: 3.45, z1: 9.45, h: 5.0, r: 0.6 };
-    box(CY.x0, CY.x1, CY.z1, CY.z1 + 0.08, CY.h, MAT.cyclo);
-    box(CY.x1, CY.x1 + 0.08, CY.z0, CY.z1 + 0.08, CY.h, MAT.cyclo);
+    // Ses deux parois masquent tout le plateau quand on les voit de dos : elles
+    // suivent la même règle que les murs, chacune avec sa gorge.
+    const back = new THREE.Group();
+    const side = new THREE.Group();
+    target.add(back, side);
+    walls.push(
+      { group: back, mx: (CY.x0 + CY.x1) / 2, mz: CY.z1, nx: 0, nz: 1 },
+      { group: side, mx: CY.x1, mz: (CY.z0 + CY.z1) / 2, nx: 1, nz: 0 },
+    );
+    box(CY.x0, CY.x1, CY.z1, CY.z1 + 0.08, CY.h, MAT.cyclo, 0, { to: back });
+    box(CY.x1, CY.x1 + 0.08, CY.z0, CY.z1 + 0.08, CY.h, MAT.cyclo, 0, {
+      to: side,
+    });
     box(CY.x0, CY.x1, CY.z0, CY.z1, 0.015, MAT.cyclo, 0, { cast: false });
     const cove = new THREE.Shape();
     const r = CY.r;
@@ -705,8 +750,12 @@ export function createStudioScene(opts: StudioSceneOptions): StudioScene {
       });
     add(ext(CY.x1 - CY.x0), MAT.cyclo, CY.x0, 0.015, CY.z1, {
       ry: Math.PI / 2,
+      to: back,
     });
-    add(ext(CY.z1 - CY.z0), MAT.cyclo, CY.x1, 0.015, CY.z1, { ry: Math.PI });
+    add(ext(CY.z1 - CY.z0), MAT.cyclo, CY.x1, 0.015, CY.z1, {
+      ry: Math.PI,
+      to: side,
+    });
   }
   // Éclairage du cyclo : deux flashs sur pied avec boîte à lumière, un trépied
   // caméra. Masqués en mode plateau libre.
@@ -1563,9 +1612,18 @@ export function createStudioScene(opts: StudioSceneOptions): StudioScene {
 
   // ---- Cotes
   const coteGroup = new THREE.Group();
+  // Même règle que les murs : en vue 3D, une cote du fond passerait à travers
+  // la maquette, seules celles du côté ouvert restent.
+  const cotes: typeof walls = [];
   scene.add(coteGroup);
   {
-    const mat = new THREE.LineBasicMaterial({ color: opts.colors.ink });
+    // Atténuées : les cotes renseignent, elles ne doivent pas concurrencer la
+    // maquette ni les étiquettes de zone.
+    const mat = new THREE.LineBasicMaterial({
+      color: opts.colors.ink,
+      transparent: true,
+      opacity: 0.18,
+    });
     for (const c of COTES) {
       const off = 0.7;
       const t = 0.25;
@@ -1587,7 +1645,16 @@ export function createStudioScene(opts: StudioSceneOptions): StudioScene {
         new THREE.Vector3(c.b[0], y, c.b[1]),
         B.clone().add(tick),
       ];
-      coteGroup.add(
+      const g = new THREE.Group();
+      coteGroup.add(g);
+      cotes.push({
+        group: g,
+        mx: (c.a[0] + c.b[0]) / 2,
+        mz: (c.a[1] + c.b[1]) / 2,
+        nx: c.o[0],
+        nz: c.o[1],
+      });
+      g.add(
         new THREE.LineSegments(
           new THREE.BufferGeometry().setFromPoints(pts),
           mat,
@@ -1595,11 +1662,11 @@ export function createStudioScene(opts: StudioSceneOptions): StudioScene {
       );
       const el = document.createElement('div');
       el.className =
-        'whitespace-nowrap bg-background px-1 font-mono text-[11px] tabular-nums text-foreground';
+        'whitespace-nowrap bg-muted px-0.5 font-mono text-[8px] tabular-nums text-muted-foreground/70';
       el.textContent = fmt(c.v);
       const lab = new CSS2DObject(el);
       lab.position.copy(A).add(B).multiplyScalar(0.5);
-      coteGroup.add(lab);
+      g.add(lab);
     }
   }
 
@@ -1608,12 +1675,20 @@ export function createStudioScene(opts: StudioSceneOptions): StudioScene {
   for (const z of opts.zones) {
     const el = document.createElement('button');
     el.type = 'button';
-    el.textContent = z.label;
+    el.setAttribute('aria-label', z.label);
+    const name = document.createElement('span');
+    name.textContent = z.label;
+    // Un point seul : nommées toutes à la fois, les étiquettes couvraient la
+    // maquette. Le rail les nomme déjà ; ici le nom n'apparaît qu'au survol
+    // ou sur la zone choisie.
+    name.className =
+      'hidden group-hover:inline group-focus-visible:inline group-data-[active]:inline';
+    el.append(name);
     // L'état choisi passe par l'inversion orange, comme la sélection partout
     // ailleurs sur le site ; `data-active` et non une classe ajoutée, pour que
     // tout le dessin reste écrit ici, en un seul endroit.
     el.className =
-      'pointer-events-auto flex cursor-pointer items-center gap-1.5 whitespace-nowrap border border-foreground bg-background py-0.5 pr-1.5 pl-1 font-mono text-[10.5px] uppercase tracking-widest text-foreground before:size-1.5 before:bg-primary before:content-[""] hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary data-[active]:border-primary data-[active]:bg-primary data-[active]:text-primary-foreground data-[active]:before:bg-primary-foreground';
+      'group pointer-events-auto relative flex min-h-2 min-w-2 after:absolute after:-inset-2 after:content-[""] cursor-pointer items-center justify-center gap-1 whitespace-nowrap bg-background p-[2px] font-mono text-[9px] uppercase leading-none tracking-wider text-foreground before:size-1 before:shrink-0 before:bg-primary before:content-[""] hover:pr-1 focus-visible:pr-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary data-[active]:bg-primary data-[active]:pr-1 data-[active]:text-primary-foreground data-[active]:before:bg-primary-foreground';
     el.addEventListener('pointerdown', (e) => e.stopPropagation());
     el.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -1848,8 +1923,20 @@ export function createStudioScene(opts: StudioSceneOptions): StudioScene {
     invalidate();
   };
 
-  const setActiveZone = (id: ZoneId) => {
+  const setActiveZone = (id: ZoneId | null) => {
     for (const [zid, el] of pins) el.toggleAttribute('data-active', zid === id);
+  };
+
+  // Vue 3D : un pan dont la caméra voit la face extérieure s'interpose entre
+  // elle et le studio, on le masque. En plan, tout reste visible.
+  const updateWalls = () => {
+    const p = cam.position;
+    for (const w of walls)
+      w.group.visible =
+        cam !== persp || (p.x - w.mx) * w.nx + (p.z - w.mz) * w.nz <= 0;
+    for (const c of cotes)
+      c.group.visible =
+        cam !== persp || (p.x - c.mx) * c.nx + (p.z - c.mz) * c.nz > 0;
   };
 
   // ---- Rendu
@@ -1861,6 +1948,7 @@ export function createStudioScene(opts: StudioSceneOptions): StudioScene {
     controls.update();
     if (!dirty) return;
     dirty = false;
+    updateWalls();
     if (renderPass.camera !== cam)
       bindCamera(cam as THREE.PerspectiveCamera | THREE.OrthographicCamera);
     composer.render();
