@@ -5,7 +5,7 @@ import type { StudioView } from './studio-scene';
 import { ZONES, type ZoneId } from './zones';
 
 interface TourRailProps {
-  zone: ZoneId;
+  zone: ZoneId | null;
   onZone: (id: ZoneId) => void;
   view: StudioView;
   onView: (view: StudioView) => void;

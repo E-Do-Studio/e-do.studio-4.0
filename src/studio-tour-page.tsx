@@ -33,10 +33,15 @@ const StudioTourPage = () => {
   };
   const navigate = useNavigate();
   const zone = parseZone(search.zone);
-  const setZone = (id: ZoneId) =>
+  // Choisir la zone déjà active la désélectionne : la fiche revient au studio
+  // entier.
+  const setZone = (id: ZoneId | null) =>
     navigate({
       to: '.',
-      search: (prev: { zone?: string }) => ({ ...prev, zone: id }),
+      search: (prev: { zone?: string }) => {
+        const { zone: current, ...rest } = prev;
+        return id && id !== current ? { ...rest, zone: id } : rest;
+      },
       replace: true,
     });
 
@@ -68,7 +73,7 @@ const StudioTourPage = () => {
               key: z.id,
               label: t(`studioTour.zones.${z.id}.name`),
             }))}
-            activeKey={zone}
+            activeKey={zone ?? ''}
             onSelect={(key) => setZone(parseZone(key))}
             numbered={false}
             closeLabel={t('common.close')}
