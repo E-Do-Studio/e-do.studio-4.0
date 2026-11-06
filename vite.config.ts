@@ -28,6 +28,24 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  // La visite 3D charge three à la demande : sans cette liste, Vite ne découvre
+  // ces modules qu'au premier passage sur la page, regroupe ses dépendances en
+  // cours de session et invalide le JS des onglets ouverts — l'hydratation
+  // échoue et plus aucun bouton ne répond.
+  optimizeDeps: {
+    include: [
+      'three',
+      'three/examples/jsm/controls/OrbitControls.js',
+      'three/examples/jsm/environments/RoomEnvironment.js',
+      'three/examples/jsm/geometries/RoundedBoxGeometry.js',
+      'three/examples/jsm/loaders/GLTFLoader.js',
+      'three/examples/jsm/postprocessing/EffectComposer.js',
+      'three/examples/jsm/postprocessing/GTAOPass.js',
+      'three/examples/jsm/postprocessing/OutputPass.js',
+      'three/examples/jsm/postprocessing/RenderPass.js',
+      'three/examples/jsm/renderers/CSS2DRenderer.js',
+    ],
+  },
   server: {
     proxy: {
       // En dev seulement : évite le CORS côté navigateur. Les loaders qui

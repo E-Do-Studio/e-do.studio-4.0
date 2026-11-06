@@ -12,7 +12,13 @@ import { bothSlugs } from './screens';
 // Sans React, donc testable : vitest tourne en `environment: 'node'` et ne
 // ramasse que `src/**/*.test.ts` (un `.test.tsx` ne s'exécuterait jamais).
 
-export type MainNavId = 'stages' | 'postprod' | 'gallery' | 'contact' | 'book';
+export type MainNavId =
+  | 'stages'
+  | 'tour'
+  | 'postprod'
+  | 'gallery'
+  | 'contact'
+  | 'book';
 
 // Les clés que `t()` accepte, dérivées de fr.json par l'augmentation de module
 // de i18n/i18next.d.ts. Une clé inexistante devient une erreur de compilation,
@@ -56,6 +62,13 @@ export interface MainNavItem extends NavEntry {
    * à 1023. GALERIE en coûte 99 de plus, et à 768 il n'y en a pas 99.
    */
   compact?: boolean;
+  /**
+   * Rendue seulement à partir de `nav-wide` (1360, `styles.css`). La bande
+   * complète tenait juste dans les 976px de `app` ; une sixième destination y
+   * coûte 116px, et à 1280 RÉSERVER en perdait 41 sous la langue. Le tiroir la
+   * porte à toutes les largeurs.
+   */
+  wide?: boolean;
   id: MainNavId;
 }
 
@@ -79,6 +92,13 @@ export const MAIN_NAV: readonly MainNavItem[] = [
       ...bothSlugs('onModel'),
       ...bothSlugs('packshot'),
     ],
+  },
+  {
+    id: 'tour',
+    screen: 'studio-tour',
+    labelKey: 'common.studioTour',
+    wide: true,
+    match: bothSlugs('studioTour'),
   },
   {
     id: 'postprod',
@@ -141,6 +161,12 @@ export const MENU_NAV: readonly MenuNavItem[] = [
     screen: 'studio-rental',
     labelKey: 'common.studioRental',
     match: bothSlugs('studioRental'),
+  },
+  {
+    id: 'tour',
+    screen: 'studio-tour',
+    labelKey: menuLabel('tour'),
+    match: mainItem('tour').match,
   },
   {
     id: 'gallery',

@@ -143,6 +143,18 @@ export const META: Record<string, Record<Lang, PageMeta>> = {
         '240 m² photo and video studio for hire in Saint-Ouen, on the edge of Paris: two-sided cyclorama, four packshot and on-model stages, parking and loading dock. Book online.',
     },
   },
+  'studio-tour': {
+    fr: {
+      title: 'Visite 3D du studio photo à Saint-Ouen | E-Do Studio',
+      description:
+        'Visitez le studio E-Do en 3D avant de réserver : cyclorama, plateaux Live, Eclipse, Horizontal et Vertical, loges, cuisine et accès matériel, avec leurs dimensions.',
+    },
+    en: {
+      title: '3D Tour of the Photo Studio in Saint-Ouen | E-Do Studio',
+      description:
+        'Tour the E-Do studio in 3D before you book: cyclorama, Live, Eclipse, Horizontal and Vertical stages, dressing rooms, kitchen and loading access, with their dimensions.',
+    },
+  },
   gallery: {
     fr: {
       title: 'Galerie — E-Do Studio Paris',
@@ -272,6 +284,7 @@ export const PRERENDER_ROUTE_PAIRS: readonly RoutePair[] = [
     fr: '/fr/location-studio-photo-paris',
     en: '/en/photo-studio-rental-paris',
   },
+  { metaKey: 'studio-tour', fr: '/fr/visite-3d', en: '/en/3d-tour' },
   { metaKey: 'contact', fr: '/fr/contact', en: '/en/contact' },
 ] as const;
 
