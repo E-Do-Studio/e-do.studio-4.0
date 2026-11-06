@@ -123,7 +123,15 @@ const NavCell = ({ item, active }: { item: MainNavItem; active: boolean }) => {
         //
         // Deux d'entre elles n'ont pas besoin des 976 et montent à `md` : sans
         // elles, 768–1023 laissait un vide qui allait jusqu'à 577px.
-        !item.primary && (item.compact ? 'hidden md:flex' : 'hidden app:flex'),
+        //
+        // Une quatrième : la visite 3D, ajoutée après la mesure, ne monte qu'à
+        // `nav-wide` (1360) — voir `wide` dans MAIN_NAV.
+        !item.primary &&
+          (item.compact
+            ? 'hidden md:flex'
+            : item.wide
+              ? 'hidden nav-wide:flex'
+              : 'hidden app:flex'),
       )}
     >
       {/* Pas d'icône sur la cellule orange. Elle en portait deux, l'une pour

@@ -7,10 +7,12 @@ import { MonoLabel } from './mono-label';
 // rendaient — trois tailles de `h1`, huit paddings, et quatre traitements du
 // sur-titre (orange, gris, pastille pleine, absent).
 //
-// Deux pages, la galerie et le contact, n'ont carrément aucun titre visible :
-// leur `h1` est en `sr-only`. Ce n'est pas un oubli à corriger ici — leur
-// première cellule EST le titre — mais c'est la raison pour laquelle ce
-// composant reste optionnel plutôt qu'imposé par la mise en page.
+// Trois pages, la galerie, le contact et la visite 3D, n'ont carrément aucun
+// titre visible : leur `h1` est en `sr-only`. Ce n'est pas un oubli à corriger
+// ici — leur première cellule EST le titre, et pour la visite c'est la maquette
+// elle-même, qu'un bandeau de titre amputerait de sa hauteur — mais c'est la
+// raison pour laquelle ce composant reste optionnel plutôt qu'imposé par la
+// mise en page.
 //
 // `--radius: 0` vaut aussi pour le sur-titre : la « pastille » de la page de
 // confirmation était un rectangle orange, pas un badge. C'est `tone="pill"`.

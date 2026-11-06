@@ -31,7 +31,8 @@ export type CtaId =
   | 'cyclorama'
   | 'postprod'
   | 'discovery'
-  | 'plateau';
+  | 'plateau'
+  | 'studio_tour';
 export type ScrollDepth = 25 | 50 | 75 | 100;
 
 interface BookingContext {

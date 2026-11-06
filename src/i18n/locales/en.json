@@ -337,7 +337,8 @@
     "stages": "Stages",
     "zoomIn": "Zoom in",
     "zoomOut": "Zoom out",
-    "studioRental": "Studio rental"
+    "studioRental": "Studio rental",
+    "studioTour": "3D tour"
   },
   "contact": {
     "byAppointment": "By appointment",
@@ -450,7 +451,8 @@
     "studioHeadline": "The Paris photo & video studio that powers your e-commerce.",
     "studioPhotoAlt": "The e-do studio",
     "studioSubtitle": "Photo, video and retouching in Saint-Ouen, on the edge of Paris. From independent creator to luxury house.",
-    "weekdayHours": "Mon–Fri, 9—18"
+    "weekdayHours": "Mon–Fri, 9—18",
+    "studioTourCta": "Explore the studio in 3D"
   },
   "legalPage": {
     "allRightsReserved": "RCS Bobigny 891 710 857, 69 boulevard Victor Hugo, 93400 Saint-Ouen-sur-Seine. All rights reserved.",
@@ -666,6 +668,108 @@
       "book": {
         "question": "How do I book a stage?",
         "answer": "Online, from the Book page: pick the stage and the time slots, leave your contact details, then “Receive my quote”. For a custom project, write to us from the contact page."
+      }
+    }
+  },
+  "studioTour": {
+    "h1": "3D tour of the E-Do studio in Saint-Ouen",
+    "spaces": "Spaces",
+    "view": "View",
+    "view3d": "3D",
+    "viewPlan": "Floor plan",
+    "freeStage": "Clear floor",
+    "tools": "Tools",
+    "measure": "Measure",
+    "clearMeasures": "Clear measurements",
+    "cut": "Section height",
+    "hintIdle": "Drag to rotate, pinch or scroll to zoom. Click a space to learn more.",
+    "hintFirst": "Click a first point on the model.",
+    "hintSecond": "Click the second point.",
+    "zone": "Zone",
+    "zonesTitle": "Studio zones",
+    "loading": "Loading the model",
+    "error": "The 3D model could not load. Reload the page, or try another browser.",
+    "seeStage": "See the stage page",
+    "approx": "about {{value}}",
+    "dims": {
+      "surface": "Area",
+      "width": "Footprint",
+      "height": "Height under roof"
+    },
+    "zones": {
+      "cyclorama": {
+        "name": "Cyclorama"
+      },
+      "live": {
+        "name": "Live"
+      },
+      "eclipse": {
+        "name": "Eclipse"
+      },
+      "horizontal": {
+        "name": "Horizontal"
+      },
+      "vertical": {
+        "name": "Vertical"
+      },
+      "loge": {
+        "name": "Dressing & make-up",
+        "text": "Two equipped make-up stations and two fitting rooms to get models ready before the shoot."
+      },
+      "table": {
+        "name": "Kitchen & large table",
+        "text": "Fully equipped kitchen and a large table for meals and production meetings."
+      },
+      "lounge": {
+        "name": "Lounge",
+        "text": "A place to host your crew and your clients during the production, right next to the stages."
+      },
+      "livraison": {
+        "name": "Loading dock",
+        "text": "A loading dock brings equipment and collections straight onto the floor."
+      },
+      "entree": {
+        "name": "Main entrance",
+        "text": "The studio reception. Free visits by appointment."
+      },
+      "entree2": {
+        "name": "Second entrance",
+        "text": "Second door into the studio, next to the loading dock."
+      },
+      "wc": {
+        "name": "Toilets",
+        "text": "The studio toilets, between the kitchen and the main entrance."
+      }
+    },
+    "studio": "The studio",
+    "facts": {
+      "makeup": {
+        "label": "Make-up",
+        "value": "2 equipped stations"
+      },
+      "fitting": {
+        "label": "Dressing",
+        "value": "2 fitting rooms"
+      },
+      "kitchen": {
+        "label": "Equipment",
+        "value": "Fully equipped kitchen"
+      },
+      "comfort": {
+        "label": "Comfort",
+        "value": "Air-conditioned studio, very high-speed Wi-Fi, sound system"
+      },
+      "dock": {
+        "label": "Opening",
+        "value": "3.5 m wide, 4.5 m high"
+      },
+      "parking": {
+        "label": "Parking",
+        "value": "On site"
+      },
+      "access": {
+        "label": "Access",
+        "value": "Metro 13 Garibaldi, metro 14 Mairie de Saint-Ouen"
       }
     }
   },

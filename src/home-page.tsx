@@ -224,31 +224,46 @@ const HomePage = () => {
                 était à 2,8 s au p75 (issue #401). Au-dessus du palier, c'est la
                 galerie qui l'emporte, et ce bandeau-ci ne coûte qu'une dérivée
                 de 25vw. */}
+            {/* La photo et l'accès à la visite 3D forment une colonne : le
+                bandeau est une cellule sous la photo, séparée par la gouttière,
+                et non un aplat posé dessus — il en masquerait le bas. */}
             {studioPhotos.length > 0 && (
-              <MediaFrame
-                ratio="photo"
-                tone="background"
-                className="md:w-1/2 md:shrink-0 app:aspect-auto"
-              >
-                <ImageCrossfade
-                  images={studioPhotos.map((p) => ({
-                    url: p.url,
-                    width: p.width,
-                    // Le texte alt est celui du fichier Strapi. Le repli ne
-                    // numérote pas la vue, contrairement au pavé galerie : le
-                    // rang d'une photo dans un fondu n'apprend rien à qui
-                    // l'écoute, là où « 3 / 5 » situe au moins un ensemble.
-                    alt: p.alt || t('home.studioPhotoAlt'),
-                  }))}
-                  sizes="(min-width: 1024px) 25vw, (min-width: 768px) 50vw, 100vw"
-                  priority
-                  // Plus court que le défaut (5 s) : ce bandeau défile des
-                  // vues du même lieu, pas une sélection à lire. Le pavé
-                  // galerie garde le rythme lent.
-                  slideMs={2500}
-                  fadeMs={600}
+              <div className="flex flex-col gap-px bg-border md:w-1/2 md:shrink-0 app:min-h-0">
+                <MediaFrame
+                  ratio="photo"
+                  tone="background"
+                  className="app:aspect-auto app:min-h-0 app:flex-1"
+                >
+                  <ImageCrossfade
+                    images={studioPhotos.map((p) => ({
+                      url: p.url,
+                      width: p.width,
+                      // Le texte alt est celui du fichier Strapi. Le repli ne
+                      // numérote pas la vue, contrairement au pavé galerie : le
+                      // rang d'une photo dans un fondu n'apprend rien à qui
+                      // l'écoute, là où « 3 / 5 » situe au moins un ensemble.
+                      alt: p.alt || t('home.studioPhotoAlt'),
+                    }))}
+                    sizes="(min-width: 1024px) 25vw, (min-width: 768px) 50vw, 100vw"
+                    priority
+                    // Plus court que le défaut (5 s) : ce bandeau défile des
+                    // vues du même lieu, pas une sélection à lire. Le pavé
+                    // galerie garde le rythme lent.
+                    slideMs={2500}
+                    fadeMs={600}
+                  />
+                </MediaFrame>
+                <CtaCell
+                  tone="surface"
+                  title={t('home.studioTourCta')}
+                  href={SCREEN_TO_PATH['studio-tour'](lang)}
+                  onClick={() => {
+                    captureCta('studio_tour');
+                    goto('studio-tour');
+                  }}
+                  className="flex-none"
                 />
-              </MediaFrame>
+              </div>
             )}
           </div>
 

@@ -198,6 +198,10 @@
      déjà cette même bascule sous trois noms. Le `lg:` qui subsiste dans
      `src/components/ui/` appartient à shadcn et ne touche jamais la grille. */
   --breakpoint-app: 64rem; /* 1024px — le bento plein écran s'applique */
+  /* 1360px — la bande d'en-tête a la place d'une sixième destination (la
+     visite 3D). Mesuré en français : à 1280, RÉSERVER perdait 41px sous la
+     langue. Ne décide d'aucune grille, seulement de cette cellule. */
+  --breakpoint-nav-wide: 85rem;
 
   --spacing-header: 3.5rem; /* 56px */
   --spacing-logo: 15rem; /* 240px */

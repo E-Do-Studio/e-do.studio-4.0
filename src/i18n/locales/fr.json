@@ -337,7 +337,8 @@
     "stages": "Plateaux",
     "zoomIn": "Zoomer",
     "zoomOut": "Dézoomer",
-    "studioRental": "Location studio"
+    "studioRental": "Location studio",
+    "studioTour": "Visite 3D"
   },
   "contact": {
     "byAppointment": "Sur rendez-vous",
@@ -450,7 +451,8 @@
     "studioHeadline": "Le studio photo & vidéo qui alimente votre e-commerce, à Paris.",
     "studioPhotoAlt": "Le studio e-do",
     "studioSubtitle": "Photo, vidéo et retouche à Saint-Ouen, aux portes de Paris. Du créateur indépendant à la maison de luxe.",
-    "weekdayHours": "Lun–Ven, 9—18"
+    "weekdayHours": "Lun–Ven, 9—18",
+    "studioTourCta": "Visiter le studio en 3D"
   },
   "legalPage": {
     "allRightsReserved": "RCS Bobigny 891 710 857, 69 boulevard Victor Hugo, 93400 Saint-Ouen-sur-Seine. Tous droits réservés.",
@@ -666,6 +668,108 @@
       "book": {
         "question": "Comment réserver un plateau ?",
         "answer": "En ligne, depuis la page Réserver : choisissez le plateau et les créneaux, laissez vos coordonnées, puis « Recevoir mon devis ». Pour un projet sur mesure, écrivez-nous depuis la page contact."
+      }
+    }
+  },
+  "studioTour": {
+    "h1": "Visite 3D du studio E-Do à Saint-Ouen",
+    "spaces": "Espaces",
+    "view": "Vue",
+    "view3d": "3D",
+    "viewPlan": "Plan",
+    "freeStage": "Plateau libre",
+    "tools": "Outils",
+    "measure": "Mesurer",
+    "clearMeasures": "Effacer les mesures",
+    "cut": "Hauteur de coupe",
+    "hintIdle": "Glisser pour tourner, pincer ou molette pour zoomer. Cliquer un espace pour en savoir plus.",
+    "hintFirst": "Cliquez un premier point sur la maquette.",
+    "hintSecond": "Cliquez le second point.",
+    "zone": "Zone",
+    "zonesTitle": "Zones du studio",
+    "loading": "Chargement de la maquette",
+    "error": "La maquette 3D n’a pas pu se charger. Rechargez la page, ou essayez depuis un autre navigateur.",
+    "seeStage": "Voir la page du plateau",
+    "approx": "environ {{value}}",
+    "dims": {
+      "surface": "Surface",
+      "width": "Emprise",
+      "height": "Hauteur sous toiture"
+    },
+    "zones": {
+      "cyclorama": {
+        "name": "Cyclorama"
+      },
+      "live": {
+        "name": "Live"
+      },
+      "eclipse": {
+        "name": "Eclipse"
+      },
+      "horizontal": {
+        "name": "Horizontal"
+      },
+      "vertical": {
+        "name": "Vertical"
+      },
+      "loge": {
+        "name": "Loges & maquillage",
+        "text": "Deux postes maquillage équipés et deux cabines d’essayage pour préparer les modèles avant le shooting."
+      },
+      "table": {
+        "name": "Cuisine & grande table",
+        "text": "Cuisine entièrement équipée et grande table pour les repas et les points de production."
+      },
+      "lounge": {
+        "name": "Espace lounge",
+        "text": "Espace détente pour accueillir vos équipes et vos clients pendant la production, à côté des plateaux."
+      },
+      "livraison": {
+        "name": "Quai de livraison",
+        "text": "Un quai de livraison facilite l’arrivée du matériel et des collections, directement sur le plateau."
+      },
+      "entree": {
+        "name": "Entrée principale",
+        "text": "L’accueil du studio. Visite gratuite sur rendez-vous."
+      },
+      "entree2": {
+        "name": "Seconde entrée",
+        "text": "Seconde porte d’accès au studio, à côté du quai de livraison."
+      },
+      "wc": {
+        "name": "Toilettes",
+        "text": "Les toilettes du studio, entre la cuisine et l’entrée principale."
+      }
+    },
+    "studio": "Le studio",
+    "facts": {
+      "makeup": {
+        "label": "Maquillage",
+        "value": "2 postes équipés"
+      },
+      "fitting": {
+        "label": "Habillage",
+        "value": "2 cabines d’essayage"
+      },
+      "kitchen": {
+        "label": "Équipement",
+        "value": "Cuisine entièrement équipée"
+      },
+      "comfort": {
+        "label": "Confort",
+        "value": "Studio climatisé, Wi-Fi très haut débit, sound system"
+      },
+      "dock": {
+        "label": "Passage",
+        "value": "3,5 m de large, 4,5 m de haut"
+      },
+      "parking": {
+        "label": "Parking",
+        "value": "Sur place"
+      },
+      "access": {
+        "label": "Accès",
+        "value": "Métro 13 Garibaldi, métro 14 Mairie de Saint-Ouen"
       }
     }
   },

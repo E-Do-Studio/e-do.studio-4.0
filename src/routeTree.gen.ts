@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as LangRouteRouteImport } from './routes/$lang/route'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as LangIndexRouteImport } from './routes/$lang/index'
+import { Route as Lang3dTourRouteImport } from './routes/$lang/3d-tour'
 import { Route as LangContactRouteImport } from './routes/$lang/contact'
 import { Route as LangCycloramaRouteImport } from './routes/$lang/cyclorama'
 import { Route as LangGalerieRouteImport } from './routes/$lang/galerie'
@@ -25,6 +26,7 @@ import { Route as LangPhotoStudioRentalParisRouteImport } from './routes/$lang/p
 import { Route as LangPostProductionRouteImport } from './routes/$lang/post-production'
 import { Route as LangStudioPackshotParisRouteImport } from './routes/$lang/studio-packshot-paris'
 import { Route as LangStudioPhotoMannequinRouteImport } from './routes/$lang/studio-photo-mannequin'
+import { Route as LangVisite3dRouteImport } from './routes/$lang/visite-3d'
 import { Route as DevDesignSystemRouteImport } from './routes/dev/design-system'
 import { Route as DevInventaireRouteImport } from './routes/dev/inventaire'
 import { Route as LangBookIndexRouteImport } from './routes/$lang/book/index'
@@ -67,6 +69,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const LangIndexRoute = LangIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => LangRouteRoute,
+} as any)
+const Lang3dTourRoute = Lang3dTourRouteImport.update({
+  id: '/3d-tour',
+  path: '/3d-tour',
   getParentRoute: () => LangRouteRoute,
 } as any)
 const LangContactRoute = LangContactRouteImport.update({
@@ -132,6 +139,11 @@ const LangStudioPhotoMannequinRoute =
     path: '/studio-photo-mannequin',
     getParentRoute: () => LangRouteRoute,
   } as any)
+const LangVisite3dRoute = LangVisite3dRouteImport.update({
+  id: '/visite-3d',
+  path: '/visite-3d',
+  getParentRoute: () => LangRouteRoute,
+} as any)
 const DevDesignSystemRoute = DevDesignSystemRouteImport.update({
   id: '/dev/design-system',
   path: '/dev/design-system',
@@ -263,6 +275,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$lang': typeof LangRouteRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/$lang/3d-tour': typeof Lang3dTourRoute
   '/$lang/contact': typeof LangContactRoute
   '/$lang/cyclorama': typeof LangCycloramaRoute
   '/$lang/galerie': typeof LangGalerieRoute
@@ -275,6 +288,7 @@ export interface FileRoutesByFullPath {
   '/$lang/post-production': typeof LangPostProductionRoute
   '/$lang/studio-packshot-paris': typeof LangStudioPackshotParisRoute
   '/$lang/studio-photo-mannequin': typeof LangStudioPhotoMannequinRoute
+  '/$lang/visite-3d': typeof LangVisite3dRoute
   '/dev/design-system': typeof DevDesignSystemRoute
   '/dev/inventaire': typeof DevInventaireRoute
   '/$lang/': typeof LangIndexRoute
@@ -303,6 +317,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/$lang/3d-tour': typeof Lang3dTourRoute
   '/$lang/contact': typeof LangContactRoute
   '/$lang/cyclorama': typeof LangCycloramaRoute
   '/$lang/galerie': typeof LangGalerieRoute
@@ -315,6 +330,7 @@ export interface FileRoutesByTo {
   '/$lang/post-production': typeof LangPostProductionRoute
   '/$lang/studio-packshot-paris': typeof LangStudioPackshotParisRoute
   '/$lang/studio-photo-mannequin': typeof LangStudioPhotoMannequinRoute
+  '/$lang/visite-3d': typeof LangVisite3dRoute
   '/dev/design-system': typeof DevDesignSystemRoute
   '/dev/inventaire': typeof DevInventaireRoute
   '/$lang': typeof LangIndexRoute
@@ -345,6 +361,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/$lang': typeof LangRouteRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/$lang/3d-tour': typeof Lang3dTourRoute
   '/$lang/contact': typeof LangContactRoute
   '/$lang/cyclorama': typeof LangCycloramaRoute
   '/$lang/galerie': typeof LangGalerieRoute
@@ -357,6 +374,7 @@ export interface FileRoutesById {
   '/$lang/post-production': typeof LangPostProductionRoute
   '/$lang/studio-packshot-paris': typeof LangStudioPackshotParisRoute
   '/$lang/studio-photo-mannequin': typeof LangStudioPhotoMannequinRoute
+  '/$lang/visite-3d': typeof LangVisite3dRoute
   '/dev/design-system': typeof DevDesignSystemRoute
   '/dev/inventaire': typeof DevInventaireRoute
   '/$lang/': typeof LangIndexRoute
@@ -388,6 +406,7 @@ export interface FileRouteTypes {
     | '/'
     | '/$lang'
     | '/sitemap.xml'
+    | '/$lang/3d-tour'
     | '/$lang/contact'
     | '/$lang/cyclorama'
     | '/$lang/galerie'
@@ -400,6 +419,7 @@ export interface FileRouteTypes {
     | '/$lang/post-production'
     | '/$lang/studio-packshot-paris'
     | '/$lang/studio-photo-mannequin'
+    | '/$lang/visite-3d'
     | '/dev/design-system'
     | '/dev/inventaire'
     | '/$lang/'
@@ -428,6 +448,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/sitemap.xml'
+    | '/$lang/3d-tour'
     | '/$lang/contact'
     | '/$lang/cyclorama'
     | '/$lang/galerie'
@@ -440,6 +461,7 @@ export interface FileRouteTypes {
     | '/$lang/post-production'
     | '/$lang/studio-packshot-paris'
     | '/$lang/studio-photo-mannequin'
+    | '/$lang/visite-3d'
     | '/dev/design-system'
     | '/dev/inventaire'
     | '/$lang'
@@ -469,6 +491,7 @@ export interface FileRouteTypes {
     | '/'
     | '/$lang'
     | '/sitemap.xml'
+    | '/$lang/3d-tour'
     | '/$lang/contact'
     | '/$lang/cyclorama'
     | '/$lang/galerie'
@@ -481,6 +504,7 @@ export interface FileRouteTypes {
     | '/$lang/post-production'
     | '/$lang/studio-packshot-paris'
     | '/$lang/studio-photo-mannequin'
+    | '/$lang/visite-3d'
     | '/dev/design-system'
     | '/dev/inventaire'
     | '/$lang/'
@@ -543,6 +567,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/$lang/'
       preLoaderRoute: typeof LangIndexRouteImport
+      parentRoute: typeof LangRouteRoute
+    }
+    '/$lang/3d-tour': {
+      id: '/$lang/3d-tour'
+      path: '/3d-tour'
+      fullPath: '/$lang/3d-tour'
+      preLoaderRoute: typeof Lang3dTourRouteImport
       parentRoute: typeof LangRouteRoute
     }
     '/$lang/contact': {
@@ -627,6 +658,13 @@ declare module '@tanstack/react-router' {
       path: '/studio-photo-mannequin'
       fullPath: '/$lang/studio-photo-mannequin'
       preLoaderRoute: typeof LangStudioPhotoMannequinRouteImport
+      parentRoute: typeof LangRouteRoute
+    }
+    '/$lang/visite-3d': {
+      id: '/$lang/visite-3d'
+      path: '/visite-3d'
+      fullPath: '/$lang/visite-3d'
+      preLoaderRoute: typeof LangVisite3dRouteImport
       parentRoute: typeof LangRouteRoute
     }
     '/dev/design-system': {
@@ -794,6 +832,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface LangRouteRouteChildren {
+  Lang3dTourRoute: typeof Lang3dTourRoute
   LangContactRoute: typeof LangContactRoute
   LangCycloramaRoute: typeof LangCycloramaRoute
   LangGalerieRoute: typeof LangGalerieRoute
@@ -806,6 +845,7 @@ interface LangRouteRouteChildren {
   LangPostProductionRoute: typeof LangPostProductionRoute
   LangStudioPackshotParisRoute: typeof LangStudioPackshotParisRoute
   LangStudioPhotoMannequinRoute: typeof LangStudioPhotoMannequinRoute
+  LangVisite3dRoute: typeof LangVisite3dRoute
   LangIndexRoute: typeof LangIndexRoute
   LangBookConfirmationRoute: typeof LangBookConfirmationRoute
   LangBookContactRoute: typeof LangBookContactRoute
@@ -831,6 +871,7 @@ interface LangRouteRouteChildren {
 }
 
 const LangRouteRouteChildren: LangRouteRouteChildren = {
+  Lang3dTourRoute: Lang3dTourRoute,
   LangContactRoute: LangContactRoute,
   LangCycloramaRoute: LangCycloramaRoute,
   LangGalerieRoute: LangGalerieRoute,
@@ -843,6 +884,7 @@ const LangRouteRouteChildren: LangRouteRouteChildren = {
   LangPostProductionRoute: LangPostProductionRoute,
   LangStudioPackshotParisRoute: LangStudioPackshotParisRoute,
   LangStudioPhotoMannequinRoute: LangStudioPhotoMannequinRoute,
+  LangVisite3dRoute: LangVisite3dRoute,
   LangIndexRoute: LangIndexRoute,
   LangBookConfirmationRoute: LangBookConfirmationRoute,
   LangBookContactRoute: LangBookContactRoute,
