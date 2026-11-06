@@ -9,7 +9,7 @@ import type { MeasureStep, StudioScene, StudioView } from './studio-scene';
 import { ZONES, type ZoneId } from './zones';
 
 interface StudioViewerProps {
-  zone: ZoneId;
+  zone: ZoneId | null;
   view: StudioView;
   freeStage: boolean;
   measuring: boolean;

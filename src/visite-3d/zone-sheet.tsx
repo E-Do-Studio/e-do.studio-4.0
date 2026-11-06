@@ -15,7 +15,7 @@ import { DimRow } from './dim-row';
 import { type SpaceZoneId, STUDIO_DIMS, zoneById, type ZoneId } from './zones';
 
 interface ZoneSheetProps {
-  zone: ZoneId;
+  zone: ZoneId | null;
   plateaux: Record<string, PlateauSpec> | null;
   className?: string;
 }
@@ -27,8 +27,49 @@ interface ZoneSheetProps {
  * et photo viennent du même enregistrement Strapi, pour qu'une surface ou un
  * prix ne puisse pas différer d'une page à l'autre. Les autres zones n'ont pas
  * de fiche CMS ; leur texte et leurs cotes viennent du relevé du scan.
+ *
+ * Sans zone choisie, la fiche présente le studio entier.
  */
-export const ZoneSheet = ({ zone, plateaux, className }: ZoneSheetProps) => {
+export const ZoneSheet = ({ zone, plateaux, className }: ZoneSheetProps) =>
+  zone ? (
+    <ZoneDetail zone={zone} plateaux={plateaux} className={className} />
+  ) : (
+    <StudioOverview className={className} />
+  );
+
+const StudioOverview = ({ className }: { className?: string }) => {
+  const t = useT();
+  const { goto } = usePageContext();
+  return (
+    <div className={cn('flex min-h-0 flex-col gap-px bg-border', className)}>
+      <SectionIntro
+        as="h2"
+        size="sm"
+        title={t('studioTour.studio')}
+        subtitle={t('studioTour.overview')}
+        className="bg-background app:flex-1"
+      />
+      <div className="flex flex-none flex-col gap-3 bg-background py-3">
+        <KeyValueList pad="tight">
+          {STUDIO_DIMS.map((d) => (
+            <DimRow key={d.key} dim={d} />
+          ))}
+        </KeyValueList>
+      </div>
+      <CtaCell
+        title={t('common.bookNow')}
+        onClick={() => goto('book')}
+        className="flex-none"
+      />
+    </div>
+  );
+};
+
+const ZoneDetail = ({
+  zone,
+  plateaux,
+  className,
+}: ZoneSheetProps & { zone: ZoneId }) => {
   const t = useT();
   const { lang, goto } = usePageContext();
   const navigate = useNavigate();

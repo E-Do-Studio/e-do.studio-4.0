@@ -87,15 +87,14 @@ export const STUDIO_DIMS: readonly ZoneDim[] = [
   { key: 'height', meters: 5.6, approx: true },
 ];
 
-export const DEFAULT_ZONE: ZoneId = 'cyclorama';
-
 const IDS = new Set<string>(ZONES.map((z) => z.id));
 
-/** La zone désignée par un paramètre d'URL, ou la zone par défaut. */
-export const parseZone = (value: unknown): ZoneId =>
-  typeof value === 'string' && IDS.has(value)
-    ? (value as ZoneId)
-    : DEFAULT_ZONE;
+/**
+ * La zone désignée par un paramètre d'URL, ou aucune : sans zone choisie, la
+ * fiche présente le studio entier.
+ */
+export const parseZone = (value: unknown): ZoneId | null =>
+  typeof value === 'string' && IDS.has(value) ? (value as ZoneId) : null;
 
 export const zoneById = (id: ZoneId): Zone => {
   const zone = ZONES.find((z) => z.id === id);
