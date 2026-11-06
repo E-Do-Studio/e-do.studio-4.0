@@ -103,6 +103,7 @@ const Cover = ({
           poster={item.poster}
           objectFit={fit}
           paused={paused}
+          preload="metadata"
           className="absolute inset-0 h-full w-full"
         />
       ) : (
@@ -227,6 +228,7 @@ const ThumbStrip = ({
                   poster={item.poster}
                   objectFit="cover"
                   paused={isActive}
+                  preload="metadata"
                   className="absolute inset-0 h-full w-full"
                 />
               ) : (
