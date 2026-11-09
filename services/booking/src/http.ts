@@ -14,8 +14,10 @@ import {
   DomainError,
   findIdByReference,
   historyFor,
+  LIST_ORDERS,
   listBookings,
   loadBundle,
+  notifyBooking,
   registryFor,
   removeSessions,
   requestResync,
@@ -106,6 +108,9 @@ const studioBookingSchema = z.object({
   urgency: z.string().max(100).nullish(),
   notes: z.string().max(4000).nullish(),
   totalEstimate: z.number().nullish(),
+  preferredDate: isoDate.nullish(),
+  arrivalHour: hour.nullish(),
+  arrivalMinute: minute.nullish(),
   notifyClient: z.boolean().default(true),
   actor: z.string().max(200).nullish(),
   sessions: z
@@ -197,7 +202,10 @@ export function createApp(deps: AppDeps): Hono<Env> {
 
   app.onError((err, c) => {
     if (err instanceof DomainError) {
-      return c.json({ error: err.code, message: err.message }, err.status);
+      return c.json(
+        { error: err.code, message: err.message, ...err.details },
+        err.status,
+      );
     }
     if (err instanceof z.ZodError) {
       return c.json({ error: 'invalid_payload', issues: err.issues }, 400);
@@ -319,10 +327,20 @@ export function createApp(deps: AppDeps): Hono<Env> {
     const q = z
       .object({
         updatedSince: z.string().datetime({ offset: true }).optional(),
+        status: z
+          .string()
+          .transform((v) => v.split(','))
+          .pipe(z.array(z.enum(['draft', 'pending', 'confirmed', 'cancelled'])))
+          .optional(),
+        from: isoDate.optional(),
+        to: isoDate.optional(),
+        order: z.enum(Object.keys(LIST_ORDERS) as [keyof typeof LIST_ORDERS]).optional(),
         limit: z.coerce.number().int().min(1).max(500).default(100),
       })
       .parse(c.req.query());
-    return c.json({ bookings: await listBookings(db, q) });
+    return c.json({
+      bookings: await listBookings(db, { ...q, statuses: q.status }),
+    });
   });
 
   priv.get('/bookings/by-reference/:reference', async (c) => {
@@ -373,6 +391,18 @@ export function createApp(deps: AppDeps): Hono<Env> {
     const body = removeSessionsSchema.parse(await c.req.json());
     await removeSessions(db, id, body.sessionIds, actorOf(c, body.actor), body);
     return c.json(await fullBooking(id));
+  });
+
+  priv.post('/bookings/:id/notify', async (c) => {
+    const id = uuid.parse(c.req.param('id'));
+    const body = z
+      .object({
+        template: z.enum(['created', 'rescheduled', 'cancelled', 'updated']),
+        message: z.string().max(4000).nullish(),
+      })
+      .parse(await c.req.json());
+    await notifyBooking(db, id, body.template, body.message ?? null);
+    return c.json({ ok: true }, 202);
   });
 
   priv.post('/bookings/:id/events', async (c) => {
