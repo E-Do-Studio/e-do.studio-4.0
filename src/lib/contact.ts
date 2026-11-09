@@ -1,4 +1,5 @@
 import type { ContactFormData } from '../types';
+import { bookingServiceUrl } from './bookings';
 import { submitHubspotForm, HUBSPOT_CONTACT_FORM_ID } from './hubspot-forms';
 import {
   capture,
@@ -9,8 +10,10 @@ import {
 
 export async function submitContactForm(data: ContactFormData): Promise<void> {
   try {
+    const service = bookingServiceUrl('contact');
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    if (!supabaseUrl) throw new Error('Supabase URL not configured');
+    if (!service && !supabaseUrl)
+      throw new Error('Supabase URL not configured');
 
     // Best-effort HubSpot form submission, from the browser so the visitor's
     // hubspotutk cookie preserves the contact's Original Source. `nom` is a single
@@ -31,23 +34,27 @@ export async function submitContactForm(data: ContactFormData): Promise<void> {
 
     // Built field by field rather than spread, so form-local state stays local
     // and the anti-spam signals are sent in the shape the edge function expects.
-    const res = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        type: 'contact',
-        nom: data.nom,
-        email: data.email,
-        telephone: data.telephone,
-        societe: data.societe,
-        message: data.message,
-        website: data.website ?? '',
-        elapsedMs: data.formLoadedAt
-          ? Date.now() - data.formLoadedAt
-          : undefined,
-        analytics: { distinct_id: getDistinctId() },
-      }),
-    });
+    const res = await fetch(
+      service ?? `${supabaseUrl}/functions/v1/send-email`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          // Requis par send-email, ignoré par le service de réservation.
+          type: 'contact',
+          nom: data.nom,
+          email: data.email,
+          telephone: data.telephone,
+          societe: data.societe,
+          message: data.message,
+          website: data.website ?? '',
+          elapsedMs: data.formLoadedAt
+            ? Date.now() - data.formLoadedAt
+            : undefined,
+          analytics: { distinct_id: getDistinctId() },
+        }),
+      },
+    );
 
     if (!res.ok) {
       const body = await res.json().catch(() => ({ error: 'Unknown error' }));

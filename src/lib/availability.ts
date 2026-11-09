@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { closingHourForKey, openingHourForKey } from './booking-engine';
+import { bookingServiceUrl } from './bookings';
 import { supabase } from './supabase';
 
 export type AvailabilityState = 'free' | 'unavailable';
@@ -32,11 +33,7 @@ function isDayFullyBooked(
   openHour: number,
   closeHour: number,
 ): boolean {
-  for (
-    let start = openHour;
-    start <= closeHour - rentalHours;
-    start++
-  ) {
+  for (let start = openHour; start <= closeHour - rentalHours; start++) {
     let fits = true;
     for (let h = start; h < start + rentalHours; h++) {
       if (occupiedHours.has(h)) {
@@ -70,13 +67,10 @@ async function fetchOccupancy(
   to: string,
   signal: AbortSignal,
 ): Promise<Occupancy | null> {
-  const service = import.meta.env.VITE_BOOKING_API_URL;
+  const service = bookingServiceUrl('availability');
   if (service) {
     const params = new URLSearchParams({ plateau: plateauKey, from, to });
-    const res = await fetch(
-      `${service.replace(/\/$/, '')}/v1/public/availability?${params}`,
-      { signal },
-    );
+    const res = await fetch(`${service}?${params}`, { signal });
     if (!res.ok) return null;
     const body = (await res.json()) as {
       sessions: Occupancy['sessions'];

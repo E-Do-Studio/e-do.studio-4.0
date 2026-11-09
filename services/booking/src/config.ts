@@ -28,6 +28,13 @@ const schema = z.object({
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   GOOGLE_REFRESH_TOKEN: z.string().optional(),
   HUBSPOT_PRIVATE_APP_TOKEN: z.string().optional(),
+  // Chat du site : Gemini (réponses et embeddings), GLM en secours.
+  GEMINI_API_KEY: z.string().optional(),
+  ZAI_API_KEY: z.string().optional(),
+  // Formulaire de contact : inerte tant que le site n'envoie pas de jeton.
+  TURNSTILE_SECRET_KEY: z.string().optional(),
+  POSTHOG_PROJECT_TOKEN: z.string().optional(),
+  POSTHOG_HOST: z.string().default('https://eu.i.posthog.com'),
   // Désactive le worker (instance API seule, ou import).
   WORKER_ENABLED: z
     .enum(['true', 'false'])
@@ -56,6 +63,11 @@ export interface Config {
   googleCalendarId: string;
   googleAuth: GoogleAuthConfig;
   hubspotToken: string | undefined;
+  geminiKey: string | undefined;
+  zaiKey: string | undefined;
+  turnstileSecret: string | undefined;
+  posthogToken: string | undefined;
+  posthogHost: string;
   workerEnabled: boolean;
 }
 
@@ -107,6 +119,11 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     googleCalendarId: e.GOOGLE_CALENDAR_ID,
     googleAuth,
     hubspotToken: e.HUBSPOT_PRIVATE_APP_TOKEN,
+    geminiKey: e.GEMINI_API_KEY,
+    zaiKey: e.ZAI_API_KEY,
+    turnstileSecret: e.TURNSTILE_SECRET_KEY,
+    posthogToken: e.POSTHOG_PROJECT_TOKEN,
+    posthogHost: e.POSTHOG_HOST,
     workerEnabled: e.WORKER_ENABLED,
   };
 }

@@ -1,7 +1,9 @@
 # Service de réservation e-do
 
-Remplace les Edge Functions Supabase de la réservation (`create-booking`,
-`calendar-sync`, `send-email` pour la partie réservation) et la base Supabase.
+Remplace Supabase pour tout le site : les Edge Functions (`create-booking`,
+`calendar-sync`, `send-email`, `chat`, `ical`) et la base (réservations,
+historique, jours bloqués, base de connaissances du chat, messages du
+formulaire de contact).
 Node 22 + Postgres, une seule application Coolify : l'API et le worker
 tournent dans le même processus.
 
@@ -29,6 +31,9 @@ Publique (CORS limité à `ALLOWED_ORIGINS`, débit limité par IP) :
 - `POST /v1/public/bookings` : tunnel du site. Le devis est recalculé avec `src/lib/booking-engine.ts`. Réponses : `{ reference, total }` (201), 409 `slot_taken`, 400.
 - `GET /v1/public/availability?plateau=&from=&to=` : occupation et jours bloqués, sans aucune donnée client.
 - `POST /v1/public/booking-failures` : échec du tunnel côté navigateur, alerte critique immédiate.
+- `POST /v1/public/contact` : formulaire de contact (anti-spam, Turnstile si `TURNSTILE_SECRET_KEY`, 5 messages / 10 min et 15 / jour par IP). Les deux e-mails et HubSpot partent par la file.
+- `POST /v1/public/chat` : l'assistant du site (code repris de `supabase/functions/chat`). Base de connaissances en mémoire (cosinus), disponibilités sans aucune donnée client, brouillon de réservation jamais écrit.
+- `GET /v1/public/ical/:reference` : flux d'abonnement d'une réservation (`METHOD:PUBLISH`).
 
 Privée (`Authorization: Bearer <clé>`, une clé par appelant) :
 
@@ -37,6 +42,8 @@ Privée (`Authorization: Bearer <clé>`, une clé par appelant) :
 - `POST /v1/bookings` : réservation saisie par le studio (`notifyClient`).
 - `POST /v1/bookings/:id/confirm` · `/cancel` · `/reschedule` · `/sessions/remove` · `/events` · `/resync`
 - `PUT|DELETE /v1/blocked-dates/:date`
+- `GET /v1/ical?plateau=` : flux de toutes les réservations actives.
+- `GET|POST /v1/admin/chat-knowledge` : base de connaissances du chat, écrite par `pnpm chat:reindex` quand `BOOKING_API_URL` et `BOOKING_API_KEY` sont posés.
 - `GET /v1/admin/status` · `POST /v1/admin/reconcile` · `POST /v1/admin/jobs/:id/retry`
 
 ## Variables d'environnement
@@ -52,6 +59,10 @@ Privée (`Authorization: Bearer <clé>`, une clé par appelant) :
 | `GOOGLE_SERVICE_ACCOUNT_JSON` | compte de service avec qui l'agenda est partagé (« Modifier les événements »)… |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REFRESH_TOKEN` | …ou jeton OAuth du compte propriétaire |
 | `HUBSPOT_PRIVATE_APP_TOKEN` | facultatif |
+| `GEMINI_API_KEY` | chat (réponses et embeddings) |
+| `ZAI_API_KEY` | chat, GLM essayé avant Gemini (facultatif) |
+| `TURNSTILE_SECRET_KEY` | contact (facultatif, à poser seulement quand le site envoie le jeton) |
+| `POSTHOG_PROJECT_TOKEN`, `POSTHOG_HOST` | événements serveur (facultatif) |
 | `WORKER_ENABLED` | `false` pour une instance API seule |
 
 ## Développement

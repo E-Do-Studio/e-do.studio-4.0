@@ -42,10 +42,18 @@ async function fetchAll(table: string): Promise<Row[]> {
   }
 }
 
-async function upsert(q: Queryable, table: string, rows: Row[], columns: string[]) {
+async function upsert(
+  q: Queryable,
+  table: string,
+  rows: Row[],
+  columns: string[],
+  /** Colonnes tableau Postgres (text[], real[]) : passées telles quelles. */
+  arrayColumns: string[] = [],
+) {
   for (const row of rows) {
     const values = columns.map((c) => {
       const v = row[c];
+      if (arrayColumns.includes(c)) return v ?? null;
       return v !== null && typeof v === 'object' ? JSON.stringify(v) : (v ?? null);
     });
     const placeholders = columns.map((_, i) => `$${i + 1}`).join(', ');
@@ -80,14 +88,29 @@ const EVENT_COLUMNS = [
   'actor_source', 'data', 'created_at',
 ];
 const BLOCKED_COLUMNS = ['id', 'date', 'reason', 'created_at'];
+const CHUNK_COLUMNS = [
+  'id', 'kind', 'slug', 'lang', 'title', 'url', 'body', 'tags', 'updated_at',
+  'embedding', 'content_hash',
+];
+const SUBMISSION_COLUMNS = [
+  'id', 'created_at', 'nom', 'email', 'telephone', 'societe', 'message',
+  'ip_hash', 'spam_score', 'spam_reason', 'delivered',
+];
 
-const [bookings, sessions, quotes, events, blocked] = await Promise.all([
+const [bookings, sessions, quotes, events, blocked, chunks, submissions] = await Promise.all([
   fetchAll('bookings'),
   fetchAll('booking_sessions'),
   fetchAll('booking_quotes'),
   fetchAll('booking_events'),
   fetchAll('blocked_dates'),
+  fetchAll('chat_knowledge_chunks'),
+  fetchAll('contact_submissions'),
 ]);
+
+// PostgREST rend un `vector` pgvector en texte « [0.1,0.2,…] ».
+for (const c of chunks) {
+  if (typeof c.embedding === 'string') c.embedding = JSON.parse(c.embedding);
+}
 
 // Supabase acceptait des lignes partielles : on remet les valeurs par défaut.
 for (const b of bookings) {
@@ -150,6 +173,9 @@ console.log(
     quotes: quotes.length,
     events: events.length,
     blockedDates: blocked.length,
+    chatKnowledgeChunks: chunks.length,
+    chunksWithEmbedding: chunks.filter((c) => Array.isArray(c.embedding)).length,
+    contactSubmissions: submissions.length,
     calendarSeeds: seeds.size,
     releasedLineSeeds: releasedSeeds,
     horizon,
@@ -168,6 +194,8 @@ await db.tx(async (q) => {
   await upsert(q, 'booking_quotes', quotes, QUOTE_COLUMNS);
   await upsert(q, 'booking_events', events, EVENT_COLUMNS);
   await upsert(q, 'blocked_dates', blocked, BLOCKED_COLUMNS);
+  await upsert(q, 'chat_knowledge_chunks', chunks, CHUNK_COLUMNS, ['tags', 'embedding', 'spam_reason']);
+  await upsert(q, 'contact_submissions', submissions, SUBMISSION_COLUMNS, ['spam_reason']);
   await q.query(
     `UPDATE bookings SET cancelled_at = COALESCE(cancelled_at, updated_at)
      WHERE status = 'cancelled'`,
