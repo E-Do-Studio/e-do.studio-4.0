@@ -2,6 +2,7 @@
 // Séquentiel exprès : deux synchros d'une même réservation ne se croisent
 // jamais, et le volume d'un studio n'a rien à gagner au parallélisme.
 import { syncHubspotBooking, syncHubspotContact } from './hubspot.ts';
+import { scrubbed, trackService } from './posthog.ts';
 import {
   digestContent,
   markNotified,
@@ -73,12 +74,35 @@ export const jobAlertKey = (job: Pick<Job, 'kind' | 'dedupe_key' | 'id'>) =>
 export async function runJob(deps: WorkerDeps, job: Job): Promise<void> {
   const { db } = deps;
   switch (job.kind) {
-    case 'calendar.sync':
-      await syncBooking(db, deps.calendar, job.payload.bookingId as string);
+    case 'calendar.sync': {
+      const started = Date.now();
+      const result = await syncBooking(db, deps.calendar, job.payload.bookingId as string);
+      if (result.upserted + result.removed > 0) {
+        trackService('calendar_synced', {
+          booking_id: job.payload.bookingId,
+          events_written: result.upserted,
+          events_removed: result.removed,
+          attempts: job.attempts,
+          duration_ms: Date.now() - started,
+        });
+      }
       return;
+    }
     case 'calendar.reconcile': {
       const report = await reconcile(db, deps.calendar);
       deps.log?.('réconciliation agenda', { ...report });
+      trackService('calendar_reconciled', {
+        events_scanned: report.scanned,
+        events_ours: report.ours,
+        orphans_removed: report.removedOrphans.length,
+        events_adopted: report.adopted.length,
+        events_recreated: report.recreated.length,
+        unknown_references: report.unknown.length,
+        bookings_resynced: report.resyncQueued,
+      });
+      for (const orphan of report.removedOrphans) {
+        trackService('calendar_orphan_removed', { reference: orphan.split(' ')[0] });
+      }
       return;
     }
     case 'email.client':
@@ -89,6 +113,12 @@ export async function runJob(deps: WorkerDeps, job: Job): Promise<void> {
         job.payload as unknown as EmailPayload,
         job,
       );
+      trackService('booking_email_sent', {
+        recipient: 'client',
+        template: (job.payload as unknown as EmailPayload).template,
+        booking_id: job.payload.bookingId,
+        attempts: job.attempts,
+      });
       return;
     case 'email.studio':
       await sendStudioEmail(
@@ -98,6 +128,12 @@ export async function runJob(deps: WorkerDeps, job: Job): Promise<void> {
         job.payload as unknown as EmailPayload,
         job.id,
       );
+      trackService('booking_email_sent', {
+        recipient: 'studio',
+        template: (job.payload as unknown as EmailPayload).template,
+        booking_id: job.payload.bookingId,
+        attempts: job.attempts,
+      });
       return;
     case 'email.contact':
       await sendContactEmail(
@@ -106,6 +142,10 @@ export async function runJob(deps: WorkerDeps, job: Job): Promise<void> {
         job.payload as unknown as Parameters<typeof sendContactEmail>[2],
         job.id,
       );
+      trackService('contact_email_sent', {
+        recipient: job.payload.recipient,
+        attempts: job.attempts,
+      });
       return;
     case 'hubspot.contact': {
       if (!deps.hubspotToken) return;
@@ -113,7 +153,9 @@ export async function runJob(deps: WorkerDeps, job: Job): Promise<void> {
       // Pas de reprise, comme pour les réservations : une note par appel.
       try {
         await syncHubspotContact(deps.hubspotToken, c);
+        trackService('hubspot_synced', { kind: 'contact' });
       } catch (err) {
+        trackService('hubspot_failed', { kind: 'contact', error: scrubbed(errorText(err)) });
         await raiseAlert(db, {
           key: `hubspot:contact:${job.id}`,
           severity: 'info',
@@ -143,7 +185,13 @@ export async function runJob(deps: WorkerDeps, job: Job): Promise<void> {
           notes: booking.notes,
           plateaux: sessions.map((s) => s.plateau_key),
         });
+        trackService('hubspot_synced', { kind: 'booking', reference: booking.reference });
       } catch (err) {
+        trackService('hubspot_failed', {
+          kind: 'booking',
+          reference: booking.reference,
+          error: scrubbed(errorText(err)),
+        });
         await raiseAlert(db, {
           key: `hubspot:${booking.id}`,
           severity: 'info',
@@ -163,6 +211,7 @@ export async function runJob(deps: WorkerDeps, job: Job): Promise<void> {
         html,
         idempotencyKey: `alerts-${pending.map((a) => `${a.id}.${a.occurrences}`).join('-')}`.slice(0, 256),
       });
+      trackService('alert_email_sent', { alerts: pending.length });
       await markNotified(
         db,
         pending.map((a) => a.id),
@@ -178,6 +227,7 @@ export async function runJob(deps: WorkerDeps, job: Job): Promise<void> {
         ...digest,
         idempotencyKey: `digest-${job.id}`,
       });
+      trackService('alert_digest_sent', { open: open.length, resolved: resolved.length });
       return;
     }
   }
@@ -195,6 +245,12 @@ export async function tick(deps: WorkerDeps): Promise<boolean> {
   } catch (err) {
     const message = errorText(err);
     const outcome = await markFailed(deps.db, job, message);
+    trackService(outcome === 'dead' ? 'booking_job_abandoned' : 'booking_job_failed', {
+      kind: job.kind,
+      attempts: job.attempts,
+      booking_id: job.payload.bookingId ?? null,
+      error: scrubbed(message),
+    });
     deps.log?.('échec de travail', {
       job: job.id,
       kind: job.kind,
