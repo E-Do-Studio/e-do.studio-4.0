@@ -49,6 +49,66 @@ function isDayFullyBooked(
   return true;
 }
 
+interface Occupancy {
+  sessions: {
+    session_date: string | null;
+    arrival_hour: number | null;
+    hours: number | null;
+  }[];
+  blocked: string[];
+}
+
+/**
+ * L'occupation d'un plateau sur une période, sans donnée client. Depuis le
+ * service de réservation quand `VITE_BOOKING_API_URL` est posé, sinon depuis
+ * Supabase (fonction `booking_availability` : la clé anon n'a plus le droit de
+ * lire bookings, qui porte les coordonnées des clients). `null` : échec.
+ */
+async function fetchOccupancy(
+  plateauKey: string,
+  from: string,
+  to: string,
+  signal: AbortSignal,
+): Promise<Occupancy | null> {
+  const service = import.meta.env.VITE_BOOKING_API_URL;
+  if (service) {
+    const params = new URLSearchParams({ plateau: plateauKey, from, to });
+    const res = await fetch(
+      `${service.replace(/\/$/, '')}/v1/public/availability?${params}`,
+      { signal },
+    );
+    if (!res.ok) return null;
+    const body = (await res.json()) as {
+      sessions: Occupancy['sessions'];
+      blockedDates: string[];
+    };
+    return { sessions: body.sessions, blocked: body.blockedDates };
+  }
+
+  const [
+    { data: sessData, error: sessErr },
+    { data: blockedData, error: blockedErr },
+  ] = await Promise.all([
+    supabase.rpc('booking_availability', {
+      p_plateau_key: plateauKey,
+      p_from: from,
+      p_to: to,
+    }),
+    (supabase as any)
+      .from('blocked_dates')
+      .select('date')
+      .gte('date', from)
+      .lte('date', to),
+  ]);
+  if (sessErr || blockedErr) return null;
+  return {
+    sessions: sessData ?? [],
+    blocked: ((blockedData ?? []) as { date: string }[])
+      .map((r) => r.date)
+      .filter(Boolean),
+  };
+}
+
 export function useAvailability(
   plateauKey: string | undefined,
   year: number,
@@ -90,35 +150,17 @@ export function useAvailability(
     const lastDay = new Date(year, month + 1, 0).getDate();
     const endDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
 
-    // Une fonction plutôt que la table : la clé anon n'a plus le droit de lire
-    // bookings, qui porte les coordonnées des clients.
-    const sessionsPromise = supabase.rpc('booking_availability', {
-      p_plateau_key: plateauKey,
-      p_from: startDate,
-      p_to: endDate,
-    });
-
-    const blockedPromise = (supabase as any)
-      .from('blocked_dates')
-      .select('date')
-      .gte('date', startDate)
-      .lte('date', endDate);
-
-    Promise.all([sessionsPromise, blockedPromise])
-      .then(([{ data: sessData, error: sessErr }, { data: blockedData, error: blockedErr }]) => {
+    fetchOccupancy(plateauKey, startDate, endDate, controller.signal)
+      .then((occupancy) => {
         if (controller.signal.aborted) return;
 
-        if (sessErr || blockedErr) {
+        if (!occupancy) {
           setLoading(false);
           return;
         }
+        const { sessions: sessData, blocked: blockedData } = occupancy;
 
-        const blockedSet = new Set<string>();
-        if (blockedData) {
-          for (const row of blockedData as unknown as { date: string }[]) {
-            if (row.date) blockedSet.add(row.date);
-          }
-        }
+        const blockedSet = new Set(blockedData);
 
         const openHour = openingHourForKey(plateauKey);
         const closeHour = closingHourForKey(plateauKey);
@@ -165,6 +207,9 @@ export function useAvailability(
         setAvailMap(result);
         setBookedHoursMap(occupiedPerDay);
         setLoading(false);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setLoading(false);
       });
 
     return () => {

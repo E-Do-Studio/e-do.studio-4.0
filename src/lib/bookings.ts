@@ -19,6 +19,25 @@ export interface CreateBookingResult {
   total: number;
 }
 
+/**
+ * Où écrire une réservation. Avec `VITE_BOOKING_API_URL`, le service de
+ * réservation dédié (services/booking) ; sans, les Edge Functions Supabase
+ * d'avant la bascule. La variable se pose au build, une fois les données
+ * importées dans le service : c'est elle qui fait la bascule du site.
+ */
+export function bookingEndpoint(
+  servicePath: 'bookings' | 'booking-failures',
+  supabaseFunction: 'create-booking' | 'send-email',
+): string {
+  const service = import.meta.env.VITE_BOOKING_API_URL;
+  if (service) return `${service.replace(/\/$/, '')}/v1/public/${servicePath}`;
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  if (!supabaseUrl) {
+    throw new Error('VITE_BOOKING_API_URL ou VITE_SUPABASE_URL manquant');
+  }
+  return `${supabaseUrl}/functions/v1/${supabaseFunction}`;
+}
+
 export class SlotTakenError extends Error {
   constructor() {
     super('Ce créneau est déjà réservé. Veuillez choisir un autre horaire.');
@@ -49,10 +68,7 @@ export async function createBooking(
   };
   let status: number | undefined;
   try {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    if (!supabaseUrl) throw new Error('VITE_SUPABASE_URL manquant');
-
-    const res = await fetch(`${supabaseUrl}/functions/v1/create-booking`, {
+    const res = await fetch(bookingEndpoint('bookings', 'create-booking'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       // `analytics` hors de CreateBookingInput : le moteur est partagé avec
@@ -138,16 +154,21 @@ export function reportBookingFailure(input: {
   contactEmail?: string;
   contactPhone?: string;
 }): void {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  if (!supabaseUrl) return;
+  let url: string;
+  try {
+    url = bookingEndpoint('booking-failures', 'send-email');
+  } catch {
+    return;
+  }
 
-  void fetch(`${supabaseUrl}/functions/v1/send-email`, {
+  void fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     // `keepalive` : la soumission échoue souvent au moment où l'on quitte ou
     // recharge la page. Sans lui, la requête est annulée avec le document.
     keepalive: true,
     body: JSON.stringify({
+      // Ignoré par le service de réservation, requis par send-email.
       type: 'booking_failure_alert',
       error:
         input.error instanceof Error
