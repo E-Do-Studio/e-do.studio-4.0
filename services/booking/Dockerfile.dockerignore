@@ -1,0 +1,13 @@
+# Lu par BuildKit à la place du .dockerignore racine pour ce Dockerfile : le
+# service n'a besoin que de lui-même, du moteur de devis et des gabarits
+# d'e-mail (que le .dockerignore racine exclut avec tout supabase/).
+**
+!services/booking/package.json
+!services/booking/pnpm-lock.yaml
+!services/booking/build.mjs
+!services/booking/tsconfig.json
+!services/booking/src
+!services/booking/scripts
+!services/booking/migrations
+!src/lib/booking-engine.ts
+!supabase/functions/send-email/renderers.ts

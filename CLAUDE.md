@@ -227,6 +227,15 @@ reference lives at `/dev/design-system#medias`.
 reference by `@id`. Every indexable route must supply its own canonical and
 alternates.
 
+### Booking service (`services/booking/`)
+
+Dedicated Node + Postgres service that replaces Supabase for bookings
+(creation, calendar sync, booking emails, alerts). Own `package.json`,
+lockfile, tests (`pnpm test` runs on a real Postgres via PGlite) and CI job;
+deployed on Coolify from `services/booking/Dockerfile` (build context = repo
+root). The site switches to it when `VITE_BOOKING_API_URL` is set at build
+time. Runbook and cutover steps: `services/booking/README.md`.
+
 ### Supabase backend
 
 - `supabase/migrations/YYYYMMDDHHMMSS_<subject>.sql` — one migration = one dated
