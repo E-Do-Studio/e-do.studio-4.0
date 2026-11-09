@@ -33,9 +33,35 @@ export class DomainError extends Error {
     readonly status: 400 | 404 | 409,
     readonly code: string,
     message: string,
+    readonly details?: Record<string, unknown>,
   ) {
     super(message);
   }
+}
+
+export interface SlotConflict {
+  plateau: string;
+  date: string;
+  fromHour: number;
+  toHour: number;
+}
+
+/**
+ * Le créneau occupé que nomme une violation 23P01 : `… conflicts with existing
+ * key (plateau_key, session_date, numrange(…))=(live, 2026-11-06, [600,840))`,
+ * bornes en minutes. etouch en fait son message « créneau pris ».
+ */
+export function parseSlotConflict(detail: string | undefined): SlotConflict | null {
+  const m = detail?.match(
+    /existing key[^=]*=\(([^,]+),\s*(\d{4}-\d{2}-\d{2}),\s*\[([\d.]+),([\d.]+)\)\)/,
+  );
+  if (!m) return null;
+  return {
+    plateau: m[1].trim(),
+    date: m[2],
+    fromHour: Number(m[3]) / 60,
+    toHour: Number(m[4]) / 60,
+  };
 }
 
 export interface Actor {
@@ -45,15 +71,22 @@ export interface Actor {
   source: string;
 }
 
-const slotTaken = () =>
-  new DomainError(409, 'slot_taken', 'Ce créneau est déjà réservé.');
+const slotTaken = (conflict: SlotConflict | null = null) =>
+  new DomainError(
+    409,
+    'slot_taken',
+    'Ce créneau est déjà réservé.',
+    conflict ? { conflict } : undefined,
+  );
 
 /** Exécute `fn` en traduisant un chevauchement (23P01) en 409. */
 async function guarded<T>(db: Db, fn: (q: Queryable) => Promise<T>): Promise<T> {
   try {
     return await db.tx(fn);
   } catch (err) {
-    if (pgCode(err) === '23P01') throw slotTaken();
+    if (pgCode(err) === '23P01') {
+      throw slotTaken(parseSlotConflict((err as { detail?: string }).detail));
+    }
     throw err;
   }
 }
@@ -112,15 +145,37 @@ export async function registryFor(
   );
 }
 
+export const LIST_ORDERS = {
+  'updated_at.asc': 'updated_at ASC, id',
+  'created_at.desc': 'created_at DESC, id',
+  'preferred_date.desc': 'preferred_date DESC NULLS LAST, id',
+} as const;
+
 export async function listBookings(
   q: Queryable,
-  opts: { updatedSince?: string; limit: number },
+  opts: {
+    updatedSince?: string;
+    statuses?: BookingStatus[];
+    from?: string;
+    to?: string;
+    order?: keyof typeof LIST_ORDERS;
+    limit: number;
+  },
 ): Promise<BookingBundle[]> {
   const ids = await q.query<{ id: string }>(
     `SELECT id FROM bookings
      WHERE ($1::timestamptz IS NULL OR updated_at > $1::timestamptz)
-     ORDER BY updated_at, id LIMIT $2`,
-    [opts.updatedSince ?? null, opts.limit],
+       AND ($2::text[] IS NULL OR status = ANY($2::text[]))
+       AND ($3::date IS NULL OR preferred_date >= $3::date)
+       AND ($4::date IS NULL OR preferred_date <= $4::date)
+     ORDER BY ${LIST_ORDERS[opts.order ?? 'updated_at.asc']} LIMIT $5`,
+    [
+      opts.updatedSince ?? null,
+      opts.statuses ?? null,
+      opts.from ?? null,
+      opts.to ?? null,
+      opts.limit,
+    ],
   );
   const out: BookingBundle[] = [];
   for (const { id } of ids) {
@@ -444,6 +499,10 @@ export interface StudioBookingInput {
   urgency?: string | null;
   notes?: string | null;
   totalEstimate?: number | null;
+  /** En-tête explicite ; sinon celui de la première ligne datée. */
+  preferredDate?: string | null;
+  arrivalHour?: number | null;
+  arrivalMinute?: number | null;
   sessions: StudioSessionInput[];
   notifyClient: boolean;
 }
@@ -484,9 +543,9 @@ export async function createStudioBooking(
         input.totalEstimate == null
           ? null
           : Math.round(input.totalEstimate * 100) / 100,
-        first?.sessionDate ?? null,
-        first?.arrivalHour ?? null,
-        first?.arrivalMinute ?? null,
+        input.preferredDate ?? first?.sessionDate ?? null,
+        input.arrivalHour ?? first?.arrivalHour ?? null,
+        input.arrivalMinute ?? first?.arrivalMinute ?? null,
       ],
     );
     for (const s of input.sessions) {
@@ -793,6 +852,35 @@ export async function removeSessions(
     );
   });
   return (await loadBundle(db, id)) as BookingBundle;
+}
+
+/**
+ * Écrit au client et au studio après coup, pour un appelant qui sépare le
+ * changement de la décision de prévenir (etouch : le studio coche « prévenir
+ * le client »). Les UID et SEQUENCE sont ceux que le changement a déjà posés.
+ */
+export async function notifyBooking(
+  db: Db,
+  id: string,
+  template: EmailTemplate,
+  message: string | null,
+): Promise<void> {
+  await db.tx(async (q) => {
+    const { booking, sessions } = await mustLoad(q, id);
+    const entries = await registryFor(q, id);
+    const current = new Set(sessions.map((s) => sessionUid(booking.reference, s.id)));
+    const requestUids =
+      template === 'cancelled' ? [] : entries.filter((e) => current.has(e.uid)).map((e) => e.uid);
+    const cancelUids =
+      template === 'cancelled'
+        ? entries.map((e) => e.uid)
+        : entries.filter((e) => !current.has(e.uid)).map((e) => e.uid);
+    await scheduleEmails(
+      q,
+      { bookingId: id, template, requestUids, cancelUids, message },
+      { client: true, studio: true },
+    );
+  });
 }
 
 /** Note libre d'un appelant (etouch) dans l'historique. */
