@@ -8,6 +8,8 @@ import {
   type QuoteData,
   renderBookingAdmin,
   renderBookingClient,
+  renderContactAdmin,
+  renderContactClient,
   renderStatusChangeAdmin,
   renderStatusChangeClient,
   type StatusChangeReason,
@@ -289,6 +291,45 @@ export async function sendStudioEmail(
           payload.message ?? null,
         ),
     replyTo: bundle.booking.client_email,
+    idempotencyKey: `job-${jobId}`,
+  });
+}
+
+/** Un e-mail du formulaire de contact : accusé au visiteur, ou copie au studio. */
+export async function sendContactEmail(
+  mailer: Mailer,
+  studioEmail: string,
+  payload: {
+    recipient: 'client' | 'studio';
+    nom: string;
+    email: string;
+    telephone: string;
+    societe: string;
+    message: string;
+  },
+  jobId: number,
+): Promise<void> {
+  if (payload.recipient === 'client') {
+    await mailer.send({
+      to: payload.email,
+      subject: 'Votre message a bien été reçu — E-Do Studio',
+      html: renderContactClient(payload.nom),
+      replyTo: studioEmail,
+      idempotencyKey: `job-${jobId}`,
+    });
+    return;
+  }
+  await mailer.send({
+    to: studioEmail,
+    subject: `Contact — ${payload.nom}`,
+    html: renderContactAdmin(
+      payload.nom,
+      payload.email,
+      payload.telephone,
+      payload.societe,
+      payload.message,
+    ),
+    replyTo: payload.email,
     idempotencyKey: `job-${jobId}`,
   });
 }

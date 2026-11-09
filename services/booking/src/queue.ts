@@ -9,7 +9,9 @@ export type JobKind =
   | 'calendar.reconcile'
   | 'email.client'
   | 'email.studio'
+  | 'email.contact'
   | 'hubspot.booking'
+  | 'hubspot.contact'
   | 'alerts.flush'
   | 'alerts.digest';
 

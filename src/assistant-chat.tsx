@@ -17,7 +17,7 @@ import { getT } from './i18n';
 import { useT } from './i18n/use-t';
 import { supabase } from './lib/supabase';
 import { useChatSessions, type ChatSession } from './lib/use-chat-sessions';
-import { createBooking } from './lib/bookings';
+import { bookingServiceUrl, createBooking } from './lib/bookings';
 import { capture, captureException, getDistinctId } from './lib/analytics';
 import { questionForAnalytics } from './lib/chat-question';
 import { BOOK_PLATEAUX, type CreateBookingInput } from './lib/booking-engine';
@@ -71,16 +71,38 @@ const sendAssistantMessage = async (
     }
   | { error: ChatError }
 > => {
+  const body = {
+    messages,
+    lang,
+    currentPage,
+    analytics: { distinct_id: getDistinctId() },
+  };
+  const service = bookingServiceUrl('chat');
+  if (service) {
+    try {
+      const res = await fetch(service, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (res.status === 429) return { error: 'rate_limited' };
+      if (!res.ok) return { error: 'other' };
+      const data = (await res.json()) as ChatResponse;
+      if (!data?.reply) return { error: 'other' };
+      return {
+        reply: data.reply,
+        bookingProposal: data.bookingProposal ?? null,
+        suggestions: data.suggestions ?? [],
+        collectContact: data.collectContact ?? false,
+      };
+    } catch {
+      return { error: 'other' };
+    }
+  }
+
   const { data, error } = await supabase.functions.invoke<ChatResponse>(
     'chat',
-    {
-      body: {
-        messages,
-        lang,
-        currentPage,
-        analytics: { distinct_id: getDistinctId() },
-      },
-    },
+    { body },
   );
 
   if (error) {

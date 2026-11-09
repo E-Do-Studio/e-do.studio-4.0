@@ -1,7 +1,7 @@
 // Le worker : une boucle unique qui exécute la file, une tâche à la fois.
 // Séquentiel exprès : deux synchros d'une même réservation ne se croisent
 // jamais, et le volume d'un studio n'a rien à gagner au parallélisme.
-import { syncHubspotBooking } from './hubspot.ts';
+import { syncHubspotBooking, syncHubspotContact } from './hubspot.ts';
 import {
   digestContent,
   markNotified,
@@ -17,6 +17,7 @@ import {
   renderAlertEmail,
   renderDigestEmail,
   sendClientEmail,
+  sendContactEmail,
   sendStudioEmail,
   type Mailer,
 } from './mailer.ts';
@@ -61,6 +62,7 @@ const KIND_LABEL: Record<string, string> = {
   'calendar.reconcile': "Le contrôle de l'agenda Google",
   'email.client': "L'e-mail au client",
   'email.studio': "L'e-mail au studio",
+  'email.contact': "L'e-mail du formulaire de contact",
   'alerts.flush': "L'envoi des alertes",
   'alerts.digest': 'Le récapitulatif quotidien',
 };
@@ -97,6 +99,30 @@ export async function runJob(deps: WorkerDeps, job: Job): Promise<void> {
         job.id,
       );
       return;
+    case 'email.contact':
+      await sendContactEmail(
+        deps.mailer,
+        deps.studioEmail,
+        job.payload as unknown as Parameters<typeof sendContactEmail>[2],
+        job.id,
+      );
+      return;
+    case 'hubspot.contact': {
+      if (!deps.hubspotToken) return;
+      const c = job.payload as unknown as Parameters<typeof syncHubspotContact>[1];
+      // Pas de reprise, comme pour les réservations : une note par appel.
+      try {
+        await syncHubspotContact(deps.hubspotToken, c);
+      } catch (err) {
+        await raiseAlert(db, {
+          key: `hubspot:contact:${job.id}`,
+          severity: 'info',
+          subject: `HubSpot n'a pas reçu le contact de ${c.nom}`,
+          body: errorText(err),
+        });
+      }
+      return;
+    }
     case 'hubspot.booking': {
       if (!deps.hubspotToken) return;
       const bundle = await loadBundle(db, job.payload.bookingId as string);

@@ -34,37 +34,97 @@ async function call<T>(
   return (await res.json()) as T;
 }
 
+async function upsertContact(
+  token: string,
+  properties: {
+    email: string;
+    firstname: string;
+    lastname?: string;
+    phone?: string;
+    company?: string;
+    lifecyclestage: string;
+  },
+  fetchImpl: typeof fetch,
+): Promise<string> {
+  const found = await call<{ total: number; results: { id: string }[] }>(
+    token,
+    '/crm/v3/objects/contacts/search',
+    'POST',
+    { filterGroups: [{ filters: [{ propertyName: 'email', operator: 'EQ', value: properties.email }] }] },
+    fetchImpl,
+  );
+  const existing = found.total > 0 ? found.results[0].id : null;
+  if (existing) {
+    const { email: _email, ...update } = properties;
+    await call(token, `/crm/v3/objects/contacts/${existing}`, 'PATCH', { properties: update }, fetchImpl);
+    return existing;
+  }
+  return (await call<{ id: string }>(token, '/crm/v3/objects/contacts', 'POST', { properties }, fetchImpl)).id;
+}
+
+const splitName = (name: string) => {
+  const [firstname = '', ...rest] = name.trim().split(/\s+/);
+  return { firstname, lastname: rest.join(' ') || undefined };
+};
+
+const esc = (v: string) =>
+  v.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] as string);
+
+/** Le formulaire de contact : un contact « lead » et une note avec le message. */
+export async function syncHubspotContact(
+  token: string,
+  c: { nom: string; email: string; telephone: string; societe: string; message: string },
+  fetchImpl: typeof fetch = fetch,
+): Promise<void> {
+  const contactId = await upsertContact(
+    token,
+    {
+      email: c.email,
+      ...splitName(c.nom),
+      phone: c.telephone || undefined,
+      company: c.societe || undefined,
+      lifecyclestage: 'lead',
+    },
+    fetchImpl,
+  );
+  const body = [
+    '<strong>Formulaire de contact</strong><br><br>',
+    `<strong>Nom :</strong> ${esc(c.nom)}<br>`,
+    `<strong>Email :</strong> ${esc(c.email)}<br>`,
+    c.telephone ? `<strong>Téléphone :</strong> ${esc(c.telephone)}<br>` : '',
+    c.societe ? `<strong>Société :</strong> ${esc(c.societe)}<br>` : '',
+    `<br><strong>Message :</strong><br>${esc(c.message)}`,
+  ].join('');
+  await call(
+    token,
+    '/crm/v3/objects/notes',
+    'POST',
+    {
+      properties: { hs_note_body: body, hs_timestamp: new Date().toISOString() },
+      associations: [
+        { to: { id: contactId }, types: [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 202 }] },
+      ],
+    },
+    fetchImpl,
+  );
+}
+
 export async function syncHubspotBooking(
   token: string,
   b: HubspotBooking,
   fetchImpl: typeof fetch = fetch,
 ): Promise<void> {
-  const [firstname = '', ...rest] = b.clientName.trim().split(/\s+/);
-  const properties = {
-    email: b.clientEmail,
-    firstname,
-    lastname: rest.join(' ') || undefined,
-    phone: b.clientPhone || undefined,
-    company: b.clientCompany || undefined,
-    lifecyclestage: 'opportunity',
-  };
-
-  const found = await call<{ total: number; results: { id: string }[] }>(
+  const contactId = await upsertContact(
     token,
-    '/crm/v3/objects/contacts/search',
-    'POST',
-    { filterGroups: [{ filters: [{ propertyName: 'email', operator: 'EQ', value: b.clientEmail }] }] },
+    {
+      email: b.clientEmail,
+      ...splitName(b.clientName),
+      phone: b.clientPhone || undefined,
+      company: b.clientCompany || undefined,
+      lifecyclestage: 'opportunity',
+    },
     fetchImpl,
   );
-  let contactId = found.total > 0 ? found.results[0].id : null;
-  if (contactId) {
-    const { email: _email, ...update } = properties;
-    await call(token, `/crm/v3/objects/contacts/${contactId}`, 'PATCH', { properties: update }, fetchImpl);
-  } else {
-    contactId = (
-      await call<{ id: string }>(token, '/crm/v3/objects/contacts', 'POST', { properties }, fetchImpl)
-    ).id;
-  }
 
   const description = [
     b.projectType ? `Type : ${b.projectType}` : null,

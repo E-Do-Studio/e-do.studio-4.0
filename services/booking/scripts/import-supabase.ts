@@ -3,7 +3,11 @@
 // pour prendre le delta.
 //
 //   SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… DATABASE_URL=… \
-//     node dist/import-supabase.js [--dry-run]
+//     node dist/import-supabase.js [--dry-run] [--only-new]
+//
+// --only-new, après la bascule : n'ajoute que les réservations absentes du
+// service (arrivées dans Supabase pendant le déploiement du site) et ne
+// touche à rien de ce que le service a déjà, ni à ses lignes.
 //
 // Le registre des événements d'agenda est amorcé pour tout ce qui est à venir :
 //   - chaque ligne existante (état `unknown`, SEQUENCE 0 — les clients ont reçu
@@ -19,6 +23,7 @@ import { googleEventId, sessionUid } from '../src/event-content.ts';
 import { enqueue } from '../src/queue.ts';
 
 const dryRun = process.argv.includes('--dry-run');
+const onlyNew = process.argv.includes('--only-new');
 const url = process.env.SUPABASE_URL;
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const databaseUrl = process.env.DATABASE_URL;
@@ -42,10 +47,18 @@ async function fetchAll(table: string): Promise<Row[]> {
   }
 }
 
-async function upsert(q: Queryable, table: string, rows: Row[], columns: string[]) {
+async function upsert(
+  q: Queryable,
+  table: string,
+  rows: Row[],
+  columns: string[],
+  /** Colonnes tableau Postgres (text[], real[]) : passées telles quelles. */
+  arrayColumns: string[] = [],
+) {
   for (const row of rows) {
     const values = columns.map((c) => {
       const v = row[c];
+      if (arrayColumns.includes(c)) return v ?? null;
       return v !== null && typeof v === 'object' ? JSON.stringify(v) : (v ?? null);
     });
     const placeholders = columns.map((_, i) => `$${i + 1}`).join(', ');
@@ -80,14 +93,29 @@ const EVENT_COLUMNS = [
   'actor_source', 'data', 'created_at',
 ];
 const BLOCKED_COLUMNS = ['id', 'date', 'reason', 'created_at'];
+const CHUNK_COLUMNS = [
+  'id', 'kind', 'slug', 'lang', 'title', 'url', 'body', 'tags', 'updated_at',
+  'embedding', 'content_hash',
+];
+const SUBMISSION_COLUMNS = [
+  'id', 'created_at', 'nom', 'email', 'telephone', 'societe', 'message',
+  'ip_hash', 'spam_score', 'spam_reason', 'delivered',
+];
 
-const [bookings, sessions, quotes, events, blocked] = await Promise.all([
+const [bookings, sessions, quotes, events, blocked, chunks, submissions] = await Promise.all([
   fetchAll('bookings'),
   fetchAll('booking_sessions'),
   fetchAll('booking_quotes'),
   fetchAll('booking_events'),
   fetchAll('blocked_dates'),
+  fetchAll('chat_knowledge_chunks'),
+  fetchAll('contact_submissions'),
 ]);
+
+// PostgREST rend un `vector` pgvector en texte « [0.1,0.2,…] ».
+for (const c of chunks) {
+  if (typeof c.embedding === 'string') c.embedding = JSON.parse(c.embedding);
+}
 
 // Supabase acceptait des lignes partielles : on remet les valeurs par défaut.
 for (const b of bookings) {
@@ -150,6 +178,9 @@ console.log(
     quotes: quotes.length,
     events: events.length,
     blockedDates: blocked.length,
+    chatKnowledgeChunks: chunks.length,
+    chunksWithEmbedding: chunks.filter((c) => Array.isArray(c.embedding)).length,
+    contactSubmissions: submissions.length,
     calendarSeeds: seeds.size,
     releasedLineSeeds: releasedSeeds,
     horizon,
@@ -160,6 +191,42 @@ if (dryRun) process.exit(0);
 
 const db = createPgDb(databaseUrl);
 await migrate(db, process.env.MIGRATIONS_DIR ?? fileURLToPath(new URL('../migrations', import.meta.url)));
+
+if (onlyNew) {
+  const known = new Set(
+    (await db.query<{ id: string }>('SELECT id FROM bookings')).map((r) => r.id),
+  );
+  const fresh = new Set(bookings.filter((b) => !known.has(b.id as string)).map((b) => b.id as string));
+  const of = (rows: Row[]) => rows.filter((r) => fresh.has(r.booking_id as string));
+  await db.tx(async (q) => {
+    await upsert(q, 'bookings', bookings.filter((b) => fresh.has(b.id as string)), BOOKING_COLUMNS);
+    await upsert(q, 'booking_sessions', of(sessions), SESSION_COLUMNS);
+    await upsert(q, 'booking_quotes', of(quotes), QUOTE_COLUMNS);
+    await upsert(q, 'booking_events', of(events), EVENT_COLUMNS);
+    await q.query(
+      `UPDATE booking_sessions s
+       SET blocks_slot = b.status IN ('pending', 'confirmed')
+         AND (s.session_date IS NULL
+              OR s.session_date >= (now() AT TIME ZONE 'Europe/Paris')::date)
+       FROM bookings b WHERE b.id = s.booking_id AND b.id = ANY($1)`,
+      [[...fresh]],
+    );
+    for (const seed of seeds.values()) {
+      if (!fresh.has(seed.bookingId)) continue;
+      await q.query(
+        `INSERT INTO calendar_events (uid, booking_id, session_id, google_event_id, snapshot)
+         VALUES ($1, $2, $3, $4, $5) ON CONFLICT (uid) DO NOTHING`,
+        [seed.uid, seed.bookingId, seed.sessionId, googleEventId(seed.uid), JSON.stringify(seed.snapshot)],
+      );
+    }
+    // Leurs e-mails sont déjà partis de Supabase : seul l'agenda les reprend.
+    await enqueue(q, 'calendar.reconcile', {}, { dedupeKey: 'calendar.reconcile' });
+  });
+  await db.close();
+  console.log(JSON.stringify({ onlyNew: true, added: [...fresh].length }));
+  process.exit(0);
+}
+
 await db.tx(async (q) => {
   await upsert(q, 'bookings', bookings, BOOKING_COLUMNS);
   // Les lignes supprimées côté Supabase depuis un import précédent partent ici aussi.
@@ -168,6 +235,8 @@ await db.tx(async (q) => {
   await upsert(q, 'booking_quotes', quotes, QUOTE_COLUMNS);
   await upsert(q, 'booking_events', events, EVENT_COLUMNS);
   await upsert(q, 'blocked_dates', blocked, BLOCKED_COLUMNS);
+  await upsert(q, 'chat_knowledge_chunks', chunks, CHUNK_COLUMNS, ['tags', 'embedding', 'spam_reason']);
+  await upsert(q, 'contact_submissions', submissions, SUBMISSION_COLUMNS, ['spam_reason']);
   await q.query(
     `UPDATE bookings SET cancelled_at = COALESCE(cancelled_at, updated_at)
      WHERE status = 'cancelled'`,

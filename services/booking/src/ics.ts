@@ -14,7 +14,8 @@ import {
 } from './event-content.ts';
 import type { Booking, QuoteLine, Session } from './types.ts';
 
-export type IcsMethod = 'REQUEST' | 'CANCEL';
+/** PUBLISH : un flux d'abonnement (iCal), sans organisateur ni participant. */
+export type IcsMethod = 'REQUEST' | 'CANCEL' | 'PUBLISH';
 
 export interface IcsEntry {
   uid: string;
@@ -30,6 +31,8 @@ export interface ClientIcsInput {
   quoteTotal: number | null;
   organizerEmail: string;
   now?: Date;
+  /** Nom affiché par l'agenda qui s'abonne (PUBLISH). */
+  calendarName?: string;
 }
 
 export function escapeText(text: string): string {
@@ -100,7 +103,8 @@ const VTIMEZONE = [
   'END:VTIMEZONE',
 ];
 
-export function buildClientIcs(input: ClientIcsInput): string | null {
+/** Les VEVENT d'une réservation, lignes non pliées. */
+export function buildVEvents(input: ClientIcsInput): string[] {
   const { method, booking } = input;
   const stamp = icsStamp(input.now ?? new Date());
   const events: string[] = [];
@@ -128,10 +132,14 @@ export function buildClientIcs(input: ClientIcsInput): string | null {
         ),
       )}`,
       'LOCATION:E-Do Studio\\, Paris',
-      `ORGANIZER;CN=E-Do Studio:mailto:${input.organizerEmail}`,
-      `ATTENDEE;CN="${booking.client_name.replace(/["\r\n]/g, '')}";ROLE=REQ-PARTICIPANT;PARTSTAT=${
-        method === 'CANCEL' ? 'DECLINED' : 'ACCEPTED'
-      };RSVP=FALSE:mailto:${booking.client_email}`,
+      ...(method === 'PUBLISH'
+        ? []
+        : [
+            `ORGANIZER;CN=E-Do Studio:mailto:${input.organizerEmail}`,
+            `ATTENDEE;CN="${booking.client_name.replace(/["\r\n]/g, '')}";ROLE=REQ-PARTICIPANT;PARTSTAT=${
+              method === 'CANCEL' ? 'DECLINED' : 'ACCEPTED'
+            };RSVP=FALSE:mailto:${booking.client_email}`,
+          ]),
       `STATUS:${method === 'CANCEL' ? 'CANCELLED' : booking.status === 'confirmed' ? 'CONFIRMED' : 'TENTATIVE'}`,
       'TRANSP:OPAQUE',
     ];
@@ -148,16 +156,30 @@ export function buildClientIcs(input: ClientIcsInput): string | null {
     events.push(...lines);
   }
 
-  if (events.length === 0) return null;
+  return events;
+}
+
+export function wrapIcs(
+  method: IcsMethod,
+  events: string[],
+  calendarName?: string,
+): string {
   const all = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
     'PRODID:-//E-Do Studio//Booking System//FR',
     'CALSCALE:GREGORIAN',
     `METHOD:${method}`,
+    ...(calendarName ? [`X-WR-CALNAME:${escapeText(calendarName)}`] : []),
     ...VTIMEZONE,
     ...events,
     'END:VCALENDAR',
   ];
   return `${all.map(fold).join('\r\n')}\r\n`;
+}
+
+export function buildClientIcs(input: ClientIcsInput): string | null {
+  const events = buildVEvents(input);
+  if (events.length === 0) return null;
+  return wrapIcs(input.method, events, input.calendarName);
 }

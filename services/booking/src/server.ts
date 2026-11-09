@@ -6,6 +6,7 @@ import { createPgDb, migrate } from './db.ts';
 import { createGoogleCalendar } from './google.ts';
 import { createApp } from './http.ts';
 import { createResendMailer } from './mailer.ts';
+import { configurePosthog } from './posthog.ts';
 import { startWorker } from './worker.ts';
 
 const log = (msg: string, extra: Record<string, unknown> = {}) =>
@@ -65,10 +66,16 @@ function onLockError(err: unknown) {
 
 if (config.workerEnabled) await acquireWorker().catch(onLockError);
 
+configurePosthog({ token: config.posthogToken, host: config.posthogHost });
+
 const app = createApp({
   db,
   apiKeys: config.apiKeys,
   allowedOrigins: config.allowedOrigins,
+  studioEmail: config.studioEmail,
+  geminiKey: config.geminiKey,
+  zaiKey: config.zaiKey,
+  turnstileSecret: config.turnstileSecret,
   log,
 });
 const server = serve({ fetch: app.fetch, port: config.port }, (info) =>

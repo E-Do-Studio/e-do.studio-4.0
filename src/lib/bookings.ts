@@ -20,17 +20,22 @@ export interface CreateBookingResult {
 }
 
 /**
- * Où écrire une réservation. Avec `VITE_BOOKING_API_URL`, le service de
- * réservation dédié (services/booking) ; sans, les Edge Functions Supabase
- * d'avant la bascule. La variable se pose au build, une fois les données
- * importées dans le service : c'est elle qui fait la bascule du site.
+ * Adresse publique du service de réservation (services/booking) quand
+ * `VITE_BOOKING_API_URL` est posé au build : réservations, disponibilités,
+ * contact et chat y passent. Sans elle, les Edge Functions Supabase d'avant la
+ * bascule. Posée une fois les données importées, c'est la bascule du site.
  */
+export function bookingServiceUrl(path: string): string | null {
+  const service = import.meta.env.VITE_BOOKING_API_URL;
+  return service ? `${service.replace(/\/$/, '')}/v1/public/${path}` : null;
+}
+
 export function bookingEndpoint(
   servicePath: 'bookings' | 'booking-failures',
   supabaseFunction: 'create-booking' | 'send-email',
 ): string {
-  const service = import.meta.env.VITE_BOOKING_API_URL;
-  if (service) return `${service.replace(/\/$/, '')}/v1/public/${servicePath}`;
+  const service = bookingServiceUrl(servicePath);
+  if (service) return service;
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   if (!supabaseUrl) {
     throw new Error('VITE_BOOKING_API_URL ou VITE_SUPABASE_URL manquant');

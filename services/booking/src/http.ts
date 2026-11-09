@@ -26,7 +26,13 @@ import {
 } from './bookings.ts';
 import { registryErrors } from './calendar-sync.ts';
 import { type Db, pgCode } from './db.ts';
+import { handleChat } from './chat/chat.ts';
+import { invalidateKnowledge } from './chat/knowledge.ts';
+import { handleContact } from './contact/contact.ts';
+import { bookingFeed, studioFeed } from './ical-feed.ts';
 import { renderTunnelFailure } from './mailer.ts';
+import { captureServer } from './posthog.ts';
+import { hashIp, rateLimit } from './rate-limit.ts';
 import { enqueue } from './queue.ts';
 import type { CreateBookingInput } from './quote.ts';
 
@@ -34,6 +40,10 @@ export interface AppDeps {
   db: Db;
   apiKeys: Map<string, string>;
   allowedOrigins: string[];
+  studioEmail?: string;
+  geminiKey?: string;
+  zaiKey?: string;
+  turnstileSecret?: string;
   log?: (msg: string, extra?: Record<string, unknown>) => void;
 }
 
@@ -177,23 +187,14 @@ function clientIp(c: Context): string {
   return xff?.split(',')[0]?.trim() || c.req.header('x-real-ip') || 'unknown';
 }
 
-/** `true` si l'appel passe ; fenêtre fixe par IP hachée. */
-async function rateLimit(
-  db: Db,
-  bucket: string,
-  ip: string,
-  limit: number,
-  windowSeconds: number,
-): Promise<boolean> {
-  const ipHash = createHash('sha256').update(ip).digest('base64');
-  const [row] = await db.query<{ count: number }>(
-    `INSERT INTO rate_limits (bucket, ip_hash, window_start, count)
-     VALUES ($1, $2, to_timestamp(floor(extract(epoch FROM now()) / $3) * $3), 1)
-     ON CONFLICT (bucket, ip_hash, window_start) DO UPDATE SET count = rate_limits.count + 1
-     RETURNING count`,
-    [bucket, ipHash, windowSeconds],
-  );
-  return row.count <= limit;
+function isLocalOrigin(origin: string): boolean {
+  try {
+    const host = new URL(origin).hostname;
+    if (host === 'localhost' || host === '127.0.0.1' || host === '::1') return true;
+    return /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(host);
+  } catch {
+    return false;
+  }
 }
 
 export function createApp(deps: AppDeps): Hono<Env> {
@@ -236,32 +237,56 @@ export function createApp(deps: AppDeps): Hono<Env> {
   pub.use(
     '*',
     cors({
-      origin: (origin) => {
-        if (deps.allowedOrigins.includes(origin)) return origin;
-        try {
-          const host = new URL(origin).hostname;
-          if (host === 'localhost' || host === '127.0.0.1') return origin;
-        } catch {}
-        return null;
-      },
+      origin: (origin) =>
+        deps.allowedOrigins.includes(origin) || isLocalOrigin(origin) ? origin : null,
       allowMethods: ['GET', 'POST', 'OPTIONS'],
       allowHeaders: ['Content-Type'],
     }),
   );
 
   pub.post('/bookings', async (c) => {
-    if (!(await rateLimit(db, 'booking', clientIp(c), 10, 600))) {
+    if (!(await rateLimit(db, 'booking', hashIp(clientIp(c)), 10, 600))) {
       return c.json({ error: 'rate_limited' }, 429);
     }
-    const input = websiteBookingSchema.parse(await c.req.json());
-    const result = await createWebsiteBooking(db, input as CreateBookingInput);
+    const raw = await c.req.json();
+    const input = websiteBookingSchema.parse(raw);
+    const analytics = (raw as { analytics?: { distinct_id?: string; source?: string; funnel?: string | null } })
+      .analytics ?? {};
+    const track = (event: string, reference: string, props: Record<string, unknown> = {}) =>
+      captureServer(event, analytics.distinct_id, `booking:${reference}`, {
+        reference,
+        submit_mode: input.mode,
+        source: analytics.source ?? null,
+        funnel: analytics.funnel ?? null,
+        session_count: input.sessions.length,
+        ...props,
+      });
+    let result: Awaited<ReturnType<typeof createWebsiteBooking>>;
+    try {
+      result = await createWebsiteBooking(db, input as CreateBookingInput);
+    } catch (err) {
+      if (err instanceof DomainError && err.code === 'slot_taken') {
+        await track('booking_slot_conflict', 'unknown', { stage: 'insert' });
+      } else if (!(err instanceof DomainError)) {
+        await track('booking_server_error', 'unknown', { stage: 'insert', message: String(err) });
+      }
+      throw err;
+    }
     if (Math.abs(result.total - result.clientTotal) > 0.01) {
       deps.log?.('total divergent', {
         reference: result.reference,
         client: result.clientTotal,
         server: result.total,
       });
+      await track('booking_total_mismatch', result.reference, {
+        client_total: result.clientTotal,
+        server_total: result.total,
+      });
     }
+    await track('booking_created', result.reference, {
+      total: result.total,
+      plateaux: input.sessions.map((s) => s.plateauKey),
+    });
     return c.json({ reference: result.reference, total: result.total }, 201);
   });
 
@@ -275,7 +300,7 @@ export function createApp(deps: AppDeps): Hono<Env> {
   // Un échec du tunnel côté navigateur : rien en base, seul le studio peut
   // rappeler le client. Alerte immédiate.
   pub.post('/booking-failures', async (c) => {
-    if (!(await rateLimit(db, 'failure', clientIp(c), 5, 600))) {
+    if (!(await rateLimit(db, 'failure', hashIp(clientIp(c)), 5, 600))) {
       return c.json({ error: 'rate_limited' }, 429);
     }
     const input = failureSchema.parse(await c.req.json());
@@ -286,6 +311,41 @@ export function createApp(deps: AppDeps): Hono<Env> {
       body: renderTunnelFailure(input),
     });
     return c.json({ ok: true });
+  });
+
+  pub.post('/contact', async (c) => {
+    const origin = c.req.header('origin');
+    const originAllowed =
+      !!origin && (deps.allowedOrigins.includes(origin) || isLocalOrigin(origin));
+    const result = await handleContact(
+      { db, turnstileSecret: deps.turnstileSecret },
+      await c.req.json(),
+      clientIp(c),
+      originAllowed,
+    );
+    return c.json(result.body, result.status as 200);
+  });
+
+  pub.post('/chat', async (c) => {
+    const result = await handleChat(
+      { db, geminiKey: deps.geminiKey, zaiKey: deps.zaiKey },
+      await c.req.json(),
+      clientIp(c),
+    );
+    return c.json(result.body, result.status as 200);
+  });
+
+  pub.get('/ical/:reference', async (c) => {
+    const ics = await bookingFeed(
+      db,
+      c.req.param('reference'),
+      deps.studioEmail ?? 'contact@e-do.studio',
+    );
+    if (!ics) throw new DomainError(404, 'not_found', 'Réservation introuvable.');
+    return c.body(ics, 200, {
+      'Content-Type': 'text/calendar; charset=utf-8',
+      'Cache-Control': 'no-cache, must-revalidate',
+    });
   });
 
   app.route('/v1/public', pub);
@@ -430,6 +490,74 @@ export function createApp(deps: AppDeps): Hono<Env> {
   priv.delete('/blocked-dates/:date', async (c) => {
     await setBlockedDate(db, isoDate.parse(c.req.param('date')), null, false);
     return c.json({ ok: true });
+  });
+
+  priv.get('/ical', async (c) => {
+    const plateau = c.req.query('plateau') || undefined;
+    const ics = await studioFeed(db, deps.studioEmail ?? 'contact@e-do.studio', plateau);
+    return c.body(ics, 200, {
+      'Content-Type': 'text/calendar; charset=utf-8',
+      'Content-Disposition': 'attachment; filename="e-do-studio-bookings.ics"',
+      'Cache-Control': 'no-cache, must-revalidate',
+    });
+  });
+
+  // Base de connaissances du chat, écrite par scripts/build-chat-knowledge.mjs.
+  priv.get('/admin/chat-knowledge', async (c) =>
+    c.json({
+      chunks: await db.query(
+        'SELECT id, content_hash, embedding FROM chat_knowledge_chunks ORDER BY id',
+      ),
+    }),
+  );
+
+  priv.post('/admin/chat-knowledge', async (c) => {
+    const body = z
+      .object({
+        upsert: z
+          .array(
+            z.object({
+              id: z.string().min(1).max(300),
+              kind: z.string().min(1).max(60),
+              slug: z.string().max(300).nullable(),
+              lang: z.enum(['fr', 'en']),
+              title: z.string().max(500),
+              url: z.string().max(1000).nullable(),
+              body: z.string().max(100_000),
+              tags: z.array(z.string().max(200)).max(100).default([]),
+              content_hash: z.string().max(200).nullable(),
+              embedding: z.array(z.number()).max(4096).nullable(),
+            }),
+          )
+          .max(1000)
+          .default([]),
+        delete: z.array(z.string().max(300)).max(10_000).default([]),
+      })
+      .parse(await c.req.json());
+    await db.tx(async (q) => {
+      for (const ch of body.upsert) {
+        await q.query(
+          `INSERT INTO chat_knowledge_chunks
+             (id, kind, slug, lang, title, url, body, tags, content_hash, embedding, updated_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, now())
+           ON CONFLICT (id) DO UPDATE SET kind = EXCLUDED.kind, slug = EXCLUDED.slug,
+             lang = EXCLUDED.lang, title = EXCLUDED.title, url = EXCLUDED.url,
+             body = EXCLUDED.body, tags = EXCLUDED.tags, content_hash = EXCLUDED.content_hash,
+             -- Un fragment inchangé arrive sans embedding (le script ne le
+             -- recalcule pas) : on garde le sien.
+             embedding = COALESCE(EXCLUDED.embedding, CASE
+               WHEN chat_knowledge_chunks.content_hash = EXCLUDED.content_hash
+               THEN chat_knowledge_chunks.embedding END),
+             updated_at = now()`,
+          [ch.id, ch.kind, ch.slug, ch.lang, ch.title, ch.url, ch.body, ch.tags, ch.content_hash, ch.embedding],
+        );
+      }
+      if (body.delete.length > 0) {
+        await q.query('DELETE FROM chat_knowledge_chunks WHERE id = ANY($1)', [body.delete]);
+      }
+    });
+    invalidateKnowledge();
+    return c.json({ upserted: body.upsert.length, deleted: body.delete.length });
   });
 
   priv.get('/admin/status', async (c) => {

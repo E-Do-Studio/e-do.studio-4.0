@@ -11,7 +11,9 @@
 //
 // Writes:
 //   - chat_knowledge_chunks (id, kind, slug, lang, title, url, body, tags,
-//     content_hash, embedding) via the service role.
+//     content_hash, embedding) — in the booking service when BOOKING_API_URL
+//     and BOOKING_API_KEY are set (services/booking, /v1/admin/chat-knowledge),
+//     else in Supabase via the service role.
 //   - Prunes rows whose id is no longer in the corpus.
 //
 // Embeddings: Gemini text-embedding-004 (768d), via batchEmbedContents.
@@ -19,8 +21,9 @@
 // or whose embedding column is null.
 //
 // Required env:
-//   STRAPI_URL, STRAPI_TOKEN, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY,
-//   GEMINI_API_KEY.
+//   STRAPI_URL, STRAPI_TOKEN, GEMINI_API_KEY, and either BOOKING_API_URL +
+//   BOOKING_API_KEY (booking service) or SUPABASE_URL +
+//   SUPABASE_SERVICE_ROLE_KEY.
 // Optional env:
 //   SITE_URL (default https://e-do.studio), CHAT_KNOWLEDGE_DRY_RUN=1.
 
@@ -60,8 +63,15 @@ const STRAPI_TOKEN = requireEnv(
   'VITE_STRAPI_TOKEN',
   'STRAPI_API_TOKEN',
 );
-const SUPABASE_URL = requireEnv('SUPABASE_URL', 'VITE_SUPABASE_URL');
-const SUPABASE_SERVICE_ROLE_KEY = requireEnv('SUPABASE_SERVICE_ROLE_KEY');
+const BOOKING_API_URL = firstSet('BOOKING_API_URL', 'VITE_BOOKING_API_URL');
+const BOOKING_API_KEY = firstSet('BOOKING_API_KEY');
+const USE_BOOKING_SERVICE = Boolean(BOOKING_API_URL && BOOKING_API_KEY);
+const SUPABASE_URL = USE_BOOKING_SERVICE
+  ? ''
+  : requireEnv('SUPABASE_URL', 'VITE_SUPABASE_URL');
+const SUPABASE_SERVICE_ROLE_KEY = USE_BOOKING_SERVICE
+  ? ''
+  : requireEnv('SUPABASE_SERVICE_ROLE_KEY');
 const GEMINI_API_KEY = requireEnv('GEMINI_API_KEY');
 const SITE_URL = process.env.SITE_URL || 'https://e-do.studio';
 const DRY_RUN = process.env.CHAT_KNOWLEDGE_DRY_RUN === '1';
@@ -770,6 +780,64 @@ async function embedChunks(chunks) {
   });
 }
 
+// ─── Booking service IO ───────────────────────────────────────────────────
+
+async function serviceCall(method, body) {
+  const res = await fetch(
+    `${BOOKING_API_URL.replace(/\/$/, '')}/v1/admin/chat-knowledge`,
+    {
+      method,
+      headers: {
+        Authorization: `Bearer ${BOOKING_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    },
+  );
+  if (!res.ok) {
+    throw new Error(`booking service ${method} ${res.status}: ${await res.text()}`);
+  }
+  return res.json();
+}
+
+const serviceStore = {
+  async loadExisting() {
+    const { chunks } = await serviceCall('GET');
+    const map = new Map();
+    for (const row of chunks) {
+      map.set(row.id, {
+        hash: row.content_hash ?? null,
+        hasEmbedding: Array.isArray(row.embedding),
+      });
+    }
+    return map;
+  },
+  async upsertChunks(chunks) {
+    const rows = chunks.map((c) => ({
+      id: c.id,
+      kind: c.kind,
+      slug: c.slug ?? null,
+      lang: c.lang,
+      title: c.title,
+      url: c.url ?? null,
+      body: c.body,
+      tags: c.tags ?? [],
+      content_hash: c._hash,
+      embedding: c._embedding ?? null,
+    }));
+    for (let i = 0; i < rows.length; i += 100) {
+      await serviceCall('POST', { upsert: rows.slice(i, i + 100) });
+    }
+  },
+  async pruneStale(keepIds) {
+    const { chunks } = await serviceCall('GET');
+    const keep = new Set(keepIds);
+    const stale = chunks.map((r) => r.id).filter((id) => !keep.has(id));
+    if (stale.length > 0) await serviceCall('POST', { delete: stale });
+    return stale.length;
+  },
+};
+
 // ─── Supabase IO ──────────────────────────────────────────────────────────
 
 function supabase() {
@@ -845,8 +913,12 @@ async function main() {
   console.log(`Built ${corpus.length} chunks.`);
 
   // Hash + classify (new / changed / reuse).
-  const client = supabase();
-  const existing = DRY_RUN ? new Map() : await loadExisting(client);
+  const client = USE_BOOKING_SERVICE ? null : supabase();
+  const existing = DRY_RUN
+    ? new Map()
+    : USE_BOOKING_SERVICE
+      ? await serviceStore.loadExisting()
+      : await loadExisting(client);
   let toEmbedCount = 0;
   for (const c of corpus) {
     c._hash = contentHash(c);
@@ -874,11 +946,15 @@ async function main() {
   }
 
   await embedChunks(corpus.filter((c) => c._needsEmbed));
-  await upsertChunks(client, corpus);
-  const pruned = await pruneStale(
-    client,
-    corpus.map((c) => c.id),
-  );
+  const keepIds = corpus.map((c) => c.id);
+  let pruned;
+  if (USE_BOOKING_SERVICE) {
+    await serviceStore.upsertChunks(corpus);
+    pruned = await serviceStore.pruneStale(keepIds);
+  } else {
+    await upsertChunks(client, corpus);
+    pruned = await pruneStale(client, keepIds);
+  }
   console.log(
     `Upserted ${corpus.length}, pruned ${pruned} stale row(s). (${Date.now() - t0}ms)`,
   );
