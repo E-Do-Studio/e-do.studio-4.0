@@ -48,3 +48,24 @@ export async function captureServer(
     console.error(`[posthog] ${event}`, e);
   }
 }
+
+// Les adresses e-mail n'ont rien à faire dans PostHog, même au détour d'un
+// message d'erreur d'un fournisseur.
+const EMAIL_RE = /[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']+/g;
+
+export function scrubbed(text: string, max = 300): string {
+  return text.replace(EMAIL_RE, '[e-mail]').slice(0, max);
+}
+
+/**
+ * Un événement du service (réservation, agenda, e-mail, alerte…), jamais
+ * attendu : le suivi ne ralentit ni une réponse ni une synchro. `subject`
+ * regroupe les événements d'un même objet (`booking:EDO-R-…`), sans profil.
+ */
+export function trackService(
+  event: string,
+  properties: Record<string, unknown> = {},
+  subject = 'booking-service',
+): void {
+  void captureServer(event, undefined, subject, { service: 'booking', ...properties });
+}

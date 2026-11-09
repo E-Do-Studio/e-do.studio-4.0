@@ -31,7 +31,7 @@ import { invalidateKnowledge } from './chat/knowledge.ts';
 import { handleContact } from './contact/contact.ts';
 import { bookingFeed, studioFeed } from './ical-feed.ts';
 import { renderTunnelFailure } from './mailer.ts';
-import { captureServer } from './posthog.ts';
+import { captureServer, scrubbed, trackService } from './posthog.ts';
 import { hashIp, rateLimit } from './rate-limit.ts';
 import { enqueue } from './queue.ts';
 import type { CreateBookingInput } from './quote.ts';
@@ -215,6 +215,11 @@ export function createApp(deps: AppDeps): Hono<Env> {
       return c.json({ error: 'invalid_json' }, 400);
     }
     deps.log?.('erreur API', { path: c.req.path, error: String(err) });
+    trackService('booking_api_error', {
+      method: c.req.method,
+      path: c.req.routePath,
+      error: scrubbed(String(err)),
+    });
     return c.json({ error: 'internal_error' }, 500);
   });
 
@@ -294,6 +299,7 @@ export function createApp(deps: AppDeps): Hono<Env> {
     const q = z
       .object({ plateau: z.string().min(1).max(60), from: isoDate, to: isoDate })
       .parse(c.req.query());
+    trackService('availability_checked', { plateau: q.plateau, from: q.from, to: q.to });
     return c.json(await availability(db, q.plateau, q.from, q.to));
   });
 
@@ -304,6 +310,7 @@ export function createApp(deps: AppDeps): Hono<Env> {
       return c.json({ error: 'rate_limited' }, 429);
     }
     const input = failureSchema.parse(await c.req.json());
+    trackService('booking_tunnel_failed', { mode: input.mode, error: scrubbed(input.error) });
     await raiseAlert(db, {
       key: `tunnel:${createHash('sha256').update(`${input.error}|${input.contactEmail ?? ''}`).digest('hex').slice(0, 16)}`,
       severity: 'critical',
@@ -342,6 +349,7 @@ export function createApp(deps: AppDeps): Hono<Env> {
       deps.studioEmail ?? 'contact@e-do.studio',
     );
     if (!ics) throw new DomainError(404, 'not_found', 'Réservation introuvable.');
+    trackService('ical_feed_served', { scope: 'booking', reference: c.req.param('reference') });
     return c.body(ics, 200, {
       'Content-Type': 'text/calendar; charset=utf-8',
       'Cache-Control': 'no-cache, must-revalidate',
@@ -365,6 +373,23 @@ export function createApp(deps: AppDeps): Hono<Env> {
     name: name ?? null,
     source: c.get('caller'),
   });
+
+  const lifecycle = async (
+    event: string,
+    c: Context<Env>,
+    id: string,
+    extra: Record<string, unknown> = {},
+  ) => {
+    const [row] = await db.query<{ reference: string; status: string }>(
+      'SELECT reference, status FROM bookings WHERE id = $1',
+      [id],
+    );
+    trackService(
+      event,
+      { booking_id: id, reference: row?.reference, status: row?.status, caller: c.get('caller'), ...extra },
+      `booking:${row?.reference ?? id}`,
+    );
+  };
 
   const fullBooking = async (id: string) => {
     const bundle = await loadBundle(db, id);
@@ -420,6 +445,12 @@ export function createApp(deps: AppDeps): Hono<Env> {
       input,
       actorOf(c, input.actor),
     );
+    await lifecycle('booking_created', c, bundle.booking.id, {
+      source: c.get('caller'),
+      notify_client: input.notifyClient,
+      plateaux: input.sessions.map((s) => s.plateauKey),
+      session_count: input.sessions.length,
+    });
     return c.json(await fullBooking(bundle.booking.id), 201);
   });
 
@@ -429,6 +460,7 @@ export function createApp(deps: AppDeps): Hono<Env> {
       .object({ actor: z.string().max(200).nullish() })
       .parse(await c.req.json().catch(() => ({})));
     await confirmBooking(db, id, actorOf(c, body.actor));
+    await lifecycle('booking_confirmed', c, id);
     return c.json(await fullBooking(id));
   });
 
@@ -436,6 +468,7 @@ export function createApp(deps: AppDeps): Hono<Env> {
     const id = uuid.parse(c.req.param('id'));
     const body = notifySchema.parse(await c.req.json().catch(() => ({})));
     await cancelBooking(db, id, actorOf(c, body.actor), body);
+    await lifecycle('booking_cancelled', c, id, { notify_client: body.notifyClient });
     return c.json(await fullBooking(id));
   });
 
@@ -443,6 +476,10 @@ export function createApp(deps: AppDeps): Hono<Env> {
     const id = uuid.parse(c.req.param('id'));
     const body = rescheduleSchema.parse(await c.req.json());
     await rescheduleBooking(db, id, actorOf(c, body.actor), body);
+    await lifecycle('booking_rescheduled', c, id, {
+      notify_client: body.notifyClient,
+      sessions_moved: body.sessions.length,
+    });
     return c.json(await fullBooking(id));
   });
 
@@ -450,6 +487,10 @@ export function createApp(deps: AppDeps): Hono<Env> {
     const id = uuid.parse(c.req.param('id'));
     const body = removeSessionsSchema.parse(await c.req.json());
     await removeSessions(db, id, body.sessionIds, actorOf(c, body.actor), body);
+    await lifecycle('booking_sessions_removed', c, id, {
+      notify_client: body.notifyClient,
+      sessions_removed: body.sessionIds.length,
+    });
     return c.json(await fullBooking(id));
   });
 
@@ -462,6 +503,7 @@ export function createApp(deps: AppDeps): Hono<Env> {
       })
       .parse(await c.req.json());
     await notifyBooking(db, id, body.template, body.message ?? null);
+    await lifecycle('booking_client_notified', c, id, { template: body.template });
     return c.json({ ok: true }, 202);
   });
 
@@ -475,6 +517,7 @@ export function createApp(deps: AppDeps): Hono<Env> {
   priv.post('/bookings/:id/resync', async (c) => {
     const id = uuid.parse(c.req.param('id'));
     await requestResync(db, id);
+    await lifecycle('booking_resync_requested', c, id);
     return c.json({ ok: true }, 202);
   });
 
@@ -495,6 +538,7 @@ export function createApp(deps: AppDeps): Hono<Env> {
   priv.get('/ical', async (c) => {
     const plateau = c.req.query('plateau') || undefined;
     const ics = await studioFeed(db, deps.studioEmail ?? 'contact@e-do.studio', plateau);
+    trackService('ical_feed_served', { scope: 'studio', plateau: plateau ?? null, caller: c.get('caller') });
     return c.body(ics, 200, {
       'Content-Type': 'text/calendar; charset=utf-8',
       'Content-Disposition': 'attachment; filename="e-do-studio-bookings.ics"',

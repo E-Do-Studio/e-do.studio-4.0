@@ -3,6 +3,7 @@
 // `critical` partent tout de suite (job `alerts.flush`) ; `info` attend le
 // récapitulatif du matin.
 import type { Queryable } from './db.ts';
+import { trackService } from './posthog.ts';
 import { enqueue } from './queue.ts';
 
 export type Severity = 'info' | 'warning' | 'critical';
@@ -26,6 +27,10 @@ export async function raiseAlert(
   q: Queryable,
   alert: { key: string; severity: Severity; subject: string; body: string },
 ): Promise<void> {
+  trackService('booking_alert_raised', {
+    severity: alert.severity,
+    kind: alert.key.split(':').slice(0, 2).join(':'),
+  });
   // Une info est un fait accompli (un orphelin supprimé) : rien à suivre, elle
   // naît close et ne figure qu'au récapitulatif.
   if (alert.severity === 'info') {

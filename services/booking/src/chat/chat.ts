@@ -735,6 +735,8 @@ export async function handleChat(deps: ChatDeps, raw: unknown, ip: string): Prom
   // une écriture : le client affiche le récapitulatif, le clic de l'utilisateur
   // crée la réservation.
   let bookingProposal: CreateBookingInput | null = null;
+  const toolsUsed: string[] = [];
+  const startedAt = Date.now();
 
   try {
     const reply = await callChatWithFallback(
@@ -742,6 +744,7 @@ export async function handleChat(deps: ChatDeps, raw: unknown, ip: string): Prom
         systemPrompt,
         messages: trimmedMessages,
         onToolCall: async (name, args) => {
+          toolsUsed.push(name);
           if (name === "check_availability") {
             const intent = intentFromToolArgs(args, lang, now);
             if (!intent) {
@@ -776,6 +779,17 @@ export async function handleChat(deps: ChatDeps, raw: unknown, ip: string): Prom
       collectContact = true;
       cleanReply = cleanReply.replace(/COLLECT_CONTACT/g, "").trimEnd();
     }
+    await track("chat_replied", {
+      lang,
+      page: parsed.currentPage ?? null,
+      turns: trimmedMessages.length,
+      tools: toolsUsed,
+      booking_proposal: bookingProposal !== null,
+      suggestions: suggestions.length,
+      collect_contact: collectContact,
+      knowledge_found: retrievedBlock.length > 0,
+      latency_ms: Date.now() - startedAt,
+    });
     return { status: 200, body: { reply: cleanReply, bookingProposal, suggestions, collectContact } };
   } catch (e) {
     const code = e instanceof Error && e.message === "upstream" ? "upstream" : "internal";
