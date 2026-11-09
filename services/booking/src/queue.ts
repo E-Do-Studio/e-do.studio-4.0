@@ -12,6 +12,7 @@ export type JobKind =
   | 'email.contact'
   | 'hubspot.booking'
   | 'hubspot.contact'
+  | 'supabase.watch'
   | 'alerts.flush'
   | 'alerts.digest';
 

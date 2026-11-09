@@ -3,6 +3,7 @@
 // jamais, et le volume d'un studio n'a rien à gagner au parallélisme.
 import { syncHubspotBooking, syncHubspotContact } from './hubspot.ts';
 import { scrubbed, trackService } from './posthog.ts';
+import { type SupabaseSource, watchSupabase } from './supabase-watch.ts';
 import {
   digestContent,
   markNotified,
@@ -39,6 +40,7 @@ export interface WorkerDeps {
   studioEmail: string;
   alertEmail: string;
   hubspotToken?: string;
+  supabase?: SupabaseSource;
   log?: (msg: string, extra?: Record<string, unknown>) => void;
 }
 
@@ -65,6 +67,7 @@ const KIND_LABEL: Record<string, string> = {
   'email.studio': "L'e-mail au studio",
   'email.contact': "L'e-mail du formulaire de contact",
   'alerts.flush': "L'envoi des alertes",
+  'supabase.watch': 'La surveillance de l’ancien Supabase',
   'alerts.digest': 'Le récapitulatif quotidien',
 };
 
@@ -94,12 +97,24 @@ export async function runJob(deps: WorkerDeps, job: Job): Promise<void> {
       trackService('calendar_reconciled', {
         events_scanned: report.scanned,
         events_ours: report.ours,
+        events_expected: report.expected,
+        events_in_sync: report.inSync,
         orphans_removed: report.removedOrphans.length,
         events_adopted: report.adopted.length,
         events_recreated: report.recreated.length,
+        events_drifted: report.drifted.length,
         unknown_references: report.unknown.length,
         bookings_resynced: report.resyncQueued,
+        // 0 = l'agenda dit exactement ce que dit la base.
+        discrepancies:
+          report.removedOrphans.length +
+          report.recreated.length +
+          report.drifted.length +
+          report.unknown.length,
       });
+      for (const d of report.drifted) {
+        trackService('calendar_drift_fixed', { reference: d.split(' ')[0], field: d.match(/\((.+)\)/)?.[1] });
+      }
       for (const orphan of report.removedOrphans) {
         trackService('calendar_orphan_removed', { reference: orphan.split(' ')[0] });
       }
@@ -201,6 +216,12 @@ export async function runJob(deps: WorkerDeps, job: Job): Promise<void> {
       }
       return;
     }
+    case 'supabase.watch': {
+      if (!deps.supabase) return;
+      const recovered = await watchSupabase(db, deps.supabase);
+      trackService('supabase_watched', { recovered: recovered.length });
+      return;
+    }
     case 'alerts.flush': {
       const pending = await pendingNotifications(db);
       if (pending.length === 0) return;
@@ -279,12 +300,19 @@ export async function tick(deps: WorkerDeps): Promise<boolean> {
 }
 
 /** Planifie la réconciliation et le récapitulatif quand c'est l'heure. */
-export async function schedule(db: Db, now = new Date()): Promise<void> {
+export async function schedule(
+  db: Db,
+  now = new Date(),
+  opts: { watchSupabase?: boolean } = {},
+): Promise<void> {
   const [last] = await db.query<{ value: { at: string } }>(
     "SELECT value FROM service_state WHERE key = 'scheduler.reconcile'",
   );
   if (!last || now.getTime() - Date.parse(last.value.at) >= RECONCILE_EVERY_MS) {
     await enqueue(db, 'calendar.reconcile', {}, { dedupeKey: 'calendar.reconcile' });
+    if (opts.watchSupabase) {
+      await enqueue(db, 'supabase.watch', {}, { dedupeKey: 'supabase.watch' });
+    }
     await db.query(
       `INSERT INTO service_state (key, value) VALUES ('scheduler.reconcile', $1)
        ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()`,
@@ -329,7 +357,7 @@ export function startWorker(deps: WorkerDeps): { stop: () => Promise<void> } {
     await requeueStale(deps.db);
     while (running) {
       try {
-        await schedule(deps.db);
+        await schedule(deps.db, new Date(), { watchSupabase: Boolean(deps.supabase) });
         // Vider ce qui est prêt, puis souffler.
         while (running && (await tick(deps))) {}
       } catch (err) {

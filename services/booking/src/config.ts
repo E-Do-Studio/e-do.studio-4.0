@@ -35,6 +35,9 @@ const schema = z.object({
   TURNSTILE_SECRET_KEY: z.string().optional(),
   POSTHOG_PROJECT_TOKEN: z.string().optional(),
   POSTHOG_HOST: z.string().default('https://eu.i.posthog.com'),
+  // Filet de la bascule : rapatrie ce que l'ancien site écrit encore dans Supabase.
+  SUPABASE_URL: z.string().optional(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
   // Désactive le worker (instance API seule, ou import).
   WORKER_ENABLED: z
     .enum(['true', 'false'])
@@ -68,6 +71,7 @@ export interface Config {
   turnstileSecret: string | undefined;
   posthogToken: string | undefined;
   posthogHost: string;
+  supabase: { url: string; serviceKey: string } | undefined;
   workerEnabled: boolean;
 }
 
@@ -124,6 +128,10 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     turnstileSecret: e.TURNSTILE_SECRET_KEY,
     posthogToken: e.POSTHOG_PROJECT_TOKEN,
     posthogHost: e.POSTHOG_HOST,
+    supabase:
+      e.SUPABASE_URL && e.SUPABASE_SERVICE_ROLE_KEY
+        ? { url: e.SUPABASE_URL, serviceKey: e.SUPABASE_SERVICE_ROLE_KEY }
+        : undefined,
     workerEnabled: e.WORKER_ENABLED,
   };
 }
