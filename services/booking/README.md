@@ -32,10 +32,12 @@ Publique (CORS limité à `ALLOWED_ORIGINS`, débit limité par IP) :
 
 Privée (`Authorization: Bearer <clé>`, une clé par appelant) :
 
-- `GET /v1/bookings?updatedSince=&limit=` : flux des modifications (synchro etouch).
+- `GET /v1/bookings?updatedSince=&status=pending,confirmed&from=&to=&order=&limit=` : liste filtrée (synchro etouch). `order` : `updated_at.asc` (défaut), `created_at.desc`, `preferred_date.desc`.
 - `GET /v1/bookings/:id` et `GET /v1/bookings/by-reference/:ref` : réservation, lignes, devis, registre agenda, historique.
 - `POST /v1/bookings` : réservation saisie par le studio (`notifyClient`).
 - `POST /v1/bookings/:id/confirm` · `/cancel` · `/reschedule` · `/sessions/remove` · `/events` · `/resync`
+- `POST /v1/bookings/:id/notify` (`template`: `created` | `rescheduled` | `cancelled` | `updated`) : écrit au client après coup, avec les .ics des UID concernés.
+- Un 409 `slot_taken` renvoie `conflict: { plateau, date, fromHour, toHour }`.
 - `PUT|DELETE /v1/blocked-dates/:date`
 - `GET /v1/admin/status` · `POST /v1/admin/reconcile` · `POST /v1/admin/jobs/:id/retry`
 

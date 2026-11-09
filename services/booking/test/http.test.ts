@@ -172,3 +172,43 @@ describe('privé', () => {
     expect(res.status).toBe(404);
   });
 });
+
+describe('pour etouch', () => {
+  const studio = (hour: number, minute = 0) => ({
+    clientName: 'Studio',
+    clientEmail: 's@x.fr',
+    notifyClient: false,
+    sessions: [{ plateauKey: 'live', slotType: 'hour', hours: 2, sessionDate: isoOf(futureYmd(15)), arrivalHour: hour, arrivalMinute: minute }],
+  });
+
+  it('un 409 nomme le créneau occupé, en heures', async () => {
+    await call('/v1/bookings', { method: 'POST', key: KEY, json: studio(10, 30) });
+    const res = await call('/v1/bookings', { method: 'POST', key: KEY, json: studio(11) });
+    expect(res.status).toBe(409);
+    expect((await read(res)).conflict).toEqual({ plateau: 'live', date: isoOf(futureYmd(15)), fromHour: 10.5, toHour: 12.5 });
+  });
+
+  it('filtre la liste par statut, dates et ordre', async () => {
+    const a = await read(await call('/v1/bookings', { method: 'POST', key: KEY, json: studio(10) }));
+    await call('/v1/bookings', { method: 'POST', key: KEY, json: { ...studio(14), sessions: [{ ...studio(14).sessions[0], sessionDate: isoOf(futureYmd(40)) }] } });
+    await call(`/v1/bookings/${a.booking.id}/cancel`, { method: 'POST', key: KEY, json: { notifyClient: false } });
+    const day = isoOf(futureYmd(15));
+    const active = await read(await call(`/v1/bookings?status=pending,confirmed&from=${isoOf(futureYmd(1))}&to=${isoOf(futureYmd(60))}&order=preferred_date.desc`, { key: KEY }));
+    expect(active.bookings).toHaveLength(1);
+    const cancelled = await read(await call(`/v1/bookings?status=cancelled&from=${day}&to=${day}`, { key: KEY }));
+    expect(cancelled.bookings[0].booking.id).toBe(a.booking.id);
+    expect((await call('/v1/bookings?order=n_importe_quoi', { key: KEY })).status).toBe(400);
+  });
+
+  it('prévient le client après coup : annulation avec ses UID', async () => {
+    const a = await read(await call('/v1/bookings', { method: 'POST', key: KEY, json: studio(10) }));
+    await call(`/v1/bookings/${a.booking.id}/cancel`, { method: 'POST', key: KEY, json: { notifyClient: false } });
+    await db.query('DELETE FROM jobs');
+    const res = await call(`/v1/bookings/${a.booking.id}/notify`, { method: 'POST', key: KEY, json: { template: 'cancelled', message: 'Désolé' } });
+    expect(res.status).toBe(202);
+    const jobs = await db.query<{ kind: string; payload: { cancelUids: string[]; message: string } }>('SELECT kind, payload FROM jobs ORDER BY id');
+    expect(jobs.map((j) => j.kind)).toEqual(['email.client', 'email.studio']);
+    expect(jobs[0].payload.cancelUids).toHaveLength(1);
+    expect(jobs[0].payload.message).toBe('Désolé');
+  });
+});
