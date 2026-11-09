@@ -201,6 +201,21 @@ export function createApp(deps: AppDeps): Hono<Env> {
   const { db } = deps;
   const app = new Hono<Env>();
 
+  // Une ligne par requête (méthode, route, statut, durée, appelant), sans
+  // corps ni en-tête : de quoi retrouver n'importe quel appel dans PostHog Logs.
+  app.use('*', async (c, next) => {
+    const started = Date.now();
+    await next();
+    if (c.req.path === '/healthz') return;
+    deps.log?.(`${c.req.method} ${c.req.routePath} ${c.res.status} ${Date.now() - started}ms`, {
+      method: c.req.method,
+      route: c.req.routePath,
+      status: c.res.status,
+      durationMs: Date.now() - started,
+      caller: c.get('caller') ?? 'public',
+    });
+  });
+
   app.onError((err, c) => {
     if (err instanceof DomainError) {
       return c.json(

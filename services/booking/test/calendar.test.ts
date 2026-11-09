@@ -242,6 +242,27 @@ describe('réconciliation', () => {
     expect(calendar.events.size).toBe(1);
   });
 
+  it('remet à l’heure un événement déplacé à la main dans Google, et compte l’écart', async () => {
+    const b = await gucBooking();
+    await drain(d);
+    const [id] = [...calendar.events.keys()];
+    const original = structuredClone(calendar.events.get(id));
+    const moved = calendar.events.get(id);
+    if (moved?.start?.dateTime) moved.start.dateTime = moved.start.dateTime.replace('T10:00', 'T16:00').replace('T09:00', 'T16:00');
+    if (moved) moved.summary = 'Renommé à la main';
+    const report = await reconcile(db, calendar);
+    expect(report.drifted).toHaveLength(1);
+    expect(report.expected).toBe(2);
+    expect(report.inSync).toBe(1);
+    await drain(d);
+    expect(calendar.events.get(id)?.start).toEqual(original?.start);
+    expect(calendar.events.get(id)?.summary).toBe(original?.summary);
+    const again = await reconcile(db, calendar);
+    expect(again.drifted).toHaveLength(0);
+    expect(again.inSync).toBe(2);
+    expect(b).toBeTruthy();
+  });
+
   it('remet un événement supprimé à la main dans Google et prévient le studio', async () => {
     const b = await gucBooking();
     await drain(d);

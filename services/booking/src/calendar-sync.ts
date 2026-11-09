@@ -195,9 +195,13 @@ export async function syncBooking(
 
 /** Heure murale de Paris d'un début Google (`dateTime` avec décalage, ou `date`). */
 function parisStart(event: GoogleEvent): string | null {
-  if (event.start?.date) return event.start.date;
-  if (!event.start?.dateTime) return null;
-  const d = new Date(event.start.dateTime);
+  return parisTime(event.start);
+}
+
+function parisTime(t: GoogleEvent['start']): string | null {
+  if (t?.date) return t.date;
+  if (!t?.dateTime) return null;
+  const d = new Date(t.dateTime);
   const parts = Object.fromEntries(
     new Intl.DateTimeFormat('en-GB', {
       timeZone: STUDIO_TZ,
@@ -235,8 +239,23 @@ export interface ReconcileReport {
   removedOrphans: string[];
   adopted: string[];
   recreated: string[];
+  /** Événements modifiés dans Google (heure, titre, statut) : remis d'après la base. */
+  drifted: string[];
   unknown: string[];
   resyncQueued: number;
+  /** Événements que la base attend dans la fenêtre contrôlée. */
+  expected: number;
+  /** Attendus et trouvés tels quels dans Google. */
+  inSync: number;
+}
+
+/** Ce qu'un événement Google doit montrer : comparé champ par champ, pas au hachage. */
+function sameEventContent(actual: GoogleEvent, expected: GoogleEvent): string | null {
+  if (parisTime(actual.start) !== parisTime(expected.start)) return 'début';
+  if (parisTime(actual.end) !== parisTime(expected.end)) return 'fin';
+  if ((actual.summary ?? '') !== (expected.summary ?? '')) return 'titre';
+  if ((actual.status ?? 'confirmed') !== (expected.status ?? 'confirmed')) return 'statut';
+  return null;
 }
 
 export async function reconcile(
@@ -250,8 +269,16 @@ export async function reconcile(
     removedOrphans: [],
     adopted: [],
     recreated: [],
+    drifted: [],
     unknown: [],
     resyncQueued: 0,
+    expected: 0,
+    inSync: 0,
+  };
+  const bundles = new Map<string, Awaited<ReturnType<typeof loadBundle>>>();
+  const bundleOf = async (id: string) => {
+    if (!bundles.has(id)) bundles.set(id, await loadBundle(db, id));
+    return bundles.get(id) ?? null;
   };
 
   // 1. Ce que la base sait déjà ne pas être à jour.
@@ -321,6 +348,27 @@ export async function reconcile(
             ? 'réservation annulée'
             : 'ligne de réservation retirée',
         );
+        continue;
+      }
+      // Présent : encore faut-il qu'il dise la même chose que la base.
+      const bundle = await bundleOf(entry.booking_id);
+      const session = bundle?.sessions.find((x) => x.id === entry.session_id);
+      const expected =
+        bundle && session ? buildGoogleEvent(bundle.booking, session, bundle.quote, entry) : null;
+      const diff = expected && entry.google_state === 'present' ? sameEventContent(event, expected) : null;
+      if (diff) {
+        await db.query(
+          `UPDATE calendar_events SET content_hash = NULL, updated_at = now() WHERE uid = $1`,
+          [entry.uid],
+        );
+        report.drifted.push(`${bundle?.booking.reference} (${diff})`);
+        stale.push({ id: entry.booking_id });
+        await raiseAlert(db, {
+          key: `calendar:drift:${entry.uid}:${Date.now()}`,
+          severity: 'info',
+          subject: `Événement modifié dans Google, remis d'après la réservation — ${bundle?.booking.reference}`,
+          body: `« ${event.summary ?? ''} » : ${diff} différent de la réservation. Pour changer une réservation, passez par etouch : l'agenda suit.`,
+        });
       }
       continue;
     }
@@ -402,6 +450,14 @@ export async function reconcile(
       body: `L'événement ${entry.uid} a disparu de Google alors que sa réservation est active. Il est recréé. Pour retirer une réservation, annulez-la dans etouch : l'agenda suivra.`,
     });
   }
+
+  for (const entry of registry) {
+    if (!wantedEntry(entry) || !entry.snapshot) continue;
+    const date = entry.snapshot.session_date;
+    if (!date || date < windowStart || date > windowEnd) continue;
+    report.expected += 1;
+  }
+  report.inSync = Math.max(0, report.expected - report.recreated.length - report.drifted.length);
 
   for (const id of new Set(stale.map((s) => s.id))) {
     await enqueue(db, 'calendar.sync', { bookingId: id }, {
