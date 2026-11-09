@@ -201,6 +201,9 @@ function parisStart(event: GoogleEvent): string | null {
 function parisTime(t: GoogleEvent['start']): string | null {
   if (t?.date) return t.date;
   if (!t?.dateTime) return null;
+  // Sans décalage, c'est déjà l'heure murale du fuseau donné (ce que le
+  // service écrit) : la relire comme une date JS la décalerait.
+  if (!/(Z|[+-]\d{2}:\d{2})$/.test(t.dateTime)) return t.dateTime.slice(0, 19);
   const d = new Date(t.dateTime);
   const parts = Object.fromEntries(
     new Intl.DateTimeFormat('en-GB', {

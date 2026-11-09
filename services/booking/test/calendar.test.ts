@@ -242,6 +242,25 @@ describe('réconciliation', () => {
     expect(calendar.events.size).toBe(1);
   });
 
+  it("ne voit pas d'écart quand Google rend l'heure avec son décalage (+01:00)", async () => {
+    await gucBooking();
+    await drain(d);
+    // Ce que Google renvoie réellement : l'instant avec le décalage de Paris.
+    for (const ev of calendar.events.values()) {
+      for (const t of [ev.start, ev.end]) {
+        if (t?.dateTime) {
+          const utc = new Date(`${t.dateTime}Z`);
+          const offset = new Date(utc.toLocaleString('en-US', { timeZone: 'Europe/Paris' })).getTime() - new Date(utc.toLocaleString('en-US', { timeZone: 'UTC' })).getTime();
+          const h = offset / 3_600_000;
+          t.dateTime = `${t.dateTime}+${String(h).padStart(2, '0')}:00`;
+        }
+      }
+    }
+    const report = await reconcile(db, calendar);
+    expect(report.drifted).toEqual([]);
+    expect(report.inSync).toBe(2);
+  });
+
   it('remet à l’heure un événement déplacé à la main dans Google, et compte l’écart', async () => {
     const b = await gucBooking();
     await drain(d);
