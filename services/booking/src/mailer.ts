@@ -365,31 +365,6 @@ export function renderAlertEmail(alerts: Alert[]): { subject: string; html: stri
   return { subject, html: wrap(subject, alerts.map(alertBlock).join('')) };
 }
 
-export function renderDigestEmail(
-  open: Alert[],
-  resolved: Alert[],
-): { subject: string; html: string } | null {
-  if (open.length === 0 && resolved.length === 0) return null;
-  const parts: string[] = [];
-  if (open.length > 0) {
-    parts.push(`<p style="margin:0 0 8px"><strong>Encore ouvert</strong></p>`);
-    parts.push(open.map(alertBlock).join(''));
-  }
-  if (resolved.length > 0) {
-    parts.push(`<p style="margin:16px 0 8px"><strong>Dernières 24 h</strong></p>`);
-    parts.push(
-      `<ul style="margin:0;padding-left:18px">${resolved
-        .map((a) => `<li>${esc(a.subject)}</li>`)
-        .join('')}</ul>`,
-    );
-  }
-  const subject =
-    open.length > 0
-      ? `Réservations : ${open.length} problème(s) ouvert(s)`
-      : 'Réservations : récapitulatif du jour';
-  return { subject, html: wrap(subject, parts.join('')) };
-}
-
 /** Alerte d'un échec du tunnel côté navigateur : rien n'existe en base. */
 export function renderTunnelFailure(input: {
   error: string;

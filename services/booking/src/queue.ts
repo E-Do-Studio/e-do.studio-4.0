@@ -13,8 +13,7 @@ export type JobKind =
   | 'hubspot.booking'
   | 'hubspot.contact'
   | 'supabase.watch'
-  | 'alerts.flush'
-  | 'alerts.digest';
+  | 'alerts.flush';
 
 export interface Job {
   id: number;

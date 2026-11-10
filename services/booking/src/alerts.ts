@@ -1,7 +1,8 @@
 // Alertes du studio. Une alerte ouverte par clé : un problème qui se répète
 // incrémente un compteur au lieu d'envoyer dix e-mails. `warning` et
-// `critical` partent tout de suite (job `alerts.flush`) ; `info` attend le
-// récapitulatif du matin.
+// `critical` partent tout de suite (job `alerts.flush`) ; une `info` n'est
+// jamais envoyée par e-mail (Théo ne veut pas de récapitulatif) : elle reste
+// dans /v1/admin/status et PostHog.
 import type { Queryable } from './db.ts';
 import { trackService } from './posthog.ts';
 import { enqueue } from './queue.ts';
@@ -32,7 +33,7 @@ export async function raiseAlert(
     kind: alert.key.split(':').slice(0, 2).join(':'),
   });
   // Une info est un fait accompli (un orphelin supprimé) : rien à suivre, elle
-  // naît close et ne figure qu'au récapitulatif.
+  // naît close.
   if (alert.severity === 'info') {
     await q.query(
       `INSERT INTO alerts (key, severity, subject, body, resolved_at)
@@ -92,17 +93,4 @@ export async function markNotified(q: Queryable, ids: number[]): Promise<void> {
   await q.query('UPDATE alerts SET notified_at = now() WHERE id = ANY($1)', [
     ids,
   ]);
-}
-
-/** Pour le récapitulatif : tout ce qui est ouvert, et ce qui s'est réglé depuis hier. */
-export async function digestContent(
-  q: Queryable,
-): Promise<{ open: Alert[]; resolved: Alert[] }> {
-  const open = await q.query<Alert>(
-    `SELECT * FROM alerts WHERE resolved_at IS NULL ORDER BY severity DESC, first_seen_at`,
-  );
-  const resolved = await q.query<Alert>(
-    `SELECT * FROM alerts WHERE resolved_at > now() - interval '24 hours' ORDER BY resolved_at`,
-  );
-  return { open, resolved };
 }
