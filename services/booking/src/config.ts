@@ -15,6 +15,11 @@ const schema = z.object({
   ALLOWED_ORIGINS: z
     .string()
     .default('https://e-do.studio,https://www.e-do.studio'),
+  // Accepte aussi localhost et le réseau privé : le développement seulement.
+  ALLOW_LOCAL_ORIGINS: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((v) => v === 'true'),
   RESEND_API_KEY: z.string().min(1),
   RESEND_FROM_EMAIL: z.string().default('E-Do Studio <contact@e-do.studio>'),
   STUDIO_EMAIL: z.string().default('contact@e-do.studio'),
@@ -59,6 +64,7 @@ export interface Config {
   databaseUrl: string;
   apiKeys: Map<string, string>;
   allowedOrigins: string[];
+  allowLocalOrigins: boolean;
   resendApiKey: string;
   fromEmail: string;
   studioEmail: string;
@@ -116,6 +122,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     databaseUrl: e.DATABASE_URL,
     apiKeys,
     allowedOrigins: list(e.ALLOWED_ORIGINS),
+    allowLocalOrigins: e.ALLOW_LOCAL_ORIGINS,
     resendApiKey: e.RESEND_API_KEY,
     fromEmail: e.RESEND_FROM_EMAIL,
     studioEmail: e.STUDIO_EMAIL,

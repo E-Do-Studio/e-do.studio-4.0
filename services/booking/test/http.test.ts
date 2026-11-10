@@ -101,6 +101,84 @@ describe('public', () => {
     expect(statuses.slice(0, 10).every((s) => s === 201)).toBe(true);
     expect(statuses[10]).toBe(429);
   });
+
+  it("ne lit que l'adresse ajoutée par le proxy, pas celle que le client écrit", async () => {
+    const statuses: number[] = [];
+    for (let i = 0; i < 11; i += 1) {
+      const res = await call('/v1/public/bookings', {
+        method: 'POST',
+        json: websiteInput([{ plateauKey: 'live', days: 20 + i, hour: 10, hours: 2 }], `s${i}@x.fr`),
+        headers: { 'X-Forwarded-For': `198.51.100.${i}, 203.0.113.9` },
+      });
+      statuses.push(res.status);
+    }
+    expect(statuses[10]).toBe(429);
+  });
+
+  it("plafonne les réservations par adresse e-mail, quelle que soit l'IP", async () => {
+    const statuses: number[] = [];
+    for (let i = 0; i < 6; i += 1) {
+      const res = await call('/v1/public/bookings', {
+        method: 'POST',
+        json: websiteInput([{ plateauKey: 'live', days: 20 + i, hour: 10, hours: 2 }], 'Cible@x.fr'),
+        headers: { 'X-Forwarded-For': `198.51.100.${i}` },
+      });
+      statuses.push(res.status);
+    }
+    expect(statuses.slice(0, 5).every((s) => s === 201)).toBe(true);
+    expect(statuses[5]).toBe(429);
+  });
+
+  it('plafonne les réservations du site par heure et alerte le studio', async () => {
+    await db.query(
+      `INSERT INTO rate_limits (bucket, ip_hash, window_start, count)
+       VALUES ('booking-global', 'all', to_timestamp(floor(extract(epoch FROM now()) / 3600) * 3600), 40)`,
+    );
+    const res = await call('/v1/public/bookings', {
+      method: 'POST',
+      json: websiteInput([{ plateauKey: 'live', days: 20, hour: 10, hours: 2 }]),
+    });
+    expect(res.status).toBe(429);
+    const [alert] = await db.query<{ severity: string }>(
+      "SELECT severity FROM alerts WHERE key = 'abuse:booking-global'",
+    );
+    expect(alert?.severity).toBe('warning');
+  });
+
+  it('plafonne la lecture des flux iCal (énumération des références)', async () => {
+    const statuses: number[] = [];
+    for (let i = 0; i < 61; i += 1) {
+      statuses.push((await call(`/v1/public/ical/EDO-R-AAAA${i}`)).status);
+    }
+    expect(statuses.slice(0, 60).every((s) => s === 404)).toBe(true);
+    expect(statuses[60]).toBe(429);
+  });
+
+  it("refuse localhost en production, l'accepte en développement", async () => {
+    const preflight = (a: typeof app) =>
+      a.request('/v1/public/bookings', {
+        method: 'OPTIONS',
+        headers: { Origin: 'http://localhost:3000', 'Access-Control-Request-Method': 'POST' },
+      });
+    expect((await preflight(app)).headers.get('access-control-allow-origin')).toBeNull();
+    const dev = createApp({ db, apiKeys: new Map(), allowedOrigins: [], allowLocalOrigins: true });
+    expect((await preflight(dev)).headers.get('access-control-allow-origin')).toBe(
+      'http://localhost:3000',
+    );
+  });
+
+  it('refuse un corps démesuré', async () => {
+    const res = await call('/v1/public/chat', {
+      method: 'POST',
+      body: JSON.stringify({ messages: [{ role: 'user', content: 'x'.repeat(2 * 1024 * 1024) }] }),
+    });
+    expect(res.status).toBe(413);
+  });
+
+  it('pose les en-têtes de sécurité', async () => {
+    const res = await call('/healthz');
+    expect(res.headers.get('x-content-type-options')).toBe('nosniff');
+  });
 });
 
 describe('privé', () => {
@@ -108,6 +186,15 @@ describe('privé', () => {
     expect((await call('/v1/bookings')).status).toBe(401);
     expect((await call('/v1/bookings', { key: 'mauvaise' })).status).toBe(401);
     expect((await call('/v1/bookings', { key: KEY })).status).toBe(200);
+  });
+
+  it('bloque une IP qui essaie des clés en série', async () => {
+    const statuses: number[] = [];
+    for (let i = 0; i < 21; i += 1) {
+      statuses.push((await call('/v1/bookings', { key: `essai-${i}` })).status);
+    }
+    expect(statuses.slice(0, 20).every((s) => s === 401)).toBe(true);
+    expect(statuses[20]).toBe(429);
   });
 
   it('crée depuis etouch, annule, et l’historique note qui', async () => {

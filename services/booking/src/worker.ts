@@ -297,6 +297,8 @@ export async function schedule(
     if (opts.watchSupabase) {
       await enqueue(db, 'supabase.watch', {}, { dedupeKey: 'supabase.watch' });
     }
+    // Les fenêtres de limite de débit ne servent plus passé un jour.
+    await db.query("DELETE FROM rate_limits WHERE window_start < now() - interval '2 days'");
     await db.query(
       `INSERT INTO service_state (key, value) VALUES ('scheduler.reconcile', $1)
        ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()`,
