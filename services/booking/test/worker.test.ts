@@ -31,23 +31,9 @@ describe('planification', () => {
     expect(await queued()).toContain('calendar.reconcile');
   });
 
-  it('un récapitulatif par jour, à partir de 8 h à Paris', async () => {
-    await schedule(db, new Date('2026-11-10T06:30:00Z')); // 7h30 à Paris
-    expect(await queued()).not.toContain('alerts.digest');
-    await schedule(db, new Date('2026-11-10T07:05:00Z')); // 8h05
-    await schedule(db, new Date('2026-11-10T15:00:00Z'));
-    expect((await queued()).filter((k) => k === 'alerts.digest')).toHaveLength(1);
-  });
-
-  it('le récapitulatif liste l’ouvert et ce qui s’est passé', async () => {
-    const mailer = new FakeMailer();
-    await raiseAlert(db, { key: 'k1', severity: 'warning', subject: 'Synchro en échec', body: '…' });
-    await raiseAlert(db, { key: 'k2', severity: 'info', subject: 'Orphelin retiré', body: '…' });
-    await db.query("INSERT INTO jobs (kind, dedupe_key) VALUES ('alerts.digest', 'alerts.digest')");
-    await drain(deps(db, new FakeCalendar(), mailer));
-    const digest = mailer.sent.find((m) => m.subject.startsWith('Réservations'));
-    expect(digest?.html).toContain('Synchro en échec');
-    expect(digest?.html).toContain('Orphelin retiré');
+  it("pas de récapitulatif : rien n'est planifié à 8 h", async () => {
+    await schedule(db, new Date('2026-11-10T07:05:00Z'));
+    expect(await queued()).toEqual(['calendar.reconcile']);
   });
 
   it('une alerte répétée ne renvoie pas d’e-mail ; une aggravation si', async () => {

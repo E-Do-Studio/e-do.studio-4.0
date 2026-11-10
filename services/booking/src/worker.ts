@@ -5,7 +5,6 @@ import { syncHubspotBooking, syncHubspotContact } from './hubspot.ts';
 import { scrubbed, trackService } from './posthog.ts';
 import { type SupabaseSource, watchSupabase } from './supabase-watch.ts';
 import {
-  digestContent,
   markNotified,
   pendingNotifications,
   raiseAlert,
@@ -17,7 +16,6 @@ import type { Db } from './db.ts';
 import type { CalendarApi } from './google.ts';
 import {
   renderAlertEmail,
-  renderDigestEmail,
   sendClientEmail,
   sendContactEmail,
   sendStudioEmail,
@@ -45,7 +43,6 @@ export interface WorkerDeps {
 }
 
 const RECONCILE_EVERY_MS = 10 * 60_000;
-const DIGEST_HOUR_PARIS = 8;
 
 const errorText = (err: unknown) =>
   err instanceof Error ? err.message : String(err);
@@ -68,7 +65,6 @@ const KIND_LABEL: Record<string, string> = {
   'email.contact': "L'e-mail du formulaire de contact",
   'alerts.flush': "L'envoi des alertes",
   'supabase.watch': 'La surveillance de l’ancien Supabase',
-  'alerts.digest': 'Le récapitulatif quotidien',
 };
 
 export const jobAlertKey = (job: Pick<Job, 'kind' | 'dedupe_key' | 'id'>) =>
@@ -186,7 +182,7 @@ export async function runJob(deps: WorkerDeps, job: Job): Promise<void> {
       if (!bundle) return;
       const { booking, sessions } = bundle;
       // Pas de reprise : HubSpot crée une affaire à chaque appel, un essai
-      // répété en ferait deux. Un échec reste visible au récapitulatif.
+      // répété en ferait deux. Un échec reste visible dans /v1/admin/status et PostHog.
       try {
         await syncHubspotBooking(deps.hubspotToken, {
           reference: booking.reference,
@@ -239,18 +235,6 @@ export async function runJob(deps: WorkerDeps, job: Job): Promise<void> {
       );
       return;
     }
-    case 'alerts.digest': {
-      const { open, resolved } = await digestContent(db);
-      const digest = renderDigestEmail(open, resolved);
-      if (!digest) return;
-      await deps.mailer.send({
-        to: deps.alertEmail,
-        ...digest,
-        idempotencyKey: `digest-${job.id}`,
-      });
-      trackService('alert_digest_sent', { open: open.length, resolved: resolved.length });
-      return;
-    }
   }
 }
 
@@ -299,7 +283,7 @@ export async function tick(deps: WorkerDeps): Promise<boolean> {
   return true;
 }
 
-/** Planifie la réconciliation et le récapitulatif quand c'est l'heure. */
+/** Planifie la réconciliation (toutes les 10 min) et la surveillance de Supabase. */
 export async function schedule(
   db: Db,
   now = new Date(),
@@ -318,28 +302,6 @@ export async function schedule(
        ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()`,
       [JSON.stringify({ at: now.toISOString() })],
     );
-  }
-
-  const parisDay = now.toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' });
-  const parisHour = Number(
-    now.toLocaleString('en-GB', {
-      timeZone: 'Europe/Paris',
-      hour: '2-digit',
-      hourCycle: 'h23',
-    }),
-  );
-  if (parisHour >= DIGEST_HOUR_PARIS) {
-    const [digest] = await db.query<{ value: { day: string } }>(
-      "SELECT value FROM service_state WHERE key = 'scheduler.digest'",
-    );
-    if (digest?.value.day !== parisDay) {
-      await enqueue(db, 'alerts.digest', {}, { dedupeKey: 'alerts.digest' });
-      await db.query(
-        `INSERT INTO service_state (key, value) VALUES ('scheduler.digest', $1)
-         ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()`,
-        [JSON.stringify({ day: parisDay })],
-      );
-    }
   }
 
   await db.query(

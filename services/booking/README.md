@@ -16,7 +16,7 @@ tournent dans le même processus.
 | Annuler supprimait les lignes (le créneau était libéré, mais les événements perdus) | Annuler garde les lignes et libère le créneau (`blocks_slot = false`). Retirer une machine supprime sa ligne, et le registre garde son événement jusqu'à ce qu'il soit retiré. |
 | Aucun contrôle de l'agenda | **Réconciliation** toutes les 10 min : retire les événements e-do qu'aucune ligne active ne justifie (trouvés par id, ou par `Référence:` dans la description pour ceux d'avant), remet ceux supprimés à la main, alerte sur une référence inconnue (sans rien supprimer). |
 | `.ics` client en `METHOD:PUBLISH`, `SEQUENCE:0`, rien à l'annulation | `METHOD:REQUEST` avec ORGANIZER et ATTENDEE ; report = même UID, SEQUENCE + 1 ; annulation = `METHOD:CANCEL` / `STATUS:CANCELLED`, même UID, SEQUENCE + 1. |
-| Alertes : un e-mail si la création échouait 3 fois | Toute tâche en échec (agenda, e-mail) alerte au 3e essai, et l'abandon déclenche une alerte critique. Les alertes sont dédupliquées et un récapitulatif part chaque jour à 8 h si quelque chose est ouvert ou s'est passé. `GET /v1/admin/status` donne l'état complet. |
+| Alertes : un e-mail si la création échouait 3 fois | Toute tâche en échec (agenda, e-mail) alerte au 3e essai, et l'abandon déclenche une alerte critique. Les alertes sont dédupliquées. Pas de récapitulatif quotidien : un e-mail ne part que quand il faut agir ; le reste se lit dans PostHog. `GET /v1/admin/status` donne l'état complet. |
 
 Les UID (`<référence>-<id de ligne>@e-do.studio`) et les ids Google
 (`sha256(uid)` en hexadécimal, ceux de la v31 de calendar-sync) ne changent
