@@ -84,6 +84,7 @@ const app = createApp({
   db,
   apiKeys: config.apiKeys,
   allowedOrigins: config.allowedOrigins,
+  allowLocalOrigins: config.allowLocalOrigins,
   studioEmail: config.studioEmail,
   geminiKey: config.geminiKey,
   zaiKey: config.zaiKey,

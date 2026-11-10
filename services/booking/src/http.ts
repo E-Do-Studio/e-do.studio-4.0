@@ -1,6 +1,8 @@
 import { createHash } from 'node:crypto';
 import { Hono, type Context } from 'hono';
+import { bodyLimit } from 'hono/body-limit';
 import { cors } from 'hono/cors';
+import { secureHeaders } from 'hono/secure-headers';
 import { z } from 'zod';
 import { raiseAlert } from './alerts.ts';
 import {
@@ -40,6 +42,8 @@ export interface AppDeps {
   db: Db;
   apiKeys: Map<string, string>;
   allowedOrigins: string[];
+  /** localhost et réseau privé : le développement seulement. */
+  allowLocalOrigins?: boolean;
   studioEmail?: string;
   geminiKey?: string;
   zaiKey?: string;
@@ -182,10 +186,18 @@ const historySchema = z.object({
   actor: z.string().max(200).nullish(),
 });
 
+// Traefik (Coolify) ajoute en fin de X-Forwarded-For l'adresse qui lui parle :
+// c'est la seule valeur sûre, le début de la liste est écrit par le client. Un
+// CDN placé devant changerait l'entrée à lire.
 function clientIp(c: Context): string {
-  const xff = c.req.header('x-forwarded-for');
-  return xff?.split(',')[0]?.trim() || c.req.header('x-real-ip') || 'unknown';
+  const hops = (c.req.header('x-forwarded-for') ?? '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return hops.at(-1) || c.req.header('x-real-ip') || 'unknown';
 }
+
+const sha256 = (v: string) => createHash('sha256').update(v).digest('base64');
 
 function isLocalOrigin(origin: string): boolean {
   try {
@@ -200,6 +212,10 @@ function isLocalOrigin(origin: string): boolean {
 export function createApp(deps: AppDeps): Hono<Env> {
   const { db } = deps;
   const app = new Hono<Env>();
+  const originAllowed = (origin: string) =>
+    deps.allowedOrigins.includes(origin) || (!!deps.allowLocalOrigins && isLocalOrigin(origin));
+
+  app.use('*', secureHeaders());
 
   // Une ligne par requête (méthode, route, statut, durée, appelant), sans
   // corps ni en-tête : de quoi retrouver n'importe quel appel dans PostHog Logs.
@@ -257,10 +273,17 @@ export function createApp(deps: AppDeps): Hono<Env> {
   pub.use(
     '*',
     cors({
-      origin: (origin) =>
-        deps.allowedOrigins.includes(origin) || isLocalOrigin(origin) ? origin : null,
+      origin: (origin) => (originAllowed(origin) ? origin : null),
       allowMethods: ['GET', 'POST', 'OPTIONS'],
       allowHeaders: ['Content-Type'],
+    }),
+  );
+  // La plus grosse charge légitime est une conversation du chat (40 messages).
+  pub.use(
+    '*',
+    bodyLimit({
+      maxSize: 1024 * 1024,
+      onError: (c) => c.json({ error: 'payload_too_large' }, 413),
     }),
   );
 
@@ -270,6 +293,22 @@ export function createApp(deps: AppDeps): Hono<Env> {
     }
     const raw = await c.req.json();
     const input = websiteBookingSchema.parse(raw);
+    // Chaque réservation écrit au client : sans plafond par adresse, le
+    // formulaire servirait à inonder une boîte depuis notre domaine.
+    if (
+      !(await rateLimit(db, 'booking-email', sha256(input.contact.email.toLowerCase()), 5, 86_400))
+    ) {
+      return c.json({ error: 'rate_limited' }, 429);
+    }
+    if (!(await rateLimit(db, 'booking-global', 'all', 40, 3600))) {
+      await raiseAlert(db, {
+        key: 'abuse:booking-global',
+        severity: 'warning',
+        subject: 'Plus de 40 réservations en une heure : le site les refuse',
+        body: "Le plafond horaire des réservations du site est atteint. Vérifier dans /v1/admin/status et PostHog s'il s'agit d'un afflux réel ou d'un robot ; les clients refusés voient une erreur.",
+      });
+      return c.json({ error: 'rate_limited' }, 429);
+    }
     const analytics = (raw as { analytics?: { distinct_id?: string; source?: string; funnel?: string | null } })
       .analytics ?? {};
     const track = (event: string, reference: string, props: Record<string, unknown> = {}) =>
@@ -311,6 +350,9 @@ export function createApp(deps: AppDeps): Hono<Env> {
   });
 
   pub.get('/availability', async (c) => {
+    if (!(await rateLimit(db, 'availability', hashIp(clientIp(c)), 300, 600))) {
+      return c.json({ error: 'rate_limited' }, 429);
+    }
     const q = z
       .object({ plateau: z.string().min(1).max(60), from: isoDate, to: isoDate })
       .parse(c.req.query());
@@ -325,6 +367,9 @@ export function createApp(deps: AppDeps): Hono<Env> {
       return c.json({ error: 'rate_limited' }, 429);
     }
     const input = failureSchema.parse(await c.req.json());
+    if (!(await rateLimit(db, 'failure-global', 'all', 20, 3600))) {
+      return c.json({ error: 'rate_limited' }, 429);
+    }
     trackService('booking_tunnel_failed', { mode: input.mode, error: scrubbed(input.error) });
     await raiseAlert(db, {
       key: `tunnel:${createHash('sha256').update(`${input.error}|${input.contactEmail ?? ''}`).digest('hex').slice(0, 16)}`,
@@ -337,13 +382,11 @@ export function createApp(deps: AppDeps): Hono<Env> {
 
   pub.post('/contact', async (c) => {
     const origin = c.req.header('origin');
-    const originAllowed =
-      !!origin && (deps.allowedOrigins.includes(origin) || isLocalOrigin(origin));
     const result = await handleContact(
       { db, turnstileSecret: deps.turnstileSecret },
       await c.req.json(),
       clientIp(c),
-      originAllowed,
+      !!origin && originAllowed(origin),
     );
     return c.json(result.body, result.status as 200);
   });
@@ -357,7 +400,12 @@ export function createApp(deps: AppDeps): Hono<Env> {
     return c.json(result.body, result.status as 200);
   });
 
+  // Le flux porte les coordonnées du client : une référence ne se devine pas
+  // en quelques essais, mais elle s'énumère sans plafond.
   pub.get('/ical/:reference', async (c) => {
+    if (!(await rateLimit(db, 'ical', hashIp(clientIp(c)), 60, 600))) {
+      return c.json({ error: 'rate_limited' }, 429);
+    }
     const ics = await bookingFeed(
       db,
       c.req.param('reference'),
@@ -379,7 +427,12 @@ export function createApp(deps: AppDeps): Hono<Env> {
   priv.use('*', async (c, next) => {
     const token = c.req.header('authorization')?.replace(/^Bearer\s+/i, '');
     const caller = token ? deps.apiKeys.get(token) : undefined;
-    if (!caller) return c.json({ error: 'unauthorized' }, 401);
+    if (!caller) {
+      const allowed = await rateLimit(db, 'auth-failure', hashIp(clientIp(c)), 20, 600);
+      return allowed
+        ? c.json({ error: 'unauthorized' }, 401)
+        : c.json({ error: 'rate_limited' }, 429);
+    }
     c.set('caller', caller);
     await next();
   });

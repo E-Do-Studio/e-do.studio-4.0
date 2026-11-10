@@ -26,7 +26,7 @@ pilotables. Si la v31 utilisait d'autres ids, la réconciliation reprend les
 
 ## API
 
-Publique (CORS limité à `ALLOWED_ORIGINS`, débit limité par IP) :
+Publique (CORS limité à `ALLOWED_ORIGINS`, débit limité par IP — la dernière adresse de `X-Forwarded-For`, celle qu'ajoute Traefik —, réservations plafonnées à 5 par adresse e-mail et par jour et à 40 par heure pour tout le site, corps limité à 1 Mo) :
 
 - `POST /v1/public/bookings` : tunnel du site. Le devis est recalculé avec `src/lib/booking-engine.ts`. Réponses : `{ reference, total }` (201), 409 `slot_taken`, 400.
 - `GET /v1/public/availability?plateau=&from=&to=` : occupation et jours bloqués, sans aucune donnée client.
@@ -55,6 +55,7 @@ Privée (`Authorization: Bearer <clé>`, une clé par appelant) :
 | `DATABASE_URL` | Postgres du service |
 | `BOOKING_API_KEYS` | `etouch:<secret>,admin:<secret>` (24 caractères min., `openssl rand -hex 24`) |
 | `ALLOWED_ORIGINS` | défaut `https://e-do.studio,https://www.e-do.studio` |
+| `ALLOW_LOCAL_ORIGINS` | `true` pour accepter localhost et le réseau privé (développement) ; `false` par défaut |
 | `RESEND_API_KEY`, `RESEND_FROM_EMAIL` | envoi des e-mails |
 | `STUDIO_EMAIL`, `ALERT_EMAIL` | copie studio et destinataire des alertes (défaut : `contact@e-do.studio`) |
 | `GOOGLE_CALENDAR_ID` | agenda du studio |
