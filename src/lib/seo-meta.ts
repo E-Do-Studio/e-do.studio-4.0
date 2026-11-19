@@ -25,14 +25,14 @@ export const META: Record<string, Record<Lang, PageMeta>> = {
   },
   cyclorama: {
     fr: {
-      title: 'Cyclorama — E-Do Studio Paris',
+      title: 'Location cyclorama à Paris, fond blanc 32 m² | E-Do Studio',
       description:
-        'Location de cyclorama professionnel à Paris. Espace de prise de vue pour shooting photo et vidéo avec fond infini.',
+        'Cyclorama deux faces de 32 m² à louer à Saint-Ouen, aux portes de Paris : fond blanc infini, 5 m sous plafond, lumière naturelle par skydomes. Dès 650 € HT les 5 h, réservation en ligne.',
     },
     en: {
-      title: 'Cyclorama — E-Do Studio Paris',
+      title: 'Cyclorama Rental in Paris, 32 m² White Infinity Wall | E-Do Studio',
       description:
-        'Professional cyclorama rental in Paris. Shooting space for photo and video with infinity backdrop.',
+        'Two-sided 32 m² cyclorama for hire in Saint-Ouen, on the edge of Paris: white infinity backdrop, 5 m ceiling, natural light through skydomes. From €650 excl. VAT for 5 hours, book online.',
     },
   },
   'plateau-horizontal': {
