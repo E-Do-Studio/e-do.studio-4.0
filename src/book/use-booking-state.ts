@@ -127,9 +127,6 @@ function useBookingState({ forcedStep, forceManual }: UseBookingStateArgs) {
   const [arrivalHour, setArrivalHour] = useState(10);
   const [dateIdx, setDateIdx] = useState(0);
 
-  const [slotType, setSlotType] = useState('hour');
-  const [hours, setHours] = useState(1);
-  const [cycloMode, setCycloMode] = useState('halfH');
   const [paint, setPaint] = useState(false);
   const [kwh, setKwh] = useState(0);
   const [team, setTeam] = useState<TeamState>({});
@@ -178,9 +175,6 @@ function useBookingState({ forcedStep, forceManual }: UseBookingStateArgs) {
     setSelected(saved.selected);
     setArrivalHour(saved.arrivalHour);
     setDateIdx(saved.dateIdx);
-    setSlotType(saved.slotType);
-    setHours(saved.hours);
-    setCycloMode(saved.cycloMode);
     setPaint(saved.paint);
     setKwh(saved.kwh);
     setTeam(saved.team as TeamState);
@@ -218,9 +212,6 @@ function useBookingState({ forcedStep, forceManual }: UseBookingStateArgs) {
     setPlateau(null);
     setSlotIds([]);
     setSlots({});
-    setSlotType('hour');
-    setHours(1);
-    setCycloMode('halfH');
     setPaint(false);
     setKwh(0);
     setTeam({});
@@ -255,12 +246,6 @@ function useBookingState({ forcedStep, forceManual }: UseBookingStateArgs) {
     setArrivalHour,
     dateIdx,
     setDateIdx,
-    slotType,
-    setSlotType,
-    hours,
-    setHours,
-    cycloMode,
-    setCycloMode,
     paint,
     setPaint,
     kwh,
@@ -293,9 +278,6 @@ function usePersistBookingDraft(s: BookingState, step: number) {
     plateau: s.plateau,
     slotIds: s.slotIds,
     slots: s.slots,
-    slotType: s.slotType,
-    hours: s.hours,
-    cycloMode: s.cycloMode,
     paint: s.paint,
     kwh: s.kwh,
     team: s.team,
@@ -316,9 +298,6 @@ function usePersistBookingDraft(s: BookingState, step: number) {
     s.plateau,
     s.slotIds,
     s.slots,
-    s.slotType,
-    s.hours,
-    s.cycloMode,
     s.paint,
     s.kwh,
     s.team,

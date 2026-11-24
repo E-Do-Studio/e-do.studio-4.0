@@ -3,15 +3,15 @@
 // navigateur n'est jamais cru.
 import { randomBytes } from 'node:crypto';
 import {
-  BOOK_PLATEAUX,
   type CreateBookingInput,
   computePriceBreakdown,
-  fitsBookingHours,
+  firstSessionOutsideHours,
   type QuoteLabels,
   type SlotState,
 } from '../../../src/lib/booking-engine.ts';
 
 export type { CreateBookingInput };
+export { firstSessionOutsideHours };
 
 // Le moteur est sans i18n : ces libellés ne servent qu'aux lignes persistées
 // du devis, reprises telles quelles de create-booking.
@@ -75,24 +75,4 @@ export function recomputeQuote(input: CreateBookingInput) {
     lang: 'fr',
     labels: LABELS,
   });
-}
-
-/** Mêmes horaires que le calendrier du tunnel (10h–18h, 9h–19h au cyclo). */
-export function withinOpeningHours(session: {
-  plateauKey: string;
-  slotType: string | null;
-  hours: number;
-  cycloMode: string | null;
-  arrivalHour: number | null;
-}): boolean {
-  return fitsBookingHours(
-    {
-      plateauKey: session.plateauKey,
-      slotType: session.slotType,
-      hours: session.hours,
-      cycloMode: session.cycloMode,
-      arrivalHour: session.arrivalHour ?? undefined,
-    } as SlotState,
-    BOOK_PLATEAUX.find((p) => p.k === session.plateauKey),
-  );
 }

@@ -192,6 +192,7 @@
     "other": "Autre",
     "otherInformation": "Autres informations",
     "ourConfiguratorGuidesYouOr": "Notre configurateur vous accompagne pas à pas.",
+    "outsideHoursError": "Cet horaire dépasse les heures d’ouverture du plateau pour la durée choisie. Choisissez une heure d’arrivée plus tôt.",
     "packshot": "Packshot",
     "packshotType": "Type de packshot",
     "packshotsOnModelProductPagesDesc": "Packshots, on-model, fiches produit.",

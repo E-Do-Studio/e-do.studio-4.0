@@ -6,6 +6,7 @@ import {
   closingHourForKey,
   computePriceBreakdown,
   dailyOccupancyHoursFor,
+  firstSessionOutsideHours,
   fitsBookingHours,
   fmtEUR,
   isSessionValid,
@@ -410,6 +411,61 @@ describe('créneaux proposés par le calendrier — tous acceptés par le serveu
     });
     expect(dailyOccupancyHoursFor(day, cyclo)).toBe(10);
     expect(closingHourFor(cyclo) - dailyOccupancyHoursFor(day, cyclo)).toBe(9);
+  });
+});
+
+describe('firstSessionOutsideHours — la vérification commune au tunnel et au service', () => {
+  const session = (over: Record<string, unknown>) =>
+    ({
+      plateauKey: 'live',
+      slotType: 'hour',
+      hours: 2,
+      cycloMode: null,
+      arrivalHour: 10,
+      ...over,
+    }) as never;
+
+  it('rend -1 quand tout tient', () => {
+    expect(
+      firstSessionOutsideHours({
+        sessions: [
+          session({}),
+          session({
+            plateauKey: 'cyclorama',
+            slotType: null,
+            cycloMode: 'fullH',
+            arrivalHour: 9,
+          }),
+        ],
+        arrivalHour: null,
+      }),
+    ).toBe(-1);
+  });
+
+  it('désigne le premier créneau fautif', () => {
+    expect(
+      firstSessionOutsideHours({
+        sessions: [session({}), session({ hours: 4, arrivalHour: 16 })],
+        arrivalHour: null,
+      }),
+    ).toBe(1);
+  });
+
+  it("retombe sur l'heure globale quand le créneau n'en porte pas", () => {
+    const sessions = [
+      session({ arrivalHour: null, slotType: 'full', hours: 8 }),
+    ];
+    expect(firstSessionOutsideHours({ sessions, arrivalHour: 10 })).toBe(-1);
+    expect(firstSessionOutsideHours({ sessions, arrivalHour: 11 })).toBe(0);
+  });
+
+  it("n'a rien à vérifier sans aucune heure (devis)", () => {
+    expect(
+      firstSessionOutsideHours({
+        sessions: [session({ arrivalHour: null })],
+        arrivalHour: null,
+      }),
+    ).toBe(-1);
   });
 });
 

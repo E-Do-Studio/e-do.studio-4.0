@@ -16,6 +16,11 @@ import {
   statusChangeAdminLabel,
   statusChangeSubject,
 } from '../../../supabase/functions/send-email/renderers.ts';
+import {
+  BOOK_PLATEAUX,
+  rentalHoursFor,
+  type SlotState,
+} from '../../../src/lib/booking-engine.ts';
 import type { Alert } from './alerts.ts';
 import { loadBundle, registryFor, type EmailPayload } from './bookings.ts';
 import type { Db } from './db.ts';
@@ -366,6 +371,27 @@ export function renderAlertEmail(alerts: Alert[]): { subject: string; html: stri
 }
 
 /** Alerte d'un échec du tunnel côté navigateur : rien n'existe en base. */
+interface FailedSession {
+  plateauKey: string;
+  date: { y: number; m: number; d: number } | null;
+  arrivalHour: number | null;
+  slotType: string | null;
+  hours: number;
+  cycloMode: string | null;
+}
+
+// Une ligne par créneau demandé. Sans elle, le 24/11, le studio savait qui
+// rappeler mais pas pour quel jour : la date n'était nulle part.
+function failedSessionLine(s: FailedSession): string {
+  const plateau = BOOK_PLATEAUX.find((p) => p.k === s.plateauKey);
+  const day = s.date
+    ? `le ${String(s.date.d).padStart(2, '0')}/${String(s.date.m + 1).padStart(2, '0')}/${s.date.y}`
+    : 'date non choisie';
+  const arrival = s.arrivalHour != null ? `, arrivée à ${s.arrivalHour}h` : '';
+  const hours = rentalHoursFor(s as SlotState, plateau);
+  return `- ${plateau?.fr ?? s.plateauKey}, ${day}${arrival}, ${hours}h de location`;
+}
+
 export function renderTunnelFailure(input: {
   error: string;
   mode: string;
@@ -373,13 +399,19 @@ export function renderTunnelFailure(input: {
   contactEmail?: string;
   contactPhone?: string;
   pageUrl?: string;
+  sessions?: FailedSession[];
+  total?: number;
 }): string {
   const contact = [input.contactName, input.contactEmail, input.contactPhone]
     .filter(Boolean)
     .join(' — ');
+  const sessions = input.sessions?.length
+    ? `\nCréneaux demandés :\n${input.sessions.map(failedSessionLine).join('\n')}`
+    : '';
+  const total = input.total != null ? `\nDevis affiché : ${input.total} € HT` : '';
   return `Le tunnel a rendu une erreur au client, aucune réservation n'a été créée.
 Erreur : ${input.error}
 Mode : ${input.mode}
-Page : ${input.pageUrl ?? 'inconnue'}
+Page : ${input.pageUrl ?? 'inconnue'}${sessions}${total}
 ${contact ? `Client à rappeler : ${contact}` : "Le client n'avait pas encore laissé ses coordonnées."}`;
 }

@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import {
   STEP,
   canGoNext,
+  primarySlot,
   resolveSlotList,
   stepProgress,
 } from './booking-steps';
@@ -92,9 +93,6 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
     setArrivalHour,
     dateIdx,
     setDateIdx,
-    slotType,
-    hours,
-    cycloMode,
     contact,
     setContact,
     today,
@@ -124,14 +122,9 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
   // Deux questions distinctes : ce qu'on facture et persiste (rentalHours), et
   // ce que le calendrier doit trouver de libre sur une seule journée
   // (availabilityHours).
-  //
-  // La durée vit dans `slots[id]` (étape durée) : `slotType`/`hours`/`cycloMode`
-  // globaux ne bougent qu'en mode configurateur. Les lire ici faisait proposer
-  // au calendrier des heures d'arrivée calculées pour 1h (ou 5h au cyclorama)
-  // alors que le client avait choisi une journée — le serveur les refusait.
-  const primarySlot = slots[resolveSlotList(slotIds, plateau)[0]];
-  const rentalHours = rentalHoursFor(primarySlot ?? {}, p);
-  const availabilityHours = dailyOccupancyHoursFor(primarySlot ?? {}, p);
+  const slot = primarySlot(slots, slotIds, plateau);
+  const rentalHours = rentalHoursFor(slot, p);
+  const availabilityHours = dailyOccupancyHoursFor(slot, p);
 
   const quoteLabels = useMemo<QuoteLabels>(
     () => ({
@@ -679,9 +672,7 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
           plateau={p}
           selected={selected}
           months={months}
-          slotType={slotType}
-          hours={hours}
-          cycloMode={cycloMode}
+          slot={slot}
           rows={priceBreakdown.rows}
           total={priceBreakdown.total}
           isPreview={!!priceBreakdown.isPreview}

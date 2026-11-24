@@ -111,6 +111,22 @@ const failureSchema = z.object({
   contactEmail: z.string().max(254).optional(),
   contactPhone: z.string().max(40).optional(),
   pageUrl: z.string().max(500).optional(),
+  sessions: z
+    .array(
+      z.object({
+        plateauKey: z.string().max(60),
+        date: z
+          .object({ y: z.number().int(), m: z.number().int(), d: z.number().int() })
+          .nullable(),
+        arrivalHour: z.number().int().min(0).max(23).nullable(),
+        slotType: z.string().max(20).nullable(),
+        hours: z.number().min(0).max(240),
+        cycloMode: z.string().max(20).nullable(),
+      }),
+    )
+    .max(10)
+    .optional(),
+  total: z.number().min(0).max(1_000_000).optional(),
 });
 
 const studioBookingSchema = z.object({

@@ -1,9 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import type { BookingSession, SlotState } from '../lib/booking-engine';
-import { makeBlankSession } from '../lib/booking-engine';
+import {
+  BOOK_PLATEAUX,
+  buildSessionsData,
+  closingHourFor,
+  dailyOccupancyHoursFor,
+  firstSessionOutsideHours,
+  makeBlankSession,
+} from '../lib/booking-engine';
 import {
   STEP,
   canGoNext,
+  primarySlot,
   resolveSlotList,
   stepName,
   stepProgress,
@@ -25,6 +33,58 @@ const base = {
   selected: null,
   contactValid: false,
 };
+
+describe('primarySlot — la durée vient du créneau rempli à l’étape durée', () => {
+  const cycloDay: SlotState = {
+    plateauKey: 'cyclorama',
+    slotType: null,
+    hours: 1,
+    cycloMode: 'fullH',
+  };
+
+  it('lit le créneau du plateau, avant comme après togglePlateau', () => {
+    expect(primarySlot({ cyclorama: cycloDay }, [], 'cyclorama')).toBe(
+      cycloDay,
+    );
+    expect(
+      primarySlot({ cyclorama: cycloDay }, ['cyclorama'], 'cyclorama'),
+    ).toBe(cycloDay);
+  });
+
+  it('rend un créneau vide sans sélection', () => {
+    expect(primarySlot({}, [], null)).toEqual({});
+  });
+
+  // Le chemin de l'incident du 24/11, bout à bout : durée lue par le
+  // calendrier, heure qu'il propose, payload envoyé, vérification du serveur.
+  it('cyclorama 10h : le calendrier ne propose que 9h, et le serveur l’accepte', () => {
+    const cyclo = BOOK_PLATEAUX.find((p) => p.k === 'cyclorama')!;
+    const slots = { cyclorama: cycloDay };
+    const daily = dailyOccupancyHoursFor(
+      primarySlot(slots, [], 'cyclorama'),
+      cyclo,
+    );
+    const lastStart = closingHourFor(cyclo) - daily;
+    expect(lastStart).toBe(9);
+
+    const send = (arrivalHour: number) =>
+      firstSessionOutsideHours({
+        sessions: buildSessionsData({
+          slotIds: [],
+          plateau: 'cyclorama',
+          slots,
+          configApplied: false,
+          configSessions: [],
+          fallbackQuantity: 0,
+          selected: { y: 2026, m: 10, d: 28 },
+          arrivalHour,
+        }),
+        arrivalHour,
+      });
+    expect(send(lastStart)).toBe(-1);
+    expect(send(10)).toBe(0);
+  });
+});
 
 describe('resolveSlotList', () => {
   it('préfère slotIds quand il est peuplé', () => {
