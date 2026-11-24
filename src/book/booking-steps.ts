@@ -82,6 +82,21 @@ function resolveSlotList(
   return plateau ? [plateau] : [];
 }
 
+/**
+ * Le créneau d'un tunnel mono-plateau, celui que l'étape durée a rempli. C'est
+ * de lui que le calendrier, le devis et l'envoi tirent la durée. Un état global
+ * `slotType`/`hours`/`cycloMode` existait en parallèle et restait à « 1h » (5h au
+ * cyclorama) en mode manuel : le calendrier proposait des heures que le serveur
+ * refusait ensuite.
+ */
+function primarySlot(
+  slots: Record<string, SlotState>,
+  slotIds: string[] | null | undefined,
+  plateau: string | null,
+): SlotState {
+  return slots[resolveSlotList(slotIds, plateau)[0]] ?? {};
+}
+
 interface CanGoNextArgs {
   step: number;
   configSessions: BookingSession[];
@@ -156,5 +171,13 @@ function stepProgress(
   });
 }
 
-export { STEP, canGoNext, resolveSlotList, stepName, stepProgress, stepsFor };
+export {
+  STEP,
+  canGoNext,
+  primarySlot,
+  resolveSlotList,
+  stepName,
+  stepProgress,
+  stepsFor,
+};
 export type { CanGoNextArgs, StepDef, StepProgress };

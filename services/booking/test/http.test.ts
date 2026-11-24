@@ -87,6 +87,32 @@ describe('public', () => {
     expect(job).toBeTruthy();
   });
 
+  it("l'alerte d'échec dit quel créneau était demandé", async () => {
+    const res = await call('/v1/public/booking-failures', {
+      method: 'POST',
+      json: {
+        error: 'Error: create-booking 400',
+        mode: 'request',
+        contactEmail: 'x@y.fr',
+        sessions: [
+          {
+            plateauKey: 'cyclorama',
+            date: { y: 2026, m: 10, d: 28 },
+            arrivalHour: 10,
+            slotType: null,
+            hours: 1,
+            cycloMode: 'fullH',
+          },
+        ],
+        total: 880,
+      },
+    });
+    expect(res.status).toBe(200);
+    const [alert] = await db.query<{ body: string }>('SELECT body FROM alerts');
+    expect(alert.body).toContain('- Cyclorama, le 28/11/2026, arrivée à 10h, 10h de location');
+    expect(alert.body).toContain('Devis affiché : 880 € HT');
+  });
+
   it('limite le débit par IP', async () => {
     const input = (i: number) => websiteInput([{ plateauKey: 'live', days: 20 + i, hour: 10, hours: 2 }], `p${i}@x.fr`);
     const statuses: number[] = [];

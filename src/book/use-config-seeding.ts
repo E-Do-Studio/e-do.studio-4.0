@@ -51,9 +51,6 @@ function useConfigSeeding({
     setSlots,
     setSlotIds,
     setPlateau,
-    setSlotType,
-    setHours,
-    setCycloMode,
     setTeam,
     setPp,
     setContact,
@@ -128,13 +125,7 @@ function useConfigSeeding({
     });
 
     setSlotIds(seedable.map((v) => slotIdFor(v.rec.plateau, v.sessionIdx)));
-    const first = seedable[0].rec;
-    setPlateau(first.plateau);
-    if (first.cycloMode) setCycloMode(first.cycloMode);
-    if (first.slotType) {
-      setSlotType(first.slotType);
-      setHours(first.hours);
-    }
+    setPlateau(seedable[0].rec.plateau);
     setTeam(proj.team);
     setPp({});
     return sessions;

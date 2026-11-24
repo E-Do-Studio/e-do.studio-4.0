@@ -13,10 +13,10 @@ import { enqueue } from './queue.ts';
 import {
   type CreateBookingInput,
   dateToIso,
+  firstSessionOutsideHours,
   generateReference,
   recomputeQuote,
   referencePrefix,
-  withinOpeningHours,
 } from './quote.ts';
 import type {
   Booking,
@@ -361,18 +361,7 @@ export async function createWebsiteBooking(
     date: s.date ? dateToIso(s.date) : fallbackDate,
     arrivalHour: s.arrivalHour ?? input.arrivalHour,
   }));
-  if (
-    resolved.some(
-      ({ s, arrivalHour }) =>
-        !withinOpeningHours({
-          plateauKey: s.plateauKey,
-          slotType: s.slotType,
-          hours: s.hours,
-          cycloMode: s.cycloMode,
-          arrivalHour,
-        }),
-    )
-  ) {
+  if (firstSessionOutsideHours(input) >= 0) {
     throw new DomainError(
       400,
       'outside_opening_hours',

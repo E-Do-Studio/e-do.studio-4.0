@@ -72,7 +72,7 @@ export interface AnalyticsEvents {
     total: number;
   };
   booking_failed: BookingContext & {
-    reason: 'slot_taken' | 'network' | 'server';
+    reason: 'slot_taken' | 'network' | 'server' | 'outside_hours';
     status?: number;
   };
   // `snapshot_present: false` : page affichée sans récapitulatif (onglet

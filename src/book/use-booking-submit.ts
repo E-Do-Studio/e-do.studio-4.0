@@ -2,10 +2,19 @@ import { useNavigate } from '@tanstack/react-router';
 import type { TFunction } from 'i18next';
 import type { RefObject } from 'react';
 import { useCallback, useMemo, useState } from 'react';
-import { capture } from '../lib/analytics';
+import { capture, captureException } from '../lib/analytics';
 import { clearAvailabilityCache } from '../lib/availability';
-import type { BookPlateau, Lang, PriceBreakdown } from '../lib/booking-engine';
-import { BOOK_PLATEAUX, buildSessionsData } from '../lib/booking-engine';
+import type {
+  BookingSessionData,
+  BookPlateau,
+  Lang,
+  PriceBreakdown,
+} from '../lib/booking-engine';
+import {
+  BOOK_PLATEAUX,
+  buildSessionsData,
+  firstSessionOutsideHours,
+} from '../lib/booking-engine';
 import type { ContactFormErrors } from '../lib/booking-schema';
 import { validateContact } from '../lib/booking-schema';
 import {
@@ -69,6 +78,7 @@ function useBookingSubmit({
     slots,
     selected,
     arrivalHour,
+    setDateIdx,
   } = state;
 
   // Une seule validation par changement d'état, partagée par la garde de
@@ -113,8 +123,11 @@ function useBookingSubmit({
       formRef.current?.requestSubmit();
       setSaving(true);
       setSaveError(null);
+      // Hors du `try` : l'alerte d'échec doit dire au studio quel créneau était
+      // demandé, sinon il rappelle un client sans savoir pour quoi.
+      let sessionsData: BookingSessionData[] = [];
       try {
-        const sessionsData = buildSessionsData({
+        sessionsData = buildSessionsData({
           slotIds,
           plateau,
           slots,
@@ -124,6 +137,41 @@ function useBookingSubmit({
           selected,
           arrivalHour: arrivalHour ?? null,
         });
+        // Le service refuse un créneau hors horaires avec la même fonction :
+        // l'envoyer, c'était perdre la demande au dernier clic. Le client reste
+        // sur l'étape date, sur le créneau fautif, et corrige l'heure.
+        const outside = firstSessionOutsideHours({
+          sessions: sessionsData,
+          arrivalHour: arrivalHour ?? null,
+        });
+        if (outside >= 0) {
+          const s = sessionsData[outside];
+          // Le calendrier n'aurait pas dû proposer cette heure : c'est un bug
+          // du tunnel, il doit remonter même si le client s'en sort.
+          captureException(
+            new Error('booking: créneau hors horaires proposé'),
+            {
+              source: 'booking',
+              funnel,
+              submit_mode: submitMode,
+              plateau: s.plateauKey,
+              slot_type: s.slotType,
+              hours: s.hours,
+              cyclo_mode: s.cycloMode,
+              arrival_hour: s.arrivalHour,
+            },
+          );
+          capture('booking_failed', {
+            source: 'funnel',
+            funnel,
+            submit_mode: submitMode,
+            reason: 'outside_hours',
+          });
+          setDateIdx(outside);
+          goToStep(STEP.DATE);
+          setSaveError(t('booking.outsideHoursError'));
+          return;
+        }
         // En multi-créneaux il n'y a pas de date globale : on retient la
         // première date posée, c'est elle que porte la réservation.
         const firstDate =
@@ -242,6 +290,8 @@ function useBookingSubmit({
               .join(' '),
             contactEmail: contact.email,
             contactPhone: contact.tel,
+            sessions: sessionsData,
+            total: priceBreakdown.total,
           });
           setSaveError(t('booking.saveError'));
         }
@@ -264,6 +314,7 @@ function useBookingSubmit({
       p,
       plateau,
       rentalHours,
+      setDateIdx,
       navigate,
       goToStep,
       formRef,

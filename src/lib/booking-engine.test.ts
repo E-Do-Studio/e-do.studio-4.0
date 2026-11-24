@@ -6,6 +6,7 @@ import {
   closingHourForKey,
   computePriceBreakdown,
   dailyOccupancyHoursFor,
+  firstSessionOutsideHours,
   fitsBookingHours,
   fmtEUR,
   isSessionValid,
@@ -350,6 +351,121 @@ describe('fitsBookingHours — créneau dans les horaires du plateau', () => {
 
   it("n'a rien à vérifier sans heure d'arrivée", () => {
     expect(fitsBookingHours(slot({ slotType: 'full' }), live)).toBe(true);
+  });
+});
+
+describe('créneaux proposés par le calendrier — tous acceptés par le serveur', () => {
+  // Même boucle que StepDate : de l'ouverture à `fermeture - durée du jour`.
+  // Le serveur rejouait `fitsBookingHours` sur ce que le tunnel envoyait, et
+  // refusait des heures que le calendrier venait de proposer.
+  const configs: Partial<SlotState>[] = [
+    { slotType: 'hour', hours: 1 },
+    { slotType: 'hour', hours: 8 },
+    { slotType: 'half', hours: 4 },
+    { slotType: 'half', hours: 7 },
+    { slotType: 'full', hours: 8 },
+    { slotType: 'full', hours: 16 },
+    { slotType: null, cycloMode: 'halfH' },
+    { slotType: null, cycloMode: 'fullH' },
+  ];
+
+  it.each(
+    BOOK_PLATEAUX.filter((p) => !p.isVisite).flatMap((p) =>
+      configs
+        .filter((c) => (c.slotType === null) === !!p.isCyclo)
+        .map((c) => [p.k, JSON.stringify(c), p, c] as const),
+    ),
+  )('%s %s', (_k, _label, plateau, cfg) => {
+    const base = slot({ plateauKey: plateau.k, ...cfg });
+    const daily = dailyOccupancyHoursFor(base, plateau);
+    const offered: number[] = [];
+    for (
+      let h = openingHourFor(plateau);
+      h <= closingHourFor(plateau) - daily;
+      h++
+    )
+      offered.push(h);
+    expect(offered.length).toBeGreaterThan(0);
+    for (const h of offered)
+      expect(fitsBookingHours({ ...base, arrivalHour: h }, plateau)).toBe(true);
+    expect(
+      fitsBookingHours(
+        { ...base, arrivalHour: offered[offered.length - 1] + 1 },
+        plateau,
+      ),
+    ).toBe(false);
+    expect(
+      fitsBookingHours(
+        { ...base, arrivalHour: openingHourFor(plateau) - 1 },
+        plateau,
+      ),
+    ).toBe(false);
+  });
+
+  it("le cyclorama en journée de 10h n'offre que 9h (pas 10h)", () => {
+    const cyclo = BOOK_PLATEAUX.find((p) => p.k === 'cyclorama')!;
+    const day = slot({
+      plateauKey: 'cyclorama',
+      slotType: null,
+      cycloMode: 'fullH',
+    });
+    expect(dailyOccupancyHoursFor(day, cyclo)).toBe(10);
+    expect(closingHourFor(cyclo) - dailyOccupancyHoursFor(day, cyclo)).toBe(9);
+  });
+});
+
+describe('firstSessionOutsideHours — la vérification commune au tunnel et au service', () => {
+  const session = (over: Record<string, unknown>) =>
+    ({
+      plateauKey: 'live',
+      slotType: 'hour',
+      hours: 2,
+      cycloMode: null,
+      arrivalHour: 10,
+      ...over,
+    }) as never;
+
+  it('rend -1 quand tout tient', () => {
+    expect(
+      firstSessionOutsideHours({
+        sessions: [
+          session({}),
+          session({
+            plateauKey: 'cyclorama',
+            slotType: null,
+            cycloMode: 'fullH',
+            arrivalHour: 9,
+          }),
+        ],
+        arrivalHour: null,
+      }),
+    ).toBe(-1);
+  });
+
+  it('désigne le premier créneau fautif', () => {
+    expect(
+      firstSessionOutsideHours({
+        sessions: [session({}), session({ hours: 4, arrivalHour: 16 })],
+        arrivalHour: null,
+      }),
+    ).toBe(1);
+  });
+
+  it("retombe sur l'heure globale quand le créneau n'en porte pas", () => {
+    const sessions = [
+      session({ arrivalHour: null, slotType: 'full', hours: 8 }),
+    ];
+    expect(firstSessionOutsideHours({ sessions, arrivalHour: 10 })).toBe(-1);
+    expect(firstSessionOutsideHours({ sessions, arrivalHour: 11 })).toBe(0);
+  });
+
+  it("n'a rien à vérifier sans aucune heure (devis)", () => {
+    expect(
+      firstSessionOutsideHours({
+        sessions: [session({ arrivalHour: null })],
+        arrivalHour: null,
+      }),
+    ).toBe(-1);
   });
 });
 

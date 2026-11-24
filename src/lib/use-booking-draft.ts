@@ -15,9 +15,6 @@ export interface BookingDraft {
   plateau: string | null;
   slotIds: string[];
   slots: Record<string, unknown>;
-  slotType: string;
-  hours: number;
-  cycloMode: string;
   paint: boolean;
   kwh: number;
   team: Record<string, unknown>;

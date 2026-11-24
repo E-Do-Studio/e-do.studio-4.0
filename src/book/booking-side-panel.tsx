@@ -18,9 +18,8 @@ interface BookingSidePanelProps {
   plateau: BookPlateau;
   selected: DateSelection | null;
   months: string[];
-  slotType: string;
-  hours: number;
-  cycloMode: string;
+  /** Le créneau mono-plateau : c'est lui qui porte la durée choisie. */
+  slot: SlotState;
   rows: QuoteRow[];
   total: number;
   /** Le configurateur pilote encore l'estimation : montants indicatifs. */
@@ -105,9 +104,7 @@ const BookingSidePanel = ({
   plateau: p,
   selected,
   months,
-  slotType,
-  hours,
-  cycloMode,
+  slot,
   rows,
   total,
   isPreview,
@@ -154,7 +151,13 @@ const BookingSidePanel = ({
           <div className="mt-1 font-mono text-xs tracking-wide text-muted-foreground">
             {isPreview
               ? t('booking.liveEstimate')
-              : durationLabel(t, p, slotType, hours, cycloMode)}
+              : durationLabel(
+                  t,
+                  p,
+                  slot.slotType || 'hour',
+                  slot.hours || 1,
+                  slot.cycloMode || 'halfH',
+                )}
           </div>
         )}
       </div>

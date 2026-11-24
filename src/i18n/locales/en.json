@@ -192,6 +192,7 @@
     "other": "Other",
     "otherInformation": "Other information",
     "ourConfiguratorGuidesYouOr": "Our configurator guides you step by step.",
+    "outsideHoursError": "This time runs past the stage’s opening hours for the chosen duration. Please pick an earlier arrival time.",
     "packshot": "Packshot",
     "packshotType": "Packshot type",
     "packshotsOnModelProductPagesDesc": "Packshots, on-model, product pages.",

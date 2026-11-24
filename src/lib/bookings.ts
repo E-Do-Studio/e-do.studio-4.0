@@ -158,6 +158,8 @@ export function reportBookingFailure(input: {
   contactName?: string;
   contactEmail?: string;
   contactPhone?: string;
+  sessions?: BookingSessionData[];
+  total?: number;
 }): void {
   let url: string;
   try {
@@ -183,6 +185,17 @@ export function reportBookingFailure(input: {
       contactName: input.contactName,
       contactEmail: input.contactEmail,
       contactPhone: input.contactPhone,
+      // Ignorés par send-email. Le service de réservation les met dans
+      // l'alerte : plateau, date, heure et durée du créneau perdu.
+      sessions: input.sessions?.map((s) => ({
+        plateauKey: s.plateauKey,
+        date: s.date,
+        arrivalHour: s.arrivalHour,
+        slotType: s.slotType,
+        hours: s.hours,
+        cycloMode: s.cycloMode,
+      })),
+      total: input.total,
       pageUrl: typeof location === 'undefined' ? undefined : location.href,
     }),
   }).catch(() => {});

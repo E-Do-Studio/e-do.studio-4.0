@@ -477,6 +477,28 @@ export function fitsBookingHours(
   );
 }
 
+// Le premier créneau d'une demande qui sort des horaires de son plateau, ou -1.
+// Le tunnel l'appelle avant l'envoi, le service de réservation à la réception :
+// même fonction sur le même payload. Le 24/11, le calendrier avait proposé 10h
+// pour une journée cyclorama de 10h (fin à 20h) et le serveur l'a refusée — le
+// client ne l'a appris qu'au dernier clic, et la demande a été perdue.
+export function firstSessionOutsideHours(
+  input: Pick<CreateBookingInput, 'sessions' | 'arrivalHour'>,
+): number {
+  return input.sessions.findIndex(
+    (s) =>
+      !fitsBookingHours(
+        {
+          slotType: s.slotType,
+          hours: s.hours,
+          cycloMode: s.cycloMode,
+          arrivalHour: s.arrivalHour ?? input.arrivalHour ?? undefined,
+        } as SlotState,
+        BOOK_PLATEAUX.find((p) => p.k === s.plateauKey),
+      ),
+  );
+}
+
 export const computePostprodPrice = (session: BookingSession) => {
   const cfgKey = cfgMatrixKey(session);
   const table = PP_UNIT[cfgKey];
