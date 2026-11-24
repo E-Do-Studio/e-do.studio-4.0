@@ -353,6 +353,66 @@ describe('fitsBookingHours — créneau dans les horaires du plateau', () => {
   });
 });
 
+describe('créneaux proposés par le calendrier — tous acceptés par le serveur', () => {
+  // Même boucle que StepDate : de l'ouverture à `fermeture - durée du jour`.
+  // Le serveur rejouait `fitsBookingHours` sur ce que le tunnel envoyait, et
+  // refusait des heures que le calendrier venait de proposer.
+  const configs: Partial<SlotState>[] = [
+    { slotType: 'hour', hours: 1 },
+    { slotType: 'hour', hours: 8 },
+    { slotType: 'half', hours: 4 },
+    { slotType: 'half', hours: 7 },
+    { slotType: 'full', hours: 8 },
+    { slotType: 'full', hours: 16 },
+    { slotType: null, cycloMode: 'halfH' },
+    { slotType: null, cycloMode: 'fullH' },
+  ];
+
+  it.each(
+    BOOK_PLATEAUX.filter((p) => !p.isVisite).flatMap((p) =>
+      configs
+        .filter((c) => (c.slotType === null) === !!p.isCyclo)
+        .map((c) => [p.k, JSON.stringify(c), p, c] as const),
+    ),
+  )('%s %s', (_k, _label, plateau, cfg) => {
+    const base = slot({ plateauKey: plateau.k, ...cfg });
+    const daily = dailyOccupancyHoursFor(base, plateau);
+    const offered: number[] = [];
+    for (
+      let h = openingHourFor(plateau);
+      h <= closingHourFor(plateau) - daily;
+      h++
+    )
+      offered.push(h);
+    expect(offered.length).toBeGreaterThan(0);
+    for (const h of offered)
+      expect(fitsBookingHours({ ...base, arrivalHour: h }, plateau)).toBe(true);
+    expect(
+      fitsBookingHours(
+        { ...base, arrivalHour: offered[offered.length - 1] + 1 },
+        plateau,
+      ),
+    ).toBe(false);
+    expect(
+      fitsBookingHours(
+        { ...base, arrivalHour: openingHourFor(plateau) - 1 },
+        plateau,
+      ),
+    ).toBe(false);
+  });
+
+  it("le cyclorama en journée de 10h n'offre que 9h (pas 10h)", () => {
+    const cyclo = BOOK_PLATEAUX.find((p) => p.k === 'cyclorama')!;
+    const day = slot({
+      plateauKey: 'cyclorama',
+      slotType: null,
+      cycloMode: 'fullH',
+    });
+    expect(dailyOccupancyHoursFor(day, cyclo)).toBe(10);
+    expect(closingHourFor(cyclo) - dailyOccupancyHoursFor(day, cyclo)).toBe(9);
+  });
+});
+
 describe('dailyOccupancyHoursFor — occupation sur une seule journée', () => {
   const live = BOOK_PLATEAUX.find((p) => p.k === 'live')!;
   const cyclo = BOOK_PLATEAUX.find((p) => p.k === 'cyclorama')!;

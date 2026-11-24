@@ -124,11 +124,14 @@ const BookPage = ({ forcedStep, forceManual }: BookPageProps = {}) => {
   // Deux questions distinctes : ce qu'on facture et persiste (rentalHours), et
   // ce que le calendrier doit trouver de libre sur une seule journée
   // (availabilityHours).
-  const rentalHours = rentalHoursFor({ slotType, hours, cycloMode }, p);
-  const availabilityHours = dailyOccupancyHoursFor(
-    { slotType, hours, cycloMode },
-    p,
-  );
+  //
+  // La durée vit dans `slots[id]` (étape durée) : `slotType`/`hours`/`cycloMode`
+  // globaux ne bougent qu'en mode configurateur. Les lire ici faisait proposer
+  // au calendrier des heures d'arrivée calculées pour 1h (ou 5h au cyclorama)
+  // alors que le client avait choisi une journée — le serveur les refusait.
+  const primarySlot = slots[resolveSlotList(slotIds, plateau)[0]];
+  const rentalHours = rentalHoursFor(primarySlot ?? {}, p);
+  const availabilityHours = dailyOccupancyHoursFor(primarySlot ?? {}, p);
 
   const quoteLabels = useMemo<QuoteLabels>(
     () => ({

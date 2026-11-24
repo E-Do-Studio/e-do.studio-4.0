@@ -66,6 +66,21 @@ describe('création depuis le site', () => {
     ).rejects.toMatchObject({ code: 'outside_opening_hours' });
   });
 
+  it('cyclorama : journée de 10h refusée à 10h (fin à 20h), acceptée à 9h', async () => {
+    const cycloDay = (hour: number) => {
+      const input = websiteInput([
+        { plateauKey: 'cyclorama', days: 9, hour, hours: 1 },
+      ]);
+      input.sessions[0].slotType = null;
+      input.sessions[0].cycloMode = 'fullH';
+      return input;
+    };
+    await expect(createWebsiteBooking(db, cycloDay(10))).rejects.toMatchObject({
+      code: 'outside_opening_hours',
+    });
+    await expect(createWebsiteBooking(db, cycloDay(9))).resolves.toBeDefined();
+  });
+
   it('refuse un chevauchement sur le même plateau (409), sans rien laisser en base', async () => {
     await createWebsiteBooking(
       db,
