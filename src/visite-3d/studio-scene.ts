@@ -1679,10 +1679,11 @@ export function createStudioScene(opts: StudioSceneOptions): StudioScene {
     const name = document.createElement('span');
     name.textContent = z.label;
     // Un point seul : nommées toutes à la fois, les étiquettes couvraient la
-    // maquette. Le rail les nomme déjà ; ici le nom n'apparaît qu'au survol
-    // ou sur la zone choisie.
+    // maquette en perspective. Le rail les nomme déjà ; ici le nom n'apparaît
+    // qu'au survol ou sur la zone choisie. En plan, vu de dessus, elles ne se
+    // chevauchent plus : toutes nommées, le plan se lit sans survol.
     name.className =
-      'hidden group-hover:inline group-focus-visible:inline group-data-[active]:inline';
+      'hidden group-hover:inline group-focus-visible:inline group-data-[active]:inline group-data-[plan]:inline';
     el.append(name);
     // L'état choisi passe par l'inversion orange, comme la sélection partout
     // ailleurs sur le site ; `data-active` et non une classe ajoutée, pour que
@@ -1809,13 +1810,18 @@ export function createStudioScene(opts: StudioSceneOptions): StudioScene {
       ortho.zoom = 1;
       // Au-dessus des machines, des colonnes et des cabines.
       if (cut < 3.2 || cut > 3.6) cut = 3.2;
+      // Convention du dessin d'architecte : les murs coupés en noir plein.
+      MAT.plaster.color.set(opts.colors.ink);
     } else {
+      MAT.plaster.color.set(0xffffff);
       cam = persp;
       controls.object = persp;
       controls.enableRotate = true;
       persp.up.set(0, 1, 0);
       resetPersp();
     }
+    for (const el of pins.values())
+      el.toggleAttribute('data-plan', view === 'plan');
     setCut(cut);
     resize();
     controls.update();
